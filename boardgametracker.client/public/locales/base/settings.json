@@ -269,7 +269,27 @@
 				"description": "Are you sure you want to delete \"{{username}}\"? This cannot be undone."
 			},
 			"never-logged-in": "Never",
-			"no-users": "No users yet"
+			"no-users": "No users yet",
+			"access": {
+				"button": "Access",
+				"title": "Sign-in access",
+				"description": "Sign-in and single sign-on settings for \"{{username}}\".",
+				"enabled": "Can sign in",
+				"disabled": "Disabled",
+				"enable": "Enable",
+				"disable": "Disable",
+				"disable-hint": "Disabling ends every session and blocks sign-in with a password and with single sign-on. Removing someone at the identity provider does not do this for you.",
+				"sso-title": "Single sign-on identities",
+				"sso-none": "No identity provider account is linked.",
+				"sso-linked": "subject {{subject}} · linked on {{date}}",
+				"unlink": "Unlink",
+				"unlink-confirm": "This identity provider account can no longer sign in as \"{{username}}\" until it is linked again.",
+				"role-managed": "The role follows the identity provider's groups on every sign-in.",
+				"role-local": "The role was set here and the identity provider does not change it.",
+				"manage-role": "Let the identity provider manage the role",
+				"disabled-badge": "Disabled",
+				"sso-badge": "SSO"
+			}
 		},
 		"notifications": {
 			"profile-updated": "Profile updated successfully",
@@ -284,7 +304,15 @@
 			"role-update-failed": "Failed to update user role",
 			"user-updated": "User updated successfully",
 			"user-update-failed": "Failed to update user",
-			"password-reset-failed": "Failed to reset password"
+			"password-reset-failed": "Failed to reset password",
+			"user-disabled": "User disabled",
+			"user-disable-failed": "Failed to disable the user",
+			"user-enabled": "User enabled",
+			"user-enable-failed": "Failed to enable the user",
+			"external-login-unlinked": "Identity provider account unlinked",
+			"external-login-unlink-failed": "Failed to unlink the identity provider account",
+			"role-managed": "The identity provider now manages this role",
+			"role-manage-failed": "Failed to hand the role to the identity provider"
 		},
 		"external-logins": {
 			"title": "External logins",
@@ -311,7 +339,8 @@
 		"fields": {
 			"name": {
 				"label": "Short name",
-				"placeholder": "keycloak"
+				"placeholder": "keycloak",
+				"rename-warning": "Changing the short name changes the redirect URIs below. Register the new ones at your provider; linked accounts keep working."
 			},
 			"display-name": {
 				"label": "Button label",
@@ -351,12 +380,16 @@
 			},
 			"auto-provision": {
 				"label": "Create accounts on first sign-in",
-				"description": "New people get a User account automatically. When off, only linked accounts can sign in."
+				"description": "New people get an account with the default role automatically. When off, only linked accounts can sign in."
 			},
 			"enabled": {
 				"label": "Enabled",
 				"description": "Show the sign-in button on the login page."
-			}
+			},
+			"default-role": {
+				"label": "Default role"
+			},
+			"role-sync": "With a groups claim and admin group set, accounts created through the provider get Admin when they are in that group and the default role otherwise, on every sign-in. The last admin is never demoted."
 		},
 		"discovery": {
 			"button": "Test discovery",
@@ -366,7 +399,9 @@
 			"failed": "The provider could not be reached or did not return a discovery document.",
 			"authorization": "Authorization",
 			"token": "Token",
-			"userinfo": "User info"
+			"userinfo": "User info",
+			"end-session": "Sign-out",
+			"none": "not offered"
 		},
 		"setup": {
 			"title": "Register at the provider",
@@ -374,7 +409,8 @@
 			"public-url-warning": "No public URL is configured, so the redirect URIs are derived from the current request ({{url}}). Set the public URL under General if that is not the address people use.",
 			"redirect-uri": "Sign-in redirect URI",
 			"link-redirect-uri": "Account-linking redirect URI",
-			"copy": "Copy"
+			"copy": "Copy",
+			"post-logout-redirect-uri": "Post-logout redirect URI"
 		},
 		"validation": {
 			"name": "Use lowercase letters, digits and dashes (1–100 characters)",

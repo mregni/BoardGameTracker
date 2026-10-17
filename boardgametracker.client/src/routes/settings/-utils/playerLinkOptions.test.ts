@@ -12,6 +12,9 @@ const user = (id: string, playerId: number | null): UserDto => ({
 	createdAt: new Date(),
 	lastLoginAt: null,
 	playerId,
+	isDisabled: false,
+	roleManagedByIdentityProvider: false,
+	externalLoginCount: 0,
 });
 
 describe("buildLinkablePlayerItems", () => {

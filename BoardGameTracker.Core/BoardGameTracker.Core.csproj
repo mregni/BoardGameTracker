@@ -25,6 +25,7 @@
         <PackageReference Include="System.Security.Cryptography.Pkcs" />
         <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
         <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     </ItemGroup>
 
     <ItemGroup>

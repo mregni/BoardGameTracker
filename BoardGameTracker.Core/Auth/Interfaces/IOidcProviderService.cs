@@ -11,12 +11,12 @@ public interface IOidcProviderService
         string? authorizationEndpoint, string? tokenEndpoint, string? userInfoEndpoint,
         string? usernameClaimType, string? emailClaimType, string? displayNameClaimType,
         string? rolesClaimType, string? adminGroupValue,
-        string? iconUrl, string? buttonColor);
+        string? iconUrl, string? buttonColor, string? defaultRole = null);
     Task<OidcProvider> UpdateAsync(int id, string displayName, string authority, string clientId,
         string? clientSecret, bool enabled, string scopes, bool autoProvisionUsers,
         string? authorizationEndpoint, string? tokenEndpoint, string? userInfoEndpoint,
         string? usernameClaimType, string? emailClaimType, string? displayNameClaimType,
         string? rolesClaimType, string? adminGroupValue,
-        string? iconUrl, string? buttonColor);
+        string? iconUrl, string? buttonColor, string? defaultRole = null, string? name = null);
     Task DeleteAsync(int id);
 }

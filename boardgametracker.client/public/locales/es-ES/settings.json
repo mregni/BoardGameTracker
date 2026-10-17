@@ -269,7 +269,27 @@
 				"description": "¿Seguro que quieres eliminar a \"{{username}}\"? Esta acción no se puede deshacer."
 			},
 			"never-logged-in": "Nunca",
-			"no-users": "Todavía no hay usuarios"
+			"no-users": "Todavía no hay usuarios",
+			"access": {
+				"button": "Acceso",
+				"title": "Acceso de inicio de sesión",
+				"description": "Ajustes de inicio de sesión e inicio de sesión único de \"{{username}}\".",
+				"enabled": "Puede iniciar sesión",
+				"disabled": "Desactivado",
+				"enable": "Activar",
+				"disable": "Desactivar",
+				"disable-hint": "Desactivar termina todas las sesiones y bloquea el inicio de sesión con contraseña y con inicio de sesión único. Eliminar a alguien en el proveedor de identidad no lo hace por ti.",
+				"sso-title": "Identidades de inicio de sesión único",
+				"sso-none": "No hay ninguna cuenta del proveedor de identidad vinculada.",
+				"sso-linked": "sujeto {{subject}} · vinculado el {{date}}",
+				"unlink": "Desvincular",
+				"unlink-confirm": "Esta cuenta del proveedor de identidad ya no podrá iniciar sesión como \"{{username}}\" hasta que se vuelva a vincular.",
+				"role-managed": "El rol sigue los grupos del proveedor de identidad en cada inicio de sesión.",
+				"role-local": "El rol se definió aquí y el proveedor de identidad no lo cambia.",
+				"manage-role": "Dejar que el proveedor de identidad gestione el rol",
+				"disabled-badge": "Desactivado",
+				"sso-badge": "SSO"
+			}
 		},
 		"notifications": {
 			"profile-updated": "Perfil actualizado correctamente",
@@ -284,7 +304,15 @@
 			"role-update-failed": "No se pudo actualizar el rol del usuario",
 			"user-updated": "Usuario actualizado correctamente",
 			"user-update-failed": "No se pudo actualizar el usuario",
-			"password-reset-failed": "No se pudo restablecer la contraseña"
+			"password-reset-failed": "No se pudo restablecer la contraseña",
+			"user-disabled": "Usuario desactivado",
+			"user-disable-failed": "No se pudo desactivar el usuario",
+			"user-enabled": "Usuario activado",
+			"user-enable-failed": "No se pudo activar el usuario",
+			"external-login-unlinked": "Cuenta del proveedor de identidad desvinculada",
+			"external-login-unlink-failed": "No se pudo desvincular la cuenta del proveedor de identidad",
+			"role-managed": "El proveedor de identidad gestiona ahora este rol",
+			"role-manage-failed": "No se pudo ceder el rol al proveedor de identidad"
 		},
 		"external-logins": {
 			"title": "Inicios de sesión externos",
@@ -311,7 +339,8 @@
 		"fields": {
 			"name": {
 				"label": "Nombre corto",
-				"placeholder": "keycloak"
+				"placeholder": "keycloak",
+				"rename-warning": "Cambiar el nombre corto cambia las URI de redirección de abajo. Registra las nuevas en tu proveedor; las cuentas vinculadas siguen funcionando."
 			},
 			"display-name": {
 				"label": "Texto del botón",
@@ -351,12 +380,16 @@
 			},
 			"auto-provision": {
 				"label": "Crear cuentas en el primer inicio de sesión",
-				"description": "Las personas nuevas reciben automáticamente una cuenta de Usuario. Si se desactiva, solo pueden iniciar sesión las cuentas vinculadas."
+				"description": "Las personas nuevas reciben automáticamente una cuenta con el rol predeterminado. Si se desactiva, solo pueden iniciar sesión las cuentas vinculadas."
 			},
 			"enabled": {
 				"label": "Activado",
 				"description": "Muestra el botón de inicio de sesión en la página de acceso."
-			}
+			},
+			"default-role": {
+				"label": "Rol predeterminado"
+			},
+			"role-sync": "Con un claim de grupos y un grupo de administradores configurados, las cuentas creadas a través del proveedor reciben Administrador si están en ese grupo y, si no, el rol predeterminado, en cada inicio de sesión. El último administrador nunca pierde su rol."
 		},
 		"discovery": {
 			"button": "Probar descubrimiento",
@@ -366,7 +399,9 @@
 			"failed": "No se pudo conectar con el proveedor o no devolvió un documento de descubrimiento.",
 			"authorization": "Autorización",
 			"token": "Token",
-			"userinfo": "Información del usuario"
+			"userinfo": "Información del usuario",
+			"end-session": "Cierre de sesión",
+			"none": "no disponible"
 		},
 		"setup": {
 			"title": "Registro en el proveedor",
@@ -374,7 +409,8 @@
 			"public-url-warning": "No hay ninguna URL pública configurada, así que las URI de redirección se obtienen de la petición actual ({{url}}). Configura la URL pública en General si esa no es la dirección que usa la gente.",
 			"redirect-uri": "URI de redirección de inicio de sesión",
 			"link-redirect-uri": "URI de redirección de vinculación de cuentas",
-			"copy": "Copiar"
+			"copy": "Copiar",
+			"post-logout-redirect-uri": "URI de redirección tras cerrar sesión"
 		},
 		"validation": {
 			"name": "Usa letras minúsculas, dígitos y guiones (1–100 caracteres)",

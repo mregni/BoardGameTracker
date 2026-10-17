@@ -40,6 +40,7 @@ public class RefreshTokenCleanupService : BackgroundService
                 using var scope = _scopeFactory.CreateScope();
                 var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
                 await tokenService.CleanupExpiredTokensAsync();
+                await scope.ServiceProvider.GetRequiredService<IOidcService>().CleanupExpiredSessionsAsync();
                 _logger.LogInformation("Refresh token cleanup completed");
             }
             catch (Exception ex) when (ex is not OperationCanceledException)

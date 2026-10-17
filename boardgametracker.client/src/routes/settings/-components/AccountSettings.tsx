@@ -27,6 +27,7 @@ import { ChangePasswordModal } from "../-modals/ChangePasswordModal";
 import { CreateUserModal } from "../-modals/CreateUserModal";
 import { EditUserModal } from "../-modals/EditUserModal";
 import { TempPasswordModal } from "../-modals/TempPasswordModal";
+import { UserAccessModal } from "../-modals/UserAccessModal";
 import { ExternalLoginsSection } from "./ExternalLoginsSection";
 import { SettingsSection } from "./SettingsSection";
 
@@ -58,6 +59,8 @@ export const AccountSettings = () => {
 	const createUserModal = useModalState();
 	const [deleteTarget, setDeleteTarget] = useState<UserDto | null>(null);
 	const [editTarget, setEditTarget] = useState<UserDto | null>(null);
+	const [accessTargetId, setAccessTargetId] = useState<string | null>(null);
+	const accessTarget = users.find((user) => user.id === accessTargetId) ?? null;
 	const [tempPasswordData, setTempPasswordData] = useState<{ username: string; password: string } | null>(null);
 
 	if (isProfileLoading || !profile) {
@@ -86,6 +89,7 @@ export const AccountSettings = () => {
 					currentUserId={currentUser?.id ?? ""}
 					onCreateUser={createUserModal.show}
 					onEditUser={(user) => setEditTarget(user)}
+					onManageAccess={(user) => setAccessTargetId(user.id)}
 					onResetPassword={async (user) => {
 						try {
 							const result: ResetPasswordResponse = await resetPassword(user.id);
@@ -127,6 +131,15 @@ export const AccountSettings = () => {
 					users={users}
 					onSubmit={updateUser}
 					isLoading={isUpdatingUser}
+				/>
+			)}
+
+			{accessTarget && (
+				<UserAccessModal
+					open={true}
+					close={() => setAccessTargetId(null)}
+					user={accessTarget}
+					isCurrentUser={accessTarget.id === currentUser?.id}
 				/>
 			)}
 
@@ -273,6 +286,7 @@ interface UserManagementSectionProps {
 	currentUserId: string;
 	onCreateUser: () => void;
 	onEditUser: (user: UserDto) => void;
+	onManageAccess: (user: UserDto) => void;
 	onResetPassword: (user: UserDto) => void;
 	onDeleteUser: (user: UserDto) => void;
 }
@@ -282,6 +296,7 @@ const UserManagementSection = ({
 	currentUserId,
 	onCreateUser,
 	onEditUser,
+	onManageAccess,
 	onResetPassword,
 	onDeleteUser,
 }: UserManagementSectionProps) => {
@@ -296,7 +311,21 @@ const UserManagementSection = ({
 			{
 				accessorKey: "username",
 				header: t("auth:username"),
-				cell: ({ row }) => <div>{row.original.username}</div>,
+				cell: ({ row }) => (
+					<div className="flex flex-wrap items-center gap-2">
+						<span>{row.original.username}</span>
+						{row.original.isDisabled && (
+							<span className="rounded-sm bg-error-strong/30 px-1.5 py-0.5 text-[11px] text-white">
+								{t("account.users.access.disabled-badge")}
+							</span>
+						)}
+						{row.original.externalLoginCount > 0 && (
+							<span className="rounded-sm bg-primary/30 px-1.5 py-0.5 text-[11px] text-white">
+								{t("account.users.access.sso-badge")}
+							</span>
+						)}
+					</div>
+				),
 			},
 			{
 				accessorKey: "roles",
@@ -322,6 +351,9 @@ const UserManagementSection = ({
 						<BgtButton size="1" variant="cancel" onClick={() => onEditUser(row.original)}>
 							{t("common:edit")}
 						</BgtButton>
+						<BgtButton size="1" variant="cancel" onClick={() => onManageAccess(row.original)}>
+							{t("account.users.access.button")}
+						</BgtButton>
 						<BgtButton size="1" variant="cancel" onClick={() => onResetPassword(row.original)}>
 							{t("account.users.reset-password.button")}
 						</BgtButton>
@@ -334,7 +366,7 @@ const UserManagementSection = ({
 				),
 			},
 		],
-		[t, currentUserId, onEditUser, onResetPassword, onDeleteUser, dateFormat, timeFormat, uiLanguage],
+		[t, currentUserId, onEditUser, onManageAccess, onResetPassword, onDeleteUser, dateFormat, timeFormat, uiLanguage],
 	);
 
 	return (

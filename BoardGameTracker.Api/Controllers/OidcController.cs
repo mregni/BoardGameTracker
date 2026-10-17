@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -21,19 +22,22 @@ public class OidcController : ControllerBase
 {
     public const string StateCookieName = "bgt_oidc_state";
     public const string HandoffCookieName = "bgt_oidc_handoff";
+    public const string SessionCookieName = "bgt_oidc_session";
     public const string CallbackPage = "/auth-callback";
     private const string CookiePath = "/api/auth/oidc";
 
     private readonly IOidcService _oidcService;
     private readonly IPublicUrlBuilder _publicUrlBuilder;
     private readonly IProfileImageTicketService _imageTickets;
+    private readonly JwtOptions _jwtOptions;
     private readonly ILogger<OidcController> _logger;
 
-    public OidcController(IOidcService oidcService, IPublicUrlBuilder publicUrlBuilder, IProfileImageTicketService imageTickets, ILogger<OidcController> logger)
+    public OidcController(IOidcService oidcService, IPublicUrlBuilder publicUrlBuilder, IProfileImageTicketService imageTickets, IOptions<JwtOptions> jwtOptions, ILogger<OidcController> logger)
     {
         _oidcService = oidcService;
         _publicUrlBuilder = publicUrlBuilder;
         _imageTickets = imageTickets;
+        _jwtOptions = jwtOptions.Value;
         _logger = logger;
     }
 
@@ -71,7 +75,7 @@ public class OidcController : ControllerBase
     [AllowAnonymous]
     [EnableRateLimiting("auth")]
     [ProducesResponseType(StatusCodes.Status302Found)]
-    public async Task<IActionResult> Callback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error)
+    public async Task<IActionResult> Callback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error, [FromQuery] string? iss)
     {
         var browserState = Request.Cookies[StateCookieName];
         DeleteCookie(StateCookieName);
@@ -84,8 +88,9 @@ public class OidcController : ControllerBase
 
         try
         {
-            var result = await _oidcService.CompleteLoginAsync(provider, code, state, browserState);
+            var result = await _oidcService.CompleteLoginAsync(provider, code, state, browserState, iss);
             SetCookie(HandoffCookieName, _oidcService.CreateHandoff(result.Login), OidcService.HandoffLifetime);
+            SetSessionCookie(result.SessionKey);
             return LocalRedirect($"{CallbackPage}?redirect={Uri.EscapeDataString(result.RedirectPath)}");
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
@@ -128,7 +133,7 @@ public class OidcController : ControllerBase
     [AllowAnonymous]
     [EnableRateLimiting("auth")]
     [ProducesResponseType(StatusCodes.Status302Found)]
-    public async Task<IActionResult> LinkCallback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error)
+    public async Task<IActionResult> LinkCallback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error, [FromQuery] string? iss)
     {
         var browserState = Request.Cookies[StateCookieName];
         DeleteCookie(StateCookieName);
@@ -141,7 +146,7 @@ public class OidcController : ControllerBase
 
         try
         {
-            var result = await _oidcService.CompleteLinkAsync(provider, code, state, browserState);
+            var result = await _oidcService.CompleteLinkAsync(provider, code, state, browserState, iss);
             return LocalRedirect($"{CallbackPage}?linked={Uri.EscapeDataString(result.ProviderName)}");
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
@@ -149,6 +154,28 @@ public class OidcController : ControllerBase
             _logger.LogWarning(ex, "OIDC link via {Provider} failed", provider);
             return Fail(ErrorKey(ex));
         }
+    }
+
+    [HttpPost("logout")]
+    [AllowAnonymous]
+    [ProducesResponseType<OidcLogoutResponse>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Logout()
+    {
+        var sessionKey = Request.Cookies[SessionCookieName];
+        DeleteCookie(SessionCookieName);
+        var url = await _oidcService.EndSessionAsync(sessionKey, await PublicBaseUrlAsync());
+        return Ok(new OidcLogoutResponse(url));
+    }
+
+    private void SetSessionCookie(string? sessionKey)
+    {
+        if (sessionKey == null)
+        {
+            DeleteCookie(SessionCookieName);
+            return;
+        }
+
+        SetCookie(SessionCookieName, sessionKey, TimeSpan.FromDays(_jwtOptions.RefreshTokenExpiryDays));
     }
 
     private LocalRedirectResult Fail(string errorKey)

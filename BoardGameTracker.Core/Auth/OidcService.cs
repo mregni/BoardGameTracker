@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace BoardGameTracker.Core.Auth;
 
@@ -29,6 +31,10 @@ public class OidcService : IOidcService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMemoryCache _cache;
     private readonly ISecretProtector _secretProtector;
+    private readonly IOidcConfigurationProvider _configurations;
+    private readonly IOidcIdTokenValidator _idTokenValidator;
+    private readonly IOidcRoleReconciler _roleReconciler;
+    private readonly JwtOptions _jwtOptions;
     private readonly ILogger<OidcService> _logger;
 
     public OidcService(
@@ -38,6 +44,10 @@ public class OidcService : IOidcService
         IHttpClientFactory httpClientFactory,
         IMemoryCache cache,
         ISecretProtector secretProtector,
+        IOidcConfigurationProvider configurations,
+        IOidcIdTokenValidator idTokenValidator,
+        IOidcRoleReconciler roleReconciler,
+        IOptions<JwtOptions> jwtOptions,
         ILogger<OidcService> logger)
     {
         _context = context;
@@ -46,6 +56,10 @@ public class OidcService : IOidcService
         _httpClientFactory = httpClientFactory;
         _cache = cache;
         _secretProtector = secretProtector;
+        _configurations = configurations;
+        _idTokenValidator = idTokenValidator;
+        _roleReconciler = roleReconciler;
+        _jwtOptions = jwtOptions.Value;
         _logger = logger;
     }
 
@@ -76,8 +90,8 @@ public class OidcService : IOidcService
     private async Task<OidcAuthorizationRequest> StartAsync(string providerName, string publicBaseUrl, OidcFlow flow, string? userId, string redirectPath)
     {
         var provider = await GetProviderOrThrow(providerName);
-        var discovery = await GetDiscoveryDocumentAsync(provider);
-        var authorizationEndpoint = SecureEndpoint(provider.AuthorizationEndpoint ?? discovery.AuthorizationEndpoint);
+        var metadata = await GetMetadataAsync(provider);
+        var authorizationEndpoint = SecureEndpoint(provider.AuthorizationEndpoint ?? RequiredEndpoint(metadata.AuthorizationEndpoint));
         var redirectUri = CallbackUri(publicBaseUrl, providerName, flow);
 
         var codeVerifier = GenerateToken();
@@ -92,7 +106,7 @@ public class OidcService : IOidcService
         {
             ["client_id"] = provider.ClientId,
             ["response_type"] = "code",
-            ["scope"] = provider.Scopes,
+            ["scope"] = WithOpenIdScope(provider.Scopes),
             ["redirect_uri"] = redirectUri,
             ["code_challenge"] = GenerateCodeChallenge(codeVerifier),
             ["code_challenge_method"] = "S256",
@@ -100,58 +114,47 @@ public class OidcService : IOidcService
             ["nonce"] = nonce,
         };
 
-        var queryString = "?" + string.Join("&", query.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
+        var separator = authorizationEndpoint.Contains('?') ? "&" : "?";
+        var queryString = separator + string.Join("&", query.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
         _logger.LogInformation("Started OIDC {Flow} flow for provider {Provider}", flow, providerName);
 
         return new OidcAuthorizationRequest(authorizationEndpoint + queryString, state);
     }
 
-    public async Task<OidcLoginResult> CompleteLoginAsync(string providerName, string code, string? state, string? browserState)
+    public async Task<OidcLoginResult> CompleteLoginAsync(string providerName, string code, string? state, string? browserState, string? issuer)
     {
         var provider = await GetProviderOrThrow(providerName);
         var pending = TakePendingAuthorization(state, browserState, OidcFlow.Login, providerName);
-        var userInfo = await ExchangeCodeAndGetUserInfo(provider, code, pending);
+        var identity = await AuthenticateAsync(provider, code, issuer, pending);
 
-        var providerKey = userInfo.GetProperty("sub").GetString()!;
-        var email = GetClaimValue(userInfo, provider.EmailClaimType ?? "email");
-        var username = GetClaimValue(userInfo, provider.UsernameClaimType ?? "preferred_username") ?? email;
-        var displayName = GetClaimValue(userInfo, provider.DisplayNameClaimType ?? "name");
+        var email = identity.Claims.GetValue(provider.EmailClaimType ?? "email");
+        var username = identity.Claims.GetValue(provider.UsernameClaimType ?? "preferred_username") ?? email;
+        var displayName = identity.Claims.GetValue(provider.DisplayNameClaimType ?? "name");
 
-        var externalLogin = await _context.ExternalLogins
-            .Include(x => x.User)
-            .FirstOrDefaultAsync(x => x.Provider == providerName && x.ProviderKey == providerKey);
+        var externalLogin = await FindExternalLoginAsync(provider, identity);
 
         ApplicationUser user;
         if (externalLogin != null)
         {
             user = externalLogin.User!;
+            if (user.IsDisabled)
+            {
+                _logger.LogWarning("Disabled user {UserId} tried to sign in via {Provider}", user.Id, providerName);
+                throw new DomainException(Constants.Errors.AccountDisabled);
+            }
+
             externalLogin.UpdateLastUsed();
+            if (externalLogin.Provider != provider.Name)
+            {
+                externalLogin.UpdateProvider(provider.Name);
+            }
+
+            await _roleReconciler.ReconcileAsync(user, provider, identity.Claims);
             _logger.LogInformation("Existing OIDC user {UserId} logged in via {Provider}", user.Id, providerName);
         }
         else if (provider.AutoProvisionUsers)
         {
-            var existingUser = email != null ? await FindLocalUserByEmailAsync(email) : null;
-            if (existingUser != null)
-            {
-                _logger.LogWarning("A new user from {Provider} shares the email of existing user {UserId}; manual linking required", providerName, existingUser.Id);
-                throw new DomainException(Constants.Errors.OidcEmailAlreadyRegistered);
-            }
-
-            user = new ApplicationUser(
-                username ?? $"{providerName}_{providerKey}",
-                email ?? $"{providerKey}@{providerName}.external",
-                displayName);
-
-            var result = await _userManager.CreateAsync(user);
-            if (!result.Succeeded)
-            {
-                _logger.LogError("Failed to auto-provision a user from {Provider}: {Errors}", providerName, string.Join(", ", result.Errors.Select(e => e.Code)));
-                throw new DomainException(Constants.Errors.OidcProvisioningFailed);
-            }
-
-            await AssignRolesFromClaims(user, provider, userInfo);
-            _context.ExternalLogins.Add(new ExternalLogin(user.Id, providerName, providerKey, displayName));
-            _logger.LogInformation("Auto-provisioned user {UserId} from {Provider}", user.Id, providerName);
+            user = await ProvisionAsync(provider, identity, username, email, displayName);
         }
         else
         {
@@ -161,30 +164,27 @@ public class OidcService : IOidcService
 
         user.UpdateLastLogin();
         await _userManager.UpdateAsync(user);
+        var sessionKey = StartSession(user, provider, identity);
         await _context.SaveChangesAsync();
 
-        return new OidcLoginResult(await IssueTokensAsync(user), pending.RedirectPath);
+        return new OidcLoginResult(await IssueTokensAsync(user), pending.RedirectPath, sessionKey);
     }
 
-    public async Task<OidcLinkResult> CompleteLinkAsync(string providerName, string code, string? state, string? browserState)
+    public async Task<OidcLinkResult> CompleteLinkAsync(string providerName, string code, string? state, string? browserState, string? issuer)
     {
         var provider = await GetProviderOrThrow(providerName);
         var pending = TakePendingAuthorization(state, browserState, OidcFlow.Link, providerName);
         var user = await _userManager.FindByIdAsync(pending.UserId!)
             ?? throw new EntityNotFoundException(nameof(ApplicationUser), pending.UserId!);
-        var userInfo = await ExchangeCodeAndGetUserInfo(provider, code, pending);
+        var identity = await AuthenticateAsync(provider, code, issuer, pending);
+        var displayName = identity.Claims.GetValue(provider.DisplayNameClaimType ?? "name");
 
-        var providerKey = userInfo.GetProperty("sub").GetString()!;
-        var displayName = GetClaimValue(userInfo, provider.DisplayNameClaimType ?? "name");
-
-        var alreadyLinked = await _context.ExternalLogins
-            .AnyAsync(x => x.Provider == providerName && x.ProviderKey == providerKey);
-        if (alreadyLinked)
+        if (await FindExternalLoginAsync(provider, identity) != null)
         {
             throw new DomainException(Constants.Errors.OidcAlreadyLinked);
         }
 
-        _context.ExternalLogins.Add(new ExternalLogin(user.Id, providerName, providerKey, displayName));
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, providerName, identity.Issuer, identity.Subject, displayName));
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Linked OIDC provider {Provider} to user {UserId}", providerName, user.Id);
@@ -204,7 +204,8 @@ public class OidcService : IOidcService
             document.AuthorizationEndpoint,
             document.TokenEndpoint,
             document.UserInfoEndpoint,
-            IssuerMatches(issuer, authority));
+            document.EndSessionEndpoint,
+            OidcIssuer.Matches(issuer, authority));
     }
 
     public string CreateHandoff(LoginResponse login)
@@ -255,6 +256,143 @@ public class OidcService : IOidcService
             externalLoginId, externalLogin.Provider, userId);
     }
 
+    public async Task<string?> EndSessionAsync(string? sessionKey, string publicBaseUrl)
+    {
+        if (string.IsNullOrWhiteSpace(sessionKey))
+        {
+            return null;
+        }
+
+        var keyHash = HashKey(sessionKey);
+        var session = await _context.OidcSessions.FirstOrDefaultAsync(x => x.KeyHash == keyHash);
+        if (session == null)
+        {
+            return null;
+        }
+
+        _context.OidcSessions.Remove(session);
+        await _context.SaveChangesAsync();
+
+        if (session.ExpiresAt <= DateTime.UtcNow)
+        {
+            return null;
+        }
+
+        var provider = await _context.OidcProviders.FirstOrDefaultAsync(p => p.Id == session.ProviderId && p.Enabled);
+        if (provider == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var metadata = await GetMetadataAsync(provider);
+            if (string.IsNullOrEmpty(metadata.EndSessionEndpoint) || !SecureUrlPolicy.IsAcceptable(metadata.EndSessionEndpoint))
+            {
+                return null;
+            }
+
+            var idToken = _secretProtector.Unprotect(session.IdToken);
+            _logger.LogInformation("Ending the identity provider session of user {UserId} at {Provider}", session.UserId, provider.Name);
+            return OidcLogoutUrl.Build(metadata.EndSessionEndpoint, idToken, provider.ClientId, publicBaseUrl);
+        }
+        catch (Exception ex) when (ex is DomainException or ValidationException or CryptographicException)
+        {
+            _logger.LogWarning(ex, "Could not build the identity provider sign-out address for {Provider}", provider.Name);
+            return null;
+        }
+    }
+
+    public async Task CleanupExpiredSessionsAsync()
+    {
+        var now = DateTime.UtcNow;
+        var expired = await _context.OidcSessions.Where(x => x.ExpiresAt < now).ToListAsync();
+        if (expired.Count > 0)
+        {
+            _context.OidcSessions.RemoveRange(expired);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    private async Task<ApplicationUser> ProvisionAsync(OidcProvider provider, OidcIdentity identity, string? username, string? email, string? displayName)
+    {
+        var userName = username ?? $"{provider.Name}_{identity.Subject}";
+        if (await _userManager.FindByNameAsync(userName) != null)
+        {
+            _logger.LogWarning("A new user from {Provider} has the username of an existing account that is not linked; manual linking required", provider.Name);
+            throw new DomainException(Constants.Errors.OidcUsernameTaken);
+        }
+
+        var existingUser = email != null ? await FindLocalUserByEmailAsync(email) : null;
+        if (existingUser != null)
+        {
+            _logger.LogWarning("A new user from {Provider} shares the email of existing user {UserId}; manual linking required", provider.Name, existingUser.Id);
+            throw new DomainException(Constants.Errors.OidcEmailAlreadyRegistered);
+        }
+
+        var user = new ApplicationUser(
+            userName,
+            email ?? $"{identity.Subject}@{provider.Name}.external",
+            displayName);
+
+        var result = await _userManager.CreateAsync(user);
+        if (!result.Succeeded)
+        {
+            _logger.LogError("Failed to auto-provision a user from {Provider}: {Errors}", provider.Name, string.Join(", ", result.Errors.Select(e => e.Code)));
+            throw new DomainException(Constants.Errors.OidcProvisioningFailed);
+        }
+
+        await _roleReconciler.AssignInitialRoleAsync(user, provider, identity.Claims);
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, provider.Name, identity.Issuer, identity.Subject, displayName));
+        _logger.LogInformation("Auto-provisioned user {UserId} from {Provider}", user.Id, provider.Name);
+        return user;
+    }
+
+    private async Task<ExternalLogin?> FindExternalLoginAsync(OidcProvider provider, OidcIdentity identity)
+    {
+        var login = await _context.ExternalLogins
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Issuer == identity.Issuer && x.ProviderKey == identity.Subject);
+        if (login != null)
+        {
+            return login;
+        }
+
+        var legacyIssuer = OidcIssuer.Normalize(provider.Authority);
+        if (string.Equals(legacyIssuer, identity.Issuer, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        login = await _context.ExternalLogins
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Issuer == legacyIssuer && x.ProviderKey == identity.Subject);
+        if (login != null)
+        {
+            login.UpdateIssuer(identity.Issuer);
+            _logger.LogInformation("Re-keyed external login {LoginId} on the issuer reported by {Provider}", login.Id, provider.Name);
+        }
+
+        return login;
+    }
+
+    private string? StartSession(ApplicationUser user, OidcProvider provider, OidcIdentity identity)
+    {
+        if (string.IsNullOrEmpty(identity.EndSessionEndpoint))
+        {
+            return null;
+        }
+
+        var key = GenerateToken();
+        _context.OidcSessions.Add(new OidcSession(
+            HashKey(key),
+            user.Id,
+            provider.Id,
+            _secretProtector.Protect(identity.IdToken),
+            DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpiryDays)));
+        return key;
+    }
+
     private async Task<LoginResponse> IssueTokensAsync(ApplicationUser user)
     {
         var roles = await _userManager.GetRolesAsync(user);
@@ -296,11 +434,11 @@ public class OidcService : IOidcService
         return await _userManager.Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
     }
 
-    private async Task<JsonElement> ExchangeCodeAndGetUserInfo(OidcProvider provider, string code, PendingAuthorization pending)
+    private async Task<OidcIdentity> AuthenticateAsync(OidcProvider provider, string code, string? issuer, PendingAuthorization pending)
     {
-        var discovery = await GetDiscoveryDocumentAsync(provider);
-        var tokenEndpoint = SecureEndpoint(provider.TokenEndpoint ?? discovery.TokenEndpoint);
-        var userInfoEndpoint = SecureEndpoint(provider.UserInfoEndpoint ?? discovery.UserInfoEndpoint);
+        var metadata = await GetMetadataAsync(provider);
+        EnsureIssuerParameter(metadata, issuer, provider.Name);
+        var tokenEndpoint = SecureEndpoint(provider.TokenEndpoint ?? RequiredEndpoint(metadata.TokenEndpoint));
 
         var tokenRequest = new Dictionary<string, string>
         {
@@ -325,12 +463,33 @@ public class OidcService : IOidcService
         }
 
         var tokenResponse = await JsonSerializer.DeserializeAsync<JsonElement>(await response.Content.ReadAsStreamAsync());
-        if (!tokenResponse.TryGetProperty("access_token", out var accessTokenElement) || accessTokenElement.GetString() is not { Length: > 0 } accessToken)
+        if (TokenValue(tokenResponse, "id_token") is not { } idToken)
         {
-            _logger.LogError("OIDC token response from {Provider} carried no access token", provider.Name);
-            throw new DomainException(Constants.Errors.OidcExchangeFailed);
+            _logger.LogError("OIDC token response from {Provider} carried no id_token", provider.Name);
+            throw new DomainException(Constants.Errors.OidcIdTokenInvalid);
         }
 
+        var validated = await _idTokenValidator.ValidateAsync(provider.Authority, metadata, provider.ClientId, idToken, pending.Nonce);
+        var claims = validated.Claims;
+
+        var userInfoEndpoint = provider.UserInfoEndpoint ?? metadata.UserInfoEndpoint;
+        if (!string.IsNullOrEmpty(userInfoEndpoint) && TokenValue(tokenResponse, "access_token") is { } accessToken)
+        {
+            var userInfo = await FetchUserInfoAsync(client, provider, SecureEndpoint(userInfoEndpoint), accessToken);
+            if (!string.Equals(userInfo.Subject, validated.Subject, StringComparison.Ordinal))
+            {
+                _logger.LogError("User info from {Provider} describes a different subject than the id_token", provider.Name);
+                throw new DomainException(Constants.Errors.OidcIdTokenInvalid);
+            }
+
+            claims = claims.MergeWith(userInfo);
+        }
+
+        return new OidcIdentity(OidcIssuer.Normalize(metadata.Issuer), validated.Subject, claims, idToken, metadata.EndSessionEndpoint);
+    }
+
+    private async Task<OidcClaims> FetchUserInfoAsync(HttpClient client, OidcProvider provider, string userInfoEndpoint, string accessToken)
+    {
         using var userInfoRequest = new HttpRequestMessage(HttpMethod.Get, userInfoEndpoint);
         userInfoRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         using var userInfoResponse = await client.SendAsync(userInfoRequest);
@@ -340,8 +499,8 @@ public class OidcService : IOidcService
             throw new DomainException(Constants.Errors.OidcUserInfoFailed);
         }
 
-        var userInfo = await JsonSerializer.DeserializeAsync<JsonElement>(await userInfoResponse.Content.ReadAsStreamAsync());
-        if (!userInfo.TryGetProperty("sub", out var sub) || sub.GetString() is not { Length: > 0 })
+        var userInfo = OidcClaims.From(await JsonSerializer.DeserializeAsync<JsonElement>(await userInfoResponse.Content.ReadAsStreamAsync()));
+        if (userInfo.Subject is not { Length: > 0 })
         {
             _logger.LogError("User info from {Provider} carried no sub claim", provider.Name);
             throw new DomainException(Constants.Errors.OidcUserInfoFailed);
@@ -350,21 +509,34 @@ public class OidcService : IOidcService
         return userInfo;
     }
 
-    private async Task AssignRolesFromClaims(ApplicationUser user, OidcProvider provider, JsonElement userInfo)
+    private void EnsureIssuerParameter(OpenIdConnectConfiguration metadata, string? issuer, string providerName)
     {
-        var role = Constants.AuthRoles.User;
-
-        if (!string.IsNullOrEmpty(provider.RolesClaimType) && !string.IsNullOrEmpty(provider.AdminGroupValue))
+        if (issuer == null)
         {
-            var groups = GetClaimValues(userInfo, provider.RolesClaimType);
-            if (groups.Any(g => string.Equals(g, provider.AdminGroupValue, StringComparison.OrdinalIgnoreCase)))
+            if (metadata.AuthorizationResponseIssParameterSupported)
             {
-                role = Constants.AuthRoles.Admin;
-                _logger.LogInformation("Assigning Admin role to OIDC user {UserId} based on group claim", user.Id);
+                _logger.LogWarning("The callback from {Provider} carried no iss parameter although the provider advertises it", providerName);
+                throw new DomainException(Constants.Errors.OidcIssuerMismatch);
             }
+
+            return;
         }
 
-        await _userManager.AddToRoleAsync(user, role);
+        if (!string.Equals(issuer, metadata.Issuer, StringComparison.Ordinal))
+        {
+            _logger.LogWarning("The callback for {Provider} carried the iss parameter {Issuer}, which is not the provider's issuer", providerName, issuer);
+            throw new DomainException(Constants.Errors.OidcIssuerMismatch);
+        }
+    }
+
+    private static string? TokenValue(JsonElement tokenResponse, string name)
+    {
+        return tokenResponse.ValueKind == JsonValueKind.Object
+               && tokenResponse.TryGetProperty(name, out var element)
+               && element.ValueKind == JsonValueKind.String
+               && element.GetString() is { Length: > 0 } value
+            ? value
+            : null;
     }
 
     private async Task<OidcProvider> GetProviderOrThrow(string providerName)
@@ -375,29 +547,26 @@ public class OidcService : IOidcService
         return provider ?? throw new EntityNotFoundException(nameof(OidcProvider), providerName);
     }
 
-    private async Task<DiscoveryDocument> GetDiscoveryDocumentAsync(OidcProvider provider)
+    private async Task<OpenIdConnectConfiguration> GetMetadataAsync(OidcProvider provider)
     {
-        var cacheKey = $"oidc_discovery_{provider.Name}";
-        if (_cache.TryGetValue<DiscoveryDocument>(cacheKey, out var cached))
-        {
-            return cached!;
-        }
-
         if (!SecureUrlPolicy.IsAcceptable(provider.Authority))
         {
             throw new ValidationException(Constants.Errors.InsecureAuthority);
         }
 
-        var authority = provider.Authority.TrimEnd('/');
-        var (issuer, discovery) = await FetchDiscoveryAsync(authority);
-        if (!IssuerMatches(issuer, authority))
+        var metadata = await _configurations.GetAsync(provider.Authority);
+        if (string.IsNullOrWhiteSpace(metadata.Issuer))
         {
-            _logger.LogError("OIDC discovery for {Provider} reports issuer {Issuer}, which does not match the configured authority", provider.Name, issuer);
+            throw new DomainException(Constants.Errors.OidcDiscoveryFailed);
+        }
+
+        if (!OidcIssuer.Matches(metadata.Issuer, provider.Authority))
+        {
+            _logger.LogError("OIDC discovery for {Provider} reports issuer {Issuer}, which does not match the configured authority", provider.Name, metadata.Issuer);
             throw new DomainException(Constants.Errors.OidcIssuerMismatch);
         }
 
-        _cache.Set(cacheKey, discovery, TimeSpan.FromHours(1));
-        return discovery;
+        return metadata;
     }
 
     private async Task<(string Issuer, DiscoveryDocument Document)> FetchDiscoveryAsync(string authority)
@@ -439,25 +608,29 @@ public class OidcService : IOidcService
                 throw new DomainException(Constants.Errors.OidcDiscoveryFailed);
             }
 
-            return (issuer, new DiscoveryDocument
-            {
-                AuthorizationEndpoint = RequiredEndpoint(doc, "authorization_endpoint"),
-                TokenEndpoint = RequiredEndpoint(doc, "token_endpoint"),
-                UserInfoEndpoint = RequiredEndpoint(doc, "userinfo_endpoint"),
-            });
+            return (issuer, new DiscoveryDocument(
+                RequiredEndpoint(doc, "authorization_endpoint"),
+                RequiredEndpoint(doc, "token_endpoint"),
+                OptionalEndpoint(doc, "userinfo_endpoint"),
+                OptionalEndpoint(doc, "end_session_endpoint")));
         }
-    }
-
-    private static bool IssuerMatches(string issuer, string authority)
-    {
-        return string.Equals(issuer.TrimEnd('/'), authority.TrimEnd('/'), StringComparison.OrdinalIgnoreCase);
     }
 
     private static string RequiredEndpoint(JsonElement doc, string name)
     {
-        return doc.TryGetProperty(name, out var value) && value.GetString() is { Length: > 0 } endpoint
+        return OptionalEndpoint(doc, name) ?? throw new DomainException(Constants.Errors.OidcDiscoveryFailed);
+    }
+
+    private static string? OptionalEndpoint(JsonElement doc, string name)
+    {
+        return doc.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String && value.GetString() is { Length: > 0 } endpoint
             ? endpoint
-            : throw new DomainException(Constants.Errors.OidcDiscoveryFailed);
+            : null;
+    }
+
+    private static string RequiredEndpoint(string? endpoint)
+    {
+        return string.IsNullOrWhiteSpace(endpoint) ? throw new DomainException(Constants.Errors.OidcDiscoveryFailed) : endpoint;
     }
 
     private static string SecureEndpoint(string endpoint)
@@ -465,49 +638,21 @@ public class OidcService : IOidcService
         return SecureUrlPolicy.IsAcceptable(endpoint) ? endpoint : throw new ValidationException(Constants.Errors.InsecureAuthority);
     }
 
+    private static string WithOpenIdScope(string scopes)
+    {
+        var parts = scopes.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        if (!parts.Contains("openid", StringComparer.Ordinal))
+        {
+            parts.Insert(0, "openid");
+        }
+
+        return string.Join(' ', parts);
+    }
+
     private static string CallbackUri(string publicBaseUrl, string providerName, OidcFlow flow)
     {
         var action = flow == OidcFlow.Link ? "link-callback" : "callback";
         return $"{publicBaseUrl.TrimEnd('/')}/api/auth/oidc/{Uri.EscapeDataString(providerName)}/{action}";
-    }
-
-    private static string? GetClaimValue(JsonElement userInfo, string claimType)
-    {
-        if (!userInfo.TryGetProperty(claimType, out var value))
-        {
-            return null;
-        }
-
-        return value.ValueKind == JsonValueKind.Array
-            ? string.Join(",", value.EnumerateArray().Select(v => v.GetString()))
-            : value.GetString();
-    }
-
-    private static List<string> GetClaimValues(JsonElement userInfo, string claimType)
-    {
-        if (!userInfo.TryGetProperty(claimType, out var value))
-        {
-            return [];
-        }
-
-        if (value.ValueKind == JsonValueKind.Array)
-        {
-            return value.EnumerateArray()
-                .Select(v => v.GetString())
-                .Where(v => !string.IsNullOrWhiteSpace(v))
-                .Select(v => v!.Trim())
-                .ToList();
-        }
-
-        var scalar = value.GetString();
-        if (string.IsNullOrWhiteSpace(scalar))
-        {
-            return [];
-        }
-
-        return scalar
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToList();
     }
 
     private void SetSingleUse<T>(string key, T value, TimeSpan lifetime) where T : class
@@ -525,6 +670,8 @@ public class OidcService : IOidcService
     private static string PendingKey(string state) => $"oidc_pending_{state}";
 
     private static string HandoffKey(string key) => $"oidc_handoff_{key}";
+
+    public static string HashKey(string key) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key)));
 
     private static string GenerateToken()
     {
@@ -568,10 +715,7 @@ public class OidcService : IOidcService
         string RedirectUri,
         string RedirectPath);
 
-    private sealed class DiscoveryDocument
-    {
-        public string AuthorizationEndpoint { get; init; } = string.Empty;
-        public string TokenEndpoint { get; init; } = string.Empty;
-        public string UserInfoEndpoint { get; init; } = string.Empty;
-    }
+    private sealed record OidcIdentity(string Issuer, string Subject, OidcClaims Claims, string IdToken, string? EndSessionEndpoint);
+
+    private sealed record DiscoveryDocument(string AuthorizationEndpoint, string TokenEndpoint, string? UserInfoEndpoint, string? EndSessionEndpoint);
 }

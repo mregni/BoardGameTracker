@@ -29,6 +29,7 @@ vi.mock("@/services/oidcAdminService", () => ({
 			publicUrlConfigured: true,
 			callbackUriTemplate: "https://games.example.com/api/auth/oidc/{name}/callback",
 			linkCallbackUriTemplate: "https://games.example.com/api/auth/oidc/{name}/link-callback",
+			postLogoutRedirectUri: "https://games.example.com/login",
 		}),
 	),
 	testOidcDiscoveryCall: vi.fn(),
@@ -64,6 +65,7 @@ const request = {
 	scopes: "openid profile email",
 	enabled: true,
 	autoProvisionUsers: true,
+	defaultRole: "User",
 } as OidcProviderRequest;
 
 describe("useSsoSettings", () => {
@@ -135,6 +137,7 @@ describe("useSsoSettings", () => {
 			authorizationEndpoint: "https://sso.example.com/auth",
 			tokenEndpoint: "https://sso.example.com/token",
 			userInfoEndpoint: "https://sso.example.com/userinfo",
+			endSessionEndpoint: "https://sso.example.com/logout",
 			issuerMatchesAuthority: true,
 		};
 		vi.mocked(testOidcDiscoveryCall).mockResolvedValueOnce(discovered).mockRejectedValueOnce(new Error("unreachable"));

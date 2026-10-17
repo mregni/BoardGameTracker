@@ -1,11 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiError } from "@/models/Common/ApiError";
 
-const axiosMock = vi.hoisted(() => ({ get: vi.fn() }));
+const axiosMock = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), delete: vi.fn() }));
 
 vi.mock("../utils/axiosInstance", () => ({ axiosInstance: axiosMock }));
 
-import { getOidcProviderCall } from "./authService";
+import {
+	disableUserCall,
+	enableUserCall,
+	endOidcSessionCall,
+	getOidcProviderCall,
+	getUserExternalLoginsCall,
+	manageRoleByIdentityProviderCall,
+	unlinkUserExternalLoginCall,
+} from "./authService";
 
 const apiError = (status: number): ApiError => ({
 	kind: "client",
@@ -36,5 +44,54 @@ describe("getOidcProviderCall", () => {
 		axiosMock.get.mockRejectedValue(apiError(500));
 
 		await expect(getOidcProviderCall()).rejects.toMatchObject({ status: 500 });
+	});
+});
+
+describe("endOidcSessionCall", () => {
+	beforeEach(() => {
+		axiosMock.post.mockReset();
+	});
+
+	it("returns the identity provider sign-out address", async () => {
+		axiosMock.post.mockResolvedValue({ data: { url: "https://sso.example.com/logout" } });
+
+		await expect(endOidcSessionCall()).resolves.toBe("https://sso.example.com/logout");
+		expect(axiosMock.post).toHaveBeenCalledWith("auth/oidc/logout");
+	});
+
+	it("returns null when there is no single sign-on session", async () => {
+		axiosMock.post.mockResolvedValue({ data: { url: null } });
+
+		await expect(endOidcSessionCall()).resolves.toBeNull();
+	});
+});
+
+describe("admin user access calls", () => {
+	beforeEach(() => {
+		axiosMock.get.mockReset();
+		axiosMock.post.mockReset();
+		axiosMock.delete.mockReset();
+	});
+
+	it.each([
+		[disableUserCall, "admin/users/u-1/disable"],
+		[enableUserCall, "admin/users/u-1/enable"],
+		[manageRoleByIdentityProviderCall, "admin/users/u-1/role/identity-provider"],
+	])("posts to %#", async (call, url) => {
+		axiosMock.post.mockResolvedValue({ data: { id: "u-1" } });
+
+		await expect(call("u-1")).resolves.toEqual({ id: "u-1" });
+		expect(axiosMock.post).toHaveBeenCalledWith(url);
+	});
+
+	it("lists and unlinks the identities of a user", async () => {
+		axiosMock.get.mockResolvedValue({ data: [{ id: 3 }] });
+		axiosMock.delete.mockResolvedValue({});
+
+		await expect(getUserExternalLoginsCall("u-1")).resolves.toEqual([{ id: 3 }]);
+		await unlinkUserExternalLoginCall("u-1", 3);
+
+		expect(axiosMock.get).toHaveBeenCalledWith("admin/users/u-1/external-logins");
+		expect(axiosMock.delete).toHaveBeenCalledWith("admin/users/u-1/external-logins/3");
 	});
 });

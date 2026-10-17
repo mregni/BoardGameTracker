@@ -66,6 +66,46 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id}/disable")]
+    [ProducesResponseType<UserDto>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> DisableUser(string id)
+    {
+        var user = await _userAdminService.DisableAsync(id, GetCurrentUserId());
+        return Ok(user);
+    }
+
+    [HttpPost("{id}/enable")]
+    [ProducesResponseType<UserDto>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> EnableUser(string id)
+    {
+        var user = await _userAdminService.EnableAsync(id, GetCurrentUserId());
+        return Ok(user);
+    }
+
+    [HttpPost("{id}/role/identity-provider")]
+    [ProducesResponseType<UserDto>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ManageRoleByIdentityProvider(string id)
+    {
+        var user = await _userAdminService.ManageRoleByIdentityProviderAsync(id, GetCurrentUserId());
+        return Ok(user);
+    }
+
+    [HttpGet("{id}/external-logins")]
+    [ProducesResponseType<List<ExternalLoginDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetExternalLogins(string id)
+    {
+        var logins = await _userAdminService.GetExternalLoginsAsync(id);
+        return Ok(logins);
+    }
+
+    [HttpDelete("{id}/external-logins/{loginId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> UnlinkExternalLogin(string id, int loginId)
+    {
+        await _userAdminService.UnlinkExternalLoginAsync(id, loginId, GetCurrentUserId());
+        return NoContent();
+    }
+
     private string GetCurrentUserId() =>
         User.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? throw new AuthenticationFailedException(Constants.Errors.NotAuthenticated);

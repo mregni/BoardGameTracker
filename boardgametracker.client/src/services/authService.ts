@@ -60,6 +60,12 @@ export const startOidcLinkCall = (provider: string): Promise<string> => {
 		.then((response) => response.data.url);
 };
 
+export const endOidcSessionCall = (): Promise<string | null> => {
+	return axiosInstance
+		.post<{ url: string | null }>(`${domain}/oidc/logout`)
+		.then((response) => response.data.url ?? null);
+};
+
 export const adoptOidcLoginCall = (): Promise<LoginResponse> => {
 	return axiosInstance.post<LoginResponse>(`${domain}/oidc/adopt`).then((response) => response.data);
 };
@@ -116,6 +122,26 @@ export const deleteUserCall = (userId: string): Promise<void> => {
 
 export const updateUserRoleCall = (userId: string, role: string): Promise<UserDto> => {
 	return axiosInstance.put<UserDto>(`admin/users/${userId}/role`, { role }).then((response) => response.data);
+};
+
+export const disableUserCall = (userId: string): Promise<UserDto> => {
+	return axiosInstance.post<UserDto>(`admin/users/${userId}/disable`).then((response) => response.data);
+};
+
+export const enableUserCall = (userId: string): Promise<UserDto> => {
+	return axiosInstance.post<UserDto>(`admin/users/${userId}/enable`).then((response) => response.data);
+};
+
+export const manageRoleByIdentityProviderCall = (userId: string): Promise<UserDto> => {
+	return axiosInstance.post<UserDto>(`admin/users/${userId}/role/identity-provider`).then((response) => response.data);
+};
+
+export const getUserExternalLoginsCall = (userId: string): Promise<ExternalLogin[]> => {
+	return axiosInstance.get<ExternalLogin[]>(`admin/users/${userId}/external-logins`).then((response) => response.data);
+};
+
+export const unlinkUserExternalLoginCall = (userId: string, loginId: number): Promise<void> => {
+	return axiosInstance.delete(`admin/users/${userId}/external-logins/${loginId}`);
 };
 
 export const updateUserCall = (userId: string, request: AdminUpdateUserRequest): Promise<UserDto> => {

@@ -14,15 +14,18 @@ namespace BoardGameTracker.Core.Auth;
 public class UserAdminService : IUserAdminService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ITokenService _tokenService;
     private readonly MainDbContext _context;
     private readonly ILogger<UserAdminService> _logger;
 
     public UserAdminService(
         UserManager<ApplicationUser> userManager,
+        ITokenService tokenService,
         MainDbContext context,
         ILogger<UserAdminService> logger)
     {
         _userManager = userManager;
+        _tokenService = tokenService;
         _context = context;
         _logger = logger;
     }
@@ -36,7 +39,12 @@ public class UserAdminService : IUserAdminService
             .Select(g => new { User = g.Key, Roles = g.Select(x => x.RoleName!).ToList() })
             .ToListAsync();
 
-        return usersWithRoles.Select(x => x.User.ToDto(x.Roles)).ToList();
+        var linkCounts = await _context.ExternalLogins
+            .GroupBy(x => x.UserId)
+            .Select(g => new { UserId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.UserId, x => x.Count);
+
+        return usersWithRoles.Select(x => x.User.ToDto(x.Roles, linkCounts.GetValueOrDefault(x.User.Id))).ToList();
     }
 
     public async Task<UserDto> GetByIdAsync(string userId)
@@ -45,7 +53,7 @@ public class UserAdminService : IUserAdminService
             ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
 
         var roles = await _userManager.GetRolesAsync(user);
-        return user.ToDto(roles);
+        return user.ToDto(roles, await CountLinksAsync(userId));
     }
 
     public async Task DeleteAsync(string userId, string currentUserId)
@@ -159,9 +167,126 @@ public class UserAdminService : IUserAdminService
         return user.ToDto(updatedRoles);
     }
 
+    public async Task<UserDto> DisableAsync(string userId, string currentUserId)
+    {
+        if (userId == currentUserId)
+        {
+            throw new DomainException(Constants.Errors.CannotDisableSelf);
+        }
+
+        var user = await _userManager.FindByIdAsync(userId)
+            ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
+
+        await AdminRoleGate.Lock.WaitAsync();
+        try
+        {
+            if (await _userManager.IsInRoleAsync(user, Constants.AuthRoles.Admin))
+            {
+                var admins = await _userManager.GetUsersInRoleAsync(Constants.AuthRoles.Admin);
+                if (!admins.Any(a => a.Id != userId && !a.IsDisabled))
+                {
+                    throw new DomainException(Constants.Errors.CannotDisableLastAdmin);
+                }
+            }
+
+            await _userManager.SetLockoutEnabledAsync(user, true);
+            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+        }
+        finally
+        {
+            AdminRoleGate.Lock.Release();
+        }
+
+        await _tokenService.RevokeAllUserTokensAsync(userId, "Account disabled");
+        var sessions = await _context.OidcSessions.Where(x => x.UserId == userId).ToListAsync();
+        if (sessions.Count > 0)
+        {
+            _context.OidcSessions.RemoveRange(sessions);
+            await _context.SaveChangesAsync();
+        }
+
+        _logger.LogInformation("Admin {AdminId} disabled user {UserId} ({Username})", currentUserId, userId, user.UserName);
+        return await ToDtoAsync(user);
+    }
+
+    public async Task<UserDto> EnableAsync(string userId, string currentUserId)
+    {
+        var user = await _userManager.FindByIdAsync(userId)
+            ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
+
+        await _userManager.SetLockoutEndDateAsync(user, null);
+
+        _logger.LogInformation("Admin {AdminId} enabled user {UserId} ({Username})", currentUserId, userId, user.UserName);
+        return await ToDtoAsync(user);
+    }
+
+    public async Task<List<ExternalLoginDto>> GetExternalLoginsAsync(string userId)
+    {
+        await EnsureUserExistsAsync(userId);
+        return await _context.ExternalLogins
+            .Where(x => x.UserId == userId)
+            .OrderBy(x => x.LinkedAt)
+            .Select(x => x.ToDto())
+            .ToListAsync();
+    }
+
+    public async Task UnlinkExternalLoginAsync(string userId, int externalLoginId, string currentUserId)
+    {
+        var externalLogin = await _context.ExternalLogins
+            .FirstOrDefaultAsync(x => x.Id == externalLoginId && x.UserId == userId)
+            ?? throw new EntityNotFoundException(nameof(ExternalLogin), externalLoginId);
+
+        _context.ExternalLogins.Remove(externalLogin);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Admin {AdminId} unlinked external login {LoginId} (provider: {Provider}) from user {UserId}",
+            currentUserId, externalLoginId, externalLogin.Provider, userId);
+    }
+
+    public async Task<UserDto> ManageRoleByIdentityProviderAsync(string userId, string currentUserId)
+    {
+        var user = await _userManager.FindByIdAsync(userId)
+            ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
+
+        if (await CountLinksAsync(userId) == 0)
+        {
+            throw new ValidationException(Constants.Errors.OidcRoleNotManaged);
+        }
+
+        user.ManageRoleByIdentityProvider();
+        await _userManager.UpdateAsync(user);
+
+        _logger.LogInformation("Admin {AdminId} handed the role of user {UserId} back to the identity provider", currentUserId, userId);
+        return await ToDtoAsync(user);
+    }
+
+    private async Task EnsureUserExistsAsync(string userId)
+    {
+        if (!await _context.Users.AnyAsync(u => u.Id == userId))
+        {
+            throw new EntityNotFoundException(nameof(ApplicationUser), userId);
+        }
+    }
+
+    private Task<int> CountLinksAsync(string userId)
+    {
+        return _context.ExternalLogins.CountAsync(x => x.UserId == userId);
+    }
+
+    private async Task<UserDto> ToDtoAsync(ApplicationUser user)
+    {
+        var roles = await _userManager.GetRolesAsync(user);
+        return user.ToDto(roles, await CountLinksAsync(user.Id));
+    }
+
     private async Task ReplaceRoleAsync(ApplicationUser user, string role)
     {
         var currentRoles = await _userManager.GetRolesAsync(user);
+        if (currentRoles.Count != 1 || currentRoles[0] != role)
+        {
+            user.ManageRoleLocally();
+        }
+
         if (!currentRoles.Contains(role))
         {
             await _userManager.AddToRoleAsync(user, role);

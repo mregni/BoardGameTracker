@@ -52,7 +52,8 @@ One generic OpenID Connect provider (Keycloak, Authentik, Authelia, Zitadel, Ent
 
 1. Create a **public** client (no client secret is required; a secret is accepted but not needed with PKCE).
 2. Allow the two redirect URIs shown under **Settings → Single sign-on → Register at the provider**: `<PUBLIC_URL>/api/auth/oidc/<name>/callback` for sign-in and `<PUBLIC_URL>/api/auth/oidc/<name>/link-callback` for linking an existing local account. They update while you type the short name, and each has a copy button.
-3. Grant the scopes `openid profile email`.
+3. Allow the post-logout redirect URI from the same list, `<PUBLIC_URL>/login`, so signing out of BoardGameTracker also ends the session at the provider and comes back to the login page.
+4. Grant the scopes `openid profile email`. `openid` is always requested, even when it is missing from the scopes field, because the sign-in relies on the id_token.
 
 `PUBLIC_URL` (or the *Public URL* setting) must be the address users type in the browser, e.g. `https://games.example.com`. When it is not set, the backend derives it from the incoming request, which only works when the reverse proxy forwards the host and scheme (see [`TRUSTED_PROXIES`](/BoardGameTracker/getting-started/proxy/)); the settings page warns when this fallback is in use. Changing the public URL after setup changes the redirect URI, so update the provider registration as well.
 
@@ -71,13 +72,16 @@ The same configuration is available through the API (`POST /api/admin/oidc-provi
   "scopes": "openid profile email",
   "autoProvisionUsers": true,
   "rolesClaimType": "groups",
-  "adminGroupValue": "bgt-admins"
+  "adminGroupValue": "bgt-admins",
+  "defaultRole": "User"
 }
 ```
 
 - **authority** must use `https` (plain `http` is accepted only for local addresses) and must match the `issuer` in the provider's discovery document. Pointing an existing provider at a different authority unlinks every account linked to it, because a user id from one issuer says nothing about the same id at another; users sign in with their password and link the provider again.
-- **autoProvisionUsers** creates a `User` account on first sign-in. When the e-mail already belongs to a local account, the sign-in is refused: log in with the password first and link the provider under **Settings → Account → External logins**.
-- **rolesClaimType** / **adminGroupValue** grant the `Admin` role when the named group is present in that claim on first sign-in.
+- **autoProvisionUsers** creates an account with the default role on first sign-in. When the username or the e-mail already belongs to a local account that is not linked, the sign-in is refused and the user is told to log in with the password first and link the provider under **Settings → Account → External logins**. Accounts are never linked automatically by username or e-mail.
+- **rolesClaimType** / **adminGroupValue** / **defaultRole** map the provider's groups to a role: `Admin` when the named group is present in that claim, otherwise the default role (`User` or `Reader`). For accounts created through the provider this is applied again on every sign-in, so a group change at the provider takes effect at the next sign-in. Without a groups claim and admin group nothing is changed after the first sign-in. The last active admin is never demoted; the server logs a warning instead.
+- A role that an admin sets under **Settings → Account** is a local override and is no longer changed by the provider. **Access → Let the identity provider manage the role** hands it back. Local accounts that were linked to the provider later keep their local role.
+- **Short name** can be changed later. Linked accounts keep working because links are stored per issuer and subject, not per name, but the redirect URIs change, so register the new ones at the provider.
 - Only one provider can be enabled at a time; the login page shows one *Continue with …* button. Switch **Enabled** off to hide the button without losing the configuration.
 - Removing the provider also removes every linked external account; people keep their local password if they have one.
 
@@ -85,9 +89,18 @@ The same configuration is available through the API (`POST /api/admin/oidc-provi
 
 Anyone with a local account can link it to the provider under **Settings → Account → External logins**. Afterwards both the password and the provider sign in to the same account, and the same screen shows when the link was made and lets the user unlink it again. An account created through the provider has no password, so its last external login cannot be unlinked until a password is set (Forgot password, or an admin reset). A sign-in through the provider is refused when the e-mail already belongs to an unlinked local account, so link first.
 
+### How the sign-in is checked
+
+The backend exchanges the code itself and validates the returned id_token before it trusts anything in it: the signature against the provider's published keys (cached, and fetched again when an unknown key id shows up), the issuer from the discovery document, the audience (the client ID, and `azp` when there are several audiences), the expiry with two minutes of clock skew, and the nonce of this sign-in. Only RS256 and ES256 are accepted. The `sub` of the id_token identifies the user; the userinfo endpoint is still called for extra claims when the provider has one, and its `sub` must match. When the provider sends the `iss` parameter on the callback (RFC 9207), it must be the provider's issuer.
+
+### Disabling users and the break-glass account
+
+An admin opens **Settings → Account → Access** next to a user to see the identity provider accounts linked to them, unlink one, or disable the user. A disabled user cannot sign in with a password or through the provider, their refresh tokens are revoked and their provider session is forgotten; an access token that was already issued stays valid until it expires (60 minutes by default). You cannot disable yourself or the last active admin.
+
 ### What to expect
 
 - Sign-in errors come back to the app as a short message (provider refused, e-mail already registered, provisioning disabled, …); the details are in the server log.
 - Local accounts keep working, and admins can still create local users (for example Reader accounts for the kids) while a provider is enabled. Keep the local `admin` password somewhere safe: it is the way in when the provider is down.
-- Removing a user at the provider does not end an existing BoardGameTracker session. Delete the user under **Settings → Account** as well.
+- Removing a user at the provider does not end an existing BoardGameTracker session. Disable or delete the user under **Settings → Account** as well.
+- Signing out of BoardGameTracker after a provider sign-in also signs out at the provider when its discovery document advertises an `end_session_endpoint`; the id_token needed for that stays on the server.
 - For development with the Vite dev server set `PUBLIC_URL=http://localhost:5443` so both the provider round trip and the app hand-off go through the dev proxy.
