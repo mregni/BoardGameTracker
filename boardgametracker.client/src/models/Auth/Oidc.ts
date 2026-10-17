@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export const OIDC_DEFAULT_ROLES = ["User", "Reader"] as const;
+
+export type OidcDefaultRole = (typeof OIDC_DEFAULT_ROLES)[number];
+
 export interface OidcProviderSummary {
 	id: number;
 	name: string;
@@ -13,6 +17,7 @@ export interface OidcProviderConfig extends OidcProviderSummary {
 	hasClientSecret: boolean;
 	scopes: string;
 	autoProvisionUsers: boolean;
+	defaultRole: OidcDefaultRole;
 	authorizationEndpoint: string | null;
 	tokenEndpoint: string | null;
 	userInfoEndpoint: string | null;
@@ -30,13 +35,15 @@ export interface OidcSetup {
 	publicUrlConfigured: boolean;
 	callbackUriTemplate: string;
 	linkCallbackUriTemplate: string;
+	postLogoutRedirectUri: string;
 }
 
 export interface OidcDiscoveryResult {
 	issuer: string;
 	authorizationEndpoint: string;
 	tokenEndpoint: string;
-	userInfoEndpoint: string;
+	userInfoEndpoint: string | null;
+	endSessionEndpoint: string | null;
 	issuerMatchesAuthority: boolean;
 }
 
@@ -74,6 +81,7 @@ export const OidcProviderSchema = z.object({
 	scopes: z.string().trim().min(1, { message: "settings:sso.validation.scopes" }),
 	enabled: z.boolean(),
 	autoProvisionUsers: z.boolean(),
+	defaultRole: z.enum(OIDC_DEFAULT_ROLES),
 	usernameClaimType: optionalText,
 	emailClaimType: optionalText,
 	displayNameClaimType: optionalText,

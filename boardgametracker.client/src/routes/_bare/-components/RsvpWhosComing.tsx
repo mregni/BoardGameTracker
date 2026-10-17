@@ -8,6 +8,7 @@ import { sortRsvps } from "@/utils/sortRsvps";
 
 const groups = [
 	{ state: GameNightRsvpState.Accepted, label: "group.coming", tone: "coming" },
+	{ state: GameNightRsvpState.Maybe, label: "group.maybe", tone: "maybe" },
 	{ state: GameNightRsvpState.Pending, label: "group.pending", tone: "pending" },
 	{ state: GameNightRsvpState.Declined, label: "group.declined", tone: "declined" },
 ] as const;

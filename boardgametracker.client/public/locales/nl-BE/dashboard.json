@@ -1,26 +1,26 @@
 {
   "empty": {
     "title": "Geen spellen in je collectie",
-    "description": "Je hebt nog geen spellen aan je collectie toegevoegd. Voeg je eerste spel toe om je spelsessies en statistieken bij te houden.",
+    "description": "Je hebt nog geen spellen toegevoegd. Voeg je eerste spel toe om sessies te registreren.",
     "button": "Voeg je eerste spel toe"
   },
   "welcome": {
     "title": "Welkom terug, {{name}}",
     "linked_one": "Deze maand speelde je {{played}} van de {{total}} sessie van de groep en won je er {{wins}}.",
-    "linked_other": "Deze maand speelde je {{played}} van de {{total}} sessies van de groep en won je er {{wins}}.",
-    "group_one": "Deze maand speelde de groep {{total}} sessie.",
-    "group_other": "Deze maand speelde de groep {{total}} sessies."
+    "linked_other": "Deze maand speelde je {{played}} van de {{total}} sessies van de groep en won je er {{wins}}."
   },
   "actions": {
     "add-game": "Spel toevoegen",
-    "log-session": "Sessie toevoegen"
+    "log-session": "Sessie registreren"
   },
   "night": {
     "label": "Volgende spelavond",
     "when": "Volgende spelavond · {{when}}",
-    "details": "{{time}} · {{location}} · host {{host}}",
+    "details": "{{time}} · {{location}} · gastheer {{host}}",
     "coming_one": "{{count}} komt",
     "coming_other": "{{count}} komen",
+    "maybe_one": "{{count}} misschien",
+    "maybe_other": "{{count}} misschien",
     "pending_one": "{{count}} zonder antwoord",
     "pending_other": "{{count}} zonder antwoord",
     "declined_one": "{{count}} komt niet",

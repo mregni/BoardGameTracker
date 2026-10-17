@@ -4,7 +4,8 @@
   "whos-coming": "Who's coming",
   "group": {
     "coming": "Coming ({{count}})",
-    "pending": "Maybe or no answer yet ({{count}})",
+    "maybe": "Maybe ({{count}})",
+    "pending": "No answer yet ({{count}})",
     "declined": "Can't come ({{count}})"
   },
   "host": "host",
@@ -17,6 +18,7 @@
   "send-answer": "Send answer",
   "answered-accepted": "You're coming, {{name}}",
   "answered-maybe": "You might come, {{name}}",
+  "answered-pending": "You haven't answered yet, {{name}}",
   "answered-declined": "You can't come, {{name}}",
   "host-notified": "The host has been notified.",
   "change-response": "Change answer",

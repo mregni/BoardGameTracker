@@ -50,6 +50,7 @@ const statistics: DashboardStatistics = {
 		hostId: 1,
 		hostName: "Mikhaël",
 		acceptedCount: 4,
+		maybeCount: 0,
 		pendingCount: 0,
 		declinedCount: 0,
 		suggestedGames: [],
@@ -88,13 +89,13 @@ describe("Dashboard page", () => {
 		expect(container).toBeEmptyDOMElement();
 	});
 
-	it("shows the empty page without games and sends the user to the games", async () => {
+	it("shows the empty page without games and sends the user to add a game", async () => {
 		mocks.data = { statistics: { ...statistics, totalGames: 0 }, settings };
 		renderWithProviders(<mocks.captured.Page />);
 
 		expect(screen.getByText("empty.title")).toBeInTheDocument();
 		await userEvent.click(screen.getByRole("button", { name: "empty.button" }));
-		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games" });
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/add" });
 	});
 
 	it("shows the welcome, the next night, the tiles and the cards", () => {

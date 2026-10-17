@@ -6,7 +6,7 @@
   "all": "All",
   "cancel": "Cancel",
   "dashboard": "Dashboard",
-  "new-session": "Add session",
+  "new-session": "Log session",
   "add-game": "Add game",
   "add-player": "Add player",
   "games": "Games",
@@ -51,7 +51,7 @@
   "none": "None",
   "minutes-abbreviation": "min",
   "edit": "Edit",
-  "close": "close",
+  "close": "Close",
   "details": "details",
   "categories": "categories",
   "try-again": "Try again",
@@ -98,7 +98,7 @@
   "game-play": "this game play",
   "delete": {
     "title": "Delete {{title}}",
-    "description": "Are you sure you want to delete {{title}} and all its content? This cannot be undone!",
+    "description": "Are you sure you want to delete {{title}} and all its content? This cannot be undone.",
     "button": "Delete"
   },
   "no-sessions": {

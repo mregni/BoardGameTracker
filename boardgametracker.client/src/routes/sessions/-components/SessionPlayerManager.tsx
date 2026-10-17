@@ -86,7 +86,9 @@ export const SessionPlayerManager = withForm({
 								</BgtButton>
 							</div>
 							{players.length === 0 && errors.length === 0 && (
-								<BgtText color="primary">{t("player:new.players.none")}</BgtText>
+								<BgtText size="2" color="white" opacity={50}>
+									{t("player:new.players.none")}
+								</BgtText>
 							)}
 							{players.length > 0 && (
 								<ul className="@container flex flex-col gap-1.5">

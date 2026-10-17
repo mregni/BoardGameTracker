@@ -1,12 +1,14 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtInputField } from "@/components/BgtForm";
+import { BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAppForm } from "@/hooks/form";
 import { useModalState } from "@/hooks/useModalState";
 import {
+	type BgtSelectItem,
+	OIDC_DEFAULT_ROLES,
 	type OidcProviderConfig,
 	type OidcProviderForm,
 	OidcProviderSchema,
@@ -29,6 +31,7 @@ const toForm = (provider: OidcProviderConfig | null): OidcProviderForm => ({
 	scopes: provider?.scopes ?? "openid profile email",
 	enabled: provider?.enabled ?? true,
 	autoProvisionUsers: provider?.autoProvisionUsers ?? true,
+	defaultRole: provider?.defaultRole ?? "User",
 	usernameClaimType: provider?.usernameClaimType ?? "",
 	emailClaimType: provider?.emailClaimType ?? "",
 	displayNameClaimType: provider?.displayNameClaimType ?? "",
@@ -73,6 +76,7 @@ const SetupPanel = ({ setup, name }: { setup: OidcSetup; name: string }) => {
 				label={t("sso.setup.link-redirect-uri")}
 				value={setup.linkCallbackUriTemplate.replace("{name}", providerName)}
 			/>
+			<CopyValue label={t("sso.setup.post-logout-redirect-uri")} value={setup.postLogoutRedirectUri} />
 		</SettingsSection>
 	);
 };
@@ -95,6 +99,10 @@ export const SsoSettings = () => {
 		discoveryError,
 	} = useSsoSettings();
 	const deleteModal = useModalState();
+	const roleItems: BgtSelectItem[] = OIDC_DEFAULT_ROLES.map((role) => ({
+		value: role,
+		label: t(`account.users.roles.${role.toLowerCase()}`),
+	}));
 
 	const schema = provider === null ? OidcProviderSchema : OidcProviderUpdateSchema;
 
@@ -128,7 +136,7 @@ export const SsoSettings = () => {
 									type="text"
 									label={t("sso.fields.name.label")}
 									placeholder={t("sso.fields.name.placeholder")}
-									disabled={busy || provider !== null}
+									disabled={busy}
 								/>
 							)}
 						</form.Field>
@@ -167,6 +175,17 @@ export const SsoSettings = () => {
 						)}
 					</form.Field>
 					{provider && (
+						<form.Subscribe selector={(state) => state.values.name}>
+							{(name) =>
+								name.trim() !== provider.name && (
+									<BgtText size="2" color="amber">
+										{t("sso.fields.name.rename-warning")}
+									</BgtText>
+								)
+							}
+						</form.Subscribe>
+					)}
+					{provider && (
 						<form.Subscribe selector={(state) => state.values.authority}>
 							{(authority) =>
 								normalizeAuthority(authority) !== normalizeAuthority(provider.authority) && (
@@ -196,7 +215,10 @@ export const SsoSettings = () => {
 								{t("sso.discovery.token")}: {discovery.tokenEndpoint}
 							</span>
 							<span className="truncate">
-								{t("sso.discovery.userinfo")}: {discovery.userInfoEndpoint}
+								{t("sso.discovery.userinfo")}: {discovery.userInfoEndpoint ?? t("sso.discovery.none")}
+							</span>
+							<span className="truncate">
+								{t("sso.discovery.end-session")}: {discovery.endSessionEndpoint ?? t("sso.discovery.none")}
 							</span>
 						</div>
 					)}
@@ -283,7 +305,15 @@ export const SsoSettings = () => {
 								/>
 							)}
 						</form.Field>
+						<form.Field name="defaultRole">
+							{(field: AnyFieldApi) => (
+								<BgtSelect field={field} label={t("sso.fields.default-role.label")} items={roleItems} disabled={busy} />
+							)}
+						</form.Field>
 					</div>
+					<BgtText size="2" color="gray">
+						{t("sso.fields.role-sync")}
+					</BgtText>
 					<form.Field name="autoProvisionUsers">
 						{(field: AnyFieldApi) => (
 							<SettingsToggle

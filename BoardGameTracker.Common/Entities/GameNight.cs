@@ -7,7 +7,7 @@ namespace BoardGameTracker.Common.Entities;
 public class GameNight: HasId
 {
     public static readonly TimeSpan PlayWindow = TimeSpan.FromHours(12);
-
+    public static readonly TimeSpan PlayOpensBefore = TimeSpan.FromHours(12);
 
     public string Title { get; private set; } = string.Empty;
     public string Notes { get; private set; } = string.Empty;
@@ -119,6 +119,11 @@ public class GameNight: HasId
 
         SuggestedGames.Remove(game);
         return true;
+    }
+
+    public bool HasPlayOpened(DateTime utcNow)
+    {
+        return utcNow >= StartDate.ToUniversalTime() - PlayOpensBefore;
     }
 
     public void End(DateTime endedAt)

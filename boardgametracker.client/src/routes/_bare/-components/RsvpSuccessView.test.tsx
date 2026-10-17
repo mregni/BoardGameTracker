@@ -28,7 +28,8 @@ describe("RsvpSuccessView", () => {
 
 	it.each([
 		[GameNightRsvpState.Accepted, "answered-accepted"],
-		[GameNightRsvpState.Pending, "answered-maybe"],
+		[GameNightRsvpState.Maybe, "answered-maybe"],
+		[GameNightRsvpState.Pending, "answered-pending"],
 		[GameNightRsvpState.Declined, "answered-declined"],
 	])("confirms a %s answer", (state, message) => {
 		renderWithTheme(

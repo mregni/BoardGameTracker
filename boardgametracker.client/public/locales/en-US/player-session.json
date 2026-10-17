@@ -1,7 +1,7 @@
 {
-  "save-new": "Create session",
+  "save-new": "Save session",
   "save-update": "Update session",
-  "title-new": "Add new session",
+  "title-new": "Log session",
   "title-update": "Update session",
   "new": {
     "notifications": {

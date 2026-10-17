@@ -71,6 +71,11 @@ export const NextGameNightCard = (props: Props) => {
 						<span className={pillVariants({ tone: "ok" })}>
 							{t("night.coming", { count: gameNight.acceptedCount })}
 						</span>
+						{gameNight.maybeCount > 0 && (
+							<span className={pillVariants({ tone: "warn" })}>
+								{t("night.maybe", { count: gameNight.maybeCount })}
+							</span>
+						)}
 						{gameNight.pendingCount > 0 && (
 							<span className={pillVariants({ tone: "neutral" })}>
 								{t("night.pending", { count: gameNight.pendingCount })}

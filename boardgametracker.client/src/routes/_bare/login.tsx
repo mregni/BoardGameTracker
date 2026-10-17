@@ -75,9 +75,6 @@ function LoginPage() {
 						<BgtText size="6" weight="bold" color="white">
 							{t("login-title")}
 						</BgtText>
-						<BgtText size="2" color="gray">
-							{t("login-subtitle")}
-						</BgtText>
 					</div>
 
 					<form onSubmit={handleFormSubmit(form)} className="space-y-4">

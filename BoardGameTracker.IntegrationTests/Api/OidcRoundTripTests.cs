@@ -71,6 +71,8 @@ public class OidcRoundTripTests : IAsyncLifetime
         callback.StatusCode.Should().Be(HttpStatusCode.Found);
         callback.Headers.Location!.ToString().Should().Be("/auth-callback?redirect=%2Fgames%2F3");
         callback.Headers.GetValues("Set-Cookie").Should().Contain(c => c.StartsWith($"{OidcController.HandoffCookieName}=", StringComparison.Ordinal) && c.Contains("httponly", StringComparison.OrdinalIgnoreCase));
+        callback.Headers.GetValues("Set-Cookie").Should().Contain(c => c.StartsWith($"{OidcController.SessionCookieName}=", StringComparison.Ordinal) && c.Contains("httponly", StringComparison.OrdinalIgnoreCase));
+        callbackUrl.ToString().Should().NotContain("id_token");
 
         var adopt = await browser.PostAsync("/api/auth/oidc/adopt", null);
         adopt.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -200,6 +202,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         setup.PublicUrlConfigured.Should().BeFalse();
         setup.CallbackUriTemplate.Should().Be("http://localhost/api/auth/oidc/{name}/callback");
         setup.LinkCallbackUriTemplate.Should().Be("http://localhost/api/auth/oidc/{name}/link-callback");
+        setup.PostLogoutRedirectUri.Should().Be("http://localhost/login");
     }
 
     [Fact]
@@ -267,5 +270,212 @@ public class OidcRoundTripTests : IAsyncLifetime
         var adopt = await browser.PostAsync("/api/auth/oidc/adopt", null);
 
         adopt.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Callback_ShouldRejectAnIdTokenThatIsNotSignedByTheProvider()
+    {
+        _idp.TamperIdToken = true;
+        UseIdentity("tampered");
+        using var browser = _fixture.CreateBrowserClient();
+
+        var callback = await SignInAsync(browser);
+
+        callback.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcIdTokenInvalid)}");
+        callback.Headers.TryGetValues("Set-Cookie", out var cookies);
+        (cookies ?? []).Should().NotContain(c => c.StartsWith($"{OidcController.HandoffCookieName}=", StringComparison.Ordinal));
+        var adopt = await browser.PostAsync("/api/auth/oidc/adopt", null);
+        adopt.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Callback_ShouldRejectAnIssParameterOfAnotherIssuer()
+    {
+        _idp.IssuerParameterOverride = "https://evil.example.com";
+        UseIdentity("mixup");
+        using var browser = _fixture.CreateBrowserClient();
+
+        var callback = await SignInAsync(browser);
+
+        callback.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcIssuerMismatch)}");
+    }
+
+    [Fact]
+    public async Task Logout_ShouldReturnTheProvidersSignOutUrl_WithTheIdTokenHint()
+    {
+        UseIdentity("logout");
+        using var browser = _fixture.CreateBrowserClient();
+        await SignInAsync(browser);
+        var idToken = _idp.LastIdToken;
+
+        var logout = await browser.PostAsync("/api/auth/oidc/logout", null);
+
+        logout.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await logout.Content.ReadFromJsonAsync<OidcLogoutResponse>(IntegrationFixture.Json);
+        var url = new Uri(body!.Url!);
+        url.GetLeftPart(UriPartial.Path).Should().Be($"{_idp.Authority}/logout");
+        var query = HttpUtility.ParseQueryString(url.Query);
+        query["id_token_hint"].Should().Be(idToken);
+        query["post_logout_redirect_uri"].Should().Be("http://localhost/login");
+        query["client_id"].Should().Be(_idp.ClientId);
+
+        var again = await browser.PostAsync("/api/auth/oidc/logout", null);
+        (await again.Content.ReadFromJsonAsync<OidcLogoutResponse>(IntegrationFixture.Json))!.Url.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Rename_ShouldKeepTheLinkedAccount()
+    {
+        UseIdentity("rename");
+        LoginResponse first;
+        using (var browser = _fixture.CreateBrowserClient())
+        {
+            await SignInAsync(browser);
+            first = await AdoptAsync(browser);
+        }
+
+        using (var admin = await _fixture.CreateAdminClientAsync())
+        {
+            var update = await admin.PutAsJsonAsync($"/api/admin/oidc-providers/{_providerId}", new UpdateOidcProviderRequest(
+                _providerId, "Fake IdP", _idp.Authority, _idp.ClientId, null, true, "openid profile email", true,
+                null, null, null, null, null, null, null, null, null, null, null, "fake-renamed"));
+            update.StatusCode.Should().Be(HttpStatusCode.OK, await update.Content.ReadAsStringAsync());
+        }
+
+        using var again = _fixture.CreateBrowserClient();
+        var callback = await SignInAsync(again, "fake-renamed");
+        callback.Headers.Location!.ToString().Should().StartWith("/auth-callback?redirect=");
+        var second = await AdoptAsync(again);
+
+        second.User.Id.Should().Be(first.User.Id);
+        using var api = _fixture.CreateClient();
+        api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", second.AccessToken);
+        var logins = await api.GetFromJsonAsync<List<ExternalLoginDto>>("/api/auth/external-logins", IntegrationFixture.Json);
+        logins.Should().ContainSingle().Which.Provider.Should().Be("fake-renamed");
+    }
+
+    [Fact]
+    public async Task Login_ShouldReconcileTheRoleFromTheGroupsClaim_OnEveryLogin()
+    {
+        await ConfigureRoleMappingAsync();
+        UseIdentity("roles");
+        _idp.User["groups"] = new[] { "bgt-admins" };
+
+        using (var browser = _fixture.CreateBrowserClient())
+        {
+            await SignInAsync(browser);
+            (await AdoptAsync(browser)).User.Roles.Should().BeEquivalentTo(Constants.AuthRoles.Admin);
+        }
+
+        _idp.User["groups"] = new[] { "staff" };
+        using (var browser = _fixture.CreateBrowserClient())
+        {
+            await SignInAsync(browser);
+            (await AdoptAsync(browser)).User.Roles.Should().BeEquivalentTo(Constants.AuthRoles.Reader);
+        }
+    }
+
+    [Fact]
+    public async Task Login_ShouldNotDeadEnd_WhenALocalAccountHasTheSameUsername()
+    {
+        UseIdentity("clash");
+        _idp.User["preferred_username"] = "user";
+        using var browser = _fixture.CreateBrowserClient();
+
+        var callback = await SignInAsync(browser);
+
+        callback.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcUsernameTaken)}");
+    }
+
+    [Fact]
+    public async Task Admin_ShouldSeeAndUnlinkTheSsoIdentities_AndADisabledUserCannotSignInWithSso()
+    {
+        UseIdentity("deprovision");
+        using var session = _fixture.CreateBrowserClient();
+        await SignInAsync(session);
+        var login = await AdoptAsync(session);
+
+        using var admin = await _fixture.CreateAdminClientAsync();
+        var users = await admin.GetFromJsonAsync<List<UserDto>>("/api/admin/users", IntegrationFixture.Json);
+        var listed = users!.Single(u => u.Id == login.User.Id);
+        listed.ExternalLoginCount.Should().Be(1);
+        listed.RoleManagedByIdentityProvider.Should().BeTrue();
+
+        var disable = await admin.PostAsync($"/api/admin/users/{login.User.Id}/disable", null);
+        disable.StatusCode.Should().Be(HttpStatusCode.OK, await disable.Content.ReadAsStringAsync());
+        (await disable.Content.ReadFromJsonAsync<UserDto>(IntegrationFixture.Json))!.IsDisabled.Should().BeTrue();
+
+        using (var browser = _fixture.CreateBrowserClient())
+        {
+            var refused = await SignInAsync(browser);
+            refused.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.AccountDisabled)}");
+        }
+
+        using var refresh = new HttpRequestMessage(HttpMethod.Post, "/api/auth/refresh");
+        refresh.Headers.Add(RequireSessionHeaderAttribute.HeaderName, RequireSessionHeaderAttribute.HeaderValue);
+        (await session.SendAsync(refresh)).StatusCode.Should().Be(HttpStatusCode.Unauthorized, "disabling the user revoked the refresh cookie's token");
+
+        using var anonymous = _fixture.CreateClient();
+
+        var adminLogin = await anonymous.PostAsJsonAsync("/api/auth/login", new LoginRequest(IntegrationFixture.AdminUsername, IntegrationFixture.AdminPassword));
+        adminLogin.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var links = await admin.GetFromJsonAsync<List<ExternalLoginDto>>($"/api/admin/users/{login.User.Id}/external-logins", IntegrationFixture.Json);
+        links.Should().ContainSingle();
+        var unlink = await admin.DeleteAsync($"/api/admin/users/{login.User.Id}/external-logins/{links![0].Id}");
+        unlink.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await admin.GetFromJsonAsync<List<ExternalLoginDto>>($"/api/admin/users/{login.User.Id}/external-logins", IntegrationFixture.Json)).Should().BeEmpty();
+
+        var enable = await admin.PostAsync($"/api/admin/users/{login.User.Id}/enable", null);
+        (await enable.Content.ReadFromJsonAsync<UserDto>(IntegrationFixture.Json))!.IsDisabled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Admin_ShouldNotBeAbleToDisableThemselves()
+    {
+        using var admin = await _fixture.CreateAdminClientAsync();
+        var users = await admin.GetFromJsonAsync<List<UserDto>>("/api/admin/users", IntegrationFixture.Json);
+        var self = users!.Single(u => u.Username == IntegrationFixture.AdminUsername);
+
+        var disable = await admin.PostAsync($"/api/admin/users/{self.Id}/disable", null);
+
+        disable.StatusCode.Should().NotBe(HttpStatusCode.OK);
+    }
+
+    private void UseIdentity(string name)
+    {
+        var unique = $"{name}-{Guid.NewGuid():N}"[..20];
+        _idp.User["sub"] = $"sub-{unique}";
+        _idp.User["email"] = $"{unique}@example.com";
+        _idp.User["preferred_username"] = unique;
+        _idp.User["name"] = $"{name} user";
+        _idp.User.Remove("groups");
+    }
+
+    private async Task ConfigureRoleMappingAsync()
+    {
+        using var admin = await _fixture.CreateAdminClientAsync();
+        var update = await admin.PutAsJsonAsync($"/api/admin/oidc-providers/{_providerId}", new UpdateOidcProviderRequest(
+            _providerId, "Fake IdP", _idp.Authority, _idp.ClientId, null, true, "openid profile email", true,
+            null, null, null, null, null, null, "groups", "bgt-admins", null, null, Constants.AuthRoles.Reader));
+        update.StatusCode.Should().Be(HttpStatusCode.OK, await update.Content.ReadAsStringAsync());
+    }
+
+    private static async Task<HttpResponseMessage> SignInAsync(HttpClient browser, string providerName = ProviderName)
+    {
+        using var idpBrowser = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
+        var start = await browser.GetAsync($"/api/auth/oidc/{providerName}/login");
+        start.StatusCode.Should().Be(HttpStatusCode.Found);
+        var idpResponse = await idpBrowser.GetAsync(start.Headers.Location!);
+        var callback = await browser.GetAsync(idpResponse.Headers.Location!.PathAndQuery);
+        callback.StatusCode.Should().Be(HttpStatusCode.Found);
+        return callback;
+    }
+
+    private static async Task<LoginResponse> AdoptAsync(HttpClient browser)
+    {
+        var adopt = await browser.PostAsync("/api/auth/oidc/adopt", null);
+        adopt.StatusCode.Should().Be(HttpStatusCode.OK);
+        return (await adopt.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json))!;
     }
 }

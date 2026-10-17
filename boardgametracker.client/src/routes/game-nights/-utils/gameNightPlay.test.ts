@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { type GameNight, type GameNightDetail, GameNightRsvpState, type Session } from "@/models";
-import { attendeeIds, isNightOver, isNightPast, latestPlays, nightGameIds, splitGameNights } from "./gameNightPlay";
+import {
+	attendeeIds,
+	hasPlayOpened,
+	isNightOver,
+	isNightPast,
+	latestPlays,
+	nightGameIds,
+	splitGameNights,
+} from "./gameNightPlay";
 
 const session = (id: number, gameId: number, end: Date) =>
 	({ id, gameId, start: end, end, minutes: 30, playerSessions: [] }) as unknown as Session;
@@ -38,6 +46,25 @@ describe("gameNightPlay", () => {
 		const ended = { ...detail([]), gameNight: { ...gameNight, endedAt: new Date(2026, 9, 16, 23, 0) } };
 
 		expect(isNightOver(ended, new Date(2026, 9, 16, 23, 5))).toBe(true);
+	});
+
+	it("opens the live night twelve hours before its start", () => {
+		expect(hasPlayOpened(gameNight, new Date(2026, 9, 9, 20, 0))).toBe(false);
+		expect(hasPlayOpened(gameNight, new Date(2026, 9, 16, 7, 59))).toBe(false);
+		expect(hasPlayOpened(gameNight, new Date(2026, 9, 16, 8, 0))).toBe(true);
+		expect(hasPlayOpened(gameNight, new Date(2026, 9, 16, 21, 0))).toBe(true);
+	});
+
+	it("only counts players who are coming as attendees, not maybe", () => {
+		const withMaybe = {
+			...gameNight,
+			invitedPlayers: [
+				...gameNight.invitedPlayers,
+				{ id: 4, playerId: 7, state: GameNightRsvpState.Maybe, player: { name: "Cleo" } },
+			],
+		} as unknown as GameNight;
+
+		expect(attendeeIds(withMaybe)).toEqual([2, 5]);
 	});
 
 	it("lists the players who are coming with the host first", () => {

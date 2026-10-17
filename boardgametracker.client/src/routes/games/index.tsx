@@ -10,7 +10,6 @@ import BgtButton from "@/components/BgtButton/BgtButton";
 import { SearchInputField } from "@/components/BgtForm";
 import { BgtImageCard } from "@/components/BgtImageCard/BgtImageCard";
 import { BgtCardList } from "@/components/BgtLayout/BgtCardList";
-import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -19,6 +18,7 @@ import { BgtText } from "@/components/BgtText/BgtText";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getGames, getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
+import { NoGamesEmptyPage } from "../-components/NoGamesEmptyPage";
 import { filterGames, type GamesFilterSearch, GamesFilters } from "./-components/GamesFilters";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
 import { useDebouncedSearchQuery } from "./-hooks/useDebouncedSearchQuery";
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/games/")({
 function RouteComponent() {
 	const search = Route.useSearch();
 	const { q, category, players, playTime, weight, age } = search;
-	const { t } = useTranslation(["games", "dashboard", "common"]);
+	const { t } = useTranslation(["games", "common"]);
 	const navigate = useNavigate();
 	const { games, isLoading } = useGamesData();
 	const { canWrite } = usePermissions();
@@ -86,15 +86,7 @@ function RouteComponent() {
 	if (isLoading) return null;
 
 	if (games.length === 0) {
-		return (
-			<BgtEmptyPage
-				header={t("title")}
-				icon={Game}
-				title={t("dashboard:empty.title")}
-				description={t("dashboard:empty.description")}
-				action={canWrite ? { onClick: () => navigate({ to: "/games/add" }), label: t("new") } : undefined}
-			/>
-		);
+		return <NoGamesEmptyPage header={t("title")} icon={Game} />;
 	}
 
 	return (

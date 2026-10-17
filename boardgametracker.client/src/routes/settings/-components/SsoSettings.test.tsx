@@ -29,6 +29,7 @@ const setup: OidcSetup = {
 	publicUrlConfigured: true,
 	callbackUriTemplate: "https://games.example.com/api/auth/oidc/{name}/callback",
 	linkCallbackUriTemplate: "https://games.example.com/api/auth/oidc/{name}/link-callback",
+	postLogoutRedirectUri: "https://games.example.com/login",
 };
 
 const provider: OidcProviderConfig = {
@@ -41,6 +42,7 @@ const provider: OidcProviderConfig = {
 	hasClientSecret: true,
 	scopes: "openid profile email",
 	autoProvisionUsers: true,
+	defaultRole: "Reader",
 	authorizationEndpoint: null,
 	tokenEndpoint: null,
 	userInfoEndpoint: null,
@@ -78,6 +80,8 @@ describe("SsoSettings", () => {
 
 		expect(screen.getByText("https://games.example.com/api/auth/oidc/authentik/callback")).toBeInTheDocument();
 		expect(screen.getByText("https://games.example.com/api/auth/oidc/authentik/link-callback")).toBeInTheDocument();
+		expect(screen.getByText("https://games.example.com/login")).toBeInTheDocument();
+		expect(screen.getByText("sso.setup.post-logout-redirect-uri")).toBeInTheDocument();
 		expect(screen.queryByText("sso.setup.public-url-warning")).not.toBeInTheDocument();
 	});
 
@@ -88,12 +92,11 @@ describe("SsoSettings", () => {
 		expect(screen.getByText("sso.setup.public-url-warning")).toBeInTheDocument();
 	});
 
-	it("submits the parsed provider and keeps the name read-only once configured", async () => {
+	it("submits the parsed provider including its default role", async () => {
 		const user = userEvent.setup();
 		mocks.state.provider = provider;
 		renderWithProviders(<SsoSettings />);
 
-		expect(screen.getByLabelText("sso.fields.name.label")).toBeDisabled();
 		expect(screen.getByPlaceholderText("sso.fields.client-secret.unchanged")).toBeInTheDocument();
 		await user.clear(screen.getByLabelText("sso.fields.display-name.label"));
 		await user.type(screen.getByLabelText("sso.fields.display-name.label"), "Work login");
@@ -106,7 +109,40 @@ describe("SsoSettings", () => {
 			clientSecret: "",
 			rolesClaimType: "groups",
 			usernameClaimType: null,
+			defaultRole: "Reader",
 		});
+	});
+
+	it("lets a configured provider be renamed and warns that the redirect URIs change", async () => {
+		const user = userEvent.setup();
+		mocks.state.provider = provider;
+		renderWithProviders(<SsoSettings />);
+
+		const name = screen.getByLabelText("sso.fields.name.label");
+		expect(name).toBeEnabled();
+		expect(screen.queryByText("sso.fields.name.rename-warning")).not.toBeInTheDocument();
+		await user.clear(name);
+		await user.type(name, "kc");
+
+		expect(screen.getByText("sso.fields.name.rename-warning")).toBeInTheDocument();
+		expect(screen.getByText("https://games.example.com/api/auth/oidc/kc/callback")).toBeInTheDocument();
+		await user.click(screen.getByRole("button", { name: "sso.save" }));
+		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
+		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ name: "kc" });
+	});
+
+	it("creates a provider with the User role as default", async () => {
+		const user = userEvent.setup();
+		renderWithProviders(<SsoSettings />);
+
+		await user.type(screen.getByLabelText("sso.fields.name.label"), "idp");
+		await user.type(screen.getByLabelText("sso.fields.display-name.label"), "IdP");
+		await user.type(screen.getByLabelText("sso.fields.authority.label"), "https://idp.example.com");
+		await user.type(screen.getByLabelText("sso.fields.client-id.label"), "bgt");
+		await user.click(screen.getByRole("button", { name: "sso.create" }));
+
+		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
+		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ defaultRole: "User" });
 	});
 
 	it("saves a provider whose name was created through the API with other characters", async () => {
@@ -169,7 +205,8 @@ describe("SsoSettings", () => {
 			issuer: "https://other.example.com",
 			authorizationEndpoint: "https://sso.example.com/auth",
 			tokenEndpoint: "https://sso.example.com/token",
-			userInfoEndpoint: "https://sso.example.com/userinfo",
+			userInfoEndpoint: null,
+			endSessionEndpoint: "https://sso.example.com/logout",
 			issuerMatchesAuthority: false,
 		};
 		renderWithProviders(<SsoSettings />);
@@ -180,6 +217,8 @@ describe("SsoSettings", () => {
 		expect(mocks.state.testDiscovery).toHaveBeenCalledWith("https://sso.example.com");
 		expect(screen.getByText("sso.discovery.issuer-mismatch")).toBeInTheDocument();
 		expect(screen.getByText("sso.discovery.token: https://sso.example.com/token")).toBeInTheDocument();
+		expect(screen.getByText("sso.discovery.userinfo: sso.discovery.none")).toBeInTheDocument();
+		expect(screen.getByText("sso.discovery.end-session: https://sso.example.com/logout")).toBeInTheDocument();
 	});
 
 	it("removes the provider after confirmation", async () => {

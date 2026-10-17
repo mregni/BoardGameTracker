@@ -131,6 +131,9 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
         serviceCollection.AddScoped<ITokenService, TokenService>();
         serviceCollection.AddScoped<IOidcService, OidcService>();
+        serviceCollection.AddSingleton<IOidcConfigurationProvider, OidcConfigurationProvider>();
+        serviceCollection.AddSingleton<IOidcIdTokenValidator, OidcIdTokenValidator>();
+        serviceCollection.AddScoped<IOidcRoleReconciler, OidcRoleReconciler>();
         serviceCollection.AddScoped<IAuthService, AuthService>();
         serviceCollection.AddSingleton<ILoginAttemptTracker, LoginAttemptTracker>();
         serviceCollection.AddSingleton<ISecretProtector, SecretProtector>();

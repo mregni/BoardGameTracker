@@ -46,7 +46,8 @@ const MAX_SUGGESTIONS = 8;
 
 const options = [
 	{ state: GameNightRsvpState.Accepted, label: "rsvp.coming", active: "bg-green-500/20 text-green-300" },
-	{ state: GameNightRsvpState.Pending, label: "common:pending", active: "bg-amber-500/20 text-amber-300" },
+	{ state: GameNightRsvpState.Maybe, label: "rsvp.maybe", active: "bg-amber-500/20 text-amber-300" },
+	{ state: GameNightRsvpState.Pending, label: "common:pending", active: "bg-white/15 text-gray-200" },
 	{ state: GameNightRsvpState.Declined, label: "common:declined", active: "bg-red-500/20 text-red-300" },
 ] as const;
 
@@ -148,7 +149,7 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 											<>
 												<fieldset
 													aria-label={t("rsvp.player-status", { name: rsvp.player.name })}
-													className="col-start-1 col-end-4 row-start-2 grid min-w-0 grid-cols-3 overflow-hidden rounded-lg border border-white/10 md:col-start-3 md:col-end-4 md:row-start-1 md:inline-flex"
+													className="col-start-1 col-end-4 row-start-2 grid min-w-0 grid-cols-4 overflow-hidden rounded-lg border border-white/10 md:col-start-3 md:col-end-4 md:row-start-1 md:inline-flex"
 												>
 													{options.map((option) => {
 														const pressed = rsvp.state === option.state;

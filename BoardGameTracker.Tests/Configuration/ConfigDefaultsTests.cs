@@ -17,7 +17,7 @@ public class ConfigDefaultsTests
         yield return new object[] { AppConfig.ShelfOfShameEnabled, "true" };
         yield return new object[] { AppConfig.ShelfOfShameMonths, "6" };
         yield return new object[] { AppConfig.GameNightsEnabled, "true" };
-        yield return new object[] { AppConfig.PublicUrl, "http://localhost:5444" };
+        yield return new object[] { AppConfig.PublicUrl, "" };
         yield return new object[] { AppConfig.RsvpAuthenticationEnabled, "false" };
         yield return new object[] { BggConfig.ApiKey, "" };
         yield return new object[] { ChangeDetectionConfig.BaseUrl, "" };

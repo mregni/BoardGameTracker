@@ -25,6 +25,7 @@
 			"label": "URL pública",
 			"placeholder": "https://myboardgametracker.app",
 			"invalid": "Introduce una URL http(s) válida",
+			"not-set": "Sin configurar. No se envían invitaciones ni correos para restablecer la contraseña, y el SSO usa la dirección con la que abres la aplicación.",
 			"insecure-warning": "La URL pública usa http mientras BoardGameTracker se abre por https. Los enlaces de los correos, las invitaciones RSVP y las redirecciones SSO usarán la dirección insegura.",
 			"host-mismatch-warning": "La URL pública apunta a un host distinto de {{host}}. Los enlaces de los correos, las invitaciones RSVP y las redirecciones SSO usarán ese host."
 		},
@@ -35,25 +36,21 @@
 		"title": "Ajustes generales",
 		"description": "Cambia los ajustes generales de la aplicación.",
 		"date-time": {
-			"title": "Ajustes de fecha y hora",
-			"description": "Configura el formato de fecha y hora que usa la aplicación.",
+			"title": "Fecha y hora",
 			"date-format": "Formato de fecha",
 			"time-format": "Formato de hora"
 		},
 		"currency": {
-			"title": "Ajustes de moneda",
-			"description": "Configura la moneda que usa la aplicación.",
+			"title": "Moneda",
 			"label": "Moneda"
 		},
 		"language": {
-			"title": "Ajustes de idioma",
-			"description": "Configura el idioma que usa la aplicación.",
+			"title": "Idioma",
 			"label": "Idioma"
 		}
 	},
 	"shame": {
-		"title": "Ajustes de la estantería de la vergüenza",
-		"description": "Configura cómo se calcula y se muestra la estantería de la vergüenza.",
+		"title": "Estantería de la vergüenza",
 		"enabled": {
 			"label": "Activar la estantería de la vergüenza",
 			"description": "Sigue los juegos a los que no has jugado desde hace tiempo."
@@ -63,15 +60,14 @@
 		}
 	},
 	"game-nights": {
-		"title": "Ajustes de noches de juego",
-		"description": "Configura cómo se gestionan y se muestran las noches de juego.",
+		"title": "Noches de juego",
 		"enabled": {
 			"label": "Activar noches de juego",
-			"description": "Activa la función de noches de juego para planificar y gestionar noches de juego con tus amigos."
+			"description": "Planifica noches de juego y recoge las respuestas."
 		},
 		"rsvp-authentication": {
 			"label": "Requerir autenticación para los RSVP",
-			"description": "Si se activa, los jugadores deberán iniciar sesión para responder a las noches de juego. Esto añade una capa extra de seguridad y ayuda a evitar respuestas de spam."
+			"description": "Solo los usuarios con sesión iniciada pueden responder a las invitaciones."
 		}
 	},
 	"advanced": {
@@ -88,11 +84,10 @@
 			}
 		},
 		"updates": {
-			"title": "Ajustes de comprobación de actualizaciones",
-			"description": "Configura cómo comprueba la aplicación si hay actualizaciones.",
+			"title": "Comprobación de actualizaciones",
 			"enabled": {
 				"label": "Activar la comprobación de actualizaciones",
-				"description": "Si se activa, la aplicación buscará e instalará actualizaciones automáticamente."
+				"description": "Busca nuevas versiones y las muestra en la barra lateral."
 			}
 		},
 		"bug": "Informar de un error",
@@ -130,19 +125,19 @@
 	"sidebar": {
 		"general": {
 			"title": "General",
-			"description": "Configuración básica de la aplicación"
+			"description": "Idioma, formatos, URL pública"
 		},
 		"shelf-of-shame": {
 			"title": "Estantería de la vergüenza",
-			"description": "Configura la estantería de la vergüenza"
+			"description": "Cuándo un juego cuenta como sin jugar"
 		},
 		"advanced": {
 			"title": "Avanzado",
-			"description": "Configuración avanzada de la aplicación"
+			"description": "Actualizaciones y borrado de datos"
 		},
 		"game-nights": {
 			"title": "Noches de juego",
-			"description": "Configura las noches de juego"
+			"description": "Planificación y RSVP"
 		},
 		"bgg": {
 			"title": "Integraciones",
@@ -159,14 +154,9 @@
 	},
 	"bgg": {
 		"title": "API de BoardGameGeek",
-		"description": "Configura la clave API de BGG para poder buscar e importar juegos de BoardGameGeek.",
+		"description": "Con una clave API puedes buscar e importar juegos y tu colección de BoardGameGeek.",
 		"status": {
-			"title": "Estado",
-			"configured": "Clave API configurada",
-			"not-configured": "Clave API no configurada",
-			"source-env": "La clave API de BGG está definida mediante una variable de entorno (BGG_API_KEY)",
-			"source-db": "La clave API de BGG está almacenada en la base de datos.",
-			"not-configured-description": "Para usar las funciones de integración con BGG, necesitas una clave API de BGG. Puedes definirla con la variable de entorno BGG_API_KEY o introducirla directamente en los ajustes de abajo."
+			"not-configured": "Clave API no configurada"
 		},
 		"api-key": {
 			"label": "Clave API de BGG",
@@ -176,8 +166,7 @@
 			"clear-hint": "Guarda los ajustes para aplicar la eliminación.",
 			"read-only": "La clave API es de solo lectura.",
 			"read-only-description": "La clave API se gestiona mediante la variable de entorno BGG_API_KEY y no se puede cambiar aquí.",
-			"help-title": "Uso de la API de BGG",
-			"help-description": "La API de BGG permite a la aplicación buscar e importar datos de juegos, importar tu colección y más. Puedes obtener una clave API siguiendo las instrucciones de la <requestPage>página de solicitud</requestPage> de BoardGameGeek."
+			"help-description": "Consigue una clave en la <requestPage>página de solicitud</requestPage> de BoardGameGeek."
 		},
 		"notifications": {
 			"saved": "Clave API de BGG guardada correctamente",
@@ -228,7 +217,6 @@
 		},
 		"users": {
 			"title": "Gestión de usuarios",
-			"description": "Crea y gestiona cuentas de usuario.",
 			"last-login": "Último inicio de sesión",
 			"role": "Rol",
 			"roles": {
@@ -242,7 +230,7 @@
 			},
 			"create-button": "Crear usuario",
 			"create": {
-				"title": "Crear nuevo usuario",
+				"title": "Crear usuario",
 				"description": "Rellena el formulario para crear un nuevo usuario.",
 				"username": {
 					"label": "Nombre de usuario"
@@ -275,14 +263,34 @@
 				"title": "Contraseña temporal",
 				"description": "Contraseña restablecida para \"{{username}}\". Guarda esta contraseña: no se volverá a mostrar.",
 				"copy": "Copiar al portapapeles",
-				"copied": "¡Copiado!"
+				"copied": "Copiado"
 			},
 			"delete": {
 				"title": "Eliminar usuario",
 				"description": "¿Seguro que quieres eliminar a \"{{username}}\"? Esta acción no se puede deshacer."
 			},
 			"never-logged-in": "Nunca",
-			"no-users": "Todavía no hay usuarios"
+			"no-users": "Todavía no hay usuarios",
+			"access": {
+				"button": "Acceso",
+				"title": "Acceso de inicio de sesión",
+				"description": "Ajustes de inicio de sesión e inicio de sesión único de \"{{username}}\".",
+				"enabled": "Puede iniciar sesión",
+				"disabled": "Desactivado",
+				"enable": "Activar",
+				"disable": "Desactivar",
+				"disable-hint": "Desactivar termina todas las sesiones y bloquea el inicio de sesión con contraseña y con inicio de sesión único. Eliminar a alguien en el proveedor de identidad no lo hace por ti.",
+				"sso-title": "Identidades de inicio de sesión único",
+				"sso-none": "No hay ninguna cuenta del proveedor de identidad vinculada.",
+				"sso-linked": "sujeto {{subject}} · vinculado el {{date}}",
+				"unlink": "Desvincular",
+				"unlink-confirm": "Esta cuenta del proveedor de identidad ya no podrá iniciar sesión como \"{{username}}\" hasta que se vuelva a vincular.",
+				"role-managed": "El rol sigue los grupos del proveedor de identidad en cada inicio de sesión.",
+				"role-local": "El rol se definió aquí y el proveedor de identidad no lo cambia.",
+				"manage-role": "Dejar que el proveedor de identidad gestione el rol",
+				"disabled-badge": "Desactivado",
+				"sso-badge": "SSO"
+			}
 		},
 		"notifications": {
 			"profile-updated": "Perfil actualizado correctamente",
@@ -297,7 +305,15 @@
 			"role-update-failed": "No se pudo actualizar el rol del usuario",
 			"user-updated": "Usuario actualizado correctamente",
 			"user-update-failed": "No se pudo actualizar el usuario",
-			"password-reset-failed": "No se pudo restablecer la contraseña"
+			"password-reset-failed": "No se pudo restablecer la contraseña",
+			"user-disabled": "Usuario desactivado",
+			"user-disable-failed": "No se pudo desactivar el usuario",
+			"user-enabled": "Usuario activado",
+			"user-enable-failed": "No se pudo activar el usuario",
+			"external-login-unlinked": "Cuenta del proveedor de identidad desvinculada",
+			"external-login-unlink-failed": "No se pudo desvincular la cuenta del proveedor de identidad",
+			"role-managed": "El proveedor de identidad gestiona ahora este rol",
+			"role-manage-failed": "No se pudo ceder el rol al proveedor de identidad"
 		},
 		"external-logins": {
 			"title": "Inicios de sesión externos",
@@ -324,7 +340,8 @@
 		"fields": {
 			"name": {
 				"label": "Nombre corto",
-				"placeholder": "keycloak"
+				"placeholder": "keycloak",
+				"rename-warning": "Cambiar el nombre corto cambia las URI de redirección de abajo. Registra las nuevas en tu proveedor; las cuentas vinculadas siguen funcionando."
 			},
 			"display-name": {
 				"label": "Texto del botón",
@@ -364,12 +381,16 @@
 			},
 			"auto-provision": {
 				"label": "Crear cuentas en el primer inicio de sesión",
-				"description": "Las personas nuevas reciben automáticamente una cuenta de Usuario. Si se desactiva, solo pueden iniciar sesión las cuentas vinculadas."
+				"description": "Las personas nuevas reciben automáticamente una cuenta con el rol predeterminado. Si se desactiva, solo pueden iniciar sesión las cuentas vinculadas."
 			},
 			"enabled": {
 				"label": "Activado",
 				"description": "Muestra el botón de inicio de sesión en la página de acceso."
-			}
+			},
+			"default-role": {
+				"label": "Rol predeterminado"
+			},
+			"role-sync": "Con un claim de grupos y un grupo de administradores configurados, las cuentas creadas a través del proveedor reciben Administrador si están en ese grupo y, si no, el rol predeterminado, en cada inicio de sesión. El último administrador nunca pierde su rol."
 		},
 		"discovery": {
 			"button": "Probar descubrimiento",
@@ -379,7 +400,9 @@
 			"failed": "No se pudo conectar con el proveedor o no devolvió un documento de descubrimiento.",
 			"authorization": "Autorización",
 			"token": "Token",
-			"userinfo": "Información del usuario"
+			"userinfo": "Información del usuario",
+			"end-session": "Cierre de sesión",
+			"none": "no disponible"
 		},
 		"setup": {
 			"title": "Registro en el proveedor",
@@ -387,7 +410,8 @@
 			"public-url-warning": "No hay ninguna URL pública configurada, así que las URI de redirección se obtienen de la petición actual ({{url}}). Configura la URL pública en General si esa no es la dirección que usa la gente.",
 			"redirect-uri": "URI de redirección de inicio de sesión",
 			"link-redirect-uri": "URI de redirección de vinculación de cuentas",
-			"copy": "Copiar"
+			"copy": "Copiar",
+			"post-logout-redirect-uri": "URI de redirección tras cerrar sesión"
 		},
 		"validation": {
 			"name": "Usa letras minúsculas, dígitos y guiones (1–100 caracteres)",
@@ -409,13 +433,7 @@
 	},
 	"changedetection": {
 		"title": "changedetection.io",
-		"description": "Configura una instancia de changedetection.io para obtener el precio y el stock en vivo de los juegos que tengan un id de watch.",
-		"status": {
-			"configured": "Configurado",
-			"not-configured": "No configurado",
-			"source-db": "Configurado y almacenado en la base de datos.",
-			"not-configured-description": "Proporciona la URL base y la clave API de tu instancia de changedetection.io para habilitar la consulta de precio y stock en vivo."
-		},
+		"description": "Muestra el precio y el stock en vivo de los juegos que tienen un id de watch.",
 		"base-url": {
 			"label": "URL base",
 			"placeholder": "https://changes.example.com",
@@ -427,8 +445,7 @@
 			"clear": "Eliminar clave API",
 			"clear-hint": "Guarda los ajustes para aplicar la eliminación."
 		},
-		"help-title": "Cómo funciona",
-		"help-description": "Añade un id de watch de changedetection.io a un juego para ver su precio y stock actuales. La clave API se encuentra en Ajustes de tu instancia de changedetection.io."
+		"help-description": "La clave API está en Ajustes de tu instancia de changedetection.io."
 	},
 	"integrations": {
 		"name": {
@@ -457,6 +474,7 @@
 			"rate-limited": "Demasiadas solicitudes, inténtalo de nuevo en unos minutos",
 			"misconfigured": "La URL base o la clave API no son válidas",
 			"unexpected-response": "El servicio envió una respuesta inesperada"
-		}
+		},
+		"test-hint": "Guarda una clave API para probar la conexión."
 	}
 }

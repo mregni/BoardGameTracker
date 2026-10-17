@@ -6,7 +6,7 @@
   "all": "Todos",
   "cancel": "Cancelar",
   "dashboard": "Panel",
-  "new-session": "Añadir partida",
+  "new-session": "Registrar partida",
   "add-game": "Añadir juego",
   "add-player": "Añadir jugador",
   "games": "Juegos",
@@ -51,7 +51,7 @@
   "none": "Ninguno",
   "minutes-abbreviation": "min",
   "edit": "Editar",
-  "close": "cerrar",
+  "close": "Cerrar",
   "details": "detalles",
   "categories": "categorías",
   "try-again": "Inténtalo de nuevo",
@@ -98,7 +98,7 @@
   "game-play": "esta partida",
   "delete": {
     "title": "Eliminar {{title}}",
-    "description": "¿Seguro que quieres eliminar {{title}} con todo su contenido? ¡Esta acción no se puede deshacer!",
+    "description": "¿Seguro que quieres eliminar {{title}} con todo su contenido? Esta acción no se puede deshacer.",
     "button": "Eliminar"
   },
   "no-sessions": {

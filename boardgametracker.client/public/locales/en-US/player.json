@@ -31,7 +31,7 @@
     "save": "Create player",
     "title": "Create player",
     "players": {
-      "none": "No players added yet. Add your first player!"
+      "none": "No players in this session yet"
     }
   },
   "update": {

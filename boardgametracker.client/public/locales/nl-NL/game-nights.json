@@ -4,11 +4,14 @@
     "host": "Gastheer · komt altijd",
     "subtitle": "{{title}} · {{date}}",
     "coming": "Komt",
+    "maybe": "Misschien",
     "invited_one": "{{count}} uitgenodigd",
     "invited_other": "{{count}} uitgenodigd",
     "summary": {
       "coming_one": "{{count}} komt",
       "coming_other": "{{count}} komen",
+      "maybe_one": "{{count}} misschien",
+      "maybe_other": "{{count}} misschien",
       "pending_one": "{{count}} in afwachting",
       "pending_other": "{{count}} in afwachting",
       "declined_one": "{{count}} afgewezen",
@@ -32,7 +35,7 @@
     "title": "Spelavond verwijderen",
     "description": "Weet je zeker dat je de spelavond \"{{title}}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt en verwijdert ook alle bijbehorende RSVP's."
   },
-  "title": "Spelavondplanner",
+  "title": "Spelavonden",
   "create": {
     "button": "Spelavond aanmaken",
     "title": "Nieuwe spelavond aanmaken",
@@ -58,6 +61,23 @@
     "when": "{{when}} · {{time}}",
     "host": "Gastheer: {{host}}",
     "open": "Avond openen"
+  },
+  "plan": {
+    "starts": "Begint {{when}} · {{time}}",
+    "rsvps": "RSVP's",
+    "no-games": "Nog geen spellen gepland"
+  },
+  "invites": {
+    "title": "Uitnodigingen mailen?",
+    "description_one": "{{count}} genodigde zonder antwoord krijgt een e-mail met de RSVP-link voor {{title}}:",
+    "description_other": "{{count}} genodigden zonder antwoord krijgen een e-mail met de RSVP-link voor {{title}}:",
+    "nobody": "Niemand zonder antwoord voor {{title}} heeft een e-mailadres, er valt dus niets te versturen.",
+    "without-email_one": "Geen e-mailadres, niet gemaild: {{names}}",
+    "without-email_other": "Geen e-mailadres, niet gemaild: {{names}}",
+    "send_one": "{{count}} e-mail versturen",
+    "send_other": "{{count}} e-mails versturen",
+    "email-disabled": "E-mail is niet ingesteld op de server, dus uitnodigingen kunnen niet gemaild worden.",
+    "public-url-missing": "Stel eerst de publieke URL in onder Instellingen > Algemeen voor je uitnodigingen mailt."
   },
   "form": {
     "title": {
@@ -125,8 +145,8 @@
       "coop-optional": "Dit spel kan coöperatief gespeeld worden: je zet het aan bij het afronden."
     },
     "log": {
-      "button": "Gespeeld spel toevoegen",
-      "title": "Gespeeld spel toevoegen"
+      "button": "Sessie registreren",
+      "title": "Sessie registreren"
     },
     "finish": {
       "button": "Beëindigen",
@@ -157,7 +177,7 @@
   },
   "summary": {
     "games-played": "Gespeelde spellen",
-    "play-time": "Speeltijd",
+    "play-time": "Tijd in spellen",
     "leading": "Vanavond aan de leiding",
     "night-winner": "Winnaar van de avond",
     "no-winner": "Nog geen winnaar",
@@ -168,7 +188,7 @@
     "tonight": "Vanavond gespeeld",
     "after": "Gespeeld",
     "empty": "Nog niets gespeeld. Tik op “Start een spel” zodra een spel begint; datum, tijd, locatie en spelers worden voor je ingevuld.",
-    "empty-after": "Er werd niets gespeeld genoteerd voor deze avond. Gebruik “Gespeeld spel toevoegen” om toe te voegen wat er gespeeld werd."
+    "empty-after": "Er werd niets gespeeld genoteerd voor deze avond. Gebruik “Sessie registreren” om toe te voegen wat er gespeeld werd."
   },
   "table": {
     "title": "Aan tafel",
@@ -218,7 +238,7 @@
       "every-day_other": "ongeveer één per {{count}} dagen",
       "games": "Gespeelde spellen",
       "per-night": "{{value}} per avond",
-      "play-time": "Speeltijd",
+      "play-time": "Tijd in spellen",
       "table": "Gemiddelde tafel",
       "table-hint": "spelers per avond"
     },
@@ -291,7 +311,8 @@
     },
     "records": {
       "title": "Records",
-      "longest-night": "Langste avond",
+      "longest-night": "Langste avondduur",
+      "night-length": "van de start van het eerste spel tot het einde van het laatste",
       "most-games": "Meeste spellen op één avond",
       "biggest-table": "Grootste tafel",
       "latest-finish": "Laatste einde",

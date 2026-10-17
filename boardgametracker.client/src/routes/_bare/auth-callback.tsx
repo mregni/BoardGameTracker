@@ -20,6 +20,8 @@ const callbackSearchSchema = z.object({
 	linked: z.string().optional(),
 });
 
+const SIGN_IN_WITH_PASSWORD_ERRORS = new Set(["error.auth.oidc-username-taken", "error.auth.oidc-email-exists"]);
+
 export const Route = createFileRoute("/_bare/auth-callback")({
 	component: AuthCallbackPage,
 	validateSearch: callbackSearchSchema,
@@ -33,6 +35,7 @@ function AuthCallbackPage() {
 	const isAuthenticated = useAuth((s) => s.isAuthenticated);
 	const { error, redirect, linked } = Route.useSearch();
 	const [failure, setFailure] = useState<string | null>(null);
+	const signInWithPassword = error !== undefined && SIGN_IN_WITH_PASSWORD_ERRORS.has(error);
 	const adoption = useRef<Promise<LoginResponse> | null>(null);
 	const handled = useRef(false);
 
@@ -84,9 +87,15 @@ function AuthCallbackPage() {
 							<BgtText size="2" color="red">
 								{failure}
 							</BgtText>
-							<Link to={isAuthenticated ? "/settings" : "/login"} className="text-primary-text hover:underline">
-								{t(isAuthenticated ? "back-to-settings" : "back-to-login")}
-							</Link>
+							{signInWithPassword ? (
+								<Link to="/login" className="text-primary-text hover:underline">
+									{t("oidc.sign-in-with-password")}
+								</Link>
+							) : (
+								<Link to={isAuthenticated ? "/settings" : "/login"} className="text-primary-text hover:underline">
+									{t(isAuthenticated ? "back-to-settings" : "back-to-login")}
+								</Link>
+							)}
 						</div>
 					</BgtCard>
 				) : (

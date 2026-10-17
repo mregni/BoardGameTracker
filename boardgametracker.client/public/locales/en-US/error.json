@@ -42,7 +42,14 @@
     "last-sign-in-method": "This is your only way to sign in. Set a password first (Forgot password, or ask an admin to reset it), then unlink.",
     "current-password-required": "Enter your current password to change your email address.",
     "email-change-needs-password": "This account only signs in with single sign-on. Set a password first with \"Forgot password\" on the login page, then change the email address.",
-    "oidc-provider-unavailable": "This sign-in provider is not available. Choose another way to sign in or ask your administrator."
+    "oidc-provider-unavailable": "This sign-in provider is not available. Choose another way to sign in or ask your administrator.",
+    "oidc-id-token-invalid": "The identity provider's sign-in token could not be verified. Please try again or ask your administrator.",
+    "oidc-username-taken": "An account with this username already exists. Sign in with your password and link SSO under Settings → Account.",
+    "oidc-provider-name-invalid": "Use lowercase letters, digits and dashes for the short name, and pick one that is not in use.",
+    "oidc-role-not-managed": "This user has no linked identity provider account, so the provider cannot manage their role.",
+    "account-disabled": "This account is disabled. Ask your administrator to enable it.",
+    "cannot-disable-self": "You cannot disable your own account.",
+    "cannot-disable-last-admin": "You cannot disable the last active admin."
   },
   "changedetection": {
     "invalid-base-url": "The changedetection.io URL is not valid",
@@ -105,7 +112,8 @@
     "already-over": "This game night has already taken place",
     "suggested-game-not-owned": "Only games you own can be suggested for a game night",
     "games-running": "Finish or discard the running games before ending the night",
-    "ended": "This game night has ended, reopen it to add games"
+    "ended": "This game night has ended, reopen it to add games",
+    "not-started": "This game night hasn't started yet, games can be played from 12 hours before the start"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD does not meet the password rules (at least 8 characters). Change it or remove it before a factory reset."

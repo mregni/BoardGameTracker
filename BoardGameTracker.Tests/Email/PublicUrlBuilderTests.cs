@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
-using BoardGameTracker.Common.Configuration;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Email;
@@ -64,9 +63,8 @@ public class PublicUrlBuilderTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    [InlineData(ConfigDefaults.DefaultPublicUrl)]
-    [InlineData(ConfigDefaults.DefaultPublicUrl + "/")]
-    public async Task BuildRsvpUrlAsync_ShouldRefuse_WhenThePublicUrlIsUnsetOrStillTheDefault(string? configured)
+    [InlineData("/")]
+    public async Task BuildRsvpUrlAsync_ShouldRefuse_WhenThePublicUrlIsUnset(string? configured)
     {
         SetupPublicUrl(configured);
 
@@ -74,6 +72,27 @@ public class PublicUrlBuilderTests
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.PublicUrlNotConfigured);
         VerifyBaseUrlReadOnce();
+    }
+
+    [Fact]
+    public async Task GetConfiguredBaseUrlAsync_ShouldKeepAnExplicitLocalhostAddress()
+    {
+        SetupPublicUrl("http://localhost:5444");
+
+        var result = await _builder.GetConfiguredBaseUrlAsync();
+
+        result.Should().Be("http://localhost:5444");
+        VerifyBaseUrlReadOnce();
+    }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("", null)]
+    [InlineData("  /  ", null)]
+    [InlineData(" https://games.example.com/ ", "https://games.example.com")]
+    public void Normalize_ShouldTrimAndTreatBlankAsUnset(string? raw, string? expected)
+    {
+        PublicUrlBuilder.Normalize(raw).Should().Be(expected);
     }
 
     [Fact]
@@ -100,8 +119,8 @@ public class PublicUrlBuilderTests
 
     [Theory]
     [InlineData("")]
-    [InlineData(ConfigDefaults.DefaultPublicUrl)]
-    public async Task BuildResetUrlAsync_ShouldRefuse_WhenThePublicUrlIsUnsetOrStillTheDefault(string configured)
+    [InlineData("  ")]
+    public async Task BuildResetUrlAsync_ShouldRefuse_WhenThePublicUrlIsUnset(string configured)
     {
         SetupPublicUrl(configured);
 

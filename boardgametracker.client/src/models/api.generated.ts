@@ -3218,6 +3218,7 @@ export interface paths {
                     code?: string;
                     state?: string;
                     error?: string;
+                    iss?: string;
                 };
                 header?: never;
                 path: {
@@ -3333,6 +3334,7 @@ export interface paths {
                     code?: string;
                     state?: string;
                     error?: string;
+                    iss?: string;
                 };
                 header?: never;
                 path: {
@@ -3353,6 +3355,43 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/oidc/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["OidcLogoutResponse"];
+                        "application/json": components["schemas"]["OidcLogoutResponse"];
+                        "text/json": components["schemas"]["OidcLogoutResponse"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -4583,6 +4622,198 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/users/{id}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UserDto"];
+                        "application/json": components["schemas"]["UserDto"];
+                        "text/json": components["schemas"]["UserDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/users/{id}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UserDto"];
+                        "application/json": components["schemas"]["UserDto"];
+                        "text/json": components["schemas"]["UserDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/users/{id}/role/identity-provider": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UserDto"];
+                        "application/json": components["schemas"]["UserDto"];
+                        "text/json": components["schemas"]["UserDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/users/{id}/external-logins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ExternalLoginDto"][];
+                        "application/json": components["schemas"]["ExternalLoginDto"][];
+                        "text/json": components["schemas"]["ExternalLoginDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/users/{id}/external-logins/{loginId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    loginId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4837,6 +5068,7 @@ export interface components {
             adminGroupValue: string | null;
             iconUrl: string | null;
             buttonColor: string | null;
+            defaultRole: string | null;
         };
         CreatePlayerCommand: {
             name: string;
@@ -4892,6 +5124,8 @@ export interface components {
             hostName: string;
             /** Format: int32 */
             acceptedCount: number;
+            /** Format: int32 */
+            maybeCount: number;
             /** Format: int32 */
             pendingCount: number;
             /** Format: int32 */
@@ -5143,7 +5377,7 @@ export interface components {
             state: components["schemas"]["GameNightRsvpState"];
         };
         /** @enum {string} */
-        GameNightRsvpState: "accepted" | "declined" | "pending";
+        GameNightRsvpState: "accepted" | "declined" | "pending" | "maybe";
         GameNightStatisticsDto: {
             period: components["schemas"]["GameNightStatisticsPeriod"];
             /** Format: int32 */
@@ -5498,8 +5732,12 @@ export interface components {
             issuer: string;
             authorizationEndpoint: string;
             tokenEndpoint: string;
-            userInfoEndpoint: string;
+            userInfoEndpoint: string | null;
+            endSessionEndpoint: string | null;
             issuerMatchesAuthority: boolean;
+        };
+        OidcLogoutResponse: {
+            url: string | null;
         };
         OidcProviderDto: {
             /** Format: int32 */
@@ -5522,6 +5760,7 @@ export interface components {
             adminGroupValue: string | null;
             iconUrl: string | null;
             buttonColor: string | null;
+            defaultRole: string;
         };
         OidcProviderInfo: {
             name: string;
@@ -5541,6 +5780,7 @@ export interface components {
             publicUrlConfigured: boolean;
             callbackUriTemplate: string;
             linkCallbackUriTemplate: string;
+            postLogoutRedirectUri: string;
         };
         /** @enum {string} */
         PersonType: "designer" | "artist" | "publisher";
@@ -5978,6 +6218,8 @@ export interface components {
             adminGroupValue: string | null;
             iconUrl: string | null;
             buttonColor: string | null;
+            defaultRole: string | null;
+            name: string | null;
         };
         UpdatePlayerCommand: {
             name: string;
@@ -6049,6 +6291,10 @@ export interface components {
             lastLoginAt: string | null;
             /** Format: int32 */
             playerId: number | null;
+            isDisabled: boolean;
+            roleManagedByIdentityProvider: boolean;
+            /** Format: int32 */
+            externalLoginCount: number;
         };
         UserInfo: {
             id: string;

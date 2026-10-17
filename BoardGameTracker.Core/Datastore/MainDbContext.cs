@@ -34,6 +34,7 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<OidcProvider> OidcProviders { get; set; }
     public DbSet<ExternalLogin> ExternalLogins { get; set; }
+    public DbSet<OidcSession> OidcSessions { get; set; }
 
     public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
     {
@@ -393,7 +394,7 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
         builder.Entity<ExternalLogin>().ToTable("ExternalLogins", "auth");
         builder.Entity<ExternalLogin>().HasKey(x => x.Id);
         builder.Entity<ExternalLogin>()
-            .HasIndex(x => new { x.Provider, x.ProviderKey })
+            .HasIndex(x => new { x.Issuer, x.ProviderKey })
             .IsUnique();
         builder.Entity<ExternalLogin>()
             .HasOne(x => x.User)
@@ -407,6 +408,17 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
         builder.Entity<OidcProvider>()
             .HasIndex(x => x.Name)
             .IsUnique();
+
+        builder.Entity<OidcSession>().ToTable("OidcSessions", "auth");
+        builder.Entity<OidcSession>().HasKey(x => x.Id);
+        builder.Entity<OidcSession>()
+            .HasIndex(x => x.KeyHash)
+            .IsUnique();
+        builder.Entity<OidcSession>()
+            .HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     private static void SeedDatabase(ModelBuilder builder)

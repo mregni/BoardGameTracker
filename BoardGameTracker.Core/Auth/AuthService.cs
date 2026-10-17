@@ -143,6 +143,13 @@ public class AuthService : IAuthService
         }
 
         var user = existingToken.User!;
+        if (user.IsDisabled)
+        {
+            _logger.LogWarning("Refresh refused for disabled user {UserId}", user.Id);
+            await _tokenService.RevokeAllUserTokensAsync(user.Id, "Account disabled");
+            throw new AuthenticationFailedException(Constants.Errors.AccountDisabled);
+        }
+
         var roles = await _userManager.GetRolesAsync(user);
 
         RefreshToken newRefreshToken;

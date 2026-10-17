@@ -50,6 +50,7 @@ function RouteComponent() {
 					const configuredMonths = settings.shelfOfShameMonthsLimit;
 					const nextNight = statistics.nextGameNight;
 					const showNoNight = canWrite && settings.gameNightsEnabled && !nextNight && shames.length > 0;
+					const hasOwnedGames = statistics.ownedCount > 0;
 
 					return (
 						<>
@@ -64,15 +65,19 @@ function RouteComponent() {
 									</>
 								)}
 							</p>
-							<ShameTiles statistics={statistics} shames={shames} currency={settings.currency} />
-							<ShameFilters
-								filters={filters}
-								counts={counts}
-								months={statistics.months}
-								monthChoices={monthOptions(configuredMonths)}
-								onFiltersChange={setFilters}
-								onMonthsChange={setMonths}
-							/>
+							{hasOwnedGames && (
+								<>
+									<ShameTiles statistics={statistics} shames={shames} currency={settings.currency} />
+									<ShameFilters
+										filters={filters}
+										counts={counts}
+										months={statistics.months}
+										monthChoices={monthOptions(configuredMonths)}
+										onFiltersChange={setFilters}
+										onMonthsChange={setMonths}
+									/>
+								</>
+							)}
 							{showNoNight && (
 								<p className="rounded-lg border border-dashed border-primary/30 px-3 py-2 text-sm text-white/60">
 									{t("plan.no-night")}{" "}
@@ -117,12 +122,14 @@ function RouteComponent() {
 									</ul>
 								</div>
 							)}
-							<MoneyOnTheShelf
-								statistics={statistics}
-								shames={shames}
-								currency={settings.currency}
-								onSortByPrice={() => setFilters((current) => ({ ...current, sort: "price" }))}
-							/>
+							{hasOwnedGames && (
+								<MoneyOnTheShelf
+									statistics={statistics}
+									shames={shames}
+									currency={settings.currency}
+									onSortByPrice={() => setFilters((current) => ({ ...current, sort: "price" }))}
+								/>
+							)}
 						</>
 					);
 				}}

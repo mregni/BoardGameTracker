@@ -264,6 +264,21 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RefreshAsync_ShouldRefuseADisabledUser_AndRevokeTheirSessions()
+    {
+        var user = new ApplicationUser("testuser", "test@test.com", "Test User") { LockoutEnd = DateTimeOffset.MaxValue };
+        var activeToken = CreateActiveRefreshTokenWithUser(user.Id, user);
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("valid-refresh-token")).ReturnsAsync(activeToken);
+
+        var act = () => _authService.RefreshAsync("valid-refresh-token");
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage(Constants.Errors.AccountDisabled);
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("valid-refresh-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync(user.Id, "Account disabled"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task RefreshAsync_ShouldThrowUnauthorizedAccessException_WhenTokenNotFound()
     {
         // Arrange

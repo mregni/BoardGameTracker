@@ -8,6 +8,7 @@ export enum GameNightRsvpState {
 	Accepted = "accepted",
 	Declined = "declined",
 	Pending = "pending",
+	Maybe = "maybe",
 }
 
 export interface GameNightRsvps {

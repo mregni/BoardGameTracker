@@ -3,27 +3,35 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
-import type { GameNight } from "@/models";
+import { useModalState } from "@/hooks/useModalState";
+import type { GameNight, Player } from "@/models";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 import { sendInvitesCall } from "@/services/gameNightService";
 import { apiErrorMessage } from "@/utils/errorUtils";
+import { isPublicUrlConfigured } from "@/utils/publicUrl";
 import { useInviteLink } from "../-hooks/useInviteLink";
+import { SendInvitesModal } from "../-modals/SendInvitesModal";
+import { inviteBlocker, inviteRecipients } from "../-utils/inviteRecipients";
+import { DisabledActionHint } from "./DisabledActionHint";
 
 interface Props {
 	gameNight: GameNight;
+	players: Player[];
 	onEdit: (gameNight: GameNight) => void;
 	onDelete: (gameNight: GameNight) => void;
 }
 
 export const GameNightActions = (props: Props) => {
-	const { gameNight, onEdit, onDelete } = props;
+	const { gameNight, players, onEdit, onDelete } = props;
 	const { t } = useTranslation("game-nights");
 	const { copied, copy } = useInviteLink(gameNight);
 	const { settings } = useSettingsData();
+	const confirmModal = useModalState();
 
 	const sendInvitesMutation = useMutation({
 		mutationFn: () => sendInvitesCall(gameNight.id),
 		onSuccess: (result) => {
+			confirmModal.hide();
 			toast.success(t("card.invites-sent", { sent: result.sent }));
 		},
 		onError: (error) => {
@@ -31,22 +39,33 @@ export const GameNightActions = (props: Props) => {
 		},
 	});
 
+	const blocker = settings
+		? inviteBlocker(settings.emailEnabled, isPublicUrlConfigured(settings.publicUrl))
+		: "email-disabled";
+
 	return (
 		<div className="flex flex-wrap items-center gap-2 md:justify-end">
 			<BgtButton variant="cancel" size="1" onClick={copy} disabled={copied}>
 				{copied ? t("card.copied") : t("card.copy-link")}
 			</BgtButton>
-			{settings?.emailEnabled && (
-				<BgtButton
-					variant="cancel"
-					size="1"
-					onClick={() => sendInvitesMutation.mutate()}
-					disabled={sendInvitesMutation.isPending}
-				>
+			{blocker ? (
+				<DisabledActionHint label={t("card.email-invites")} hint={t(`invites.${blocker}`)} />
+			) : (
+				<BgtButton variant="cancel" size="1" onClick={confirmModal.show} disabled={sendInvitesMutation.isPending}>
 					{t("card.email-invites")}
 				</BgtButton>
 			)}
 			<BgtEditDeleteButtons onEdit={() => onEdit(gameNight)} onDelete={() => onDelete(gameNight)} />
+			{confirmModal.isOpen && (
+				<SendInvitesModal
+					open={confirmModal.isOpen}
+					close={confirmModal.hide}
+					title={gameNight.title}
+					recipients={inviteRecipients(gameNight, players)}
+					isPending={sendInvitesMutation.isPending}
+					onConfirm={() => sendInvitesMutation.mutate()}
+				/>
+			)}
 		</div>
 	);
 };

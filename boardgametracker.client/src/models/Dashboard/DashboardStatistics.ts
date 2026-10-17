@@ -48,6 +48,7 @@ export interface DashboardGameNight {
 	hostId: number;
 	hostName: string;
 	acceptedCount: number;
+	maybeCount: number;
 	pendingCount: number;
 	declinedCount: number;
 	suggestedGames: DashboardGame[];

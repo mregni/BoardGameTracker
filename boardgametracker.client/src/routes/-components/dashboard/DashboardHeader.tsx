@@ -24,16 +24,16 @@ export const DashboardHeader = (props: Props) => {
 				<BgtHeading as="h1" size="7">
 					{linkedPlayer ? t("welcome.title", { name: linkedPlayer.name }) : t("common:dashboard")}
 				</BgtHeading>
-				<BgtText size="2" color="gray">
-					{linkedPlayer
-						? t("welcome.linked", {
-								count: sessionsThisMonth,
-								total: integer(sessionsThisMonth),
-								played: integer(linkedPlayer.sessionsThisMonth),
-								wins: integer(linkedPlayer.winsThisMonth),
-							})
-						: t("welcome.group", { count: sessionsThisMonth, total: integer(sessionsThisMonth) })}
-				</BgtText>
+				{linkedPlayer && (
+					<BgtText size="2" color="gray">
+						{t("welcome.linked", {
+							count: sessionsThisMonth,
+							total: integer(sessionsThisMonth),
+							played: integer(linkedPlayer.sessionsThisMonth),
+							wins: integer(linkedPlayer.winsThisMonth),
+						})}
+					</BgtText>
+				)}
 			</div>
 			{canWrite && (
 				<div className="flex gap-2">

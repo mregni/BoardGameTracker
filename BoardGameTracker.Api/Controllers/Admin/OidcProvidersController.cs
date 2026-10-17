@@ -2,6 +2,7 @@ using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Email.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -36,7 +37,8 @@ public class OidcProvidersController : ControllerBase
             baseUrl,
             configured,
             $"{baseUrl}/api/auth/oidc/{{name}}/callback",
-            $"{baseUrl}/api/auth/oidc/{{name}}/link-callback"));
+            $"{baseUrl}/api/auth/oidc/{{name}}/link-callback",
+            OidcLogoutUrl.PostLogoutRedirectUri(baseUrl)));
     }
 
     [HttpPost("test-discovery")]
@@ -72,7 +74,7 @@ public class OidcProvidersController : ControllerBase
             request.AuthorizationEndpoint, request.TokenEndpoint, request.UserInfoEndpoint,
             request.UsernameClaimType, request.EmailClaimType, request.DisplayNameClaimType,
             request.RolesClaimType, request.AdminGroupValue,
-            request.IconUrl, request.ButtonColor);
+            request.IconUrl, request.ButtonColor, request.DefaultRole);
 
         return CreatedAtAction(nameof(GetProvider), new { id = provider.Id }, provider.ToDto());
     }
@@ -87,7 +89,7 @@ public class OidcProvidersController : ControllerBase
             request.AuthorizationEndpoint, request.TokenEndpoint, request.UserInfoEndpoint,
             request.UsernameClaimType, request.EmailClaimType, request.DisplayNameClaimType,
             request.RolesClaimType, request.AdminGroupValue,
-            request.IconUrl, request.ButtonColor);
+            request.IconUrl, request.ButtonColor, request.DefaultRole, request.Name);
 
         return Ok(provider.ToDto());
     }

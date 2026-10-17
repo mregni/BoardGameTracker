@@ -1,11 +1,9 @@
 {
-  "add": "Add session",
+  "add": "Log session",
   "sessions": "View sessions",
   "no-sessions": {
     "title": "No sessions logged yet",
-    "description": "Start tracking your game sessions to see detailed statistics, player performance, and session history. Log your first session to unlock all the analytics!",
-    "button": "Log your first session",
-    "extra": "Session data includes players, scores, duration, and more"
+    "description": "Log a session of this game to see its statistics."
   },
   "notifications": {
     "created": "Game is successfully created",
@@ -46,7 +44,7 @@
   },
   "expansions": {
     "title": "Expansions",
-    "description": "Add/delete expansions to this game.",
+    "description": "Add or remove expansions for this game.",
     "update": "Update expansions",
     "none": "No expansions added to this game.",
     "no-game": "Select a game to view expansions.",
@@ -80,18 +78,18 @@
     "download": "Download"
   },
   "new": {
-    "description": "Choose a method to create a new game.",
-    "save": "Create game",
-    "title": "Create new game",
+    "description": "Choose how to add a game.",
+    "save": "Add game",
+    "title": "Add game",
     "bgg-title": "Add one game from BGG",
     "bgg-subtext": "Import game data from BoardGameGeek",
     "bgg-description": "Enter required fields to import a game from BoardGameGeek",
     "manual-title": "Manual input",
-    "manual-subtext": "Manual input data to create a game",
+    "manual-subtext": "Type in the details yourself",
     "bgg-import-title": "Import BGG collection",
     "bgg-import-subtext": "Import your game collection from BoardGameGeek",
     "manual": {
-      "title": "Create game",
+      "title": "Add game",
       "game-title": {
         "required": "Game title is required",
         "label": "Game title"
@@ -158,7 +156,7 @@
     "label": "Game has scoring"
   },
   "charts": {
-    "player-count": "Games by player count",
+    "player-count": "Sessions by player count",
     "games-week-day": "Games by day of the week",
     "scoring": "Scoring per game/player",
     "top-scoring": {
@@ -173,7 +171,7 @@
     "top-players": "Top players",
     "scoring-results": "Scoring results",
     "recent-sessions": "Recent sessions",
-    "session-count-per-day": "Session count per day",
+    "session-count-per-day": "Sessions by weekday",
     "analytics": "Analytics"
   },
   "watch-id": {

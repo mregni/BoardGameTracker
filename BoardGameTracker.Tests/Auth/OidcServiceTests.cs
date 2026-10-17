@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Moq;
 using Xunit;
 
@@ -24,6 +26,10 @@ public class OidcServiceTests : IDisposable
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
     private readonly MemoryCache _cache;
     private readonly Mock<ILogger<OidcService>> _loggerMock;
+    private readonly Mock<IOidcConfigurationProvider> _configurationsMock = new();
+    private readonly Mock<IOidcIdTokenValidator> _idTokenValidatorMock = new();
+    private readonly Mock<IOidcRoleReconciler> _roleReconcilerMock = new();
+    private readonly Mock<ISecretProtector> _secretProtectorMock = new();
     private readonly OidcService _service;
 
     public OidcServiceTests()
@@ -48,7 +54,11 @@ public class OidcServiceTests : IDisposable
             _tokenServiceMock.Object,
             _httpClientFactoryMock.Object,
             _cache,
-            Mock.Of<ISecretProtector>(),
+            _secretProtectorMock.Object,
+            _configurationsMock.Object,
+            _idTokenValidatorMock.Object,
+            _roleReconcilerMock.Object,
+            Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }),
             _loggerMock.Object);
 
         _userManagerMock.Invocations.Clear();
@@ -66,6 +76,10 @@ public class OidcServiceTests : IDisposable
         _userManagerMock.VerifyNoOtherCalls();
         _tokenServiceMock.VerifyNoOtherCalls();
         _httpClientFactoryMock.VerifyNoOtherCalls();
+        _configurationsMock.VerifyNoOtherCalls();
+        _idTokenValidatorMock.VerifyNoOtherCalls();
+        _roleReconcilerMock.VerifyNoOtherCalls();
+        _secretProtectorMock.VerifyNoOtherCalls();
     }
 
     private static OidcProvider CreateDisabledProvider(string name)
@@ -148,9 +162,9 @@ public class OidcServiceTests : IDisposable
     [Fact]
     public async Task GetExternalLoginsAsync_ShouldReturnOnlyLoginsOfThatUser()
     {
-        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "key-1", "Google"));
-        _context.ExternalLogins.Add(new ExternalLogin("user-1", "github", "key-2"));
-        _context.ExternalLogins.Add(new ExternalLogin("user-2", "google", "key-3"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "https://accounts.google.com", "key-1", "Google"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-1", "github", "https://github.com", "key-2"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-2", "google", "https://accounts.google.com", "key-3"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await _service.GetExternalLoginsAsync("user-1");
@@ -178,7 +192,7 @@ public class OidcServiceTests : IDisposable
     public async Task UnlinkExternalLoginAsync_ShouldRemoveLogin_WhenLoginBelongsToUser()
     {
         _context.Users.Add(new ApplicationUser("alice", "alice@example.com", "Alice") { Id = "user-1", PasswordHash = "hash" });
-        var login = new ExternalLogin("user-1", "google", "key-1");
+        var login = new ExternalLogin("user-1", "google", "https://accounts.google.com", "key-1");
         _context.ExternalLogins.Add(login);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -193,7 +207,7 @@ public class OidcServiceTests : IDisposable
     public async Task UnlinkExternalLoginAsync_ShouldRefuse_WhenItIsThePasswordlessUsersOnlySignInMethod()
     {
         _context.Users.Add(new ApplicationUser("sso-only", "sso@example.com", "Sso") { Id = "user-1" });
-        var login = new ExternalLogin("user-1", "google", "key-1");
+        var login = new ExternalLogin("user-1", "google", "https://accounts.google.com", "key-1");
         _context.ExternalLogins.Add(login);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -208,8 +222,8 @@ public class OidcServiceTests : IDisposable
     public async Task UnlinkExternalLoginAsync_ShouldAllowAPasswordlessUser_ToRemoveOneOfSeveralLogins()
     {
         _context.Users.Add(new ApplicationUser("sso-only", "sso@example.com", "Sso") { Id = "user-1" });
-        var first = new ExternalLogin("user-1", "google", "key-1");
-        var second = new ExternalLogin("user-1", "keycloak", "key-2");
+        var first = new ExternalLogin("user-1", "google", "https://accounts.google.com", "key-1");
+        var second = new ExternalLogin("user-1", "keycloak", "https://keycloak.example.com", "key-2");
         _context.ExternalLogins.AddRange(first, second);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -232,7 +246,7 @@ public class OidcServiceTests : IDisposable
     [Fact]
     public async Task UnlinkExternalLoginAsync_ShouldThrowEntityNotFoundException_WhenLoginBelongsToAnotherUser()
     {
-        var login = new ExternalLogin("user-2", "google", "key-1");
+        var login = new ExternalLogin("user-2", "google", "https://accounts.google.com", "key-1");
         _context.ExternalLogins.Add(login);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -242,6 +256,140 @@ public class OidcServiceTests : IDisposable
 
         var remaining = await _context.ExternalLogins.ToListAsync(TestContext.Current.CancellationToken);
         remaining.Should().ContainSingle();
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region EndSessionAsync
+
+    private async Task<(OidcProvider Provider, string Key)> AddSessionAsync(DateTime expiresAt, bool enabled = true)
+    {
+        var provider = new OidcProvider("kc", "Keycloak", "https://sso.example.com/realms/bgt", "bgt");
+        if (!enabled)
+        {
+            provider.Update("Keycloak", provider.Authority, "bgt", null, false, "openid", true, null, null, null, null, null, null, null, null, null, null);
+        }
+
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        const string key = "session-key";
+        _context.OidcSessions.Add(new OidcSession(OidcService.HashKey(key), "user-1", provider.Id, "protected-id-token", expiresAt));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        return (provider, key);
+    }
+
+    private void SetUpMetadata(string? endSessionEndpoint)
+    {
+        _configurationsMock.Setup(x => x.GetAsync("https://sso.example.com/realms/bgt", default)).ReturnsAsync(new OpenIdConnectConfiguration
+        {
+            Issuer = "https://sso.example.com/realms/bgt",
+            EndSessionEndpoint = endSessionEndpoint,
+        });
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("unknown-key")]
+    public async Task EndSessionAsync_ShouldReturnNull_WithoutAKnownSession(string? key)
+    {
+        var result = await _service.EndSessionAsync(key, "https://games.example.com");
+
+        result.Should().BeNull();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EndSessionAsync_ShouldBuildTheSignOutUrl_AndForgetTheSession()
+    {
+        var (_, key) = await AddSessionAsync(DateTime.UtcNow.AddDays(1));
+        SetUpMetadata("https://sso.example.com/realms/bgt/protocol/openid-connect/logout");
+        _secretProtectorMock.Setup(x => x.Unprotect("protected-id-token")).Returns("raw.id.token");
+
+        var result = await _service.EndSessionAsync(key, "https://games.example.com/");
+
+        result.Should().Be("https://sso.example.com/realms/bgt/protocol/openid-connect/logout?id_token_hint=raw.id.token&post_logout_redirect_uri=https%3A%2F%2Fgames.example.com%2Flogin&client_id=bgt");
+        (await _context.OidcSessions.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        _configurationsMock.Verify(x => x.GetAsync("https://sso.example.com/realms/bgt", default), Times.Once);
+        _secretProtectorMock.Verify(x => x.Unprotect("protected-id-token"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EndSessionAsync_ShouldReturnNull_WhenTheProviderHasNoSignOutEndpoint()
+    {
+        var (_, key) = await AddSessionAsync(DateTime.UtcNow.AddDays(1));
+        SetUpMetadata(null);
+
+        var result = await _service.EndSessionAsync(key, "https://games.example.com");
+
+        result.Should().BeNull();
+        (await _context.OidcSessions.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        _configurationsMock.Verify(x => x.GetAsync("https://sso.example.com/realms/bgt", default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EndSessionAsync_ShouldReturnNull_WhenTheSignOutEndpointIsInsecure()
+    {
+        var (_, key) = await AddSessionAsync(DateTime.UtcNow.AddDays(1));
+        SetUpMetadata("http://sso.example.com/logout");
+
+        var result = await _service.EndSessionAsync(key, "https://games.example.com");
+
+        result.Should().BeNull();
+        _configurationsMock.Verify(x => x.GetAsync("https://sso.example.com/realms/bgt", default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EndSessionAsync_ShouldReturnNull_ForAnExpiredSession()
+    {
+        var (_, key) = await AddSessionAsync(DateTime.UtcNow.AddMinutes(-1));
+
+        var result = await _service.EndSessionAsync(key, "https://games.example.com");
+
+        result.Should().BeNull();
+        (await _context.OidcSessions.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EndSessionAsync_ShouldReturnNull_WhenTheProviderWasDisabled()
+    {
+        var (_, key) = await AddSessionAsync(DateTime.UtcNow.AddDays(1), enabled: false);
+
+        var result = await _service.EndSessionAsync(key, "https://games.example.com");
+
+        result.Should().BeNull();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EndSessionAsync_ShouldReturnNull_WhenTheProviderCannotBeReached()
+    {
+        var (_, key) = await AddSessionAsync(DateTime.UtcNow.AddDays(1));
+        _configurationsMock.Setup(x => x.GetAsync("https://sso.example.com/realms/bgt", default))
+            .ThrowsAsync(new DomainException(Constants.Errors.OidcDiscoveryFailed));
+
+        var result = await _service.EndSessionAsync(key, "https://games.example.com");
+
+        result.Should().BeNull();
+        _configurationsMock.Verify(x => x.GetAsync("https://sso.example.com/realms/bgt", default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CleanupExpiredSessionsAsync_ShouldOnlyRemoveExpiredSessions()
+    {
+        _context.OidcSessions.Add(new OidcSession("old", "user-1", 1, "t", DateTime.UtcNow.AddMinutes(-1)));
+        _context.OidcSessions.Add(new OidcSession("new", "user-1", 1, "t", DateTime.UtcNow.AddDays(1)));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _service.CleanupExpiredSessionsAsync();
+
+        (await _context.OidcSessions.SingleAsync(TestContext.Current.CancellationToken)).KeyHash.Should().Be("new");
         VerifyNoOtherCalls();
     }
 

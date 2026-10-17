@@ -3,11 +3,11 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
+using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -17,7 +17,7 @@ namespace BoardGameTracker.Tests.Auth;
 public class OidcProviderServiceTests : IDisposable
 {
     private readonly MainDbContext _context;
-    private readonly MemoryCache _cache;
+    private readonly Mock<IOidcConfigurationProvider> _configurationsMock = new();
     private readonly Mock<ILogger<OidcProviderService>> _loggerMock;
     private readonly SecretProtector _secretProtector;
     private readonly OidcProviderService _service;
@@ -29,16 +29,14 @@ public class OidcProviderServiceTests : IDisposable
             .Options;
         _context = new MainDbContext(options);
 
-        _cache = new MemoryCache(new MemoryCacheOptions());
         _loggerMock = new Mock<ILogger<OidcProviderService>>();
         _secretProtector = new SecretProtector(new EphemeralDataProtectionProvider(), Mock.Of<ILogger<SecretProtector>>());
-        _service = new OidcProviderService(_context, _cache, _secretProtector, _loggerMock.Object);
+        _service = new OidcProviderService(_context, _configurationsMock.Object, _secretProtector, _loggerMock.Object);
     }
 
     public void Dispose()
     {
         _context.Dispose();
-        _cache.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -382,7 +380,6 @@ public class OidcProviderServiceTests : IDisposable
         var provider = new OidcProvider("github", "GitHub", "https://github.com", "old-id");
         _context.OidcProviders.Add(provider);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
-        _cache.Set("oidc_discovery_github", "cached-document");
 
         await _service.UpdateAsync(
             id: provider.Id,
@@ -404,7 +401,7 @@ public class OidcProviderServiceTests : IDisposable
             iconUrl: null,
             buttonColor: null);
 
-        _cache.TryGetValue("oidc_discovery_github", out _).Should().BeFalse();
+        _configurationsMock.Verify(x => x.Invalidate("https://github.com"), Times.Exactly(2));
     }
 
     [Fact]
@@ -491,9 +488,9 @@ public class OidcProviderServiceTests : IDisposable
     {
         var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
         _context.OidcProviders.Add(provider);
-        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "key-1"));
-        _context.ExternalLogins.Add(new ExternalLogin("user-2", "google", "key-2"));
-        _context.ExternalLogins.Add(new ExternalLogin("user-3", "other", "key-3"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "https://accounts.google.com", "key-1"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-2", "google", "https://accounts.google.com", "key-2"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-3", "other", "https://other.example.com", "key-3"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         await _service.DeleteAsync(provider.Id);
@@ -507,8 +504,8 @@ public class OidcProviderServiceTests : IDisposable
     {
         var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
         _context.OidcProviders.Add(provider);
-        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "key-1"));
-        _context.ExternalLogins.Add(new ExternalLogin("user-3", "other", "key-3"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "https://accounts.google.com", "key-1"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-3", "other", "https://other.example.com", "key-3"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         await UpdateAuthorityAsync(provider.Id, "https://sso.example.com/realms/games");
@@ -525,7 +522,7 @@ public class OidcProviderServiceTests : IDisposable
     {
         var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
         _context.OidcProviders.Add(provider);
-        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "key-1"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "https://accounts.google.com", "key-1"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         await UpdateAuthorityAsync(provider.Id, authority);
@@ -559,11 +556,112 @@ public class OidcProviderServiceTests : IDisposable
         var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
         _context.OidcProviders.Add(provider);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
-        _cache.Set("oidc_discovery_google", "cached-document");
 
         await _service.DeleteAsync(provider.Id);
 
-        _cache.TryGetValue("oidc_discovery_google", out _).Should().BeFalse();
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldRenameTheProvider_AndKeepItsLinksOnTheSameIssuer()
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "https://accounts.google.com", "key-1"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-2", "google", null, "key-2"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-3", "other", "https://other.example.com", "key-3"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await _service.UpdateAsync(provider.Id, "Google", "https://accounts.google.com", "client-id", null, true,
+            "openid", true, null, null, null, null, null, null, null, null, null, null, name: "google-sso");
+
+        result.Name.Should().Be("google-sso");
+        var logins = await _context.ExternalLogins.OrderBy(x => x.UserId).ToListAsync(TestContext.Current.CancellationToken);
+        logins.Select(x => x.Provider).Should().Equal("google-sso", "google-sso", "other");
+        logins[0].Issuer.Should().Be("https://accounts.google.com");
+    }
+
+    [Theory]
+    [InlineData("Google SSO")]
+    [InlineData("-google")]
+    [InlineData("google/../x")]
+    public async Task UpdateAsync_ShouldRejectAnInvalidNewName(string name)
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var act = () => _service.UpdateAsync(provider.Id, "Google", "https://accounts.google.com", "client-id", null, true,
+            "openid", true, null, null, null, null, null, null, null, null, null, null, name: name);
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.OidcProviderNameInvalid);
+        (await _context.OidcProviders.SingleAsync(TestContext.Current.CancellationToken)).Name.Should().Be("google");
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldKeepTheName_WhenNoNewNameIsSent()
+    {
+        var provider = new OidcProvider("legacy_Name", "Legacy", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await _service.UpdateAsync(provider.Id, "Legacy", "https://accounts.google.com", "client-id", null, true,
+            "openid", true, null, null, null, null, null, null, null, null, null, null, name: "legacy_Name");
+
+        result.Name.Should().Be("legacy_Name");
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldDropTheOidcSessions_WhenTheAuthorityPointsElsewhere()
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _context.OidcSessions.Add(new OidcSession("hash", "user-1", provider.Id, "token", DateTime.UtcNow.AddDays(1)));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await UpdateAuthorityAsync(provider.Id, "https://sso.example.com/realms/games");
+
+        (await _context.OidcSessions.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _configurationsMock.Verify(x => x.Invalidate("https://sso.example.com/realms/games"), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("Reader", "Reader")]
+    [InlineData(null, "User")]
+    public async Task CreateAsync_ShouldStoreTheDefaultRole(string? defaultRole, string expected)
+    {
+        var result = await _service.CreateAsync("kc", "Keycloak", "https://sso.example.com", "bgt", null, "openid", true,
+            null, null, null, null, null, null, null, null, null, null, defaultRole);
+
+        result.DefaultRole.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("Admin")]
+    [InlineData("Owner")]
+    public async Task CreateAsync_ShouldRejectADefaultRoleOtherThanUserOrReader(string defaultRole)
+    {
+        var act = () => _service.CreateAsync("kc", "Keycloak", "https://sso.example.com", "bgt", null, "openid", true,
+            null, null, null, null, null, null, null, null, null, null, defaultRole);
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidRole);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldChangeTheDefaultRole_OnlyWhenOneIsSent()
+    {
+        var provider = new OidcProvider("kc", "Keycloak", "https://sso.example.com", "bgt");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _service.UpdateAsync(provider.Id, "Keycloak", "https://sso.example.com", "bgt", null, true, "openid", true,
+            null, null, null, null, null, null, null, null, null, null, "Reader");
+        var unchanged = await _service.UpdateAsync(provider.Id, "Keycloak", "https://sso.example.com", "bgt", null, true, "openid", true,
+            null, null, null, null, null, null, null, null, null, null);
+
+        unchanged.DefaultRole.Should().Be("Reader");
     }
 
     #endregion
