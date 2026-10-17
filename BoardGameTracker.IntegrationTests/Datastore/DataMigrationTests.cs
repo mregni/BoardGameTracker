@@ -14,6 +14,7 @@ namespace BoardGameTracker.IntegrationTests.Datastore;
 public class DataMigrationTests : IAsyncLifetime
 {
     private const string BeforeDataRepairs = "20260827220101_AddChangeDetectionWatchIdToGame";
+    private const string BeforePublicUrlCleanup = "20261015230803_AddCoopGames";
     private const string AddLaterGameColumns = "ALTER TABLE \"Games\" ADD COLUMN \"HasCoopMode\" boolean NOT NULL DEFAULT false, ADD COLUMN \"CoopByDefault\" boolean NOT NULL DEFAULT false";
     private const string DropLaterGameColumns = "ALTER TABLE \"Games\" DROP COLUMN \"HasCoopMode\", DROP COLUMN \"CoopByDefault\"";
 
@@ -105,6 +106,32 @@ public class DataMigrationTests : IAsyncLifetime
                 .Should().Equal("USD");
             (await context.Languages.Select(l => l.TranslationKey).ToListAsync(TestContext.Current.CancellationToken))
                 .Should().OnlyHaveUniqueItems();
+        }
+    }
+
+    [Theory]
+    [InlineData("http://localhost:5444", "")]
+    [InlineData("http://localhost:5444/", "http://localhost:5444/")]
+    [InlineData("https://games.example.com", "https://games.example.com")]
+    [InlineData("", "")]
+    public async Task UpgradingFromTheSeededPublicUrl_ShouldOnlyClearTheExactOldDefault(string stored, string expected)
+    {
+        await using (var context = CreateContext())
+        {
+            await context.GetService<IMigrator>().MigrateAsync(BeforePublicUrlCleanup, TestContext.Current.CancellationToken);
+            context.Config.Add(new Config { Key = "public_url", Value = stored });
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        await using (var context = CreateContext())
+        {
+            await context.Database.MigrateAsync(TestContext.Current.CancellationToken);
+        }
+
+        await using (var context = CreateContext())
+        {
+            (await context.Config.Where(c => c.Key == "public_url").Select(c => c.Value).SingleAsync(TestContext.Current.CancellationToken))
+                .Should().Be(expected);
         }
     }
 

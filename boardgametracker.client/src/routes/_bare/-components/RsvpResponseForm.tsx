@@ -2,7 +2,7 @@ import { cx } from "class-variance-authority";
 import { useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Check from "@/assets/icons/check.svg?react";
-import Sparkles from "@/assets/icons/sparkles.svg?react";
+import CircleHelp from "@/assets/icons/circle-help.svg?react";
 import XIcon from "@/assets/icons/x.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
@@ -21,7 +21,7 @@ interface Props {
 
 const responseOptions = [
 	{ state: GameNightRsvpState.Accepted, label: "coming", Icon: Check, active: "bg-green-500/20 text-green-300" },
-	{ state: GameNightRsvpState.Pending, label: "maybe", Icon: Sparkles, active: "bg-amber-500/20 text-amber-300" },
+	{ state: GameNightRsvpState.Maybe, label: "maybe", Icon: CircleHelp, active: "bg-amber-500/20 text-amber-300" },
 	{ state: GameNightRsvpState.Declined, label: "cant-come", Icon: XIcon, active: "bg-red-500/20 text-red-300" },
 ] as const;
 

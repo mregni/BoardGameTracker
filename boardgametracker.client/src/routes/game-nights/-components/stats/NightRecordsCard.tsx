@@ -38,7 +38,11 @@ export const NightRecordsCard = ({ records, lookup }: Props) => {
 							icon={<ClockIcon />}
 							title={t("stats.records.longest-night")}
 							value={duration(longestNight.value)}
-							hint={[night(longestNight), t("stats.records.games", { count: longestNight.gamesPlayed })].join(" · ")}
+							hint={[
+								t("stats.records.night-length"),
+								night(longestNight),
+								t("stats.records.games", { count: longestNight.gamesPlayed }),
+							].join(" · ")}
 						/>
 					)}
 					{mostGames && (

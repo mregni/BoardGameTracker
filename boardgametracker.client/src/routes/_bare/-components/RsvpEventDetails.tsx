@@ -5,9 +5,8 @@ import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
 import type { GameNight, Settings } from "@/models";
-import { toLongDisplay } from "@/utils/dateUtils";
+import { toDisplay } from "@/utils/dateUtils";
 import { relativeDay } from "@/utils/relativeDay";
 
 interface Props {
@@ -23,12 +22,6 @@ export const RsvpEventDetails = ({ gameNight, settings }: Props) => {
 	return (
 		<BgtCard className="gap-4" data-testid="rsvp-event-details">
 			<div className="flex gap-3">
-				<GameNightDateBox
-					date={startDate}
-					uiLanguage={uiLanguage}
-					variant="highlight"
-					className="w-16 shrink-0 self-start md:w-20"
-				/>
 				<div className="flex min-w-0 flex-col items-start gap-1.5">
 					<span className="text-xs font-semibold uppercase tracking-widest text-primary-text">{t("invited")}</span>
 					<span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-indigo-300 tabular-nums first-letter:uppercase">
@@ -40,8 +33,8 @@ export const RsvpEventDetails = ({ gameNight, settings }: Props) => {
 					<BgtHeading as="h1" size="6" className="wrap-anywhere">
 						{gameNight.title}
 					</BgtHeading>
-					<BgtText size="2" color="gray" className="first-letter:uppercase">
-						{toLongDisplay(startDate, uiLanguage)}
+					<BgtText size="2" color="gray" data-testid="rsvp-date">
+						{toDisplay(startDate, settings.dateFormat, uiLanguage)}
 					</BgtText>
 				</div>
 			</div>

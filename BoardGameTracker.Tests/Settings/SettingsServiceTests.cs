@@ -228,6 +228,24 @@ public class SettingsServiceTests : IDisposable
         VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData("", "")]
+    [InlineData("   ", "")]
+    [InlineData("https://games.example.com/", "https://games.example.com")]
+    public async Task GetSettingsAsync_ShouldReturnTheNormalizedPublicUrl_AndEmptyWhenUnset(string stored, string expected)
+    {
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string> { { Constants.AppConfig.PublicUrl, stored } });
+
+        var result = await _settingsService.GetSettingsAsync();
+
+        result.PublicUrl.Should().Be(expected);
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        VerifyEnvironmentReads();
+        VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task GetSettingsAsync_ShouldPreferEnvironmentValue_WhenEnvVariableSetForConfigKey()
     {

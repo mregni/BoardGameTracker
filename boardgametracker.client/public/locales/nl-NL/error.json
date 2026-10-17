@@ -110,7 +110,8 @@
     "already-over": "Deze spelavond heeft al plaatsgevonden",
     "suggested-game-not-owned": "Je kunt alleen spellen in je bezit voorstellen voor een spelavond",
     "games-running": "Beëindig of gooi de lopende spellen weg voor je de avond afsluit",
-    "ended": "Deze spelavond is afgesloten, heropen ze om spellen toe te voegen"
+    "ended": "Deze spelavond is afgesloten, heropen ze om spellen toe te voegen",
+    "not-started": "Deze spelavond is nog niet begonnen, spellen kunnen vanaf 12 uur voor de start gespeeld worden"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD voldoet niet aan de wachtwoordregels (minstens 8 tekens). Pas het aan of verwijder het vóór een fabrieksreset."

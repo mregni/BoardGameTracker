@@ -4,7 +4,8 @@
   "whos-coming": "Quién viene",
   "group": {
     "coming": "Vienen ({{count}})",
-    "pending": "Quizás o sin respuesta todavía ({{count}})",
+    "maybe": "Quizás ({{count}})",
+    "pending": "Sin respuesta todavía ({{count}})",
     "declined": "No pueden venir ({{count}})"
   },
   "host": "anfitrión",
@@ -17,6 +18,7 @@
   "send-answer": "Enviar respuesta",
   "answered-accepted": "Vienes, {{name}}",
   "answered-maybe": "Puede que vengas, {{name}}",
+  "answered-pending": "Todavía no has respondido, {{name}}",
   "answered-declined": "No puedes venir, {{name}}",
   "host-notified": "Se ha avisado al anfitrión.",
   "change-response": "Cambiar respuesta",

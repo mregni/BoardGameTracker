@@ -50,6 +50,7 @@ const statistics: DashboardStatistics = {
 		hostId: 1,
 		hostName: "Mikhaël",
 		acceptedCount: 4,
+		maybeCount: 0,
 		pendingCount: 0,
 		declinedCount: 0,
 		suggestedGames: [],

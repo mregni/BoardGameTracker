@@ -110,7 +110,8 @@
     "already-over": "This game night has already taken place",
     "suggested-game-not-owned": "Only games you own can be suggested for a game night",
     "games-running": "Finish or discard the running games before ending the night",
-    "ended": "This game night has ended, reopen it to add games"
+    "ended": "This game night has ended, reopen it to add games",
+    "not-started": "This game night hasn't started yet, games can be played from 12 hours before the start"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD does not meet the password rules (at least 8 characters). Change it or remove it before a factory reset."

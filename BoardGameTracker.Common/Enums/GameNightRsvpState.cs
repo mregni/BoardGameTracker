@@ -4,5 +4,6 @@ public enum GameNightRsvpState
 {
     Accepted,
     Declined,
-    Pending
+    Pending,
+    Maybe
 }

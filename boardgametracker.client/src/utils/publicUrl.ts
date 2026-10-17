@@ -1,6 +1,6 @@
-const SEEDED_PUBLIC_URL = "http://localhost:5444";
+const normalize = (configured: string | null | undefined) => (configured ?? "").trim().replace(/\/+$/, "");
 
-export const effectivePublicUrl = (configured: string | null | undefined, origin: string): string => {
-	const url = (configured ?? "").trim().replace(/\/+$/, "");
-	return url === "" || url.toLowerCase() === SEEDED_PUBLIC_URL ? origin : url;
-};
+export const isPublicUrlConfigured = (configured: string | null | undefined): boolean => normalize(configured) !== "";
+
+export const effectivePublicUrl = (configured: string | null | undefined, origin: string): string =>
+	isPublicUrlConfigured(configured) ? normalize(configured) : origin;

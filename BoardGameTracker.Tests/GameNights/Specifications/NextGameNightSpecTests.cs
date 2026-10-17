@@ -49,7 +49,9 @@ public class NextGameNightSpecTests
             GameNightRsvp.Create(1, GameNightRsvpState.Accepted),
             GameNightRsvp.Create(2, GameNightRsvpState.Accepted),
             GameNightRsvp.Create(3, GameNightRsvpState.Pending),
-            GameNightRsvp.Create(4, GameNightRsvpState.Declined)
+            GameNightRsvp.Create(4, GameNightRsvpState.Declined),
+            GameNightRsvp.Create(5, GameNightRsvpState.Maybe),
+            GameNightRsvp.Create(6, GameNightRsvpState.Maybe)
         ]);
 
         var result = new NextGameNightSpec(From).Evaluate([night]).Single();
@@ -61,6 +63,7 @@ public class NextGameNightSpecTests
         result.HostName.Should().Be("Kathleen");
         result.LocationName.Should().Be("Home");
         result.AcceptedCount.Should().Be(2);
+        result.MaybeCount.Should().Be(2);
         result.PendingCount.Should().Be(1);
         result.DeclinedCount.Should().Be(1);
         result.SuggestedGames.Select(x => x.Title).Should().Equal("Azul", "Brass");

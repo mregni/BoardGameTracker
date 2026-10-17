@@ -310,6 +310,11 @@ public class SessionService : ISessionService
         {
             throw new ValidationException(nameof(CreateSessionCommand.GameNightId), Constants.Errors.GameNightEnded);
         }
+
+        if (!gameNight.HasPlayOpened(_dateTimeProvider.UtcNow))
+        {
+            throw new ValidationException(nameof(CreateSessionCommand.GameNightId), Constants.Errors.GameNightNotStarted);
+        }
     }
 
     private async Task EnsureGameNightExistsAsync(int? gameNightId)

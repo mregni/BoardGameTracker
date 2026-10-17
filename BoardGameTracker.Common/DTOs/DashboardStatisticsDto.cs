@@ -47,6 +47,7 @@ public class DashboardGameNightDto
     public int HostId { get; set; }
     public string HostName { get; set; } = string.Empty;
     public int AcceptedCount { get; set; }
+    public int MaybeCount { get; set; }
     public int PendingCount { get; set; }
     public int DeclinedCount { get; set; }
     public List<DashboardGameDto> SuggestedGames { get; set; } = [];

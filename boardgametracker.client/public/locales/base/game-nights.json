@@ -4,11 +4,14 @@
     "host": "Host · always coming",
     "subtitle": "{{title}} · {{date}}",
     "coming": "Coming",
+    "maybe": "Maybe",
     "invited_one": "{{count}} invited",
     "invited_other": "{{count}} invited",
     "summary": {
       "coming_one": "{{count}} coming",
       "coming_other": "{{count}} coming",
+      "maybe_one": "{{count}} maybe",
+      "maybe_other": "{{count}} maybe",
       "pending_one": "{{count}} pending",
       "pending_other": "{{count}} pending",
       "declined_one": "{{count}} declined",
@@ -58,6 +61,23 @@
     "when": "{{when}} · {{time}}",
     "host": "Host: {{host}}",
     "open": "Open night"
+  },
+  "plan": {
+    "starts": "Starts {{when}} · {{time}}",
+    "rsvps": "RSVPs",
+    "no-games": "No games planned yet"
+  },
+  "invites": {
+    "title": "Email the invitations?",
+    "description_one": "{{count}} invitee who hasn't answered gets an email with the RSVP link for {{title}}:",
+    "description_other": "{{count}} invitees who haven't answered get an email with the RSVP link for {{title}}:",
+    "nobody": "Nobody who hasn't answered {{title}} has an email address, so there is nothing to send.",
+    "without-email_one": "No email address, not mailed: {{names}}",
+    "without-email_other": "No email address, not mailed: {{names}}",
+    "send_one": "Send {{count}} email",
+    "send_other": "Send {{count}} emails",
+    "email-disabled": "Email is not set up on the server, so invitations can't be mailed.",
+    "public-url-missing": "Set the public URL under Settings > General before mailing invitations."
   },
   "form": {
     "title": {
@@ -157,7 +177,7 @@
   },
   "summary": {
     "games-played": "Games played",
-    "play-time": "Play time",
+    "play-time": "Time in games",
     "leading": "Leading tonight",
     "night-winner": "Night winner",
     "no-winner": "No winner yet",
@@ -218,7 +238,7 @@
       "every-day_other": "about one every {{count}} days",
       "games": "Games played",
       "per-night": "{{value}} per night",
-      "play-time": "Play time",
+      "play-time": "Time in games",
       "table": "Average table",
       "table-hint": "players per night"
     },
@@ -291,7 +311,8 @@
     },
     "records": {
       "title": "Records",
-      "longest-night": "Longest night",
+      "longest-night": "Longest night length",
+      "night-length": "first game start to last game end",
       "most-games": "Most games in one night",
       "biggest-table": "Biggest table",
       "latest-finish": "Latest finish",

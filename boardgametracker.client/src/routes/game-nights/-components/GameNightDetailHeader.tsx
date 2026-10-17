@@ -18,6 +18,7 @@ interface Props {
 	gameNight: GameNight;
 	settings: Settings;
 	isOver: boolean;
+	isPlanned: boolean;
 	canWrite: boolean;
 	hasRunningGames: boolean;
 	onEdit: () => void;
@@ -31,13 +32,25 @@ interface Props {
 const phoneButton = "max-md:py-3 max-md:text-sm";
 
 export const GameNightDetailHeader = (props: Props) => {
-	const { gameNight, settings, isOver, canWrite, hasRunningGames, onEdit, onDelete, onEnd, onReopen, onStart, onLog } =
-		props;
+	const {
+		gameNight,
+		settings,
+		isOver,
+		isPlanned,
+		canWrite,
+		hasRunningGames,
+		onEdit,
+		onDelete,
+		onEnd,
+		onReopen,
+		onStart,
+		onLog,
+	} = props;
 	const { t } = useTranslation("game-nights");
 
 	const hasEnded = gameNight.endedAt !== null;
-	const showEndAction = canWrite && (hasEnded || !isOver);
-	const showLog = canWrite && !hasEnded;
+	const showEndAction = canWrite && (hasEnded || (!isOver && !isPlanned));
+	const showLog = canWrite && !hasEnded && !isPlanned;
 	const showStart = showLog && !isOver;
 	const hasActions = showEndAction || showLog;
 	const endAction = showEndAction && (
@@ -62,7 +75,7 @@ export const GameNightDetailHeader = (props: Props) => {
 					>
 						{isOver
 							? toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage)
-							: t("card.when", {
+							: t(isPlanned ? "plan.starts" : "card.when", {
 									when: relativeDay(gameNight.startDate, settings.uiLanguage),
 									time: format(gameNight.startDate, settings.timeFormat),
 								})}

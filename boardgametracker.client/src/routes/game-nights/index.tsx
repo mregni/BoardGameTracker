@@ -190,6 +190,7 @@ function RouteComponent() {
 												key={gameNight.id}
 												gameNight={gameNight}
 												settings={settings}
+												players={players}
 												canWrite={canWrite}
 												highlight={index === 0}
 												onEdit={actions.handleEditGameNight}

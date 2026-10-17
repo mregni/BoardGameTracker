@@ -216,6 +216,7 @@ public class GameNightServiceTests
     {
         var gameNight = GameNight.Create("Night", "", DateTime.UtcNow.AddHours(-2), 1, 1);
         gameNight.RunningGames.Add(RunningGame.Create(4, 9, DateTime.UtcNow, [1]));
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
         _gameNightRepositoryMock
             .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(gameNight);
@@ -225,6 +226,39 @@ public class GameNightServiceTests
         var error = await action.Should().ThrowAsync<ValidationException>();
         error.Which.Message.Should().Be(Constants.Errors.GameNightGamesRunning);
         gameNight.EndedAt.Should().BeNull();
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(-13, false)]
+    [InlineData(-11, true)]
+    [InlineData(-12, true)]
+    public async Task End_ShouldOnlyBeAllowed_FromTwelveHoursBeforeTheStart(int hoursFromStart, bool allowed)
+    {
+        var start = new DateTime(2026, 10, 24, 19, 0, 0, DateTimeKind.Utc);
+        var now = start.AddHours(hoursFromStart);
+        var gameNight = GameNight.Create("Night", "", start, 1, 1);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(now);
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(gameNight);
+
+        var action = () => _gameNightService.End(4);
+
+        if (allowed)
+        {
+            await action.Should().NotThrowAsync();
+            gameNight.EndedAt.Should().Be(now);
+            _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        }
+        else
+        {
+            var error = await action.Should().ThrowAsync<ValidationException>();
+            error.Which.Message.Should().Be(Constants.Errors.GameNightNotStarted);
+            gameNight.EndedAt.Should().BeNull();
+        }
+
         _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -1203,7 +1237,8 @@ public class GameNightServiceTests
     [Theory]
     [InlineData(GameNightRsvpState.Pending, GameNightRsvpState.Accepted, "will come to")]
     [InlineData(GameNightRsvpState.Pending, GameNightRsvpState.Declined, "will not come to")]
-    [InlineData(GameNightRsvpState.Accepted, GameNightRsvpState.Pending, "is not sure about")]
+    [InlineData(GameNightRsvpState.Accepted, GameNightRsvpState.Pending, "has not decided yet about")]
+    [InlineData(GameNightRsvpState.Pending, GameNightRsvpState.Maybe, "might come to")]
     public async Task UpdateRsvp_ShouldWordEmailByState(GameNightRsvpState from, GameNightRsvpState state, string expected)
     {
         var rsvp = RsvpWithGameNight(2, from, new Player("Kathleen"),
