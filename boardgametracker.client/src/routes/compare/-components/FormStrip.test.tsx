@@ -35,7 +35,7 @@ describe("FormStrip", () => {
 		expect(tiles.map((tile) => tile.dataset.outcome)).toEqual(["playerOne", "other", "both", "playerTwo", "playerTwo"]);
 		expect(tiles[0]).toHaveAttribute("title", "Brass: Birmingham · Mikhaël");
 		expect(tiles[1]).toHaveAttribute("title", "Carcassonne · someone else");
-		expect(screen.getByText("Last 5 games together", { exact: false })).toBeInTheDocument();
+		expect(screen.getByText("Last 5 sessions together", { exact: false })).toBeInTheDocument();
 	});
 
 	it("reads the strip out in order for screen readers", () => {
@@ -43,7 +43,7 @@ describe("FormStrip", () => {
 
 		expect(
 			screen.getByRole("img", {
-				name: "Last games together, oldest first: Mikhaël, someone else, both won, Kathleen, Kathleen",
+				name: "Last sessions together, oldest first: Mikhaël, someone else, both won, Kathleen, Kathleen",
 			}),
 		).toBeInTheDocument();
 	});
@@ -98,7 +98,7 @@ describe("FormStrip", () => {
 
 		expect(screen.getByText("M or K: who won · –: someone else")).toBeInTheDocument();
 		expect(screen.getByText("Mikhaël 3 in a row")).toBeInTheDocument();
-		expect(screen.getByText("Last game together", { exact: false })).toBeInTheDocument();
+		expect(screen.getByText("Last session together", { exact: false })).toBeInTheDocument();
 	});
 
 	it("renders nothing without games together", () => {

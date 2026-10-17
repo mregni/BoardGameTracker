@@ -24,9 +24,9 @@ describe("Highlights", () => {
 
 		const chips = screen.getAllByRole("listitem");
 		expect(chips[0]).toHaveTextContent("Carcassonne");
-		expect(chips[0]).toHaveTextContent("first game together · 12-03-2025");
+		expect(chips[0]).toHaveTextContent("first session together · 12-03-2025");
 		expect(chips[1]).toHaveTextContent("Brass: Birmingham");
-		expect(chips[1]).toHaveTextContent("longest game · 2h 50m");
+		expect(chips[1]).toHaveTextContent("longest session · 2h 50m");
 	});
 
 	it("renders nothing without highlights", () => {

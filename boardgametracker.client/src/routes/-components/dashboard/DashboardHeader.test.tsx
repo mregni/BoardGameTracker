@@ -19,11 +19,11 @@ describe("DashboardHeader", () => {
 		expect(screen.getByText("welcome.linked")).toBeInTheDocument();
 	});
 
-	it("falls back to the group line without a linked player", () => {
+	it("shows only the dashboard title without a linked player", () => {
 		renderWithTheme(<DashboardHeader linkedPlayer={null} sessionsThisMonth={3} canWrite />);
 
 		expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("common:dashboard");
-		expect(screen.getByText("welcome.group")).toBeInTheDocument();
+		expect(screen.queryByText("welcome.linked")).not.toBeInTheDocument();
 	});
 
 	it("links to adding a game and logging a session for writers", () => {

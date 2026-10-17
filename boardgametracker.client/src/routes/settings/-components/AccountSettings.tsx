@@ -338,7 +338,7 @@ const UserManagementSection = ({
 	);
 
 	return (
-		<SettingsSection title={t("account.users.title")} description={t("account.users.description")}>
+		<SettingsSection title={t("account.users.title")}>
 			<div className="mb-4">
 				<BgtButton onClick={onCreateUser}>{t("account.users.create-button")}</BgtButton>
 			</div>

@@ -152,7 +152,7 @@ function RouteComponent() {
 								</div>
 								{!hasPlays && (
 									<div className="max-lg:order-4">
-										<GameDetailEmptyState onLogSession={canWrite ? actions.handleAddSession : undefined} />
+										<GameDetailEmptyState />
 									</div>
 								)}
 								{hasPlays && (

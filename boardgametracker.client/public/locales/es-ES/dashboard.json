@@ -1,15 +1,13 @@
 {
   "empty": {
     "title": "No hay juegos en tu colección",
-    "description": "Aún no has añadido ningún juego a tu colección. Empieza añadiendo tu primer juego para registrar tus partidas y estadísticas.",
+    "description": "Aún no has añadido ningún juego. Añade tu primer juego para registrar partidas.",
     "button": "Añade tu primer juego"
   },
   "welcome": {
     "title": "Hola de nuevo, {{name}}",
     "linked_one": "Este mes jugaste {{played}} de {{total}} partida del grupo y ganaste {{wins}}.",
-    "linked_other": "Este mes jugaste {{played}} de las {{total}} partidas del grupo y ganaste {{wins}}.",
-    "group_one": "Este mes el grupo jugó {{total}} partida.",
-    "group_other": "Este mes el grupo jugó {{total}} partidas."
+    "linked_other": "Este mes jugaste {{played}} de las {{total}} partidas del grupo y ganaste {{wins}}."
   },
   "actions": {
     "add-game": "Añadir juego",

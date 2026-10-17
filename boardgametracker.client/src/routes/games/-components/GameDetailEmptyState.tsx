@@ -1,15 +1,9 @@
 import { useTranslation } from "react-i18next";
 import Gamepad from "@/assets/icons/gamepad.svg?react";
-import Plus from "@/assets/icons/plus.svg?react";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
 
-interface GameDetailEmptyStateProps {
-	onLogSession?: () => void;
-}
-
-export const GameDetailEmptyState = ({ onLogSession }: GameDetailEmptyStateProps) => {
+export const GameDetailEmptyState = () => {
 	const { t } = useTranslation("game");
 
 	return (
@@ -23,18 +17,8 @@ export const GameDetailEmptyState = ({ onLogSession }: GameDetailEmptyStateProps
 
 				<BgtHeading className="mb-3">{t("no-sessions.title")}</BgtHeading>
 
-				<BgtText color="white" opacity={60} className="mb-8 leading-relaxed">
+				<BgtText color="white" opacity={60} className="leading-relaxed">
 					{t("no-sessions.description")}
-				</BgtText>
-
-				{onLogSession && (
-					<BgtButton onClick={onLogSession} className="mt-6">
-						<Plus /> {t("no-sessions.button")}
-					</BgtButton>
-				)}
-
-				<BgtText color="white" opacity={40} size="2" className="pt-6">
-					{t("no-sessions.extra")}
 				</BgtText>
 			</div>
 		</div>

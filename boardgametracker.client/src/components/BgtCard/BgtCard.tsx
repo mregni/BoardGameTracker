@@ -54,9 +54,11 @@ export const BgtCard = (props: Props) => {
 							))}
 						</div>
 					</div>
-					<BgtText size="2" color="white" opacity={50} className="mb-4">
-						{description}
-					</BgtText>
+					{description && (
+						<BgtText size="2" color="white" opacity={50} className="mb-4">
+							{description}
+						</BgtText>
+					)}
 				</div>
 			)}
 			{children}

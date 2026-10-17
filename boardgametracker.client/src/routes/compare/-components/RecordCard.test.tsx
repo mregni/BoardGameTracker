@@ -35,7 +35,7 @@ describe("RecordCard", () => {
 		expect(screen.getByTestId("record-playerTwo")).toHaveTextContent("17");
 		expect(screen.getByText("wins for Mikhaël")).toBeInTheDocument();
 		expect(screen.getByText("wins for Kathleen")).toBeInTheDocument();
-		expect(screen.getByText("46 games together")).toBeInTheDocument();
+		expect(screen.queryByText("46 sessions together")).toBeNull();
 		expect(
 			within(screen.getByTestId("record-playerOne")).getByRole("img", { name: "Mikhaël leads" }),
 		).toBeInTheDocument();
@@ -57,7 +57,6 @@ describe("RecordCard", () => {
 
 		expect(screen.queryByRole("img", { name: /leads/ })).toBeNull();
 		expect(screen.getByText("no wins yet for Mikhaël")).toBeInTheDocument();
-		expect(screen.getByText("1 game together")).toBeInTheDocument();
 	});
 
 	it("labels the split bar with every part of the record and shows the legend", () => {
@@ -65,7 +64,7 @@ describe("RecordCard", () => {
 
 		expect(
 			screen.getByRole("img", {
-				name: "46 games together: Mikhaël won 23, someone else won 6, Kathleen won 17",
+				name: "46 sessions together: Mikhaël won 23, someone else won 6, Kathleen won 17",
 			}),
 		).toBeInTheDocument();
 		const segments = screen.getAllByTestId("progress-segment");
@@ -87,7 +86,7 @@ describe("RecordCard", () => {
 			/>,
 		);
 
-		const bar = screen.getByRole("img", { name: /3 games together/ });
+		const bar = screen.getByRole("img", { name: /3 sessions together/ });
 		expect(bar).not.toHaveAttribute("data-overflow");
 		expect(screen.queryByText("someone else won")).toBeNull();
 	});
@@ -102,7 +101,7 @@ describe("RecordCard", () => {
 		);
 
 		const bar = screen.getByRole("img", {
-			name: "49 games together: Mikhaël won 23, someone else won 6, Kathleen won 17, same co-op team 3 (won 2, lost 1)",
+			name: "49 sessions together: Mikhaël won 23, someone else won 6, Kathleen won 17, same co-op team 3 (won 2, lost 1)",
 		});
 		const team = bar.querySelector('[data-tone="subtle"]');
 		expect(team).toHaveAttribute("data-pattern", "hatch");
@@ -144,7 +143,7 @@ describe("RecordCard", () => {
 
 		expect(screen.getByText(t("record.wins_one", { player: "Mikhaël" }))).toBeInTheDocument();
 		expect(screen.getByText(t("record.wins_zero", { player: "Kathleen" }))).toBeInTheDocument();
-		expect(screen.getByText(t("record.together_one", { count: 1 }))).toBeInTheDocument();
+		expect(t("record.summary_one", { count: 1 })).not.toBe(t("record.summary_other", { count: 1 }));
 		expect(screen.getByText(t("form.title_one"), { exact: false })).toBeInTheDocument();
 		expect(t("record.wins", { count: 5, player: "X" })).toBe(t("record.wins_other", { player: "X" }));
 	});

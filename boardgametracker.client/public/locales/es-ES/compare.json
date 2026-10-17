@@ -15,8 +15,6 @@
     "wins_zero": "aún sin victorias para {{player}}",
     "wins_one": "victoria para {{player}}",
     "wins_other": "victorias para {{player}}",
-    "together_one": "{{count}} partida juntos",
-    "together_other": "{{count}} partidas juntos",
     "leads": "{{player}} va por delante",
     "won": "Ganó {{player}}",
     "someone-else": "ganó otra persona",

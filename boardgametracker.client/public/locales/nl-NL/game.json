@@ -1,11 +1,9 @@
 {
-  "add": "Sessie toevoegen",
+  "add": "Sessie registreren",
   "sessions": "Sessies bekijken",
   "no-sessions": {
     "title": "Nog geen sessies geregistreerd",
-    "description": "Houd je spelsessies bij om gedetailleerde statistieken, spelersprestaties en sessiegeschiedenis te zien. Registreer je eerste sessie om alle statistieken te ontgrendelen!",
-    "button": "Registreer je eerste sessie",
-    "extra": "Sessiegegevens bevatten spelers, scores, duur en meer"
+    "description": "Registreer een sessie van dit spel om de statistieken te zien."
   },
   "notifications": {
     "created": "Spel is aangemaakt",
@@ -80,18 +78,18 @@
     "download": "Downloaden"
   },
   "new": {
-    "description": "Kies hoe je een nieuw spel wilt aanmaken.",
-    "save": "Spel aanmaken",
-    "title": "Nieuw spel aanmaken",
+    "description": "Kies hoe je een spel wilt toevoegen.",
+    "save": "Spel toevoegen",
+    "title": "Spel toevoegen",
     "bgg-title": "Eén spel toevoegen via BGG",
     "bgg-subtext": "Spelgegevens importeren van BoardGameGeek",
     "bgg-description": "Vul de verplichte velden in om een spel te importeren van BoardGameGeek",
     "manual-title": "Handmatige invoer",
-    "manual-subtext": "Voer de gegevens zelf in om een spel aan te maken",
+    "manual-subtext": "Vul de gegevens zelf in",
     "bgg-import-title": "BGG-collectie importeren",
     "bgg-import-subtext": "Importeer je spelcollectie van BoardGameGeek",
     "manual": {
-      "title": "Spel aanmaken",
+      "title": "Spel toevoegen",
       "game-title": {
         "required": "Speltitel is verplicht",
         "label": "Speltitel"
@@ -158,7 +156,7 @@
     "label": "Spel heeft puntentelling"
   },
   "charts": {
-    "player-count": "Partijen per aantal spelers",
+    "player-count": "Sessies per aantal spelers",
     "games-week-day": "Partijen per dag van de week",
     "scoring": "Scores per partij/speler",
     "top-scoring": {
@@ -173,7 +171,7 @@
     "top-players": "Topspelers",
     "scoring-results": "Scoreresultaten",
     "recent-sessions": "Recente sessies",
-    "session-count-per-day": "Aantal sessies per dag",
+    "session-count-per-day": "Sessies per weekdag",
     "analytics": "Statistieken"
   },
   "watch-id": {

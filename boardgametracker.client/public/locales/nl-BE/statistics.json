@@ -29,5 +29,6 @@
   "average-price-paid-priced_other": "Gem. betaalde prijs · {{count}} spellen met prijs",
   "coop-won-lost": "Co-op gewonnen · verloren",
   "coop-results": "{{won}} · {{lost}}",
-  "team-win-rate": "Winstpercentage team"
+  "team-win-rate": "Winstpercentage team",
+  "added": "Toegevoegd"
 }

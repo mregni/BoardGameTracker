@@ -59,7 +59,7 @@
       "description": "Play for 5 hours."
     },
     "blue": {
-      "title": "Time Invester",
+      "title": "Time Investor",
       "description": "Play for 10 hours."
     },
     "red": {
@@ -148,7 +148,7 @@
     "description": "Win with a difference of 2 or less points."
   },
   "close-loss": {
-    "title": "Almost There!",
+    "title": "Almost there",
     "description": "Lose with a difference of 2 or less points."
   },
   "marathon-runner": {

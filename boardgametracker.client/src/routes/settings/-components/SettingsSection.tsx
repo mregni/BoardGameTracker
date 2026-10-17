@@ -4,7 +4,7 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 
 interface Props {
 	title: string;
-	description: string;
+	description?: string;
 	children: ReactNode;
 }
 

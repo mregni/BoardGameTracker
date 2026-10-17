@@ -35,25 +35,21 @@
 		"title": "Algemene instellingen",
 		"description": "Wijzig de algemene instellingen van de applicatie.",
 		"date-time": {
-			"title": "Datum- en tijdinstellingen",
-			"description": "Stel de datum- en tijdnotatie van de applicatie in.",
+			"title": "Datum en tijd",
 			"date-format": "Datumnotatie",
 			"time-format": "Tijdnotatie"
 		},
 		"currency": {
-			"title": "Valuta-instellingen",
-			"description": "Stel de valuta van de applicatie in.",
+			"title": "Valuta",
 			"label": "Valuta"
 		},
 		"language": {
-			"title": "Taalinstellingen",
-			"description": "Stel de taal van de applicatie in.",
+			"title": "Taal",
 			"label": "Taal"
 		}
 	},
 	"shame": {
-		"title": "Shelf of Shame-instellingen",
-		"description": "Stel in hoe de Shelf of Shame berekend en getoond wordt.",
+		"title": "Shelf of Shame",
 		"enabled": {
 			"label": "Shelf of Shame inschakelen",
 			"description": "Houd spellen bij die al een tijd niet meer gespeeld zijn."
@@ -63,15 +59,14 @@
 		}
 	},
 	"game-nights": {
-		"title": "Spelavondinstellingen",
-		"description": "Stel in hoe spelavonden beheerd en getoond worden.",
+		"title": "Spelavonden",
 		"enabled": {
 			"label": "Spelavonden inschakelen",
-			"description": "Schakel spelavonden in om spelavonden met je vrienden te plannen en te beheren."
+			"description": "Plan spelavonden en verzamel RSVP's."
 		},
 		"rsvp-authentication": {
 			"label": "Inloggen vereisen voor RSVP's",
-			"description": "Als dit is ingeschakeld, moeten spelers inloggen om op een spelavond te reageren. Dat zorgt voor extra beveiliging en helpt spam te voorkomen."
+			"description": "Alleen ingelogde gebruikers kunnen op uitnodigingen reageren."
 		}
 	},
 	"advanced": {
@@ -88,11 +83,10 @@
 			}
 		},
 		"updates": {
-			"title": "Instellingen voor updatecontrole",
-			"description": "Stel in hoe de applicatie op updates controleert.",
+			"title": "Updatecontrole",
 			"enabled": {
 				"label": "Updatecontrole inschakelen",
-				"description": "Als dit is ingeschakeld, controleert de applicatie automatisch op updates en installeert ze."
+				"description": "Controleert op nieuwe versies en toont ze in de zijbalk."
 			}
 		},
 		"bug": "Een bug melden",
@@ -130,19 +124,19 @@
 	"sidebar": {
 		"general": {
 			"title": "Algemeen",
-			"description": "Basisconfiguratie van de app"
+			"description": "Taal, notaties, publieke URL"
 		},
 		"shelf-of-shame": {
 			"title": "Shelf of Shame",
-			"description": "Shelf of Shame-instellingen configureren"
+			"description": "Wanneer een spel als ongespeeld telt"
 		},
 		"advanced": {
 			"title": "Geavanceerd",
-			"description": "Geavanceerde configuratie van de app"
+			"description": "Updates en gegevens wissen"
 		},
 		"game-nights": {
 			"title": "Spelavonden",
-			"description": "Spelavondinstellingen configureren"
+			"description": "Planning en RSVP's"
 		},
 		"bgg": {
 			"title": "Integraties",
@@ -159,14 +153,9 @@
 	},
 	"bgg": {
 		"title": "BoardGameGeek-API",
-		"description": "Stel de BGG-API-sleutel in om spellen te zoeken en te importeren van BoardGameGeek.",
+		"description": "Met een API-sleutel kun je spellen en je collectie zoeken en importeren van BoardGameGeek.",
 		"status": {
-			"title": "Status",
-			"configured": "API-sleutel geconfigureerd",
-			"not-configured": "API-sleutel niet geconfigureerd",
-			"source-env": "De BGG-API-sleutel is ingesteld via een omgevingsvariabele (BGG_API_KEY)",
-			"source-db": "De BGG-API-sleutel is opgeslagen in de database.",
-			"not-configured-description": "Om de BGG-integratie te gebruiken, heb je een BGG-API-sleutel nodig. Je kunt die instellen via de omgevingsvariabele BGG_API_KEY of hieronder direct invoeren."
+			"not-configured": "API-sleutel niet geconfigureerd"
 		},
 		"api-key": {
 			"label": "BGG-API-sleutel",
@@ -176,8 +165,7 @@
 			"clear-hint": "Sla instellingen op om de verwijdering toe te passen.",
 			"read-only": "De API-sleutel is alleen-lezen.",
 			"read-only-description": "De API-sleutel wordt beheerd via de omgevingsvariabele BGG_API_KEY en kan hier niet worden gewijzigd.",
-			"help-title": "Gebruik van de BGG-API",
-			"help-description": "Met de BGG-API kan de app spelgegevens zoeken en importeren, je collectie importeren en meer. Een API-sleutel krijg je door de instructies te volgen op de <requestPage>aanvraagpagina</requestPage> van BoardGameGeek."
+			"help-description": "Vraag een sleutel aan op de <requestPage>aanvraagpagina</requestPage> van BoardGameGeek."
 		},
 		"notifications": {
 			"saved": "BGG-API-sleutel opgeslagen",
@@ -228,7 +216,6 @@
 		},
 		"users": {
 			"title": "Gebruikersbeheer",
-			"description": "Gebruikersaccounts aanmaken en beheren.",
 			"last-login": "Laatst ingelogd",
 			"role": "Rol",
 			"roles": {
@@ -242,7 +229,7 @@
 			},
 			"create-button": "Gebruiker aanmaken",
 			"create": {
-				"title": "Nieuwe gebruiker aanmaken",
+				"title": "Gebruiker aanmaken",
 				"description": "Vul het formulier in om een nieuwe gebruiker aan te maken.",
 				"username": {
 					"label": "Gebruikersnaam"
@@ -275,7 +262,7 @@
 				"title": "Tijdelijk wachtwoord",
 				"description": "Wachtwoord gereset voor \"{{username}}\". Bewaar dit wachtwoord — het wordt niet opnieuw getoond.",
 				"copy": "Naar klembord kopiëren",
-				"copied": "Gekopieerd!"
+				"copied": "Gekopieerd"
 			},
 			"delete": {
 				"title": "Gebruiker verwijderen",
@@ -409,13 +396,7 @@
 	},
 	"changedetection": {
 		"title": "changedetection.io",
-		"description": "Configureer een changedetection.io-instantie om live prijs en voorraad op te halen voor spellen met een watch-id.",
-		"status": {
-			"configured": "Geconfigureerd",
-			"not-configured": "Niet geconfigureerd",
-			"source-db": "Geconfigureerd en opgeslagen in de database.",
-			"not-configured-description": "Geef de basis-URL en API-sleutel van je changedetection.io-instantie op om live prijs en voorraad in te schakelen."
-		},
+		"description": "Toont live prijs en voorraad voor spellen met een watch-id.",
 		"base-url": {
 			"label": "Basis-URL",
 			"placeholder": "https://changes.example.com",
@@ -427,8 +408,7 @@
 			"clear": "API-sleutel verwijderen",
 			"clear-hint": "Sla instellingen op om de verwijdering toe te passen."
 		},
-		"help-title": "Hoe het werkt",
-		"help-description": "Voeg een changedetection.io watch-id toe aan een spel om de huidige prijs en voorraad te zien. De API-sleutel vind je onder Instellingen in je changedetection.io-instantie."
+		"help-description": "De API-sleutel vind je onder Instellingen in je changedetection.io-instantie."
 	},
 	"integrations": {
 		"name": {
@@ -457,6 +437,7 @@
 			"rate-limited": "Te veel verzoeken, probeer het over enkele minuten opnieuw",
 			"misconfigured": "De basis-URL of API-sleutel is ongeldig",
 			"unexpected-response": "De dienst gaf een onverwacht antwoord"
-		}
+		},
+		"test-hint": "Sla een API-sleutel op om de verbinding te testen."
 	}
 }

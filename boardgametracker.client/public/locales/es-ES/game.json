@@ -1,11 +1,9 @@
 {
-  "add": "Añadir partida",
+  "add": "Registrar partida",
   "sessions": "Ver partidas",
   "no-sessions": {
     "title": "Aún no hay partidas registradas",
-    "description": "Empieza a registrar tus partidas para ver estadísticas detalladas, el rendimiento de los jugadores y el historial de partidas. ¡Registra tu primera partida para desbloquear todas las estadísticas!",
-    "button": "Registra tu primera partida",
-    "extra": "Los datos de la partida incluyen jugadores, puntuaciones, duración y más"
+    "description": "Registra una partida de este juego para ver sus estadísticas."
   },
   "notifications": {
     "created": "Juego creado correctamente",
@@ -80,18 +78,18 @@
     "download": "Descargar"
   },
   "new": {
-    "description": "Elige un método para crear un nuevo juego.",
-    "save": "Crear juego",
-    "title": "Crear nuevo juego",
+    "description": "Elige cómo añadir un juego.",
+    "save": "Añadir juego",
+    "title": "Añadir juego",
     "bgg-title": "Añadir un juego desde BGG",
     "bgg-subtext": "Importa los datos del juego desde BoardGameGeek",
     "bgg-description": "Rellena los campos obligatorios para importar un juego de BoardGameGeek",
     "manual-title": "Entrada manual",
-    "manual-subtext": "Introduce los datos manualmente para crear un juego",
+    "manual-subtext": "Introduce los datos tú mismo",
     "bgg-import-title": "Importar colección de BGG",
     "bgg-import-subtext": "Importa tu colección de juegos desde BoardGameGeek",
     "manual": {
-      "title": "Crear juego",
+      "title": "Añadir juego",
       "game-title": {
         "required": "El título del juego es obligatorio",
         "label": "Título del juego"
@@ -173,7 +171,7 @@
     "top-players": "Mejores jugadores",
     "scoring-results": "Resultados de puntuación",
     "recent-sessions": "Partidas recientes",
-    "session-count-per-day": "Partidas por día",
+    "session-count-per-day": "Partidas por día de la semana",
     "analytics": "Estadísticas"
   },
   "watch-id": {

@@ -32,7 +32,7 @@
     "title": "Spelavond verwijderen",
     "description": "Weet je zeker dat je de spelavond \"{{title}}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt en verwijdert ook alle bijhorende RSVP's."
   },
-  "title": "Spelavondplanner",
+  "title": "Spelavonden",
   "create": {
     "button": "Spelavond aanmaken",
     "title": "Nieuwe spelavond aanmaken",
@@ -125,8 +125,8 @@
       "coop-optional": "Dit spel kan coöperatief gespeeld worden: je zet het aan bij het afronden."
     },
     "log": {
-      "button": "Gespeeld spel toevoegen",
-      "title": "Gespeeld spel toevoegen"
+      "button": "Sessie registreren",
+      "title": "Sessie registreren"
     },
     "finish": {
       "button": "Beëindigen",
@@ -168,7 +168,7 @@
     "tonight": "Vanavond gespeeld",
     "after": "Gespeeld",
     "empty": "Nog niets gespeeld. Tik op “Start een spel” zodra een spel begint; datum, tijd, locatie en spelers worden voor je ingevuld.",
-    "empty-after": "Er werd niets gespeeld genoteerd voor deze avond. Gebruik “Gespeeld spel toevoegen” om toe te voegen wat er gespeeld werd."
+    "empty-after": "Er werd niets gespeeld genoteerd voor deze avond. Gebruik “Sessie registreren” om toe te voegen wat er gespeeld werd."
   },
   "table": {
     "title": "Aan tafel",

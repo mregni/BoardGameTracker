@@ -77,13 +77,13 @@ describe("PerGameCard", () => {
 		renderCard();
 		const [azul, carcassonne, brass, inventors] = screen.getAllByTestId("per-game-row");
 
-		expect(azul).toHaveTextContent("11 games · avg 71 – 78.3");
+		expect(azul).toHaveTextContent("11 sessions · avg 71 – 78.3");
 		expect(azul).toHaveTextContent("K · 13-10-2026");
 		expect(within(azul).getByRole("img", { name: "Azul: Mikhaël 4, Kathleen 7, someone else 0" })).toBeInTheDocument();
 		expect(carcassonne).toHaveTextContent("+2 others");
 		expect(carcassonne).toHaveTextContent("– · 10-10-2026");
 		expect(brass).toHaveTextContent("+1 other");
-		expect(brass).toHaveTextContent("7 games · no scores");
+		expect(brass).toHaveTextContent("7 sessions · no scores");
 		expect(brass).toHaveTextContent("M · ");
 		expect(inventors).toHaveTextContent("+ · ");
 	});
@@ -110,7 +110,7 @@ describe("PerGameCard", () => {
 		);
 
 		const [mixed, pandemic] = screen.getAllByTestId("per-game-row");
-		expect(pandemic).toHaveTextContent("3 games · co-op");
+		expect(pandemic).toHaveTextContent("3 sessions · co-op");
 		expect(pandemic).toHaveTextContent("Same team · won 2 of 3");
 		expect(pandemic).toHaveTextContent("Co-op · won");
 		const segments = within(pandemic)

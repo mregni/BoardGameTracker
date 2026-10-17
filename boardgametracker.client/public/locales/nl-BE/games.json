@@ -29,7 +29,7 @@
     "failed-unknown": "Importeren van spellen van BoardGameGeek mislukt, bekijk de logs voor meer details."
   },
   "title": "Spellen",
-  "new": "Nieuw spel toevoegen",
+  "new": "Spel toevoegen",
   "count_other": "{{count}} spellen gevonden",
   "count_one": "{{count}} spel gevonden",
   "cards": {
@@ -69,7 +69,7 @@
     "players": "Spelers",
     "play-time": "Speelduur",
     "weight": "Complexiteit",
-    "rating": "Score",
+    "rating": "Beoordeling",
     "added": "Toegevoegd",
     "bgg": "BGG",
     "current-price": "Huidige prijs"

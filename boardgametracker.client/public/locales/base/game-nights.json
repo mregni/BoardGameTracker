@@ -32,7 +32,7 @@
     "title": "Delete game night",
     "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
   },
-  "title": "Game nights planner",
+  "title": "Game nights",
   "create": {
     "button": "Create game night",
     "title": "Create new game night",
@@ -125,8 +125,8 @@
       "coop-optional": "This game can be played co-op: you can switch it on when you finish it."
     },
     "log": {
-      "button": "Log a finished game",
-      "title": "Log a finished game"
+      "button": "Log session",
+      "title": "Log session"
     },
     "finish": {
       "button": "Finish",
@@ -168,7 +168,7 @@
     "tonight": "Played tonight",
     "after": "Played",
     "empty": "Nothing played yet. Tap “Start a game” when a game begins; date, time, location and players are filled in for you.",
-    "empty-after": "Nothing was logged for this night. Use “Log a finished game” to add what was played."
+    "empty-after": "Nothing was logged for this night. Use “Log session” to add what was played."
   },
   "table": {
     "title": "At the table",
