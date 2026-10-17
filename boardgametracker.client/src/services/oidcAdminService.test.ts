@@ -16,6 +16,7 @@ const request: OidcProviderRequest = {
 	scopes: "openid profile email",
 	enabled: true,
 	autoProvisionUsers: true,
+	defaultRole: "User",
 	usernameClaimType: null,
 	emailClaimType: null,
 	displayNameClaimType: null,

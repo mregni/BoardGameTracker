@@ -4,7 +4,8 @@
   "whos-coming": "Wie komt er?",
   "group": {
     "coming": "Komen ({{count}})",
-    "pending": "Misschien of nog geen antwoord ({{count}})",
+    "maybe": "Misschien ({{count}})",
+    "pending": "Nog geen antwoord ({{count}})",
     "declined": "Kunnen niet ({{count}})"
   },
   "host": "gastheer",
@@ -17,6 +18,7 @@
   "send-answer": "Antwoord versturen",
   "answered-accepted": "Je komt, {{name}}",
   "answered-maybe": "Je komt misschien, {{name}}",
+  "answered-pending": "Je hebt nog niet geantwoord, {{name}}",
   "answered-declined": "Je kunt niet komen, {{name}}",
   "host-notified": "De gastheer heeft een melding gekregen.",
   "change-response": "Antwoord wijzigen",

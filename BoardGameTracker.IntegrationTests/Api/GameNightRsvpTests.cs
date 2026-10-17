@@ -43,6 +43,23 @@ public class GameNightRsvpTests
     }
 
     [Fact]
+    public async Task Rsvp_ShouldStoreMaybe_SeparatelyFromNoAnswer()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        using var anonymous = _fixture.CreateClient();
+        var gameNight = await CreateGameNightAsync(user);
+        var rsvp = gameNight.InvitedPlayers.Single(x => x.State == GameNightRsvpState.Pending);
+
+        var response = await anonymous.PutAsJsonAsync($"/api/gamenight/link/{gameNight.LinkId}/rsvp", new UpdateRsvpCommand { Id = rsvp.Id, State = GameNightRsvpState.Maybe });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+        (await response.Content.ReadFromJsonAsync<GameNightRsvpDto>(IntegrationFixture.Json))!.State.Should().Be(GameNightRsvpState.Maybe);
+        var detail = await user.GetFromJsonAsync<GameNightDetailDto>($"/api/gamenight/{gameNight.Id}", IntegrationFixture.Json);
+        detail!.GameNight.InvitedPlayers.Single(x => x.Id == rsvp.Id).State.Should().Be(GameNightRsvpState.Maybe);
+        (await user.GetStringAsync($"/api/gamenight/{gameNight.Id}")).Should().Contain("\"maybe\"");
+    }
+
+    [Fact]
     public async Task Rsvp_ShouldNotNeedALink_ForASignedInUser()
     {
         using var user = await _fixture.CreateClientAsAsync("user");

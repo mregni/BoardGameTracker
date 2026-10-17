@@ -254,7 +254,9 @@ describe("NightRecordsCard", () => {
 		render(<NightRecordsCard records={statistics.records} lookup={lookup} />);
 
 		expect(screen.getByText("short-duration.hours-minutes")).toBeInTheDocument();
-		expect(screen.getByText("stats.records.night · stats.records.games")).toBeInTheDocument();
+		expect(
+			screen.getByText("stats.records.night-length · stats.records.night · stats.records.games"),
+		).toBeInTheDocument();
 		expect(screen.getByText("stats.records.night · stats.records.mostly")).toBeInTheDocument();
 		expect(screen.getByText("6")).toBeInTheDocument();
 		expect(screen.getByText("02:10")).toBeInTheDocument();

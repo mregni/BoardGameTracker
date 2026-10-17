@@ -276,4 +276,41 @@ describe("GameNightDetailView", () => {
 
 		expect(screen.queryByTestId("night-actions")).not.toBeInTheDocument();
 	});
+
+	it("shows the plan instead of the live night for a night a week away", async () => {
+		const user = userEvent.setup();
+		const props = renderView(buildDetail(addHours(new Date(), 24 * 7), [], false));
+
+		expect(screen.getByTestId("night-plan")).toBeInTheDocument();
+		expect(screen.getByText("plan.starts")).toBeInTheDocument();
+		expect(screen.getByTestId("rsvp-summary")).toHaveTextContent("rsvp.summary.coming · rsvp.summary.declined");
+		expect(screen.getByText("Carcassonne")).toBeInTheDocument();
+		expect(screen.queryByTestId("night-actions")).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "end.button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "play.start.button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "play.log.button" })).not.toBeInTheDocument();
+		expect(screen.queryByText("played.tonight")).not.toBeInTheDocument();
+		expect(screen.queryByText("table.title")).not.toBeInTheDocument();
+
+		await user.click(screen.getByRole("button", { name: "card.manage-rsvps" }));
+		expect(props.onEditAttendees).toHaveBeenCalledTimes(1);
+	});
+
+	it("says when no games are planned and hides managing RSVPs from readers", () => {
+		const detail = buildDetail(addHours(new Date(), 13), [], false);
+		detail.gameNight.suggestedGames = [];
+		renderView(detail, false);
+
+		expect(screen.getByText("plan.no-games")).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "card.manage-rsvps" })).not.toBeInTheDocument();
+	});
+
+	it("opens the live controls from twelve hours before the start", () => {
+		renderView(buildDetail(addHours(new Date(), 11), [], false));
+
+		expect(screen.queryByTestId("night-plan")).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "play.start.button" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "end.button" })).toBeInTheDocument();
+		expect(screen.getByText("card.when")).toBeInTheDocument();
+	});
 });

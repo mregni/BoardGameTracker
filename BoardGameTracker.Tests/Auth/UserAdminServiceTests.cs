@@ -5,6 +5,7 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
+using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
@@ -19,6 +20,7 @@ public class UserAdminServiceTests : IDisposable
 {
     private readonly Mock<IUserStore<ApplicationUser>> _userStoreMock;
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
+    private readonly Mock<ITokenService> _tokenServiceMock = new();
     private readonly MainDbContext _context;
     private readonly Mock<ILogger<UserAdminService>> _loggerMock;
     private readonly UserAdminService _service;
@@ -37,6 +39,7 @@ public class UserAdminServiceTests : IDisposable
 
         _service = new UserAdminService(
             _userManagerMock.Object,
+            _tokenServiceMock.Object,
             _context,
             _loggerMock.Object);
 
@@ -52,6 +55,7 @@ public class UserAdminServiceTests : IDisposable
     private void VerifyNoOtherCalls()
     {
         _userManagerMock.VerifyNoOtherCalls();
+        _tokenServiceMock.VerifyNoOtherCalls();
         _loggerMock.VerifyNoOtherCalls();
     }
 
@@ -664,6 +668,250 @@ public class UserAdminServiceTests : IDisposable
 
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region Deprovisioning
+
+    private ApplicationUser AddUser(string id, string? passwordHash = null)
+    {
+        var user = new ApplicationUser(id, $"{id}@test.com") { Id = id, PasswordHash = passwordHash };
+        _context.Users.Add(user);
+        _context.SaveChanges();
+        return user;
+    }
+
+    [Fact]
+    public async Task GetAllAsync_ShouldCountTheLinkedIdentitiesAndReportDisabledUsers()
+    {
+        var user = new ApplicationUser("alice", "alice@test.com") { LockoutEnd = DateTimeOffset.MaxValue };
+        user.ManageRoleByIdentityProvider();
+        var role = new IdentityRole(Constants.AuthRoles.User);
+        _context.Users.Add(user);
+        _context.Roles.Add(role);
+        _context.UserRoles.Add(new IdentityUserRole<string> { UserId = user.Id, RoleId = role.Id });
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "kc", "https://sso.example.com", "sub-1"));
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "kc", "https://other.example.com", "sub-1"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await _service.GetAllAsync();
+
+        result.Should().ContainSingle();
+        result[0].ExternalLoginCount.Should().Be(2);
+        result[0].IsDisabled.Should().BeTrue();
+        result[0].RoleManagedByIdentityProvider.Should().BeTrue();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DisableAsync_ShouldLockTheUserOut_RevokeTheirTokens_AndDropTheirOidcSessions()
+    {
+        var user = AddUser("user-2");
+        _context.OidcSessions.Add(new OidcSession("hash", "user-2", 1, "token", DateTime.UtcNow.AddDays(1)));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.IsInRoleAsync(user, Constants.AuthRoles.Admin)).ReturnsAsync(false);
+        _userManagerMock.Setup(x => x.SetLockoutEnabledAsync(user, true)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue))
+            .Callback(() => user.LockoutEnd = DateTimeOffset.MaxValue)
+            .ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync([Constants.AuthRoles.User]);
+
+        var result = await _service.DisableAsync("user-2", "admin-1");
+
+        result.IsDisabled.Should().BeTrue();
+        (await _context.OidcSessions.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-2"), Times.Once);
+        _userManagerMock.Verify(x => x.IsInRoleAsync(user, Constants.AuthRoles.Admin), Times.Once);
+        _userManagerMock.Verify(x => x.SetLockoutEnabledAsync(user, true), Times.Once);
+        _userManagerMock.Verify(x => x.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync("user-2", "Account disabled"), Times.Once);
+        VerifyInformationLogged("admin-1", "user-2");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DisableAsync_ShouldRefuseToDisableTheCurrentUser()
+    {
+        var act = () => _service.DisableAsync("admin-1", "admin-1");
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.CannotDisableSelf);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DisableAsync_ShouldThrow_WhenTheUserDoesNotExist()
+    {
+        var act = () => _service.DisableAsync("missing", "admin-1");
+
+        await act.Should().ThrowAsync<EntityNotFoundException>();
+        _userManagerMock.Verify(x => x.FindByIdAsync("missing"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DisableAsync_ShouldRefuseToDisableTheLastActiveAdmin()
+    {
+        var admin = new ApplicationUser("admin-2", null) { Id = "admin-2" };
+        var disabledAdmin = new ApplicationUser("admin-3", null) { Id = "admin-3", LockoutEnd = DateTimeOffset.MaxValue };
+        _userManagerMock.Setup(x => x.FindByIdAsync("admin-2")).ReturnsAsync(admin);
+        _userManagerMock.Setup(x => x.IsInRoleAsync(admin, Constants.AuthRoles.Admin)).ReturnsAsync(true);
+        _userManagerMock.Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin)).ReturnsAsync([admin, disabledAdmin]);
+
+        var act = () => _service.DisableAsync("admin-2", "admin-1");
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.CannotDisableLastAdmin);
+        _userManagerMock.Verify(x => x.FindByIdAsync("admin-2"), Times.Once);
+        _userManagerMock.Verify(x => x.IsInRoleAsync(admin, Constants.AuthRoles.Admin), Times.Once);
+        _userManagerMock.Verify(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EnableAsync_ShouldClearTheLockout()
+    {
+        var user = AddUser("user-2");
+        user.LockoutEnd = DateTimeOffset.MaxValue;
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.SetLockoutEndDateAsync(user, null))
+            .Callback(() => user.LockoutEnd = null)
+            .ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync([Constants.AuthRoles.User]);
+
+        var result = await _service.EnableAsync("user-2", "admin-1");
+
+        result.IsDisabled.Should().BeFalse();
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-2"), Times.Once);
+        _userManagerMock.Verify(x => x.SetLockoutEndDateAsync(user, null), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        VerifyInformationLogged("admin-1", "user-2");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EnableAsync_ShouldThrow_WhenTheUserDoesNotExist()
+    {
+        var act = () => _service.EnableAsync("missing", "admin-1");
+
+        await act.Should().ThrowAsync<EntityNotFoundException>();
+        _userManagerMock.Verify(x => x.FindByIdAsync("missing"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetExternalLoginsAsync_ShouldListTheLinkedIdentitiesOfThatUser()
+    {
+        AddUser("user-2");
+        _context.ExternalLogins.Add(new ExternalLogin("user-2", "kc", "https://sso.example.com", "sub-1", "Jane"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-3", "kc", "https://sso.example.com", "sub-2"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await _service.GetExternalLoginsAsync("user-2");
+
+        result.Should().ContainSingle(x => x.ProviderKey == "sub-1" && x.ProviderDisplayName == "Jane");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetExternalLoginsAsync_ShouldThrow_WhenTheUserDoesNotExist()
+    {
+        var act = () => _service.GetExternalLoginsAsync("missing");
+
+        await act.Should().ThrowAsync<EntityNotFoundException>();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UnlinkExternalLoginAsync_ShouldRemoveTheLink_EvenIfItWasTheOnlySignInMethod()
+    {
+        AddUser("user-2");
+        var login = new ExternalLogin("user-2", "kc", "https://sso.example.com", "sub-1");
+        _context.ExternalLogins.Add(login);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _service.UnlinkExternalLoginAsync("user-2", login.Id, "admin-1");
+
+        (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        VerifyInformationLogged("admin-1", "user-2");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UnlinkExternalLoginAsync_ShouldThrow_WhenTheLinkBelongsToAnotherUser()
+    {
+        var login = new ExternalLogin("user-3", "kc", "https://sso.example.com", "sub-1");
+        _context.ExternalLogins.Add(login);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var act = () => _service.UnlinkExternalLoginAsync("user-2", login.Id, "admin-1");
+
+        await act.Should().ThrowAsync<EntityNotFoundException>();
+        (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ManageRoleByIdentityProviderAsync_ShouldHandTheRoleBackToTheIdentityProvider()
+    {
+        var user = AddUser("user-2");
+        _context.ExternalLogins.Add(new ExternalLogin("user-2", "kc", "https://sso.example.com", "sub-1"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync([Constants.AuthRoles.User]);
+
+        var result = await _service.ManageRoleByIdentityProviderAsync("user-2", "admin-1");
+
+        result.RoleManagedByIdentityProvider.Should().BeTrue();
+        result.ExternalLoginCount.Should().Be(1);
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-2"), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(It.Is<ApplicationUser>(u => u.RoleManagedByIdentityProvider)), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        VerifyInformationLogged("admin-1", "user-2");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ManageRoleByIdentityProviderAsync_ShouldRefuse_ForAUserWithoutLinkedIdentities()
+    {
+        var user = AddUser("user-2");
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(user);
+
+        var act = () => _service.ManageRoleByIdentityProviderAsync("user-2", "admin-1");
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.OidcRoleNotManaged);
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-2"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateRoleAsync_ShouldMakeTheRoleALocalOverride_WhenItChanges()
+    {
+        var user = new ApplicationUser("jane", "jane@test.com") { Id = "user-2" };
+        user.ManageRoleByIdentityProvider();
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync([Constants.AuthRoles.User]);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(user, Constants.AuthRoles.Reader)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.RemoveFromRolesAsync(user, It.IsAny<IEnumerable<string>>())).ReturnsAsync(IdentityResult.Success);
+
+        await _service.UpdateRoleAsync("user-2", Constants.AuthRoles.Reader, "admin-1");
+
+        user.RoleManagedByIdentityProvider.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task UpdateRoleAsync_ShouldKeepTheIdentityProviderInCharge_WhenTheRoleIsUnchanged()
+    {
+        var user = new ApplicationUser("jane", "jane@test.com") { Id = "user-2" };
+        user.ManageRoleByIdentityProvider();
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync([Constants.AuthRoles.User]);
+
+        await _service.UpdateRoleAsync("user-2", Constants.AuthRoles.User, "admin-1");
+
+        user.RoleManagedByIdentityProvider.Should().BeTrue();
     }
 
     #endregion

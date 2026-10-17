@@ -25,6 +25,7 @@ public sealed class NextGameNightSpec : Specification<GameNight, DashboardGameNi
             HostId = x.HostId,
             HostName = x.Host.Name,
             AcceptedCount = x.InvitedPlayers.Count(r => r.State == GameNightRsvpState.Accepted),
+            MaybeCount = x.InvitedPlayers.Count(r => r.State == GameNightRsvpState.Maybe),
             PendingCount = x.InvitedPlayers.Count(r => r.State == GameNightRsvpState.Pending),
             DeclinedCount = x.InvitedPlayers.Count(r => r.State == GameNightRsvpState.Declined),
             SuggestedGames = x.SuggestedGames

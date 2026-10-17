@@ -4,11 +4,14 @@
     "host": "Anfitrión · siempre viene",
     "subtitle": "{{title}} · {{date}}",
     "coming": "Viene",
+    "maybe": "Quizás",
     "invited_one": "{{count}} invitado",
     "invited_other": "{{count}} invitados",
     "summary": {
       "coming_one": "{{count}} viene",
       "coming_other": "{{count}} vienen",
+      "maybe_one": "{{count}} quizás",
+      "maybe_other": "{{count}} quizás",
       "pending_one": "{{count}} pendiente",
       "pending_other": "{{count}} pendientes",
       "declined_one": "{{count}} rechazado",
@@ -32,7 +35,7 @@
     "title": "Eliminar noche de juego",
     "description": "¿Seguro que quieres eliminar la noche de juego \"{{title}}\"? Esta acción no se puede deshacer y eliminará todas las respuestas RSVP asociadas."
   },
-  "title": "Planificador de noches de juego",
+  "title": "Noches de juego",
   "create": {
     "button": "Crear noche de juego",
     "title": "Crear nueva noche de juego",
@@ -58,6 +61,23 @@
     "when": "{{when}} · {{time}}",
     "host": "Anfitrión: {{host}}",
     "open": "Abrir la noche"
+  },
+  "plan": {
+    "starts": "Empieza {{when}} · {{date}} · {{time}}",
+    "rsvps": "RSVP",
+    "no-games": "Todavía no hay juegos planificados"
+  },
+  "invites": {
+    "title": "¿Enviar las invitaciones por correo?",
+    "description_one": "{{count}} invitado sin respuesta recibe un correo con el enlace RSVP de {{title}}:",
+    "description_other": "{{count}} invitados sin respuesta reciben un correo con el enlace RSVP de {{title}}:",
+    "nobody": "Nadie sin respuesta para {{title}} tiene correo electrónico, así que no hay nada que enviar.",
+    "without-email_one": "Sin correo electrónico, no se envía: {{names}}",
+    "without-email_other": "Sin correo electrónico, no se envía: {{names}}",
+    "send_one": "Enviar {{count}} correo",
+    "send_other": "Enviar {{count}} correos",
+    "email-disabled": "El correo no está configurado en el servidor, así que no se pueden enviar invitaciones.",
+    "public-url-missing": "Configura la URL pública en Ajustes > General antes de enviar invitaciones."
   },
   "form": {
     "title": {
@@ -125,8 +145,8 @@
       "coop-optional": "Este juego se puede jugar en cooperativo: lo activas al terminarlo."
     },
     "log": {
-      "button": "Registrar un juego terminado",
-      "title": "Registrar un juego terminado"
+      "button": "Registrar partida",
+      "title": "Registrar partida"
     },
     "finish": {
       "button": "Terminar",
@@ -143,7 +163,7 @@
     },
     "leave-out-hint": "Toca a un jugador para dejarlo fuera",
     "leave-out": "Dejar fuera a {{name}}",
-    "save": "Guardar sesión",
+    "save": "Guardar partida",
     "now-playing": "Jugando ahora: {{game}}",
     "running": "Empezó a las {{time}} · {{duration}} · {{players}}",
     "again": "Jugar otra vez:",
@@ -157,7 +177,7 @@
   },
   "summary": {
     "games-played": "Juegos jugados",
-    "play-time": "Tiempo de juego",
+    "play-time": "Tiempo en partidas",
     "leading": "Liderando esta noche",
     "night-winner": "Ganador de la noche",
     "no-winner": "Aún no hay ganador",
@@ -168,7 +188,7 @@
     "tonight": "Jugado esta noche",
     "after": "Jugado",
     "empty": "Aún no se ha jugado nada. Toca «Empezar un juego» cuando empiece una partida; la fecha, la hora, el lugar y los jugadores se rellenan solos.",
-    "empty-after": "No se registró nada para esta noche. Usa «Registrar un juego terminado» para añadir lo que se jugó."
+    "empty-after": "No se registró nada para esta noche. Usa «Registrar partida» para añadir lo que se jugó."
   },
   "table": {
     "title": "En la mesa",
@@ -218,7 +238,7 @@
       "every-day_other": "más o menos una cada {{count}} días",
       "games": "Juegos jugados",
       "per-night": "{{value}} por noche",
-      "play-time": "Tiempo de juego",
+      "play-time": "Tiempo en partidas",
       "table": "Mesa media",
       "table-hint": "jugadores por noche"
     },
@@ -291,7 +311,8 @@
     },
     "records": {
       "title": "Récords",
-      "longest-night": "Noche más larga",
+      "longest-night": "Duración de la noche más larga",
+      "night-length": "del inicio de la primera partida al final de la última",
       "most-games": "Más juegos en una noche",
       "biggest-table": "Mesa más grande",
       "latest-finish": "Final más tardío",

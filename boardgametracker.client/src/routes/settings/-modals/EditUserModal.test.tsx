@@ -15,6 +15,9 @@ const editedUser: UserDto = {
 	createdAt: new Date(2026, 0, 1),
 	lastLoginAt: null,
 	playerId: null,
+	isDisabled: false,
+	roleManagedByIdentityProvider: false,
+	externalLoginCount: 0,
 };
 
 const renderModal = (overrides: Partial<Parameters<typeof EditUserModal>[0]> = {}) => {

@@ -11,7 +11,7 @@ import { BgtText } from "@/components/BgtText/BgtText";
 import { AvatarChip } from "@/components/GameNight/AvatarChip";
 import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
 import { RsvpProgress } from "@/components/GameNight/RsvpProgress";
-import type { GameNight, Settings } from "@/models";
+import type { GameNight, Player, Settings } from "@/models";
 import { relativeDay } from "@/utils/relativeDay";
 import { sortRsvps } from "@/utils/sortRsvps";
 import { GameNightActions } from "./GameNightActions";
@@ -20,6 +20,7 @@ import { RsvpAvatarStack } from "./RsvpAvatarStack";
 interface Props {
 	gameNight: GameNight;
 	settings: Settings;
+	players: Player[];
 	canWrite: boolean;
 	highlight?: boolean;
 	onEdit: (gameNight: GameNight) => void;
@@ -28,7 +29,7 @@ interface Props {
 }
 
 export const GameNightCard = (props: Props) => {
-	const { gameNight, settings, canWrite, highlight = false, onEdit, onDelete, onManageRsvps } = props;
+	const { gameNight, settings, players, canWrite, highlight = false, onEdit, onDelete, onManageRsvps } = props;
 	const { t } = useTranslation("game-nights");
 	const navigate = useNavigate();
 
@@ -69,7 +70,7 @@ export const GameNightCard = (props: Props) => {
 				</div>
 				{canWrite && (
 					<div className="md:self-start">
-						<GameNightActions gameNight={gameNight} onEdit={onEdit} onDelete={onDelete} />
+						<GameNightActions gameNight={gameNight} players={players} onEdit={onEdit} onDelete={onDelete} />
 					</div>
 				)}
 				<div className="flex min-w-0 flex-col gap-3 md:col-span-2">

@@ -3690,6 +3690,13 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "iss",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3801,11 +3808,47 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "iss",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "302": {
             "description": "Found"
+          }
+        }
+      }
+    },
+    "/api/auth/oidc/logout": {
+      "post": {
+        "tags": [
+          "Oidc"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/OidcLogoutResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OidcLogoutResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OidcLogoutResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -5231,6 +5274,202 @@
           }
         }
       }
+    },
+    "/api/admin/users/{id}/disable": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{id}/enable": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{id}/role/identity-provider": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{id}/external-logins": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExternalLoginDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExternalLoginDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExternalLoginDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{id}/external-logins/{loginId}": {
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "loginId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6019,6 +6258,10 @@
           "buttonColor": {
             "type": "string",
             "nullable": true
+          },
+          "defaultRole": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -6188,6 +6431,10 @@
             "type": "string"
           },
           "acceptedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maybeCount": {
             "type": "integer",
             "format": "int32"
           },
@@ -6911,7 +7158,8 @@
         "enum": [
           "accepted",
           "declined",
-          "pending"
+          "pending",
+          "maybe"
         ],
         "type": "string"
       },
@@ -7912,10 +8160,25 @@
             "type": "string"
           },
           "userInfoEndpoint": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
+          },
+          "endSessionEndpoint": {
+            "type": "string",
+            "nullable": true
           },
           "issuerMatchesAuthority": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OidcLogoutResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -7990,6 +8253,9 @@
           "buttonColor": {
             "type": "string",
             "nullable": true
+          },
+          "defaultRole": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -8046,6 +8312,9 @@
             "type": "string"
           },
           "linkCallbackUriTemplate": {
+            "type": "string"
+          },
+          "postLogoutRedirectUri": {
             "type": "string"
           }
         },
@@ -9338,6 +9607,14 @@
           "buttonColor": {
             "type": "string",
             "nullable": true
+          },
+          "defaultRole": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -9575,6 +9852,16 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "isDisabled": {
+            "type": "boolean"
+          },
+          "roleManagedByIdentityProvider": {
+            "type": "boolean"
+          },
+          "externalLoginCount": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false

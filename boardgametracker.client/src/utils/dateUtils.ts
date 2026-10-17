@@ -98,20 +98,6 @@ export const toDisplay = (date: Date | string | undefined | null, dateFormat: st
 	return format(dateObj, dateFnsFormat, { locale });
 };
 
-export const toWeekdayDisplay = (
-	date: Date | string | undefined | null,
-	dateFormat: string,
-	uiLanguage: string,
-): string => {
-	const dateObj = toValidDate(date);
-	if (!dateObj) {
-		return "";
-	}
-
-	const pattern = `EEEE ${normalizeDateFnsFormat(dateFormat, DEFAULT_DATE_FORMAT)}`;
-	return format(dateObj, pattern, { locale: getDateFnsLocale(uiLanguage) });
-};
-
 export const toDisplayDateTime = (
 	date: Date | string | undefined,
 	dateFormat: string,

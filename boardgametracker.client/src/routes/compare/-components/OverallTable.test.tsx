@@ -41,7 +41,7 @@ describe("OverallTable", () => {
 		expect(rows.map((row) => within(row).getByRole("rowheader").textContent)).toEqual([
 			"Wins",
 			"Win rate",
-			"Games",
+			"Sessions",
 			"Play time",
 		]);
 		expect(cells).toEqual([

@@ -18,16 +18,16 @@ const gameNight = (notes: string) =>
 		notes,
 	}) as unknown as GameNight;
 
-const settings = { timeFormat: "HH:mm", dateFormat: "dd-MM-yyyy", uiLanguage: "en-US" } as Settings;
+const settings = { dateFormat: "dd-MM-yyyy", timeFormat: "HH:mm", uiLanguage: "en-US" } as Settings;
 
 describe("RsvpEventDetails", () => {
-	it("shows the date box, title, configured date, location and host", () => {
+	it("shows the date once in the configured format, with the title, location and host", () => {
 		renderWithTheme(<RsvpEventDetails gameNight={gameNight("")} settings={settings} />);
 
-		expect(screen.getByText("Sun")).toBeInTheDocument();
-		expect(screen.getByText("11")).toBeInTheDocument();
 		expect(screen.getByRole("heading", { name: "Strategy Night" })).toBeInTheDocument();
-		expect(screen.getByText("Sunday 11-10-2026")).toBeInTheDocument();
+		expect(screen.getByTestId("rsvp-date")).toHaveTextContent("11-10-2026");
+		expect(screen.queryByText("Sunday, October 11th, 2026")).not.toBeInTheDocument();
+		expect(screen.queryByText("Sun")).not.toBeInTheDocument();
 		expect(screen.getByText("Thuis")).toBeInTheDocument();
 		expect(screen.getByText("hosted-by")).toBeInTheDocument();
 		expect(screen.getByText("reggi")).toBeInTheDocument();

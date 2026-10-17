@@ -599,6 +599,34 @@ public class SessionServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task CreateFromCommand_ShouldBeRefused_WhenTheGameNightIsMoreThanTwelveHoursAway()
+    {
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow.AddDays(7), 1, 1);
+        var command = new CreateSessionCommand
+        {
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 45,
+            GameNightId = 7,
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1}]
+        };
+
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(gameNight);
+
+        var action = () => _sessionService.CreateFromCommand(command);
+
+        var error = await action.Should().ThrowAsync<ValidationException>();
+        error.Which.Errors[nameof(CreateSessionCommand.GameNightId)].Should().Contain(Constants.Errors.GameNightNotStarted);
+
+        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #region UpdateFromCommand Tests
 
     [Fact]

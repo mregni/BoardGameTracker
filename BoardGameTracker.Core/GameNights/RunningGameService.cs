@@ -64,6 +64,11 @@ public class RunningGameService : IRunningGameService
             throw new ValidationException(Constants.Errors.GameNightEnded);
         }
 
+        if (!gameNight.HasPlayOpened(_dateTimeProvider.UtcNow))
+        {
+            throw new ValidationException(Constants.Errors.GameNightNotStarted);
+        }
+
         if (!await _gameService.ExistsAsync(command.GameId))
         {
             throw new EntityNotFoundException(nameof(Game), command.GameId);
@@ -91,6 +96,11 @@ public class RunningGameService : IRunningGameService
         if (runningGame == null)
         {
             throw new EntityNotFoundException(nameof(RunningGame), id);
+        }
+
+        if (!runningGame.GameNight.HasPlayOpened(_dateTimeProvider.UtcNow))
+        {
+            throw new ValidationException(Constants.Errors.GameNightNotStarted);
         }
 
         var start = command.Start ?? runningGame.Start;

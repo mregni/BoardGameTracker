@@ -10,7 +10,8 @@ interface Props {
 
 const segments: { state: GameNightRsvpState; key: string; tone: ProgressTone }[] = [
 	{ state: GameNightRsvpState.Accepted, key: "rsvp.summary.coming", tone: "ok" },
-	{ state: GameNightRsvpState.Pending, key: "rsvp.summary.pending", tone: "warn" },
+	{ state: GameNightRsvpState.Maybe, key: "rsvp.summary.maybe", tone: "warn" },
+	{ state: GameNightRsvpState.Pending, key: "rsvp.summary.pending", tone: "muted" },
 	{ state: GameNightRsvpState.Declined, key: "rsvp.summary.declined", tone: "bad" },
 ];
 

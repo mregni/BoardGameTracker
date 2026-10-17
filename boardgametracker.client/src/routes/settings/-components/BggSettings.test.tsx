@@ -91,17 +91,17 @@ describe("BggSettings", () => {
 			expect(screen.getByText("bgg.title")).toBeInTheDocument();
 		});
 
-		it("should always render the API key help status", () => {
-			renderWithProviders(<Harness bggStatus={createBggStatus()} />);
-			expect(screen.getByText("bgg.api-key.help-title")).toBeInTheDocument();
+		it("should show the API key help as a field hint instead of an info box", () => {
+			renderWithProviders(<Harness bggStatus={createBggStatus()} changeDetectionStatus={cdNotConfigured} />);
+			expect(screen.queryByText("bgg.api-key.help-title")).not.toBeInTheDocument();
+			expect(screen.getByText("changedetection.help-description")).toBeInTheDocument();
 		});
 	});
 
 	describe("Not configured", () => {
-		it("should show the not-configured warning status", () => {
+		it("should not repeat the status in a warning banner", () => {
 			renderWithProviders(<Harness bggStatus={createBggStatus({ isConfigured: false })} />);
-			expect(screen.getByText("bgg.status.not-configured")).toBeInTheDocument();
-			expect(screen.getByText("bgg.status.not-configured-description")).toBeInTheDocument();
+			expect(screen.queryByText("bgg.status.not-configured")).not.toBeInTheDocument();
 		});
 
 		it("should render the API key input field", () => {
@@ -118,12 +118,6 @@ describe("BggSettings", () => {
 
 	describe("Configured (editable)", () => {
 		const status = () => createBggStatus({ isConfigured: true, isReadOnly: false });
-
-		it("should show the configured success status with db source", () => {
-			renderWithProviders(<Harness bggStatus={status()} />);
-			expect(screen.getByText("bgg.status.configured")).toBeInTheDocument();
-			expect(screen.getByText("bgg.status.source-db")).toBeInTheDocument();
-		});
 
 		it("should render the clear button", () => {
 			renderWithProviders(<Harness bggStatus={status()} />);
@@ -149,12 +143,6 @@ describe("BggSettings", () => {
 
 	describe("Configured (read-only / env)", () => {
 		const status = () => createBggStatus({ isConfigured: true, isReadOnly: true, source: "env" });
-
-		it("should show the configured success status with env source", () => {
-			renderWithProviders(<Harness bggStatus={status()} />);
-			expect(screen.getByText("bgg.status.configured")).toBeInTheDocument();
-			expect(screen.getByText("bgg.status.source-env")).toBeInTheDocument();
-		});
 
 		it("should render the read-only info status", () => {
 			renderWithProviders(<Harness bggStatus={status()} />);
@@ -289,8 +277,25 @@ describe("BggSettings", () => {
 			renderWithProviders(<Harness bggStatus={createBggStatus()} changeDetectionStatus={cdNotConfigured} />);
 			await screen.findByText("integrations.status.ok");
 
-			for (const button of screen.getAllByRole("button", { name: "integrations.test" })) {
+			const buttons = screen.getAllByRole("button", { name: "integrations.test" });
+			const hints = screen.getAllByText("integrations.test-hint");
+			expect(hints).toHaveLength(2);
+			buttons.forEach((button, index) => {
 				expect(button).toBeDisabled();
+				expect(button).toHaveAttribute("aria-describedby", hints[index].id);
+			});
+		});
+
+		it("should not show the test hint once a key is saved", async () => {
+			renderWithProviders(
+				<Harness bggStatus={createBggStatus({ isConfigured: true })} changeDetectionStatus={cdConfigured} />,
+			);
+			await screen.findByText("integrations.status.ok");
+
+			expect(screen.queryByText("integrations.test-hint")).not.toBeInTheDocument();
+			for (const button of screen.getAllByRole("button", { name: "integrations.test" })) {
+				expect(button).toBeEnabled();
+				expect(button).not.toHaveAttribute("aria-describedby");
 			}
 		});
 

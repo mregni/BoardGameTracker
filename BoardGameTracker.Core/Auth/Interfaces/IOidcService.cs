@@ -7,18 +7,20 @@ public interface IOidcService
     Task<OidcProviderInfo?> GetEnabledProviderAsync();
     Task<OidcAuthorizationRequest> StartLoginAsync(string providerName, string publicBaseUrl, string? redirectPath);
     Task<OidcAuthorizationRequest> StartLinkAsync(string userId, string providerName, string publicBaseUrl);
-    Task<OidcLoginResult> CompleteLoginAsync(string providerName, string code, string? state, string? browserState);
-    Task<OidcLinkResult> CompleteLinkAsync(string providerName, string code, string? state, string? browserState);
+    Task<OidcLoginResult> CompleteLoginAsync(string providerName, string code, string? state, string? browserState, string? issuer);
+    Task<OidcLinkResult> CompleteLinkAsync(string providerName, string code, string? state, string? browserState, string? issuer);
     Task<OidcDiscoveryResultDto> TestDiscoveryAsync(string authority);
     string CreateHandoff(LoginResponse login);
     LoginResponse? TakeHandoff(string? handoffKey);
     Task<List<ExternalLoginDto>> GetExternalLoginsAsync(string userId);
     Task UnlinkExternalLoginAsync(string userId, int externalLoginId);
     Task<bool> HasEnabledProviderAsync();
+    Task<string?> EndSessionAsync(string? sessionKey, string publicBaseUrl);
+    Task CleanupExpiredSessionsAsync();
 }
 
 public record OidcAuthorizationRequest(string Url, string State);
 
-public record OidcLoginResult(LoginResponse Login, string RedirectPath);
+public record OidcLoginResult(LoginResponse Login, string RedirectPath, string? SessionKey = null);
 
 public record OidcLinkResult(string UserId, string ProviderName);

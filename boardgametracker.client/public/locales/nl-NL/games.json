@@ -29,7 +29,7 @@
     "failed-unknown": "Importeren van spellen van BoardGameGeek mislukt, bekijk de logs voor meer details."
   },
   "title": "Spellen",
-  "new": "Nieuw spel toevoegen",
+  "new": "Spel toevoegen",
   "count_other": "{{count}} spellen gevonden",
   "count_one": "{{count}} spel gevonden",
   "cards": {

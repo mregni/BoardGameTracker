@@ -52,9 +52,9 @@ describe("TogetherTiles", () => {
 		expect(screen.getByText("46")).toBeInTheDocument();
 		expect(screen.getByText("since 12-03-2025")).toBeInTheDocument();
 		expect(screen.getByText("40h 10m")).toBeInTheDocument();
-		expect(screen.getByText("avg 52 min a game")).toBeInTheDocument();
+		expect(screen.getByText("avg 52 min a session")).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: /Most played/ })).toHaveAttribute("href", "/games/10");
-		expect(screen.getByText("11 games")).toBeInTheDocument();
+		expect(screen.getByText("11 sessions")).toBeInTheDocument();
 		expect(screen.getByText("1 pt")).toBeInTheDocument();
 		expect(screen.getByText("Brass: Birmingham · Mikhaël won")).toBeInTheDocument();
 	});
@@ -74,7 +74,7 @@ describe("TogetherTiles", () => {
 		renderTiles({ preferredGame: null, closestGame: null, firstGameTogether: null });
 
 		expect(screen.queryByText("Most played")).toBeNull();
-		expect(screen.queryByText("Closest game")).toBeNull();
+		expect(screen.queryByText("Closest session")).toBeNull();
 		expect(screen.queryByText(/since/)).toBeNull();
 	});
 });

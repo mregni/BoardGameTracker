@@ -222,7 +222,8 @@ describe("RsvpPage", () => {
 		renderPage();
 
 		expect(await screen.findByRole("heading", { level: 1, name: "past-title" })).toBeInTheDocument();
-		expect(screen.getByText("Sunday 05-01-2020")).toBeInTheDocument();
+		expect(screen.getByText("05-01-2020")).toBeInTheDocument();
+		expect(screen.queryByText("Sunday, January 5th, 2020")).not.toBeInTheDocument();
 		expect(screen.getByText("past-description")).toBeInTheDocument();
 		expect(screen.queryByText("whos-coming")).not.toBeInTheDocument();
 		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();

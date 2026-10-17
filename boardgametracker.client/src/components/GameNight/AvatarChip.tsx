@@ -7,7 +7,8 @@ const chip = "inline-flex items-center gap-1.5 rounded-full border p-1 pr-3 text
 const tones = {
 	neutral: "border-white/10 bg-white/5",
 	coming: "border-green-400/50 bg-green-400/10",
-	pending: "border-amber-400/50 bg-amber-400/10",
+	maybe: "border-amber-400/50 bg-amber-400/10",
+	pending: "border-white/20 bg-white/5",
 	declined: "border-red-400/50 bg-red-400/10",
 	winner: "border-yellow-400/50 bg-yellow-400/10",
 } as const;

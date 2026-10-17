@@ -8,6 +8,7 @@ export const DESKTOP_MAX = 8;
 
 const stateOpacity: Record<GameNightRsvpState, string> = {
 	[GameNightRsvpState.Accepted]: "",
+	[GameNightRsvpState.Maybe]: "opacity-80",
 	[GameNightRsvpState.Pending]: "opacity-60",
 	[GameNightRsvpState.Declined]: "opacity-35",
 };

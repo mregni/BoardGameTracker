@@ -613,6 +613,7 @@
           "Microsoft.Extensions.AI": "[10.10.0, )",
           "Microsoft.Extensions.AI.OpenAI": "[10.10.0, )",
           "Microsoft.IdentityModel.JsonWebTokens": "[8.22.0, )",
+          "Microsoft.IdentityModel.Protocols.OpenIdConnect": "[8.22.0, )",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )",
           "OllamaSharp": "[5.4.30, )",
           "PdfPig": "[0.1.16, )",

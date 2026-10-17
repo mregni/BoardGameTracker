@@ -73,7 +73,7 @@ describe("RsvpResponseForm", () => {
 		await user.click(screen.getByRole("button", { name: "send-answer" }));
 
 		expect(screen.getByRole("button", { name: "maybe" })).toHaveAttribute("aria-pressed", "true");
-		expect(onSubmit).toHaveBeenCalledWith(invitedPlayers[1], GameNightRsvpState.Pending);
+		expect(onSubmit).toHaveBeenCalledWith(invitedPlayers[1], GameNightRsvpState.Maybe);
 	});
 
 	it("preselects the previous answer", () => {

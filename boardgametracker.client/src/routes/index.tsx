@@ -1,9 +1,7 @@
 import { noop } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import Game from "@/assets/icons/gamepad.svg?react";
 import Home from "@/assets/icons/home.svg?react";
-import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
@@ -18,6 +16,7 @@ import { MostPlayedCard } from "./-components/dashboard/MostPlayedCard";
 import { NextGameNightCard } from "./-components/dashboard/NextGameNightCard";
 import { ShelfOfShameNudge } from "./-components/dashboard/ShelfOfShameNudge";
 import { TopPlayersCard } from "./-components/dashboard/TopPlayersCard";
+import { NoGamesEmptyPage } from "./-components/NoGamesEmptyPage";
 import { useDashboardData } from "./-hooks/useDashboardData";
 
 export const Route = createFileRoute("/")({
@@ -29,7 +28,6 @@ export const Route = createFileRoute("/")({
 
 function RouteComponent() {
 	const { statistics, settings } = useDashboardData();
-	const navigate = useNavigate();
 	const { t } = useTranslation(["dashboard", "common"]);
 	const { canWrite } = usePermissions();
 	const shortDuration = useShortDuration();
@@ -38,19 +36,7 @@ function RouteComponent() {
 	if (statistics === undefined || settings === undefined) return null;
 
 	if (statistics.totalGames === 0) {
-		return (
-			<BgtEmptyPage
-				header={t("common:dashboard")}
-				icon={Home}
-				emptyIcon={Game}
-				title={t("empty.title")}
-				description={t("empty.description")}
-				action={{
-					label: t("empty.button"),
-					onClick: () => navigate({ to: "/games" }),
-				}}
-			/>
-		);
+		return <NoGamesEmptyPage header={t("common:dashboard")} icon={Home} />;
 	}
 
 	return (

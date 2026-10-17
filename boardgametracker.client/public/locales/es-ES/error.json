@@ -40,7 +40,14 @@
     "last-sign-in-method": "Es tu única forma de iniciar sesión. Primero establece una contraseña (Olvidé mi contraseña, o pide a un administrador que la restablezca) y luego desvincula.",
     "current-password-required": "Introduce tu contraseña actual para cambiar tu dirección de correo.",
     "email-change-needs-password": "Esta cuenta solo inicia sesión con inicio de sesión único. Establece primero una contraseña con \"¿Olvidaste tu contraseña?\" en la página de inicio de sesión y después cambia la dirección de correo.",
-    "oidc-provider-unavailable": "Este proveedor de inicio de sesión no está disponible. Elige otra forma de iniciar sesión o pregunta a tu administrador."
+    "oidc-provider-unavailable": "Este proveedor de inicio de sesión no está disponible. Elige otra forma de iniciar sesión o pregunta a tu administrador.",
+    "oidc-id-token-invalid": "No se pudo verificar el token de inicio de sesión del proveedor de identidad. Inténtalo de nuevo o consulta a tu administrador.",
+    "oidc-username-taken": "Ya existe una cuenta con este nombre de usuario. Inicia sesión con tu contraseña y vincula el SSO en Ajustes → Cuenta.",
+    "oidc-provider-name-invalid": "Usa letras minúsculas, dígitos y guiones para el nombre corto, y elige uno que no esté en uso.",
+    "oidc-role-not-managed": "Este usuario no tiene ninguna cuenta del proveedor de identidad vinculada, así que el proveedor no puede gestionar su rol.",
+    "account-disabled": "Esta cuenta está desactivada. Pide a tu administrador que la active.",
+    "cannot-disable-self": "No puedes desactivar tu propia cuenta.",
+    "cannot-disable-last-admin": "No puedes desactivar al último administrador activo."
   },
   "changedetection": {
     "invalid-base-url": "La URL de changedetection.io no es válida",
@@ -103,7 +110,8 @@
     "already-over": "Esta noche de juegos ya ha tenido lugar",
     "suggested-game-not-owned": "Solo puedes sugerir juegos que tengas para una noche de juegos",
     "games-running": "Termina o descarta los juegos en curso antes de cerrar la noche",
-    "ended": "Esta noche de juegos está cerrada, reábrela para añadir juegos"
+    "ended": "Esta noche de juegos está cerrada, reábrela para añadir juegos",
+    "not-started": "Esta noche de juegos aún no ha empezado, se puede jugar desde 12 horas antes del inicio"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD no cumple las reglas de contraseña (al menos 8 caracteres). Cámbiala o elimínala antes de restablecer de fábrica."

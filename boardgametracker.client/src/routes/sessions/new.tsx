@@ -3,12 +3,12 @@ import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import Game from "@/assets/icons/gamepad.svg?react";
-import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { CreateSession } from "@/models";
 import { getGames } from "@/services/queries/games";
 import { getLocations } from "@/services/queries/locations";
 import { getPlayers } from "@/services/queries/players";
+import { NoGamesEmptyPage } from "../-components/NoGamesEmptyPage";
 import { SessionForm } from "./-components/SessionForm";
 import { useNewSessionData } from "./-hooks/useNewSessionData";
 
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/sessions/new")({
 
 function RouteComponent() {
 	const navigate = useNavigate();
-	const { t } = useTranslation(["player-session", "dashboard"]);
+	const { t } = useTranslation("player-session");
 	const { canWrite } = usePermissions();
 	const { isPending, isLoading, saveSession, games } = useNewSessionData();
 
@@ -35,18 +35,7 @@ function RouteComponent() {
 	};
 
 	if (!isLoading && games.length === 0) {
-		return (
-			<BgtEmptyPage
-				header={t("title-new")}
-				icon={Game}
-				title={t("dashboard:empty.title")}
-				description={t("dashboard:empty.description")}
-				action={{
-					label: t("dashboard:empty.button"),
-					onClick: () => navigate({ to: "/games" }),
-				}}
-			/>
-		);
+		return <NoGamesEmptyPage header={t("title-new")} icon={Game} />;
 	}
 
 	return (

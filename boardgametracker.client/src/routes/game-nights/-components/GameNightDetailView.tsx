@@ -2,8 +2,9 @@ import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import { AvatarChipButton } from "@/components/GameNight/AvatarChip";
 import type { Game, GameNightDetail, Player, RunningGame, Settings } from "@/models";
-import { attendeeIds, isNightOver, latestPlays } from "../-utils/gameNightPlay";
+import { attendeeIds, hasPlayOpened, isNightOver, latestPlays } from "../-utils/gameNightPlay";
 import { GameNightDetailHeader } from "./GameNightDetailHeader";
+import { NightPlanPanel } from "./NightPlanPanel";
 import { NightSectionTitle } from "./NightSectionTitle";
 import { NightSidePanel } from "./NightSidePanel";
 import { NightSummaryStats } from "./NightSummaryStats";
@@ -48,7 +49,8 @@ export const GameNightDetailView = (props: Props) => {
 	const { gameNight, sessions, runningGames } = detail;
 
 	const isOver = isNightOver(detail);
-	const canPlay = canWrite && gameNight.endedAt === null;
+	const isPlanned = gameNight.endedAt === null && !hasPlayOpened(gameNight);
+	const canPlay = canWrite && gameNight.endedAt === null && !isPlanned;
 	const isOverByTime = isOver && gameNight.endedAt === null;
 	const gameOf = (gameId: number) => games.find((game) => game.id === gameId) ?? null;
 	const attendees = attendeeIds(gameNight)
@@ -63,6 +65,7 @@ export const GameNightDetailView = (props: Props) => {
 				gameNight={gameNight}
 				settings={settings}
 				isOver={isOver}
+				isPlanned={isPlanned}
 				canWrite={canWrite}
 				hasRunningGames={runningGames.length > 0}
 				onEdit={onEdit}
@@ -72,6 +75,8 @@ export const GameNightDetailView = (props: Props) => {
 				onStart={startWithAttendees}
 				onLog={onLog}
 			/>
+
+			{isPlanned && <NightPlanPanel gameNight={gameNight} canWrite={canWrite} onManageRsvps={onEditAttendees} />}
 
 			{runningGames.map((runningGame) => (
 				<RunningGameCard
@@ -109,28 +114,32 @@ export const GameNightDetailView = (props: Props) => {
 				</div>
 			)}
 
-			{sessions.length > 0 && <NightSummaryStats summary={gameNight.summary} players={players} isOver={isOver} />}
+			{!isPlanned && sessions.length > 0 && (
+				<NightSummaryStats summary={gameNight.summary} players={players} isOver={isOver} />
+			)}
 
-			<div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:gap-6">
-				<section className="flex flex-col gap-2" aria-labelledby="played-games">
-					<NightSectionTitle id="played-games">{isOver ? t("played.after") : t("played.tonight")}</NightSectionTitle>
-					<PlayedSessionsList
-						sessions={sessions}
-						games={games}
-						players={players}
-						uiLanguage={settings.uiLanguage}
-						canOpen={canWrite}
-						emptyText={isOverByTime ? t("played.empty-after") : t("played.empty")}
+			{!isPlanned && (
+				<div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:gap-6">
+					<section className="flex flex-col gap-2" aria-labelledby="played-games">
+						<NightSectionTitle id="played-games">{isOver ? t("played.after") : t("played.tonight")}</NightSectionTitle>
+						<PlayedSessionsList
+							sessions={sessions}
+							games={games}
+							players={players}
+							uiLanguage={settings.uiLanguage}
+							canOpen={canWrite}
+							emptyText={isOverByTime ? t("played.empty-after") : t("played.empty")}
+						/>
+					</section>
+					<NightSidePanel
+						gameNight={gameNight}
+						attendees={attendees}
+						playedGameIds={sessions.map((x) => x.gameId)}
+						canWrite={canWrite}
+						onEditAttendees={onEditAttendees}
 					/>
-				</section>
-				<NightSidePanel
-					gameNight={gameNight}
-					attendees={attendees}
-					playedGameIds={sessions.map((x) => x.gameId)}
-					canWrite={canWrite}
-					onEditAttendees={onEditAttendees}
-				/>
-			</div>
+				</div>
+			)}
 		</div>
 	);
 };

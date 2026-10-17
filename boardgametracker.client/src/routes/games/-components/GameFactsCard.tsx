@@ -12,12 +12,14 @@ import Package from "@/assets/icons/package.svg?react";
 import Target from "@/assets/icons/target.svg?react";
 import User from "@/assets/icons/user.svg?react";
 import Users from "@/assets/icons/users.svg?react";
-import type { Game, GamePrice } from "@/models";
+import { type Game, type GamePrice, GameState } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { formatDecimal, formatPrice } from "@/utils/numberUtils";
 import { formatRange } from "@/utils/rangeUtils";
 import { LivePrice } from "./LivePrice";
 import { PriceRefreshButton } from "./PriceRefreshButton";
+
+const isInCollection = (state: GameState) => state === GameState.Owned || state === GameState.ForTrade;
 
 interface FactRowProps {
 	icon: ComponentType<SVGProps<SVGSVGElement>>;
@@ -131,7 +133,10 @@ export const GameFactsCard = (props: Props) => {
 				</FactRow>
 			)}
 			{game.additionDate && (
-				<FactRow icon={Calendar} label={t("statistics:in-collection")}>
+				<FactRow
+					icon={Calendar}
+					label={t(isInCollection(game.state) ? "statistics:in-collection" : "statistics:added")}
+				>
 					{toDisplay(game.additionDate, dateFormat, uiLanguage)}
 				</FactRow>
 			)}

@@ -63,9 +63,7 @@ export const RecordCard = ({ compare, playerOne, playerTwo }: Props) => {
 		>
 			<div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-3">
 				{score("playerOne", playerOne, one)}
-				<span className="max-w-24 pb-1.5 text-center text-xs text-white/60">
-					{t("record.together", { count: compare.totalSessionsTogether })}
-				</span>
+				<span aria-hidden="true" />
 				{score("playerTwo", playerTwo, two)}
 			</div>
 			<BgtProgressBar

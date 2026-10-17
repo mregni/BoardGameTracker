@@ -22,7 +22,8 @@ public class GameNightStatisticsSpecTests
             GameNightRsvp.Create(1, GameNightRsvpState.Accepted),
             GameNightRsvp.Create(2, GameNightRsvpState.Declined),
             GameNightRsvp.Create(3, GameNightRsvpState.Pending),
-            GameNightRsvp.Create(5, GameNightRsvpState.Accepted)
+            GameNightRsvp.Create(5, GameNightRsvpState.Accepted),
+            GameNightRsvp.Create(6, GameNightRsvpState.Maybe)
         ]);
         gameNight.SetSuggestedGames([new Game("Azul") { Id = 12 }]);
         var session = new Session(12, Start, Start.AddMinutes(45), string.Empty);

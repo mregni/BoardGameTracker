@@ -12,7 +12,8 @@ public record OidcSetupDto(
     string PublicBaseUrl,
     bool PublicUrlConfigured,
     string CallbackUriTemplate,
-    string LinkCallbackUriTemplate);
+    string LinkCallbackUriTemplate,
+    string PostLogoutRedirectUri);
 
 public record TestOidcDiscoveryRequest([Required, Url] string Authority);
 
@@ -20,7 +21,8 @@ public record OidcDiscoveryResultDto(
     string Issuer,
     string AuthorizationEndpoint,
     string TokenEndpoint,
-    string UserInfoEndpoint,
+    string? UserInfoEndpoint,
+    string? EndSessionEndpoint,
     bool IssuerMatchesAuthority);
 
 public record CreateOidcProviderRequest(
@@ -40,7 +42,8 @@ public record CreateOidcProviderRequest(
     string? RolesClaimType,
     string? AdminGroupValue,
     [Url] string? IconUrl,
-    string? ButtonColor);
+    string? ButtonColor,
+    string? DefaultRole = null);
 
 public record UpdateOidcProviderRequest(
     [Range(1, int.MaxValue)] int Id,
@@ -60,7 +63,9 @@ public record UpdateOidcProviderRequest(
     string? RolesClaimType,
     string? AdminGroupValue,
     [Url] string? IconUrl,
-    string? ButtonColor);
+    string? ButtonColor,
+    string? DefaultRole = null,
+    [StringLength(100)] string? Name = null);
 
 public record OidcProviderListDto(
     int Id,
@@ -87,7 +92,8 @@ public record OidcProviderDto(
     string? RolesClaimType,
     string? AdminGroupValue,
     string? IconUrl,
-    string? ButtonColor);
+    string? ButtonColor,
+    string DefaultRole);
 
 public record ExternalLoginDto(
     int Id,
@@ -96,6 +102,8 @@ public record ExternalLoginDto(
     string? ProviderDisplayName,
     DateTime LinkedAt,
     DateTime? LastUsedAt);
+
+public record OidcLogoutResponse(string? Url);
 
 public record UpdateUserRoleRequest(string Role);
 

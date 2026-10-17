@@ -1,6 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { Trans, useTranslation } from "react-i18next";
-import Info from "@/assets/icons/info.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtInputField } from "@/components/BgtForm";
 import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
@@ -36,17 +35,6 @@ export const BggSettings = withForm({
 		return (
 			<div className="space-y-6">
 				<SettingsSection title={t("bgg.title")} description={t("bgg.description")}>
-					<BgtStatus
-						variant={bggStatus.isConfigured ? "success" : "warning"}
-						title={bggStatus.isConfigured ? t("bgg.status.configured") : t("bgg.status.not-configured")}
-						description={
-							bggStatus.isConfigured
-								? bggStatus.isReadOnly
-									? t("bgg.status.source-env")
-									: t("bgg.status.source-db")
-								: t("bgg.status.not-configured-description")
-						}
-					/>
 					<IntegrationStatusRow
 						integration="bgg"
 						status={statusFor("bgg")}
@@ -79,7 +67,7 @@ export const BggSettings = withForm({
 							description={t("bgg.api-key.read-only-description")}
 						/>
 					) : (
-						<div className="flex-1">
+						<div className="flex flex-1 flex-col gap-1">
 							<form.Field name="bggApiKey">
 								{(field: AnyFieldApi) => (
 									<BgtInputField
@@ -91,48 +79,28 @@ export const BggSettings = withForm({
 									/>
 								)}
 							</form.Field>
+							<BgtText size="1" color="white" opacity={50}>
+								<Trans
+									i18nKey="bgg.api-key.help-description"
+									ns="settings"
+									components={{
+										requestPage: (
+											// biome-ignore lint/a11y/useAnchorContent: Trans injects the link text from the translation
+											<a
+												href="https://boardgamegeek.com/applications"
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-cyan-400 hover:text-cyan-300 underline"
+											/>
+										),
+									}}
+								/>
+							</BgtText>
 						</div>
 					)}
-
-					<BgtStatus
-						variant="info"
-						title={t("bgg.api-key.help-title")}
-						description={
-							<Trans
-								i18nKey="bgg.api-key.help-description"
-								ns="settings"
-								components={{
-									requestPage: (
-										// biome-ignore lint/a11y/useAnchorContent: Trans injects the link text from the translation
-										<a
-											href="https://boardgamegeek.com/applications"
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-cyan-400 hover:text-cyan-300 underline"
-										/>
-									),
-								}}
-							/>
-						}
-						icon={Info}
-					/>
 				</SettingsSection>
 
 				<SettingsSection title={t("changedetection.title")} description={t("changedetection.description")}>
-					<BgtStatus
-						variant={changeDetectionStatus.isConfigured ? "success" : "warning"}
-						title={
-							changeDetectionStatus.isConfigured
-								? t("changedetection.status.configured")
-								: t("changedetection.status.not-configured")
-						}
-						description={
-							changeDetectionStatus.isConfigured
-								? t("changedetection.status.source-db")
-								: t("changedetection.status.not-configured-description")
-						}
-					/>
-
 					<IntegrationStatusRow
 						integration="changeDetection"
 						status={statusFor("changeDetection")}
@@ -181,7 +149,7 @@ export const BggSettings = withForm({
 						</div>
 					)}
 
-					<div className="flex-1">
+					<div className="flex flex-1 flex-col gap-1">
 						<form.Field name="changeDetectionApiKey">
 							{(field: AnyFieldApi) => (
 								<BgtInputField
@@ -193,14 +161,10 @@ export const BggSettings = withForm({
 								/>
 							)}
 						</form.Field>
+						<BgtText size="1" color="white" opacity={50}>
+							{t("changedetection.help-description")}
+						</BgtText>
 					</div>
-
-					<BgtStatus
-						variant="info"
-						title={t("changedetection.help-title")}
-						description={t("changedetection.help-description")}
-						icon={Info}
-					/>
 				</SettingsSection>
 			</div>
 		);

@@ -170,6 +170,18 @@ describe("GameFactsCard", () => {
 			expect(screen.getByText("2026-01-15")).toBeInTheDocument();
 		});
 
+		it("should label the date as added for a game that is not in the collection", () => {
+			renderWithTheme(
+				<GameFactsCard
+					{...defaultProps}
+					game={createGame({ state: GameState.Wanted, additionDate: new Date(2026, 0, 15) })}
+				/>,
+			);
+
+			expect(screen.getByText("statistics:added")).toBeInTheDocument();
+			expect(screen.queryByText("statistics:in-collection")).not.toBeInTheDocument();
+		});
+
 		it("should not render when the addition date is null", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} />);
 

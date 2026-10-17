@@ -8,4 +8,7 @@ public record UserDto(
     IEnumerable<string> Roles,
     DateTime CreatedAt,
     DateTime? LastLoginAt,
-    int? PlayerId);
+    int? PlayerId,
+    bool IsDisabled = false,
+    bool RoleManagedByIdentityProvider = false,
+    int ExternalLoginCount = 0);

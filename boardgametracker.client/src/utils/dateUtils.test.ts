@@ -12,7 +12,6 @@ import {
 	toInputDateTime,
 	toMonthYear,
 	toRelative,
-	toWeekdayDisplay,
 } from "./dateUtils";
 
 describe("dateUtils", () => {
@@ -109,22 +108,6 @@ describe("dateUtils", () => {
 			expect(normalizeDateFnsFormat("not a format", "yy-MM-dd")).toBe("yy-MM-dd");
 			expect(normalizeDateFnsFormat("", "HH:mm")).toBe("HH:mm");
 			expect(normalizeDateFnsFormat(null, "HH:mm")).toBe("HH:mm");
-		});
-	});
-
-	describe("toWeekdayDisplay", () => {
-		it("adds the weekday to the configured date format", () => {
-			expect(toWeekdayDisplay(new Date(2026, 9, 11), "dd-MM-yyyy", "en-us")).toBe("Sunday 11-10-2026");
-			expect(toWeekdayDisplay("2026-10-11T19:30:00", "DD/MM/YYYY", "nl-be")).toBe("zondag 11/10/2026");
-		});
-
-		it("falls back to the default format for an unusable pattern", () => {
-			expect(toWeekdayDisplay(new Date(2026, 9, 11), "", "en-us")).toBe("Sunday 11-10-2026");
-		});
-
-		it("returns an empty string without a valid date", () => {
-			expect(toWeekdayDisplay(null, "dd-MM-yyyy", "en-us")).toBe("");
-			expect(toWeekdayDisplay("not-a-date", "dd-MM-yyyy", "en-us")).toBe("");
 		});
 	});
 

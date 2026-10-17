@@ -10,7 +10,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
-import { toWeekdayDisplay } from "@/utils/dateUtils";
+import { toDisplay } from "@/utils/dateUtils";
 import { useSettingsData } from "../settings/-hooks/useSettingsData";
 import { RsvpEventDetails } from "./-components/RsvpEventDetails";
 import { RsvpGames } from "./-components/RsvpGames";
@@ -76,8 +76,8 @@ function RsvpPage() {
 								<BgtHeading as="h1" size="5" className="wrap-anywhere">
 									{t("past-title", { title: gameNight.title })}
 								</BgtHeading>
-								<BgtText size="2" color="gray" className="first-letter:uppercase">
-									{toWeekdayDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage)}
+								<BgtText size="2" color="gray">
+									{toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage)}
 								</BgtText>
 								<BgtText size="2">{t("past-description")}</BgtText>
 							</BgtCard>

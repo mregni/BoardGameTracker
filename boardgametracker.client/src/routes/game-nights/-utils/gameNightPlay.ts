@@ -1,11 +1,15 @@
-import { addHours, compareAsc, compareDesc, isAfter } from "date-fns";
+import { addHours, compareAsc, compareDesc, isAfter, isBefore, subHours } from "date-fns";
 import { type GameNight, type GameNightDetail, GameNightRsvpState, type Session } from "@/models";
 import { sortRsvps } from "@/utils/sortRsvps";
 
 const NIGHT_LENGTH_HOURS = 12;
+export const PLAY_OPENS_HOURS_BEFORE = 12;
 
 export const isNightPast = (gameNight: Pick<GameNight, "startDate" | "endedAt">, now: Date = new Date()) =>
 	gameNight.endedAt !== null || isAfter(now, addHours(gameNight.startDate, NIGHT_LENGTH_HOURS));
+
+export const hasPlayOpened = (gameNight: Pick<GameNight, "startDate">, now: Date = new Date()) =>
+	!isBefore(now, subHours(gameNight.startDate, PLAY_OPENS_HOURS_BEFORE));
 
 export const splitGameNights = (gameNights: GameNight[], now: Date = new Date()) => ({
 	upcoming: gameNights

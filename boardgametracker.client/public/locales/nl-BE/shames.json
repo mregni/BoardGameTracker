@@ -3,8 +3,8 @@
   "subtitle_other": "Spellen in je bezit die je {{count}}+ maanden niet speelde",
   "change-in-settings": "aanpassen in Instellingen",
   "none": {
-    "title": "Geen spellen op de Shelf of Shame!",
-    "description": "Proficiat! Je hebt geen spellen op je Shelf of Shame. Blijf zo verder spelen en geniet van je collectie."
+    "title": "Niets op de plank",
+    "description": "Spellen die je bezit en al een tijd niet gespeeld zijn, komen hier te staan."
   },
   "no-matches": "Geen spellen op de plank voor deze filters.",
   "tiles": {
@@ -64,8 +64,8 @@
     "planned": "Gepland · {{date}}",
     "plan": "Plan",
     "plan-label": "Plan {{title}} voor {{night}}",
-    "log-play": "Partij noteren",
-    "log-play-label": "Partij van {{title}} noteren"
+    "log-play": "Sessie registreren",
+    "log-play-label": "Sessie van {{title}} registreren"
   },
   "plan": {
     "added": "{{game}} toegevoegd aan de suggesties voor {{night}} · {{date}}",

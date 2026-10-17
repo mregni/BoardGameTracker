@@ -8,14 +8,21 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BoardGameTracker.IntegrationTests.Infrastructure;
 
 public sealed class FakeIdentityProvider : IAsyncDisposable
 {
     private const string AccessToken = "fake-idp-access-token";
+    private const string KeyId = "fake-key-1";
+    private static readonly JsonWebTokenHandler TokenHandler = new() { SetDefaultTimesOnTokenCreation = false };
+
     private readonly WebApplication _app;
-    private readonly ConcurrentDictionary<string, (string Challenge, string RedirectUri)> _codes = new();
+    private readonly RSA _signingKey = RSA.Create(2048);
+    private readonly RSA _attackerKey = RSA.Create(2048);
+    private readonly ConcurrentDictionary<string, (string Challenge, string RedirectUri, string Nonce)> _codes = new();
 
     private FakeIdentityProvider(WebApplication app)
     {
@@ -27,6 +34,12 @@ public sealed class FakeIdentityProvider : IAsyncDisposable
     public string ClientId { get; set; } = "bgt-client";
 
     public string? ClientSecret { get; set; }
+
+    public bool TamperIdToken { get; set; }
+
+    public string? IssuerParameterOverride { get; set; }
+
+    public string? LastIdToken { get; private set; }
 
     public Dictionary<string, object> User { get; } = new()
     {
@@ -44,20 +57,37 @@ public sealed class FakeIdentityProvider : IAsyncDisposable
         var app = builder.Build();
         var provider = new FakeIdentityProvider(app);
 
-        app.MapGet("/.well-known/openid-configuration", () => Results.Json(new
+        app.MapGet("/.well-known/openid-configuration", () => Results.Json(new Dictionary<string, object>
         {
-            issuer = provider.Authority,
-            authorization_endpoint = $"{provider.Authority}/authorize",
-            token_endpoint = $"{provider.Authority}/token",
-            userinfo_endpoint = $"{provider.Authority}/userinfo",
+            ["issuer"] = provider.Authority,
+            ["authorization_endpoint"] = $"{provider.Authority}/authorize",
+            ["token_endpoint"] = $"{provider.Authority}/token",
+            ["userinfo_endpoint"] = $"{provider.Authority}/userinfo",
+            ["end_session_endpoint"] = $"{provider.Authority}/logout",
+            ["jwks_uri"] = $"{provider.Authority}/certs",
+            ["id_token_signing_alg_values_supported"] = new[] { "RS256" },
+            ["authorization_response_iss_parameter_supported"] = true,
         }));
+
+        app.MapGet("/certs", () =>
+        {
+            var parameters = provider._signingKey.ExportParameters(false);
+            return Results.Json(new
+            {
+                keys = new[]
+                {
+                    new { kty = "RSA", use = "sig", alg = "RS256", kid = KeyId, n = Base64UrlEncoder.Encode(parameters.Modulus), e = Base64UrlEncoder.Encode(parameters.Exponent) },
+                },
+            });
+        });
 
         app.MapGet("/authorize", (HttpRequest request) =>
         {
             var code = Guid.NewGuid().ToString("N");
-            provider._codes[code] = (request.Query["code_challenge"].ToString(), request.Query["redirect_uri"].ToString());
+            provider._codes[code] = (request.Query["code_challenge"].ToString(), request.Query["redirect_uri"].ToString(), request.Query["nonce"].ToString());
             var separator = request.Query["redirect_uri"].ToString().Contains('?') ? "&" : "?";
-            return Results.Redirect($"{request.Query["redirect_uri"]}{separator}code={code}&state={Uri.EscapeDataString(request.Query["state"].ToString())}");
+            var issuer = Uri.EscapeDataString(provider.IssuerParameterOverride ?? provider.Authority);
+            return Results.Redirect($"{request.Query["redirect_uri"]}{separator}code={code}&state={Uri.EscapeDataString(request.Query["state"].ToString())}&iss={issuer}");
         });
 
         app.MapPost("/token", async (HttpRequest request) =>
@@ -80,7 +110,8 @@ public sealed class FakeIdentityProvider : IAsyncDisposable
                 return Results.BadRequest(new { error = "invalid_grant" });
             }
 
-            return Results.Json(new { access_token = AccessToken, token_type = "Bearer" });
+            provider.LastIdToken = provider.IssueIdToken(issued.Nonce);
+            return Results.Json(new { access_token = AccessToken, token_type = "Bearer", id_token = provider.LastIdToken });
         });
 
         app.MapGet("/userinfo", (HttpRequest request) =>
@@ -93,9 +124,32 @@ public sealed class FakeIdentityProvider : IAsyncDisposable
         return provider;
     }
 
+    private string IssueIdToken(string nonce)
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var claims = new Dictionary<string, object>(User)
+        {
+            ["iss"] = Authority,
+            ["aud"] = ClientId,
+            ["nonce"] = nonce,
+            ["iat"] = now,
+            ["nbf"] = now,
+            ["exp"] = now + 300,
+        };
+
+        var key = new RsaSecurityKey(TamperIdToken ? _attackerKey : _signingKey) { KeyId = KeyId };
+        return TokenHandler.CreateToken(new SecurityTokenDescriptor
+        {
+            Claims = claims,
+            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256),
+        });
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _app.StopAsync();
         await _app.DisposeAsync();
+        _signingKey.Dispose();
+        _attackerKey.Dispose();
     }
 }

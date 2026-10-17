@@ -30,5 +30,6 @@
   "average-price-paid-priced_other": "Precio medio pagado · {{count}} juegos con precio",
   "coop-won-lost": "Cooperativo ganado · perdido",
   "coop-results": "{{won}} · {{lost}}",
-  "team-win-rate": "Porcentaje de victorias del equipo"
+  "team-win-rate": "Porcentaje de victorias del equipo",
+  "added": "Añadido"
 }

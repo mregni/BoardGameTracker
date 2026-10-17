@@ -3,8 +3,8 @@
   "subtitle_other": "Juegos en propiedad sin jugar en {{count}}+ meses",
   "change-in-settings": "cambiar en Ajustes",
   "none": {
-    "title": "¡No hay juegos en la estantería de la vergüenza!",
-    "description": "¡Enhorabuena! No tienes juegos en la estantería de la vergüenza. Sigue así, jugando y disfrutando de tu colección."
+    "title": "No hay nada en la estantería",
+    "description": "Aquí aparecen los juegos que tienes y que llevan tiempo sin jugarse."
   },
   "no-matches": "Ningún juego de la estantería coincide con estos filtros.",
   "tiles": {

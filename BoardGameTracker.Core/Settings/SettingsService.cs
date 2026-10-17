@@ -5,6 +5,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.Email;
 using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -61,7 +62,7 @@ public class SettingsService : ISettingsService
             ShelfOfShameEnabled = Resolve<bool>(nameof(UIResourceDto.ShelfOfShameEnabled), Constants.AppConfig.ShelfOfShameEnabled),
             ShelfOfShameMonthsLimit = Resolve(nameof(UIResourceDto.ShelfOfShameMonthsLimit), Constants.AppConfig.ShelfOfShameMonths, Constants.AppConfig.DefaultShelfOfShameMonths),
             GameNightsEnabled = Resolve<bool>(nameof(UIResourceDto.GameNightsEnabled), Constants.AppConfig.GameNightsEnabled),
-            PublicUrl = Resolve<string>(nameof(UIResourceDto.PublicUrl), Constants.AppConfig.PublicUrl),
+            PublicUrl = PublicUrlBuilder.Normalize(Resolve<string>(nameof(UIResourceDto.PublicUrl), Constants.AppConfig.PublicUrl)) ?? string.Empty,
             RsvpAuthenticationEnabled = Resolve<bool>(nameof(UIResourceDto.RsvpAuthenticationEnabled), Constants.AppConfig.RsvpAuthenticationEnabled),
             EmailEnabled = _environmentProvider.EmailEnabled,
             RagEnabled = _environmentProvider.RagEnabled,

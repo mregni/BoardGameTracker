@@ -20,7 +20,7 @@ export const GameNightsSettings = withForm({
 
 		return (
 			<div className="space-y-6">
-				<SettingsSection title={t("game-nights.title")} description={t("game-nights.description")}>
+				<SettingsSection title={t("game-nights.title")}>
 					<form.Field name="gameNightsEnabled" validators={zodValidator(SettingsSchema, "gameNightsEnabled")}>
 						{(field: AnyFieldApi) => (
 							<SettingsToggle

@@ -14,6 +14,7 @@ const night: DashboardGameNight = {
 	hostId: 1,
 	hostName: "Mikhaël",
 	acceptedCount: 4,
+	maybeCount: 0,
 	pendingCount: 1,
 	declinedCount: 2,
 	suggestedGames: [
@@ -47,9 +48,19 @@ describe("NextGameNightCard", () => {
 		expect(screen.getByText("night.declined")).toBeInTheDocument();
 	});
 
+	it("shows maybe as its own warn pill between coming and no answer", () => {
+		renderCard({ gameNight: { ...night, maybeCount: 2 } });
+
+		const maybe = screen.getByText("night.maybe");
+		expect(maybe).toHaveClass("text-warn");
+		expect(maybe.previousElementSibling).toHaveTextContent("night.coming");
+		expect(maybe.nextElementSibling).toHaveTextContent("night.pending");
+	});
+
 	it("hides empty RSVP pills", () => {
 		renderCard({ gameNight: { ...night, pendingCount: 0, declinedCount: 0 } });
 
+		expect(screen.queryByText("night.maybe")).not.toBeInTheDocument();
 		expect(screen.getByText("night.coming")).toBeInTheDocument();
 		expect(screen.queryByText("night.pending")).not.toBeInTheDocument();
 		expect(screen.queryByText("night.declined")).not.toBeInTheDocument();

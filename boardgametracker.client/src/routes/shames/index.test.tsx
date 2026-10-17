@@ -286,6 +286,29 @@ describe("Shelf of shame page", () => {
 		expect(screen.getByText("none.title")).toBeInTheDocument();
 		expect(screen.queryByRole("list", { name: "list.label" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("link", { name: "plan.plan-night" })).not.toBeInTheDocument();
+		expect(screen.getByText("tiles.on-shelf")).toBeInTheDocument();
+		expect(screen.getByRole("combobox", { name: "filters.not-played-in" })).toBeInTheDocument();
+	});
+
+	it("shows only the empty state without tiles, filters or money bar when no games are owned", () => {
+		mocks.shames = [];
+		mocks.statistics = {
+			...baseStatistics,
+			count: 0,
+			ownedCount: 0,
+			neverPlayedCount: 0,
+			plannedCount: 0,
+			pricedGameCount: 0,
+			totalValue: null,
+			collectionValue: 0,
+		};
+		renderWithProviders(<Page />);
+
+		expect(screen.getByText("none.title")).toBeInTheDocument();
+		expect(screen.queryByText("tiles.on-shelf")).not.toBeInTheDocument();
+		expect(screen.queryByRole("combobox", { name: "filters.not-played-in" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("combobox", { name: "filters.sort" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("heading", { name: "money.title" })).not.toBeInTheDocument();
 	});
 
 	it("says so when the filters leave nothing", async () => {

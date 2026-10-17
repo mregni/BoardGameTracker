@@ -162,12 +162,12 @@ describe("Compare page", () => {
 		mocks.search = { left: 1, right: 2 };
 		renderPage();
 
-		expect(await screen.findByRole("region", { name: "Record over all games together" })).toBeInTheDocument();
+		expect(await screen.findByRole("region", { name: "Record over all sessions together" })).toBeInTheDocument();
 		expect(screen.getByRole("combobox", { name: "Change left player, now Mikhaël" })).toHaveTextContent(
-			"142 games · 38% won",
+			"142 sessions · 38% won",
 		);
 		expect(screen.getByRole("combobox", { name: "Change right player, now Kathleen" })).toHaveTextContent(
-			"118 games · 41% won",
+			"118 sessions · 41% won",
 		);
 		expect(screen.getByText("VS")).toBeInTheDocument();
 		expect(screen.getByText("Overall, not only together").closest("details")).not.toHaveAttribute("open");
@@ -180,9 +180,9 @@ describe("Compare page", () => {
 		);
 		renderPage();
 
-		expect(await screen.findByText("No games together yet")).toBeInTheDocument();
-		expect(screen.getByText("Mikhaël and reggi haven't played a game together yet.")).toBeInTheDocument();
-		expect(screen.queryByRole("region", { name: "Record over all games together" })).toBeNull();
+		expect(await screen.findByText("No sessions together yet")).toBeInTheDocument();
+		expect(screen.getByText("Mikhaël and reggi haven't played together yet.")).toBeInTheDocument();
+		expect(screen.queryByRole("region", { name: "Record over all sessions together" })).toBeNull();
 	});
 
 	it("asks for more players when there are fewer than two", async () => {
@@ -260,7 +260,7 @@ describe("Compare page", () => {
 			const { rerender } = renderStable();
 			await screen.findByTestId("record-playerOne");
 			const azulBefore = rowFor("Azul")?.querySelector('[data-testid="progress-segment"]');
-			const recordBefore = screen.getByRole("region", { name: "Record over all games together" });
+			const recordBefore = screen.getByRole("region", { name: "Record over all sessions together" });
 			await waitFor(() => expect(azulBefore).toHaveStyle({ flexGrow: "36.36" }));
 
 			mocks.search = { left: 1, right: 3 };
@@ -270,7 +270,7 @@ describe("Compare page", () => {
 			const azulAfter = rowFor("Azul")?.querySelector('[data-testid="progress-segment"]');
 			expect(azulAfter).toBe(azulBefore);
 			expect(azulAfter).toHaveStyle({ flexGrow: "75" });
-			expect(screen.getByRole("region", { name: "Record over all games together" })).toBe(recordBefore);
+			expect(screen.getByRole("region", { name: "Record over all sessions together" })).toBe(recordBefore);
 			const cascadia = rowFor("Cascadia")?.querySelector('[data-testid="progress-segment"]');
 			expect(cascadia).toHaveStyle({ flexGrow: "0" });
 			await waitFor(() => expect(cascadia).toHaveStyle({ flexGrow: "50" }));

@@ -18,6 +18,7 @@ public class OidcProvider
     // Behavior settings
     public string Scopes { get; private set; } = "openid profile email";
     public bool AutoProvisionUsers { get; private set; } = true;
+    public string DefaultRole { get; private set; } = "User";
 
     // Claim mappings
     public string? UsernameClaimType { get; private set; }
@@ -39,6 +40,16 @@ public class OidcProvider
         Authority = authority;
         ClientId = clientId;
         Enabled = true;
+    }
+
+    public void Rename(string name)
+    {
+        Name = name;
+    }
+
+    public void SetDefaultRole(string defaultRole)
+    {
+        DefaultRole = defaultRole;
     }
 
     public void Update(

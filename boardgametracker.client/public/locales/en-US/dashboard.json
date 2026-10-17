@@ -1,15 +1,13 @@
 {
   "empty": {
     "title": "No games in your collection",
-    "description": "You haven't added any games to your collection yet. Start by adding your first game to track your gameplay sessions and statistics.",
-    "button": "Add Your First Game"
+    "description": "You haven't added any games yet. Add your first game to start logging sessions.",
+    "button": "Add your first game"
   },
   "welcome": {
     "title": "Welcome back, {{name}}",
     "linked_one": "This month you played {{played}} of the group's {{total}} session and won {{wins}}.",
-    "linked_other": "This month you played {{played}} of the group's {{total}} sessions and won {{wins}}.",
-    "group_one": "This month the group played {{total}} session.",
-    "group_other": "This month the group played {{total}} sessions."
+    "linked_other": "This month you played {{played}} of the group's {{total}} sessions and won {{wins}}."
   },
   "actions": {
     "add-game": "Add game",
@@ -21,6 +19,8 @@
     "details": "{{time}} · {{location}} · host {{host}}",
     "coming_one": "{{count}} coming",
     "coming_other": "{{count}} coming",
+    "maybe_one": "{{count}} maybe",
+    "maybe_other": "{{count}} maybe",
     "pending_one": "{{count}} no answer",
     "pending_other": "{{count}} no answer",
     "declined_one": "{{count}} not coming",
