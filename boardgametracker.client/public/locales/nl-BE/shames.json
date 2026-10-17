@@ -21,6 +21,9 @@
     "no-prices": "geen prijzen ingevuld",
     "planned": "Gepland",
     "planned-for": "voor {{date}}",
+    "planned-next": "volgende op {{date}}",
+    "planned-across_one": "over {{count}} spelavond",
+    "planned-across_other": "over {{count}} spelavonden",
     "no-night": "geen spelavond gepland"
   },
   "filters": {

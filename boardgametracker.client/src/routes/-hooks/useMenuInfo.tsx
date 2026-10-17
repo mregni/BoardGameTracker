@@ -1,5 +1,7 @@
 import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
+import ArchiveIcon from "@/assets/icons/archive.svg?react";
+import CalendarIcon from "@/assets/icons/calendar.svg?react";
 import ChatIcon from "@/assets/icons/chat.svg?react";
 import CogIcon from "@/assets/icons/cog.svg?react";
 import Game from "@/assets/icons/gamepad.svg?react";
@@ -43,7 +45,7 @@ export const menuItems: MenuItem[] = [
 	{
 		menuLabel: "common:shame",
 		path: "/shames",
-		icon: Game,
+		icon: ArchiveIcon,
 		mobileVisible: false,
 	},
 	{
@@ -67,7 +69,7 @@ export const menuItems: MenuItem[] = [
 	{
 		menuLabel: "common:game-nights",
 		path: "/game-nights",
-		icon: UsersIcon,
+		icon: CalendarIcon,
 		mobileVisible: false,
 		countLabel: "common:upcoming-game-nights",
 	},

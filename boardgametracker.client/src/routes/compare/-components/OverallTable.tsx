@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
 import Crown from "@/assets/icons/crown.svg?react";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { CompareResult, CompareRow, CompareSide, Player } from "@/models";
-import { useShortDuration } from "../-hooks/useShortDuration";
 import { leaderOf } from "../-utils/compareUtils";
 
 interface Props {

@@ -7,6 +7,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import { getDashboardStatistics } from "@/services/queries/dashboard";
 import { CollectionCard } from "./-components/dashboard/CollectionCard";
 import { DashboardHeader } from "./-components/dashboard/DashboardHeader";
@@ -17,7 +18,6 @@ import { ShelfOfShameNudge } from "./-components/dashboard/ShelfOfShameNudge";
 import { TopPlayersCard } from "./-components/dashboard/TopPlayersCard";
 import { NoGamesEmptyPage } from "./-components/NoGamesEmptyPage";
 import { useDashboardData } from "./-hooks/useDashboardData";
-import { useShortDuration } from "./-hooks/useShortDuration";
 
 export const Route = createFileRoute("/")({
 	component: RouteComponent,
@@ -120,6 +120,7 @@ function RouteComponent() {
 							recentAddedGames={statistics.recentAddedGames}
 							currency={settings.currency}
 							uiLanguage={settings.uiLanguage}
+							dateFormat={settings.dateFormat}
 						/>
 					</div>
 				</div>

@@ -56,11 +56,7 @@ function RouteComponent() {
 							onEdit={modals.editModal.show}
 							onDelete={modals.deleteModal.show}
 						/>
-						<LocationStatisticsGrid
-							playCount={location.playCount}
-							statistics={statistics}
-							uiLanguage={settings.uiLanguage}
-						/>
+						<LocationStatisticsGrid playCount={location.playCount} statistics={statistics} />
 						<LocationSessionsCard
 							sessions={sessions}
 							dateFormat={settings.dateFormat}

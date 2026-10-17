@@ -2,8 +2,8 @@ import { useTranslation } from "react-i18next";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { Leaderboard, LeaderboardEntry } from "@/models";
-import { useShortDuration } from "@/routes/-hooks/useShortDuration";
 import { EMPTY_NUMBER } from "@/utils/numberUtils";
 
 interface Props {

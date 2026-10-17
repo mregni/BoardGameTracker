@@ -3,7 +3,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { PlayerSessionAvatars } from "@/components/BgtAvatar/PlayerSessionAvatars";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -11,7 +10,9 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtDataTable";
 import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { Session } from "@/models";
 import { getGame, getGameSessions } from "@/services/queries/games";
 import { getPlayers } from "@/services/queries/players";
@@ -22,6 +23,7 @@ import { useBack } from "../-hooks/useBack";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { SessionCardList } from "../sessions/-components/SessionCardList";
 import { SessionCommentCell } from "../sessions/-components/SessionCommentCell";
+import { SessionPlayerPills } from "../sessions/-components/SessionPlayerPills";
 import { useGameSessionsData } from "./-hooks/useGameSessionsData";
 
 export const Route = createFileRoute("/games/$gameId_/sessions")({
@@ -39,6 +41,8 @@ function RouteComponent() {
 	const { gameId } = Route.useParams();
 	const { t } = useTranslation(["common", "sessions"]);
 	const navigate = useNavigate();
+	const shortDuration = useShortDuration();
+	const { decimal } = useNumberFormat();
 	const { canWrite } = usePermissions();
 	const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
 	const goBack = useBack(`/games/${gameId}`);
@@ -67,52 +71,24 @@ function RouteComponent() {
 						},
 						{
 							accessorKey: "2",
-							cell: ({ row }) => `${row.original.minutes} ${t("minutes", { count: row.original.minutes })}`,
+							cell: ({ row }) => shortDuration(row.original.minutes),
 							header: t("duration"),
 						},
 						{
 							accessorKey: "3",
-							cell: ({ row }) =>
-								row.original.isCoop ? (
-									<CoopResultPill won={row.original.teamWon === true} />
-								) : (
-									<PlayerSessionAvatars
-										playerSessions={row.original.playerSessions}
-										players={players}
-										game={game}
-										won={true}
-									/>
-								),
-							header: t("winners"),
+							cell: ({ row }) => (
+								<div className="flex flex-wrap items-center gap-1.5">
+									{row.original.isCoop && <CoopResultPill won={row.original.teamWon === true} />}
+									{row.original.isCoop && row.original.teamScore != null && (
+										<span className="text-sm font-semibold tabular-nums">{decimal(row.original.teamScore)}</span>
+									)}
+									<SessionPlayerPills playerSessions={row.original.playerSessions} players={players} />
+								</div>
+							),
+							header: t("players"),
 						},
 						{
 							accessorKey: "4",
-							cell: ({ row }) => (
-								<PlayerSessionAvatars
-									playerSessions={row.original.playerSessions}
-									players={players}
-									game={game}
-									won={row.original.isCoop && row.original.teamWon === true}
-								/>
-							),
-							header: t("other-players"),
-						},
-						{
-							accessorKey: "5",
-							cell: ({ row }) => {
-								if (row.original.isCoop) return row.original.teamScore ?? "";
-								const highScore = row.original.playerSessions
-									.filter((x) => x.score != null)
-									.sort((a, b) => b.score! - a.score!);
-
-								if (highScore.length === 0) return "";
-
-								return highScore[0].score;
-							},
-							header: t("high-score"),
-						},
-						{
-							accessorKey: "6",
 							cell: ({ row }) => <SessionCommentCell comment={row.original.comment} />,
 							header: t("comment"),
 						},
@@ -136,7 +112,7 @@ function RouteComponent() {
 						<>
 							<BgtPageHeader
 								backAction={goBack}
-								header={`${game.title} - ${t("sessions:title")}`}
+								header={t("sessions:title-of", { name: game.title })}
 								actions={
 									canWrite
 										? [

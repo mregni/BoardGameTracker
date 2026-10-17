@@ -7,10 +7,11 @@ import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { Session } from "@/models";
 import { useGameById } from "@/routes/-hooks/useGameById";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
-import { formatMinutesToDuration, toDisplay } from "@/utils/dateUtils";
+import { toDisplay } from "@/utils/dateUtils";
 
 interface Props {
 	sessions: Session[];
@@ -22,6 +23,7 @@ interface Props {
 export const LocationSessionsCard = (props: Props) => {
 	const { sessions, dateFormat, uiLanguage, canOpen } = props;
 	const { t } = useTranslation("location");
+	const shortDuration = useShortDuration();
 	const { gameById } = useGameById();
 	const { playerById } = usePlayerById();
 
@@ -53,9 +55,7 @@ export const LocationSessionsCard = (props: Props) => {
 									<span className="shrink-0 sm:order-first sm:w-24">
 										{toDisplay(session.start, dateFormat, uiLanguage)}
 									</span>
-									<span className="shrink-0 sm:order-last">
-										{formatMinutesToDuration(session.minutes, ["hours", "minutes"], uiLanguage)}
-									</span>
+									<span className="shrink-0 sm:order-last">{shortDuration(session.minutes)}</span>
 								</span>
 							</>
 						);

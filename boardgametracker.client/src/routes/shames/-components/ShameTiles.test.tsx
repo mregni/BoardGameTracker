@@ -35,7 +35,7 @@ const root: Shame = {
 
 describe("ShameTiles", () => {
 	it("shows the four tiles with their captions", () => {
-		render(<ShameTiles statistics={statistics} shames={[root]} currency="€" />);
+		render(<ShameTiles statistics={statistics} shames={[root]} currency="€" dateFormat="dd-MM-yyyy" />);
 
 		expect(screen.getByText("tiles.on-shelf")).toBeInTheDocument();
 		expect(screen.getByText("9")).toBeInTheDocument();
@@ -54,6 +54,7 @@ describe("ShameTiles", () => {
 				statistics={{ ...statistics, totalValue: null, pricedGameCount: 0, nextGameNight: null }}
 				shames={[{ ...root, additionDate: null }]}
 				currency="€"
+				dateFormat="dd-MM-yyyy"
 			/>,
 		);
 
@@ -64,9 +65,49 @@ describe("ShameTiles", () => {
 	});
 
 	it("leaves out the share when the collection has no value", () => {
-		render(<ShameTiles statistics={{ ...statistics, collectionValue: 0 }} shames={[]} currency="€" />);
+		render(
+			<ShameTiles
+				statistics={{ ...statistics, collectionValue: 0 }}
+				shames={[]}
+				currency="€"
+				dateFormat="dd-MM-yyyy"
+			/>,
+		);
 
 		expect(screen.getByText("tiles.priced")).toBeInTheDocument();
 		expect(screen.queryByText(/tiles\.oldest/)).not.toBeInTheDocument();
+	});
+
+	it("names the night when every planned game is planned for the same one", () => {
+		const planned = { ...root, plannedGameNightId: 4, plannedFor: new Date(2026, 9, 16, 19) };
+		render(
+			<ShameTiles
+				statistics={statistics}
+				shames={[planned, { ...planned, id: 2 }]}
+				currency="€"
+				dateFormat="dd-MM-yyyy"
+			/>,
+		);
+
+		expect(screen.getByText("tiles.planned-next")).toBeInTheDocument();
+		expect(screen.queryByText("tiles.planned-for")).not.toBeInTheDocument();
+	});
+
+	it("counts the nights when the planned games are spread over several", () => {
+		const planned = { ...root, plannedGameNightId: 4, plannedFor: new Date(2026, 9, 16, 19) };
+		render(
+			<ShameTiles
+				statistics={{ ...statistics, plannedCount: 3 }}
+				shames={[
+					planned,
+					{ ...planned, id: 2, plannedGameNightId: 5, plannedFor: new Date(2026, 9, 23, 19) },
+					{ ...planned, id: 3, plannedGameNightId: 6, plannedFor: new Date(2026, 9, 31, 19) },
+				]}
+				currency="€"
+				dateFormat="dd-MM-yyyy"
+			/>,
+		);
+
+		expect(screen.getByText("tiles.planned-across")).toBeInTheDocument();
 	});
 });

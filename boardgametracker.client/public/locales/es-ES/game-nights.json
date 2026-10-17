@@ -63,7 +63,7 @@
     "open": "Abrir la noche"
   },
   "plan": {
-    "starts": "Empieza {{when}} · {{time}}",
+    "starts": "Empieza {{when}} · {{date}} · {{time}}",
     "rsvps": "RSVP",
     "no-games": "Todavía no hay juegos planificados"
   },

@@ -1,5 +1,4 @@
 import type { CompareGame, CompareOutcome, CompareRow, CompareSide } from "@/models";
-import { formatInteger } from "@/utils/numberUtils";
 
 export type GameSort = "most-played" | "biggest-lead";
 
@@ -22,23 +21,6 @@ export const resolveComparePlayers = (
 	resolvedRight ??= order.find((id) => id !== resolvedLeft);
 
 	return [resolvedLeft ?? 0, resolvedRight ?? 0];
-};
-
-export const formatShortDuration = (
-	totalMinutes: number,
-	units: { hour: string; minute: string },
-	locale?: string,
-): string => {
-	const rounded = Math.max(0, Math.round(totalMinutes));
-	const hours = Math.floor(rounded / 60);
-	const minutes = rounded % 60;
-
-	if (hours === 0) {
-		return `${minutes}${units.minute}`;
-	}
-
-	const hourPart = `${formatInteger(hours, locale)}${units.hour}`;
-	return minutes === 0 ? hourPart : `${hourPart} ${minutes}${units.minute}`;
 };
 
 export const initialOf = (name: string): string => name.trim().charAt(0).toLocaleUpperCase() || "?";

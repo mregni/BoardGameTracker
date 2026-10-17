@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import { getSettings } from "@/services/queries/settings";
-import { formatMinutesToDuration, toRelative } from "@/utils/dateUtils";
+import { toRelative } from "@/utils/dateUtils";
 import { formatDecimal, formatPrice, formatRatio, type NumberValue } from "@/utils/numberUtils";
 
 interface GameStats {
@@ -26,17 +27,14 @@ export const GameStatisticsGrid = (props: Props) => {
 	const { gameStats, currency } = props;
 	const { t } = useTranslation("statistics");
 	const { data: settings } = useQuery(getSettings());
+	const shortDuration = useShortDuration();
 
 	const lastPlayedRelative =
 		gameStats.lastPlayed && settings?.uiLanguage ? toRelative(gameStats.lastPlayed, settings.uiLanguage) : null;
 
 	const decimalOrNull = (value: NumberValue) => (value == null ? null : formatDecimal(value, settings?.uiLanguage));
 
-	const totalPlayedTime = formatMinutesToDuration(
-		gameStats.totalPlayedTime,
-		["weeks", "days", "hours", "minutes"],
-		settings?.uiLanguage,
-	);
+	const totalPlayedTime = shortDuration(gameStats.totalPlayedTime);
 
 	const coopPlayCount = gameStats.coopWinCount + gameStats.coopLossCount;
 

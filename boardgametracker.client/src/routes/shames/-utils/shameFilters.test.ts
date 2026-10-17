@@ -4,7 +4,6 @@ import {
 	countByShow,
 	DEFAULT_SHAME_FILTERS,
 	filterShames,
-	formatRange,
 	lastPlayedTone,
 	monthOptions,
 	oldestNeverPlayed,
@@ -161,13 +160,5 @@ describe("shameFilters", () => {
 	it("finds the never played game owned the longest", () => {
 		expect(oldestNeverPlayed(all)).toBe(root);
 		expect(oldestNeverPlayed([wingspan])).toBeNull();
-	});
-
-	it("formats a range, a single value or nothing", () => {
-		expect(formatRange(2, 4)).toBe("2–4");
-		expect(formatRange(2, 2)).toBe("2");
-		expect(formatRange(null, 5)).toBe("5");
-		expect(formatRange(3, null)).toBe("3");
-		expect(formatRange(null, null)).toBeNull();
 	});
 });

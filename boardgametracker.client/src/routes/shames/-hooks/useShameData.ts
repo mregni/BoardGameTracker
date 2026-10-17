@@ -6,7 +6,7 @@ import { useToasts } from "@/routes/-hooks/useToasts";
 import { addSuggestedGameCall, removeSuggestedGameCall } from "@/services/gameNightService";
 import { getShameStatistics, getShames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
-import { toShortDayDate } from "@/utils/dateUtils";
+import { DEFAULT_DATE_FORMAT, toDisplay } from "@/utils/dateUtils";
 
 interface PlanArgs {
 	shame: Shame;
@@ -46,7 +46,7 @@ export const useShameData = (months?: number) => {
 				{
 					game: args.shame.title,
 					night: args.night.title,
-					date: toShortDayDate(args.night.startDate, i18n.language),
+					date: toDisplay(args.night.startDate, settingsQuery.data?.dateFormat ?? DEFAULT_DATE_FORMAT, i18n.language),
 				},
 			);
 			return refresh();

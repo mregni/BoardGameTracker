@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import Check from "@/assets/icons/check.svg?react";
 import Pencil from "@/assets/icons/pencil.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
@@ -92,8 +91,7 @@ export const LoanRow = ({ loan, game, player, dateFormat, onReturn, onEdit, onDe
 						className="whitespace-nowrap lg:order-7 lg:justify-self-start"
 						onClick={() => onReturn(loan)}
 					>
-						<Check className="size-4" />
-						{t("returned-button")}
+						{t("mark-returned-button")}
 					</BgtButton>
 				)}
 			</div>

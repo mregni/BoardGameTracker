@@ -5,6 +5,7 @@ import Crown from "@/assets/icons/crown.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { Session } from "@/models";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
 import { toDisplay } from "@/utils/dateUtils";
@@ -19,6 +20,7 @@ export const RecentSessionsCard = (props: Props) => {
 	const { sessions, dateFormat, gameId } = props;
 	const { t, i18n } = useTranslation(["game", "common"]);
 	const { playerById } = usePlayerById();
+	const shortDuration = useShortDuration();
 
 	return (
 		<BgtCard title={t("titles.recent-sessions")} icon={Calendar}>
@@ -34,7 +36,7 @@ export const RecentSessionsCard = (props: Props) => {
 							<li
 								key={session.id}
 								className="flex items-center gap-2 py-2"
-								title={`${t("common:player", { count: session.playerSessions.length })} • ${session.minutes}${t("common:minutes-abbreviation")}`}
+								title={`${t("common:player", { count: session.playerSessions.length })} • ${shortDuration(session.minutes)}`}
 							>
 								<span className="shrink-0 text-sm tabular-nums text-white/60">
 									{toDisplay(session.start, dateFormat, i18n.language)}

@@ -10,6 +10,7 @@ import { getBadges } from "@/services/queries/basdges";
 import { getPlayer, getPlayerStatistics } from "@/services/queries/players";
 import { playerIdParamSchema } from "@/utils/routeSchemas";
 import { BgtPoster } from "../-components/BgtPoster";
+import { useGameById } from "../-hooks/useGameById";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { MostPlayedGamesCard } from "./-components/MostPlayedGamesCard";
 import { PlayerAchievementsCard } from "./-components/PlayerAchievementsCard";
@@ -22,6 +23,7 @@ import { usePlayerActions } from "./-hooks/usePlayerActions";
 import { usePlayerData } from "./-hooks/usePlayerData";
 import { usePlayerModals } from "./-hooks/usePlayerModals";
 import { EditPlayerModal } from "./-modals/EditPlayerModal";
+import { lastPlayedOf } from "./-utils/lastPlayed";
 
 export const Route = createFileRoute("/players/$playerId")({
 	component: RouteComponent,
@@ -42,7 +44,9 @@ function RouteComponent() {
 		playerId,
 	});
 
+	const { gameById } = useGameById();
 	const modals = usePlayerModals();
+	const lastPlayed = lastPlayedOf(sessions, gameById);
 
 	const actions = usePlayerActions({
 		playerId,
@@ -88,7 +92,7 @@ function RouteComponent() {
 							</div>
 							{statistics.playCount !== 0 && (
 								<div className="max-lg:order-3">
-									<PlayerStatisticsGrid statistics={statistics} settings={settings} />
+									<PlayerStatisticsGrid statistics={statistics} settings={settings} lastPlayed={lastPlayed} />
 								</div>
 							)}
 							{statistics.playCount !== 0 && (

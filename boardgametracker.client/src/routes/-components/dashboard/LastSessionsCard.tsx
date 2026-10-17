@@ -5,8 +5,8 @@ import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import { AvatarChip } from "@/components/GameNight/AvatarChip";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { RecentActivity } from "@/models";
-import { useShortDuration } from "@/routes/-hooks/useShortDuration";
 import { toDisplay } from "@/utils/dateUtils";
 import { dashboardRowClasses, pillVariants } from "./dashboardStyles";
 

@@ -77,6 +77,7 @@ export const GameNightDetailHeader = (props: Props) => {
 							? toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage)
 							: t(isPlanned ? "plan.starts" : "card.when", {
 									when: relativeDay(gameNight.startDate, settings.uiLanguage),
+									date: toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage),
 									time: format(gameNight.startDate, settings.timeFormat),
 								})}
 					</span>

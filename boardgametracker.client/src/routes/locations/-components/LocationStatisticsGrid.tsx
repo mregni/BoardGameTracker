@@ -1,23 +1,19 @@
 import { useTranslation } from "react-i18next";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { LocationStatistics } from "@/models";
-import { formatMinutesToDuration } from "@/utils/dateUtils";
 
 interface Props {
 	playCount: number;
 	statistics: LocationStatistics;
-	uiLanguage: string;
 }
 
 export const LocationStatisticsGrid = (props: Props) => {
-	const { playCount, statistics, uiLanguage } = props;
+	const { playCount, statistics } = props;
 	const { t } = useTranslation("location");
+	const shortDuration = useShortDuration();
 
-	const playTime = formatMinutesToDuration(
-		statistics.totalPlayedTime,
-		["months", "weeks", "days", "hours", "minutes"],
-		uiLanguage,
-	);
+	const playTime = shortDuration(statistics.totalPlayedTime);
 
 	return (
 		<div className="grid grid-cols-2 md:grid-cols-4 gap-3 xl:gap-6">

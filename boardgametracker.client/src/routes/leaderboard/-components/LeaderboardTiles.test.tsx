@@ -57,7 +57,7 @@ describe("LeaderboardTiles", () => {
 		expect(screen.getByText("1,054")).toBeInTheDocument();
 		expect(screen.getByText("142")).toBeInTheDocument();
 		expect(screen.getByText("41.2%")).toBeInTheDocument();
-		expect(screen.getByText("duration.hours")).toBeInTheDocument();
+		expect(screen.getByText("short-duration.hours")).toBeInTheDocument();
 	});
 
 	it("should name the holder and the minimum on the win rate tile", () => {

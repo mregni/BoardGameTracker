@@ -5,10 +5,10 @@ import Target from "@/assets/icons/target.svg?react";
 import Users from "@/assets/icons/users.svg?react";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { CompareResult, Player } from "@/models";
 import { useGameById } from "@/routes/-hooks/useGameById";
 import { toDisplay } from "@/utils/dateUtils";
-import { useShortDuration } from "../-hooks/useShortDuration";
 
 interface Props {
 	compare: CompareResult;

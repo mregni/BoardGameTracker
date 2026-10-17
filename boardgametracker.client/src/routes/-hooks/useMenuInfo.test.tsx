@@ -129,6 +129,11 @@ describe("useBgtMenuBar", () => {
 				expect(item.icon).toBeDefined();
 			});
 		});
+
+		it("should give every item its own icon", () => {
+			const icons = new Set(menuItems.map((item) => item.icon));
+			expect(icons.size).toBe(menuItems.length);
+		});
 	});
 
 	describe("useBgtMenuBar hook", () => {

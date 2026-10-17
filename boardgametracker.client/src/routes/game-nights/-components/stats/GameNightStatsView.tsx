@@ -74,7 +74,7 @@ export const GameNightStatsView = (props: Props) => {
 				<BgtEmptyState icon={BarChart} title={t("stats.empty.title")} description={t("stats.empty.description")} />
 			) : (
 				<>
-					<NightStatsTiles statistics={statistics} uiLanguage={settings.uiLanguage} />
+					<NightStatsTiles statistics={statistics} />
 					<div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
 						<div className="flex min-w-0 flex-col gap-3">
 							<NightWinnersCard winners={statistics.winners} tiedNights={statistics.tiedNights} lookup={lookup} />

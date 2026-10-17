@@ -5,8 +5,10 @@ import CaretRight from "@/assets/icons/caret-right.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { Shame, ShameGameNight } from "@/models";
-import { monthsSince, toMonthYear, toShortDayDate } from "@/utils/dateUtils";
-import { formatRange, lastPlayedTone } from "../-utils/shameFilters";
+import { monthsSince, toDisplay, toMonthYear } from "@/utils/dateUtils";
+import { EMPTY_PRICE } from "@/utils/numberUtils";
+import { formatRange } from "@/utils/rangeUtils";
+import { lastPlayedTone } from "../-utils/shameFilters";
 
 export const shameGridClasses =
 	"grid grid-cols-[2.75rem_minmax(0,1fr)_auto] gap-x-3 md:grid-cols-[2.75rem_minmax(0,1fr)_9rem_5rem_14rem]";
@@ -28,11 +30,10 @@ export const pillVariants = cva(
 const actionClasses =
 	"inline-flex items-center justify-center rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-white transition-colors hover:border-primary/60 hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-50";
 
-const EMPTY_PRICE = "–";
-
 interface Props {
 	shame: Shame;
 	currency: string;
+	dateFormat: string;
 	canWrite: boolean;
 	nextNight: ShameGameNight | null;
 	planning: boolean;
@@ -40,7 +41,16 @@ interface Props {
 	now?: Date;
 }
 
-export const ShameRow = ({ shame, currency, canWrite, nextNight, planning, onPlan, now = new Date() }: Props) => {
+export const ShameRow = ({
+	shame,
+	currency,
+	dateFormat,
+	canWrite,
+	nextNight,
+	planning,
+	onPlan,
+	now = new Date(),
+}: Props) => {
 	const { t, i18n } = useTranslation("shames");
 	const format = useNumberFormat();
 	const tone = lastPlayedTone(shame, now);
@@ -108,7 +118,7 @@ export const ShameRow = ({ shame, currency, canWrite, nextNight, planning, onPla
 			<div className="flex min-w-0 justify-end gap-1.5 [grid-area:act]">
 				{planned && shame.plannedFor && (
 					<span className={pillVariants({ tone: "ok" })}>
-						{t("row.planned", { date: toShortDayDate(shame.plannedFor, i18n.language) })}
+						{t("row.planned", { date: toDisplay(shame.plannedFor, dateFormat, i18n.language) })}
 					</span>
 				)}
 				{!planned && canWrite && nextNight && (

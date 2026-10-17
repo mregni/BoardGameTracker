@@ -45,11 +45,6 @@
     "play-time": "Speeltijd",
     "play-time-detail": "gem. {{duration}} per sessie"
   },
-  "duration": {
-    "minutes": "{{minutes}} min",
-    "hours": "{{hours}}u",
-    "hours-minutes": "{{hours}}u {{minutes}}m"
-  },
   "last-sessions": {
     "title": "Laatste sessies",
     "players_one": "{{count}} speler",

@@ -9,6 +9,7 @@ import SquareOutIcon from "@/assets/icons/square-out.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtSimpleSelect, SearchInputField } from "@/components/BgtForm";
+import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -23,7 +24,8 @@ import { getSettings } from "@/services/queries/settings";
 import { toDisplay } from "@/utils/dateUtils";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
-import { formatDecimal, formatPrice } from "@/utils/numberUtils";
+import { EMPTY_PRICE, formatDecimal, formatPrice } from "@/utils/numberUtils";
+import { formatRange as formatValueRange } from "@/utils/rangeUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./-components/EditableNumberCell";
 import { EditableSelectCell } from "./-components/EditableSelectCell";
@@ -54,7 +56,7 @@ interface EditingCell {
 }
 
 function RouteComponent() {
-	const { t, i18n } = useTranslation(["games", "game", "common"]);
+	const { t, i18n } = useTranslation(["games", "game", "common", "dashboard"]);
 	const navigate = useNavigate();
 	const { q, state, language, inStock } = Route.useSearch();
 	const { games, isLoading } = useGamesData();
@@ -111,13 +113,9 @@ function RouteComponent() {
 	});
 
 	const formatRange = useCallback((min: number | null, max: number | null, suffix = ""): string => {
-		if (min == null && max == null) return "-";
-		if (min != null && max != null) {
-			const range = min === max ? `${min}` : `${min} - ${max}`;
-			return suffix ? `${range} ${suffix}` : range;
-		}
-		const value = (min ?? max) as number;
-		return suffix ? `${value} ${suffix}` : `${value}`;
+		const range = formatValueRange(min, max);
+		if (range === null) return "-";
+		return suffix ? `${range} ${suffix}` : range;
 	}, []);
 
 	const filtered = useMemo(
@@ -352,6 +350,20 @@ function RouteComponent() {
 
 	const columnWidths: (string | null)[] = [null, null, null, null, null, "w-52", "w-52"];
 
+	if (!isLoading && games.length === 0) {
+		return (
+			<BgtEmptyPage
+				header={t("games:title")}
+				icon={GameIcon}
+				title={t("dashboard:empty.title")}
+				description={t("dashboard:empty.description")}
+				action={canWrite ? { onClick: () => navigate({ to: "/games/add" }), label: t("games:new") } : undefined}
+			/>
+		);
+	}
+
+	const hasPrices = ownedPrices.pricedCount > 0;
+
 	return (
 		<BgtPage>
 			<BgtPageHeader
@@ -407,11 +419,11 @@ function RouteComponent() {
 					<BgtTextStatistic title={t("games:table.total-games")} content={filtered.length} />
 					<BgtTextStatistic
 						title={t("games:table.total-price-owned")}
-						content={formatPrice(ownedPrices.total, currency, uiLanguage)}
+						content={hasPrices ? formatPrice(ownedPrices.total, currency, uiLanguage) : EMPTY_PRICE}
 					/>
 					<BgtTextStatistic
 						title={t("games:table.mean-price-owned", { count: ownedPrices.pricedCount })}
-						content={ownedPrices.pricedCount > 0 ? formatPrice(ownedPrices.mean, currency, uiLanguage) : "-"}
+						content={hasPrices ? formatPrice(ownedPrices.mean, currency, uiLanguage) : EMPTY_PRICE}
 					/>
 				</div>
 				<div className="hidden md:block">

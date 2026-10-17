@@ -115,12 +115,7 @@ export const GameNightDetailView = (props: Props) => {
 			)}
 
 			{!isPlanned && sessions.length > 0 && (
-				<NightSummaryStats
-					summary={gameNight.summary}
-					players={players}
-					isOver={isOver}
-					uiLanguage={settings.uiLanguage}
-				/>
+				<NightSummaryStats summary={gameNight.summary} players={players} isOver={isOver} />
 			)}
 
 			{!isPlanned && (

@@ -214,7 +214,7 @@ describe("loans page", () => {
 
 		expect(screen.getByText("Carcassonne")).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "history.hide" })).toHaveAttribute("aria-expanded", "true");
-		expect(screen.getAllByRole("button", { name: "returned-button" })).toHaveLength(3);
+		expect(screen.getAllByRole("button", { name: "mark-returned-button" })).toHaveLength(3);
 
 		await userEvent.click(screen.getByRole("button", { name: "history.hide" }));
 		expect(screen.queryByText("Carcassonne")).not.toBeInTheDocument();
@@ -249,7 +249,7 @@ describe("loans page", () => {
 	it("returns a loan through the return dialog", async () => {
 		renderPage();
 
-		await userEvent.click(screen.getAllByRole("button", { name: "returned-button" })[0]);
+		await userEvent.click(screen.getAllByRole("button", { name: "mark-returned-button" })[0]);
 		expect(screen.getByText("returning Azul")).toBeInTheDocument();
 
 		await userEvent.click(screen.getByRole("button", { name: "confirm-return" }));
@@ -291,7 +291,7 @@ describe("loans page", () => {
 		await userEvent.click(screen.getByRole("button", { name: "history.show" }));
 
 		expect(screen.queryByRole("button", { name: "loans:new.button" })).not.toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "returned-button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "mark-returned-button" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "edit.button" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "delete.button" })).not.toBeInTheDocument();
 	});

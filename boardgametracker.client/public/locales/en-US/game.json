@@ -167,6 +167,10 @@
       "lowest": "Lowest"
     }
   },
+  "top-players": {
+    "trend-up": "Won more of the last {{sessions}} sessions than before",
+    "trend-down": "Won fewer of the last {{sessions}} sessions than before"
+  },
   "titles": {
     "top-players": "Top players",
     "scoring-results": "Scoring results",

@@ -56,7 +56,7 @@ describe("SessionCardList", () => {
 	it("shows the date, time and duration of every session", () => {
 		renderList();
 
-		expect(screen.getByText("05-10-2026 · 20:15 · 95 minutes")).toBeInTheDocument();
+		expect(screen.getByText("05-10-2026 · 20:15 · short-duration.hours-minutes")).toBeInTheDocument();
 	});
 
 	it("lists every player with their score, winners first with a crown", () => {

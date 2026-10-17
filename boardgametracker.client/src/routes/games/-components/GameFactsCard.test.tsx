@@ -55,13 +55,20 @@ describe("GameFactsCard", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} />);
 
 			expect(screen.getByText("players")).toBeInTheDocument();
-			expect(screen.getByText("2 - 4")).toBeInTheDocument();
+			expect(screen.getByText("2–4")).toBeInTheDocument();
 		});
 
 		it("should render a single value when only min players is set", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} game={createGame({ minPlayers: 3, maxPlayers: null })} />);
 
 			expect(screen.getByText("3")).toBeInTheDocument();
+		});
+
+		it("should collapse equal min and max players to one value", () => {
+			renderWithTheme(<GameFactsCard {...defaultProps} game={createGame({ minPlayers: 4, maxPlayers: 4 })} />);
+
+			expect(screen.getByText("4")).toBeInTheDocument();
+			expect(screen.queryByText("4–4")).not.toBeInTheDocument();
 		});
 
 		it("should hide the row when min and max players are null", () => {
@@ -76,7 +83,13 @@ describe("GameFactsCard", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} />);
 
 			expect(screen.getByText("duration")).toBeInTheDocument();
-			expect(screen.getByText(/30 - 60/)).toHaveTextContent("30 - 60 minutes-abbreviation");
+			expect(screen.getByText(/30–60/)).toHaveTextContent("30–60 minutes-abbreviation");
+		});
+
+		it("should collapse an equal duration range to one value", () => {
+			renderWithTheme(<GameFactsCard {...defaultProps} game={createGame({ minPlayTime: 45, maxPlayTime: 45 })} />);
+
+			expect(screen.getByText(/^45/)).toHaveTextContent("45 minutes-abbreviation");
 		});
 
 		it("should hide the row when min and max play time are null", () => {

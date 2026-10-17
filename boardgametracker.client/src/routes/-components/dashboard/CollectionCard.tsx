@@ -6,7 +6,7 @@ import { BgtProgressBar, type BgtProgressSegment } from "@/components/BgtProgres
 import { AvatarChip } from "@/components/GameNight/AvatarChip";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { GameState, type GameStateChart, type RecentGame } from "@/models";
-import { toShortDisplay } from "@/utils/dateUtils";
+import { toDisplay } from "@/utils/dateUtils";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { cardLinkClasses } from "./dashboardStyles";
 
@@ -18,6 +18,7 @@ interface Props {
 	recentAddedGames: RecentGame[];
 	currency: string;
 	uiLanguage: string;
+	dateFormat: string;
 }
 
 const stateOrder: { state: GameState; tone: BgtProgressSegment["tone"] }[] = [
@@ -28,8 +29,16 @@ const stateOrder: { state: GameState; tone: BgtProgressSegment["tone"] }[] = [
 ];
 
 export const CollectionCard = (props: Props) => {
-	const { collection, ownedGames, totalCollectionValue, pricedGameCount, recentAddedGames, currency, uiLanguage } =
-		props;
+	const {
+		collection,
+		ownedGames,
+		totalCollectionValue,
+		pricedGameCount,
+		recentAddedGames,
+		currency,
+		uiLanguage,
+		dateFormat,
+	} = props;
 	const { t } = useTranslation(["dashboard", "game"]);
 	const { integer, price } = useNumberFormat();
 
@@ -94,7 +103,7 @@ export const CollectionCard = (props: Props) => {
 									<Link to="/games/$gameId" params={{ gameId: game.id }} className="hover:opacity-80">
 										<AvatarChip title={game.title} image={game.image}>
 											{game.additionDate && (
-												<span className="text-white/60">· {toShortDisplay(game.additionDate, uiLanguage)}</span>
+												<span className="text-white/60">· {toDisplay(game.additionDate, dateFormat, uiLanguage)}</span>
 											)}
 										</AvatarChip>
 									</Link>

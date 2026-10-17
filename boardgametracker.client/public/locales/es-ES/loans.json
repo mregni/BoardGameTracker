@@ -79,7 +79,7 @@
     "returned": "Devuelto {{date}}"
   },
   "since": "desde el {{date}}",
-  "returned-button": "Devuelto",
+  "mark-returned-button": "Marcar devuelto",
   "history": {
     "summary_one": "{{count}} préstamo devuelto",
     "summary_other": "{{count}} préstamos devueltos",

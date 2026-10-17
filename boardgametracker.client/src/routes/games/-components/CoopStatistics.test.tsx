@@ -26,6 +26,7 @@ const playerStats = (coopWinCount: number, coopLossCount: number) => ({
 	distinctGameCount: 2,
 	coopWinCount,
 	coopLossCount,
+	mostPlayedGames: [],
 });
 
 describe("co-op statistics", () => {

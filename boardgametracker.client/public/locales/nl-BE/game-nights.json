@@ -63,7 +63,7 @@
     "open": "Avond openen"
   },
   "plan": {
-    "starts": "Begint {{when}} · {{time}}",
+    "starts": "Begint {{when}} · {{date}} · {{time}}",
     "rsvps": "RSVP's",
     "no-games": "Nog geen spellen gepland"
   },

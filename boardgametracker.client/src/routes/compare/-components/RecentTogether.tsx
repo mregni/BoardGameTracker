@@ -5,11 +5,11 @@ import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { CompareSession, Player } from "@/models";
 import { useGameById } from "@/routes/-hooks/useGameById";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
 import { toDisplay } from "@/utils/dateUtils";
-import { useShortDuration } from "../-hooks/useShortDuration";
 import { SectionTitle } from "./SectionTitle";
 
 export const RECENT_ROWS = 5;

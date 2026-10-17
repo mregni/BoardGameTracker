@@ -25,6 +25,7 @@ const renderCard = (overrides: Partial<Parameters<typeof CollectionCard>[0]> = {
 			]}
 			currency="EUR"
 			uiLanguage="en-US"
+			dateFormat="dd-MM-yyyy"
 			{...overrides}
 		/>,
 	);
@@ -65,7 +66,7 @@ describe("CollectionCard", () => {
 
 		const first = screen.getByRole("link", { name: /Age of Inventors/ });
 		expect(first).toHaveAttribute("href", "/games/5");
-		expect(first).toHaveTextContent("4 Oct");
+		expect(first).toHaveTextContent("04-10-2026");
 		expect(screen.getByRole("link", { name: /Cascadia/ })).toHaveAttribute("href", "/games/6");
 	});
 

@@ -4,7 +4,6 @@ import {
 	differenceInMonths,
 	format,
 	formatDistanceToNow,
-	formatDuration,
 	parseISO,
 } from "date-fns";
 
@@ -97,25 +96,6 @@ export const toDisplay = (date: Date | string | undefined | null, dateFormat: st
 	const locale = getDateFnsLocale(uiLanguage);
 	const dateFnsFormat = convertDateFormat(dateFormat);
 	return format(dateObj, dateFnsFormat, { locale });
-};
-
-export const toLongDisplay = (date: Date | string | undefined | null, uiLanguage: string): string => {
-	if (!date) {
-		return "";
-	}
-
-	const dateObj = typeof date === "string" ? parseISO(date) : date;
-
-	if (!dateFnsIsValid(dateObj)) {
-		return "";
-	}
-
-	return format(dateObj, "PPPP", { locale: getDateFnsLocale(uiLanguage) });
-};
-
-export const toShortDisplay = (date: Date | string | undefined | null, uiLanguage: string): string => {
-	const dateObj = toValidDate(date);
-	return dateObj ? format(dateObj, "d MMM", { locale: getDateFnsLocale(uiLanguage) }) : "";
 };
 
 export const toDisplayDateTime = (
@@ -214,41 +194,6 @@ export const safeParseDate = (date: Date | string | undefined): Date | undefined
 	return dateFnsIsValid(parsed) ? parsed : undefined;
 };
 
-export const minutesToDuration = (
-	totalMinutes: number,
-): { weeks: number; days: number; hours: number; minutes: number } => {
-	const MINUTES_PER_WEEK = 7 * 24 * 60;
-	const MINUTES_PER_DAY = 24 * 60;
-	const MINUTES_PER_HOUR = 60;
-
-	const weeks = Math.floor(totalMinutes / MINUTES_PER_WEEK);
-	const remainingAfterWeeks = totalMinutes % MINUTES_PER_WEEK;
-
-	const days = Math.floor(remainingAfterWeeks / MINUTES_PER_DAY);
-	const remainingAfterDays = remainingAfterWeeks % MINUTES_PER_DAY;
-
-	const hours = Math.floor(remainingAfterDays / MINUTES_PER_HOUR);
-	const minutes = Math.round(remainingAfterDays % MINUTES_PER_HOUR);
-
-	return { weeks, days, hours, minutes };
-};
-
-export const formatMinutesToDuration = (
-	minutes: number | null,
-	formatUnits: Array<"months" | "weeks" | "days" | "hours" | "minutes" | "seconds">,
-	uiLanguage?: string,
-): string | null => {
-	if (!minutes) return null;
-
-	const duration = minutesToDuration(minutes);
-	const locale = uiLanguage ? getDateFnsLocale(uiLanguage) : undefined;
-
-	return formatDuration(duration, {
-		format: formatUnits,
-		locale,
-	});
-};
-
 export const getDaysSincePurchase = (date: Date | null): number => {
 	if (!date || !dateFnsIsValid(date)) {
 		return 0;
@@ -269,11 +214,6 @@ const toValidDate = (date: Date | string | undefined | null): Date | null => {
 export const toMonthYear = (date: Date | string | undefined | null, uiLanguage: string): string => {
 	const dateObj = toValidDate(date);
 	return dateObj ? format(dateObj, "LLL yyyy", { locale: getDateFnsLocale(uiLanguage) }) : "";
-};
-
-export const toShortDayDate = (date: Date | string | undefined | null, uiLanguage: string): string => {
-	const dateObj = toValidDate(date);
-	return dateObj ? format(dateObj, "EEE d LLL", { locale: getDateFnsLocale(uiLanguage) }) : "";
 };
 
 export const monthsSince = (date: Date | string | undefined | null, now: Date = new Date()): number | null => {

@@ -63,7 +63,7 @@
     "open": "Open night"
   },
   "plan": {
-    "starts": "Starts {{when}} · {{time}}",
+    "starts": "Starts {{when}} · {{date}} · {{time}}",
     "rsvps": "RSVPs",
     "no-games": "No games planned yet"
   },
