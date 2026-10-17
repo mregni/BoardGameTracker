@@ -2,10 +2,6 @@ namespace BoardGameTracker.Common.DTOs.Auth;
 
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 
-public record RefreshTokenRequest(string RefreshToken);
-
-public record LogoutRequest(string? RefreshToken);
-
 public record UpdateProfileRequest(string? DisplayName, string? Email, int? PlayerId, string? CurrentPassword = null);
 
 public record ProfileResponse(

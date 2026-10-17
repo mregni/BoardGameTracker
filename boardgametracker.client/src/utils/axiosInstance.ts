@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { ApiError, ApiErrorKind } from "@/models";
 
 import { apiUrl } from "./apiUrl";
-import { refreshAccessToken, tokensRefreshedElsewhere } from "./tokenRefresh";
+import { refreshSession } from "./tokenRefresh";
 
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,7})?(Z|[+-]\d{2}:\d{2})?$/;
 
@@ -84,7 +84,6 @@ export const axiosInstance = axios.create({
 	},
 });
 
-// Track refresh state to avoid multiple simultaneous refresh attempts
 let isRefreshing = false;
 let failedQueue: Array<{
 	resolve: (value: unknown) => void;
@@ -114,7 +113,6 @@ const isApiRequest = (url?: string) => {
 	return url.startsWith(apiUrl);
 };
 
-// Request interceptor: attach JWT token
 axiosInstance.interceptors.request.use(
 	(config) => {
 		const accessToken = useAuth.getState().accessToken;
@@ -133,22 +131,14 @@ async function handleTokenRefresh(
 	(originalRequest as { _retry?: boolean })._retry = true;
 	isRefreshing = true;
 
-	const staleRefreshToken = useAuth.getState().refreshToken;
-	if (!staleRefreshToken) {
+	if (!useAuth.getState().accessToken) {
 		isRefreshing = false;
 		processQueue(error, null);
-		clearAuthState();
 		throw classifyError(error);
 	}
 
 	try {
-		const newAccessToken = await refreshAccessToken(staleRefreshToken).catch(async (refreshError: unknown) => {
-			const refreshedElsewhere = await tokensRefreshedElsewhere(staleRefreshToken);
-			if (refreshedElsewhere) {
-				return refreshedElsewhere;
-			}
-			throw refreshError;
-		});
+		const newAccessToken = await refreshSession();
 
 		if (originalRequest.headers) {
 			originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;

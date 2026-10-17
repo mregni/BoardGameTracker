@@ -71,8 +71,9 @@ public class ProfileImageAccessTests : IDisposable
         var cover = await browser.GetAsync("/images/cover/does-not-exist.webp");
         cover.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
-        using var logout = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout") { Content = JsonContent.Create(new LogoutRequest(session!.RefreshToken)) };
-        logout.Headers.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+        using var logout = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout");
+        logout.Headers.Add(RequireSessionHeaderAttribute.HeaderName, RequireSessionHeaderAttribute.HeaderValue);
+        logout.Headers.Authorization = new AuthenticationHeaderValue("Bearer", session!.AccessToken);
         var loggedOut = await browser.SendAsync(logout);
         loggedOut.StatusCode.Should().Be(HttpStatusCode.NoContent);
 

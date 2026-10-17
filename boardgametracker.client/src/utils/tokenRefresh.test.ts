@@ -1,73 +1,165 @@
-import axios from "axios";
+import axios, { AxiosError, AxiosHeaders } from "axios";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { AUTH_STORAGE_KEY, useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import type { User } from "@/models/Auth/Auth";
-import { refreshAccessToken, tokensRefreshedElsewhere } from "./tokenRefresh";
+
+const sync = vi.hoisted(() => ({
+	handler: null as ((change: "login" | "logout") => void) | null,
+	stop: vi.fn(),
+}));
+
+vi.mock("./sessionSync", () => ({
+	announceSessionChange: vi.fn(),
+	listenForSessionChanges: (handler: (change: "login" | "logout") => void) => {
+		sync.handler = handler;
+		return sync.stop;
+	},
+}));
+
+import { refreshSession, restoreSession, SESSION_HEADERS, startSessionSync } from "./tokenRefresh";
 
 const user: User = { id: "u1", username: "alice", displayName: null, roles: ["User"] };
+const admin: User = { id: "u2", username: "bob", displayName: null, roles: ["Admin"] };
 
-const writeStoredTokens = (accessToken: string, refreshToken: string) => {
-	localStorage.setItem(
-		AUTH_STORAGE_KEY,
-		JSON.stringify({ state: { accessToken, refreshToken, user, isAuthenticated: true }, version: 0 }),
-	);
-};
+const rejection = (status: number, title?: string) =>
+	new AxiosError("failed", "ERR_BAD_REQUEST", undefined, undefined, {
+		status,
+		statusText: "",
+		data: title ? { title } : {},
+		headers: {},
+		config: { headers: new AxiosHeaders() },
+	});
 
 describe("tokenRefresh", () => {
 	beforeEach(() => {
 		localStorage.clear();
-		useAuth.getState().setTokens("access-1", "refresh-1", user);
+		sessionStorage.clear();
+		useAuth.getState().setSession("access-1", user);
 	});
 
 	afterEach(() => {
+		vi.useRealTimers();
 		vi.restoreAllMocks();
 		vi.unstubAllGlobals();
 	});
 
-	it("refreshes with the current token and stores the rotated pair", async () => {
-		const post = vi.spyOn(axios, "post").mockResolvedValue({
-			data: { accessToken: "access-2", refreshToken: "refresh-2", user },
-		});
+	it("refreshes with the cookie only, sending no token and the anti-forgery header", async () => {
+		const post = vi.spyOn(axios, "post").mockResolvedValue({ data: { accessToken: "access-2", user } });
 
-		const accessToken = await refreshAccessToken("refresh-1");
+		const accessToken = await refreshSession();
 
 		expect(accessToken).toBe("access-2");
-		expect(post).toHaveBeenCalledWith(expect.stringContaining("auth/refresh"), { refreshToken: "refresh-1" });
-		expect(useAuth.getState().refreshToken).toBe("refresh-2");
+		expect(post).toHaveBeenCalledWith("/api/auth/refresh", null, expect.objectContaining({ headers: SESSION_HEADERS }));
+		expect(SESSION_HEADERS).toEqual({ "X-Requested-With": "XMLHttpRequest" });
+		expect(useAuth.getState().accessToken).toBe("access-2");
+		expect(localStorage.length + sessionStorage.length).toBe(0);
 	});
 
-	it("reuses the tokens another tab already rotated instead of presenting the old refresh token again", async () => {
-		const post = vi.spyOn(axios, "post");
-		writeStoredTokens("access-from-other-tab", "refresh-from-other-tab");
+	it("shares one refresh between callers in the same tab", async () => {
+		let finish: (value: unknown) => void = () => {};
+		const post = vi.spyOn(axios, "post").mockReturnValue(new Promise((resolve) => (finish = resolve)));
 
-		const accessToken = await refreshAccessToken("refresh-1");
+		const first = refreshSession();
+		const second = refreshSession();
+		finish({ data: { accessToken: "access-2", user } });
 
-		expect(accessToken).toBe("access-from-other-tab");
-		expect(post).not.toHaveBeenCalled();
-		expect(useAuth.getState().refreshToken).toBe("refresh-from-other-tab");
+		await expect(Promise.all([first, second])).resolves.toEqual(["access-2", "access-2"]);
+		expect(post).toHaveBeenCalledTimes(1);
 	});
 
 	it("serialises refreshes across tabs with a Web Lock when the browser has one", async () => {
 		const request = vi.fn((_name: string, task: () => Promise<unknown>) => task());
 		vi.stubGlobal("navigator", { ...navigator, locks: { request } });
-		vi.spyOn(axios, "post").mockResolvedValue({ data: { accessToken: "access-2", refreshToken: "refresh-2", user } });
+		vi.spyOn(axios, "post").mockResolvedValue({ data: { accessToken: "access-2", user } });
 
-		await refreshAccessToken("refresh-1");
+		await refreshSession();
 
 		expect(request).toHaveBeenCalledWith("bgt-token-refresh", expect.any(Function));
 	});
 
-	it("reports no newer tokens when storage still holds the stale refresh token", async () => {
-		writeStoredTokens("access-1", "refresh-1");
+	it("retries once when another tab rotated the cookie at the same moment", async () => {
+		vi.useFakeTimers();
+		const post = vi
+			.spyOn(axios, "post")
+			.mockRejectedValueOnce(rejection(401, "error.auth.refresh-token-superseded"))
+			.mockResolvedValueOnce({ data: { accessToken: "access-3", user } });
 
-		await expect(tokensRefreshedElsewhere("refresh-1")).resolves.toBeNull();
+		const pending = refreshSession();
+		await vi.runAllTimersAsync();
+
+		await expect(pending).resolves.toBe("access-3");
+		expect(post).toHaveBeenCalledTimes(2);
 	});
 
-	it("follows another tab through the storage event", async () => {
-		writeStoredTokens("access-3", "refresh-3");
+	it("does not retry an expired or revoked session", async () => {
+		const post = vi.spyOn(axios, "post").mockRejectedValue(rejection(401, "error.auth.invalid-refresh-token"));
 
-		window.dispatchEvent(new StorageEvent("storage", { key: AUTH_STORAGE_KEY }));
+		await expect(refreshSession()).rejects.toBeInstanceOf(AxiosError);
+		expect(post).toHaveBeenCalledTimes(1);
+		expect(useAuth.getState().accessToken).toBe("access-1");
+	});
 
-		await vi.waitFor(() => expect(useAuth.getState().refreshToken).toBe("refresh-3"));
+	it("does not retry a network failure", async () => {
+		const post = vi.spyOn(axios, "post").mockRejectedValue(new Error("offline"));
+
+		await expect(refreshSession()).rejects.toThrow("offline");
+		expect(post).toHaveBeenCalledTimes(1);
+	});
+
+	it("does not retry a 401 without a body", async () => {
+		const post = vi.spyOn(axios, "post").mockRejectedValue(rejection(401));
+
+		await expect(refreshSession()).rejects.toBeInstanceOf(AxiosError);
+		expect(post).toHaveBeenCalledTimes(1);
+	});
+
+	it("restoreSession reports success and keeps the user", async () => {
+		useAuth.getState().clearAuth();
+		vi.spyOn(axios, "post").mockResolvedValue({ data: { accessToken: "access-9", user } });
+
+		await expect(restoreSession()).resolves.toBe(true);
+
+		expect(useAuth.getState().isAuthenticated).toBe(true);
+		expect(useAuth.getState().user).toEqual(user);
+	});
+
+	it("restoreSession signs out quietly when the cookie is missing or dead", async () => {
+		vi.spyOn(axios, "post").mockRejectedValue(rejection(401, "error.auth.invalid-refresh-token"));
+
+		await expect(restoreSession()).resolves.toBe(false);
+
+		expect(useAuth.getState().isAuthenticated).toBe(false);
+		expect(useAuth.getState().accessToken).toBeNull();
+	});
+
+	it("signs this tab out when another tab logs out", () => {
+		const stop = startSessionSync();
+
+		sync.handler?.("logout");
+
+		expect(useAuth.getState().isAuthenticated).toBe(false);
+		stop();
+		expect(sync.stop).toHaveBeenCalled();
+	});
+
+	it("picks up the session another tab just signed in with", async () => {
+		useAuth.getState().clearAuth();
+		vi.spyOn(axios, "post").mockResolvedValue({ data: { accessToken: "access-other", user: admin } });
+		startSessionSync();
+
+		sync.handler?.("login");
+
+		await vi.waitFor(() => expect(useAuth.getState().user).toEqual(admin));
+		expect(useAuth.getState().accessToken).toBe("access-other");
+	});
+
+	it("keeps the current session when following another tab's login fails", async () => {
+		vi.spyOn(axios, "post").mockRejectedValue(new Error("offline"));
+		startSessionSync();
+
+		sync.handler?.("login");
+
+		await vi.waitFor(() => expect(axios.post).toHaveBeenCalled());
+		expect(useAuth.getState().accessToken).toBe("access-1");
 	});
 });

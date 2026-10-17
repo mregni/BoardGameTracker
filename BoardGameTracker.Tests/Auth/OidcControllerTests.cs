@@ -1,6 +1,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
+using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Common.Exceptions;
@@ -51,7 +52,7 @@ public class OidcControllerTests
             context.Request.Headers.Cookie = $"{OidcController.SessionCookieName}={sessionCookie}";
         }
 
-        return new OidcController(_oidcServiceMock.Object, _publicUrlBuilderMock.Object, Mock.Of<IProfileImageTicketService>(),
+        return new OidcController(_oidcServiceMock.Object, _publicUrlBuilderMock.Object, new AuthSessionCookies(Mock.Of<IProfileImageTicketService>(), Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 })),
             Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }), Mock.Of<ILogger<OidcController>>())
         {
             ControllerContext = new ControllerContext { HttpContext = context },

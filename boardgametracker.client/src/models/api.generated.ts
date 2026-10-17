@@ -63,13 +63,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["RefreshTokenRequest"];
-                    "text/json": components["schemas"]["RefreshTokenRequest"];
-                    "application/*+json": components["schemas"]["RefreshTokenRequest"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 /** @description OK */
                 200: {
@@ -80,6 +74,28 @@ export interface paths {
                         "text/plain": components["schemas"]["LoginResponse"];
                         "application/json": components["schemas"]["LoginResponse"];
                         "text/json": components["schemas"]["LoginResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -106,13 +122,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["LogoutRequest"];
-                    "text/json": components["schemas"]["LogoutRequest"];
-                    "application/*+json": components["schemas"]["LogoutRequest"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 /** @description No Content */
                 204: {
@@ -120,6 +130,17 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
                 };
             };
         };
@@ -5600,13 +5621,9 @@ export interface components {
         };
         LoginResponse: {
             accessToken: string;
-            refreshToken: string;
             /** Format: date-time */
             expiresAt: string;
             user: components["schemas"]["UserInfo"];
-        };
-        LogoutRequest: {
-            refreshToken: string | null;
         };
         LongestSession: {
             /** Format: int32 */
@@ -5920,9 +5937,6 @@ export interface components {
             additionDate: string | null;
             /** Format: double */
             price: number | null;
-        };
-        RefreshTokenRequest: {
-            refreshToken: string;
         };
         RegisterRequest: {
             username: string;

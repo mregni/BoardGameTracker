@@ -4,6 +4,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
+const apiTarget = process.env.API_PROXY_TARGET || "http://localhost:6554/";
+
 export default defineConfig({
   plugins: [
     tanstackRouter({
@@ -31,17 +33,17 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/api": {
-        target: "http://localhost:6554/",
+        target: apiTarget,
         changeOrigin: true,
         secure: false,
       },
       "/images/cover": {
-        target: "http://localhost:6554/",
+        target: apiTarget,
         changeOrigin: true,
         secure: false,
       },
       "/images/profile": {
-        target: "http://localhost:6554/",
+        target: apiTarget,
         changeOrigin: true,
         secure: false,
       },
