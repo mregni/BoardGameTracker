@@ -85,6 +85,7 @@ services:
       - DB_NAME=boardgametracker
       - DB_PORT=5432
       - JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
+      - DATA_PROTECTION_KEY=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
       - TZ=UTC
 
   db:
@@ -110,6 +111,7 @@ services:
 2. Update the placeholder values:
    - Change the `CHANGEME` passwords to secure values
    - Set `JWT_SECRET` to a random value of at least 32 characters (for example `openssl rand -base64 48`). It is required unless you run with `AUTH_ENABLED=false`
+   - Set `DATA_PROTECTION_KEY` to a second, different random value of at least 32 characters. It encrypts the keys that protect stored secrets (OIDC client secret, API keys) so a database backup alone cannot reveal them. Keep it safe: losing or changing it means entering those secrets again
    - Adjust the timezone (`TZ`) to your location
 
 3. Start the containers:
@@ -135,6 +137,7 @@ docker run -d \
   -e DB_NAME=boardgametracker \
   -e DB_PORT=5432 \
   -e JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS \
+  -e DATA_PROTECTION_KEY=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS \
   -e TZ=UTC \
   -p 5444:5444 \
   -v ./images:/app/images \
@@ -157,6 +160,7 @@ docker run -d \
 | `DB_PASSWORD`     | -                  | ✅       | PostgreSQL password |
 | `DB_NAME`         | `boardgametracker` | ❌       | PostgreSQL database name |
 | `JWT_SECRET`      | -                  | ✅       | Signing key for login tokens, at least 32 characters. Not needed when `AUTH_ENABLED=false` |
+| `DATA_PROTECTION_KEY` | -              | ❌       | Strongly recommended, at least 32 characters. Encrypts the stored data protection keys; a warning is logged while it is missing |
 | `AUTH_ENABLED`    | `true`             | ❌       | Set to `false` to run without login (anyone on the network gets full access) |
 | `ADMIN_PASSWORD`  | `admin`            | ❌       | Password of the `admin` account when it is first created |
 | `TZ`              | `UTC`              | ❌       | Timezone (e.g., `America/New_York`, `Asia/Tokyo`) |

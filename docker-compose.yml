@@ -22,6 +22,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-CHANGEME}
       - DB_NAME=${DB_NAME:-boardgametracker}
       - JWT_SECRET=${JWT_SECRET:-CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS}
+      # Encrypts the stored data protection keys; generate with `openssl rand -base64 48` and keep it safe
+      - DATA_PROTECTION_KEY=${DATA_PROTECTION_KEY:-}
       # Behind a reverse proxy (Traefik, nginx, Caddy): the proxy IP or Docker network, e.g. 172.16.0.0/12
       # - TRUSTED_PROXIES=
       - TZ=${TZ:-UTC}

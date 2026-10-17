@@ -19,6 +19,7 @@ You should get a first reply within a week. Fixes ship as a new release and are 
 ## Hardening checklist for self-hosters
 
 - Set a random `JWT_SECRET` of at least 32 characters and change the default `admin` password after the first login.
+- Set a separate random `DATA_PROTECTION_KEY` of at least 32 characters so a database backup alone cannot reveal the stored OIDC client secret and API keys, and store it apart from those backups.
 - Keep `AUTH_ENABLED=true` unless the instance is only reachable from a trusted network.
 - Behind a reverse proxy, set `TRUSTED_PROXIES` so the login rate limit and HTTPS detection see the real client.
 - Keep the image up to date; every release is scanned with Trivy and ships an SBOM.

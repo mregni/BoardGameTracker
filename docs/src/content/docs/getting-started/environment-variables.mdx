@@ -12,7 +12,7 @@ With the provided compose files you can put any of these variables in a `.env` f
 | Configuration | Variable | Default | Info |
 | --- | --- | --- | --- |
 | Timezone | `TZ` | `UTC` | IANA name such as `Europe/Brussels`. |
-| Data protection key | `DATA_PROTECTION_KEY` | | Optional, at least 32 characters. Encrypts the data protection keys the app stores in its database, which protect password-reset links and the OpenID Connect client secret; without it a copy of the database is enough to forge a reset link. Keys created before you set it stay readable. Keep the value stable: changing or removing it makes the stored client secret unreadable (enter it again under Single sign-on) and invalidates open reset links. |
+| Data protection key | `DATA_PROTECTION_KEY` | | Strongly recommended, at least 32 characters, for example `openssl rand -base64 48`. Encrypts the data protection keys stored in the database. Without it a copy of the database is enough to read the stored secrets; the application still starts but logs a warning. See [Data protection key](#data-protection-key) below. |
 | JWT secret | `JWT_SECRET` | | **Required** unless `AUTH_ENABLED=false`. Used for signing login tokens; a strong, random value of at least 32 characters (64 or more recommended), for example `openssl rand -base64 48`. |
 | Database host | `DB_HOST` | | **Required.** Hostname of the PostgreSQL server; `db` when you use the provided compose file. The server must provide the `vector` extension (`pgvector/pgvector:pg16`). |
 | Database port | `DB_PORT` | `5432` | |
@@ -30,6 +30,22 @@ With the provided compose files you can put any of these variables in a `.env` f
 | Trusted proxies | `TRUSTED_PROXIES` | | Comma-separated list of reverse-proxy IP addresses or networks (CIDR) to trust, so the real client IP and HTTPS are read from the forwarded headers. Required behind Traefik, nginx or Caddy: without it the login rate limit is shared by everyone behind the proxy. For Docker use the bridge network, for example `172.16.0.0/12`. |
 | CORS origins | `CORS_ORIGINS` | | Comma-separated list of extra origins allowed to call the API. |
 | Swagger UI | `SWAGGER_ENABLED` | `false` | Set to `true` to expose the Swagger API UI. Enabled automatically in development. |
+
+## Data protection key
+
+BoardGameTracker encrypts a few secrets before it saves them: the OpenID Connect client secret, the BoardGameGeek and changedetection.io API keys entered under *Settings*, and the tokens in password-reset links. The keys used for that encryption (the key ring) live in the same database, in the `DataProtectionKeys` table. `DATA_PROTECTION_KEY` encrypts that key ring with AES-256-GCM, so a database dump or backup on its own no longer reveals those secrets.
+
+Generate a value once and keep it with your other secrets:
+
+```sh title="Terminal"
+openssl rand -base64 48
+```
+
+- **Not set:** the key ring is stored unencrypted and the application logs a warning at every start. Everything keeps working.
+- **Set on an existing install:** at the next start the keys already in the database are encrypted in place, so secrets saved before keep working and are no longer readable from a dump. Keys created from then on are encrypted straight away. Backups taken before that still hold the unencrypted keys.
+- **Keep it safe and stable:** store it in your password manager or secret store, separately from the database backups. A dump without the value cannot be decrypted, which is the point, so a lost value cannot be recovered.
+- **Changed or removed:** the existing keys can no longer be read. The application starts and creates a new key, but everything protected with the old keys is lost: single sign-on fails until you enter the OpenID Connect client secret again under *Single sign-on*, the BoardGameGeek and changedetection.io API keys show as not configured until you enter them again, and open password-reset links stop working. Rotating the value without re-entering those secrets is not supported.
+- A value shorter than 32 characters stops the application at startup with an error naming the variable.
 
 ## Email (SMTP)
 

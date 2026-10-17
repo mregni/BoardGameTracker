@@ -3,6 +3,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 var dbUser = builder.AddParameter("db-user", "dev");
 var dbPassword = builder.AddParameter("db-password", "dev", secret: true);
 var jwtSecret = builder.AddParameter("jwt-secret", "your-super-secret-jwt-key-that-is-used-in-dev", secret: true);
+var dataProtectionKey = builder.AddParameter("data-protection-key", "dev-only-data-protection-key-change-me-for-real-use", secret: true);
 
 var smtpPassword = builder.AddParameter("smtp-password", string.Empty, secret: true);
 var aiApiKey = builder.AddParameter("ai-api-key", string.Empty, secret: true);
@@ -53,6 +54,7 @@ var backend = builder.AddProject<Projects.BoardGameTracker_Host>("bgt-host")
         // Auth
         env["AUTH_ENABLED"] = "true";
         env["JWT_SECRET"] = jwtSecret.Resource;
+        env["DATA_PROTECTION_KEY"] = dataProtectionKey.Resource;
 
         // Runtime / logging
         env["STATISTICS_ENABLED"] = "false";

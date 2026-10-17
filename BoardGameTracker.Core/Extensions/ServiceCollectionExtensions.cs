@@ -139,6 +139,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<ISecretProtector, SecretProtector>();
         serviceCollection.AddSingleton<IIntegrationKeyProtector, IntegrationKeyProtector>();
         serviceCollection.AddScoped<IIntegrationKeyMigrator, IntegrationKeyMigrator>();
+        serviceCollection.AddScoped<IDataProtectionKeyReEncryptor, DataProtectionKeyReEncryptor>();
         serviceCollection.AddSingleton<IProfileImageTicketService, ProfileImageTicketService>();
         serviceCollection.AddSingleton<IBackgroundEmailSender, BackgroundEmailSender>();
         serviceCollection.AddScoped<IOidcProviderService, OidcProviderService>();
