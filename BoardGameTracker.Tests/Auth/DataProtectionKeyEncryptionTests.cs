@@ -16,9 +16,10 @@ namespace BoardGameTracker.Tests.Auth;
 
 public class DataProtectionKeyEncryptionTests
 {
-    private const string Secret = "data-protection-secret-that-is-long-enough";
+    private static readonly string Secret = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
     private const string Payload = "oidc-client-secret-value";
-    private static readonly XElement KeyElement = XElement.Parse("<descriptor><masterKey>c2VjcmV0LWtleS1tYXRlcmlhbA==</masterKey></descriptor>");
+    private static readonly string MasterKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+    private static readonly XElement KeyElement = XElement.Parse($"<descriptor><masterKey>{MasterKey}</masterKey></descriptor>");
 
     private readonly Mock<ILogger> _loggerMock = new();
 
@@ -33,7 +34,7 @@ public class DataProtectionKeyEncryptionTests
         var material = new DataProtectionKeyMaterial(Secret);
         var encrypted = new SecretXmlEncryptor(material).Encrypt(KeyElement);
 
-        encrypted.EncryptedElement.ToString().Should().NotContain("c2VjcmV0LWtleS1tYXRlcmlhbA==");
+        encrypted.EncryptedElement.ToString().Should().NotContain(MasterKey);
         encrypted.DecryptorType.Should().Be<SecretXmlDecryptor>();
 
         var decrypted = Decryptor(material).Decrypt(encrypted.EncryptedElement);

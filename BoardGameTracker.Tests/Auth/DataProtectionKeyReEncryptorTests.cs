@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Xml;
 using BoardGameTracker.Core.Auth;
@@ -14,9 +15,9 @@ namespace BoardGameTracker.Tests.Auth;
 
 public class DataProtectionKeyReEncryptorTests : IDisposable
 {
-    private const string Secret = "data-protection-secret-that-is-long-enough";
-    private const string MasterKey = "c2VjcmV0LWtleS1tYXRlcmlhbA==";
-    private const string PlaintextKey =
+    private static readonly string Secret = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+    private static readonly string MasterKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+    private static readonly string PlaintextKey =
         "<key id=\"1\" version=\"1\"><descriptor><descriptor><masterKey p4:requiresEncryption=\"true\" xmlns:p4=\"http://schemas.asp.net/2015/03/dataProtection\"><value>" +
         MasterKey + "</value></masterKey></descriptor></descriptor></key>";
 

@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using BoardGameTracker.Common;
@@ -22,7 +23,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
     public const string UserPassword = "UserTest123!";
     public const string IndexMarker = "<!-- integration-index -->";
     public const string AssetMarker = "/* integration-asset */";
-    public const string DataProtectionKey = "integration-data-protection-key-that-is-long-enough";
+    public static readonly string DataProtectionKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
 
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
