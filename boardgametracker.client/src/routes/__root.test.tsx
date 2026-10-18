@@ -10,6 +10,9 @@ const mocks = vi.hoisted(() => ({
 	getSettingsCall: vi.fn(),
 	getEnvironmentCall: vi.fn(),
 	initSentry: vi.fn(),
+	restoreSession: vi.fn(),
+	startSessionSync: vi.fn(),
+	stopSessionSync: vi.fn(),
 	authState: {} as {
 		isAuthenticated: boolean;
 		authStatus: { authEnabled: boolean } | null;
@@ -40,6 +43,11 @@ vi.mock("@/services/settingsService", () => ({
 	getEnvironmentCall: () => mocks.getEnvironmentCall(),
 	getLanguagesCall: vi.fn(),
 	getVersionInfoCall: vi.fn(),
+}));
+
+vi.mock("@/utils/tokenRefresh", () => ({
+	restoreSession: () => mocks.restoreSession(),
+	startSessionSync: () => mocks.startSessionSync(),
 }));
 
 vi.mock("@/utils/sentry", () => ({
@@ -74,8 +82,10 @@ describe("RootComponent", () => {
 		mocks.authState = {
 			isAuthenticated: false,
 			authStatus: { authEnabled: false },
-			fetchAuthStatus: vi.fn().mockResolvedValue(undefined),
+			fetchAuthStatus: vi.fn(() => Promise.resolve(mocks.authState.authStatus)),
 		};
+		mocks.restoreSession.mockResolvedValue(false);
+		mocks.startSessionSync.mockReturnValue(mocks.stopSessionSync);
 		mocks.routeContext.queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 		mocks.useMatch.mockReturnValue(null);
 		mocks.useLocation.mockReturnValue({ pathname: "/", searchStr: "" });
@@ -107,6 +117,52 @@ describe("RootComponent", () => {
 			await waitFor(() => {
 				expect(screen.getByTestId("sidebar")).toBeInTheDocument();
 			});
+		});
+	});
+
+	describe("Session restore on boot", () => {
+		it("restores the session from the refresh cookie before deciding where to go", async () => {
+			mocks.authState.authStatus = { authEnabled: true };
+			let finishRestore: (restored: boolean) => void = () => {};
+			mocks.restoreSession.mockReturnValue(new Promise<boolean>((resolve) => (finishRestore = resolve)));
+
+			const { container } = render(<mocks.captured.Root />);
+
+			await waitFor(() => expect(mocks.restoreSession).toHaveBeenCalledTimes(1));
+			expect(container.querySelector(".animate-spin")).toBeInTheDocument();
+			expect(screen.queryByTestId("outlet")).not.toBeInTheDocument();
+			expect(mocks.navigate).not.toHaveBeenCalled();
+
+			mocks.authState.isAuthenticated = true;
+			finishRestore(true);
+
+			await waitFor(() => expect(screen.getByTestId("outlet")).toBeInTheDocument());
+			expect(mocks.navigate).not.toHaveBeenCalled();
+		});
+
+		it("sends the visitor to the login page only after the restore failed", async () => {
+			mocks.authState.authStatus = { authEnabled: true };
+
+			render(<mocks.captured.Root />);
+
+			await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith({ to: "/login", search: { redirect: "/" } }));
+			expect(mocks.restoreSession).toHaveBeenCalledTimes(1);
+		});
+
+		it("does not try to restore a session when auth is disabled", async () => {
+			render(<mocks.captured.Root />);
+
+			await waitFor(() => expect(screen.getByTestId("outlet")).toBeInTheDocument());
+			expect(mocks.restoreSession).not.toHaveBeenCalled();
+			expect(mocks.navigate).not.toHaveBeenCalled();
+		});
+
+		it("follows other tabs for as long as the app is mounted", () => {
+			const { unmount } = render(<mocks.captured.Root />);
+
+			expect(mocks.startSessionSync).toHaveBeenCalledTimes(1);
+			unmount();
+			expect(mocks.stopSessionSync).toHaveBeenCalledTimes(1);
 		});
 	});
 

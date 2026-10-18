@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Web;
 using BoardGameTracker.Api.Controllers;
+using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.IntegrationTests.Infrastructure;
@@ -75,6 +76,8 @@ public class OidcRoundTripTests : IAsyncLifetime
 
         var adopt = await browser.PostAsync("/api/auth/oidc/adopt", null);
         adopt.StatusCode.Should().Be(HttpStatusCode.OK);
+        adopt.Headers.GetValues("Set-Cookie").Should().Contain(c => c.StartsWith($"{AuthSessionCookies.RefreshCookieName}=", StringComparison.Ordinal) && c.Contains("path=/api/auth;", StringComparison.Ordinal) && c.Contains("httponly", StringComparison.Ordinal) && c.Contains("samesite=lax", StringComparison.Ordinal));
+        (await adopt.Content.ReadAsStringAsync()).Should().NotContainEquivalentOf("refreshToken");
         var login = await adopt.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json);
         login!.User.Username.Should().Be("jane");
         login.User.DisplayName.Should().Be("Jane Doe");
@@ -88,6 +91,10 @@ public class OidcRoundTripTests : IAsyncLifetime
 
         var replay = await browser.PostAsync("/api/auth/oidc/adopt", null);
         replay.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        using var refresh = new HttpRequestMessage(HttpMethod.Post, "/api/auth/refresh");
+        refresh.Headers.Add(RequireSessionHeaderAttribute.HeaderName, RequireSessionHeaderAttribute.HeaderValue);
+        (await browser.SendAsync(refresh)).StatusCode.Should().Be(HttpStatusCode.OK, "the adopted session lives on in the refresh cookie");
     }
 
     [Fact]
@@ -384,12 +391,9 @@ public class OidcRoundTripTests : IAsyncLifetime
     public async Task Admin_ShouldSeeAndUnlinkTheSsoIdentities_AndADisabledUserCannotSignInWithSso()
     {
         UseIdentity("deprovision");
-        LoginResponse login;
-        using (var browser = _fixture.CreateBrowserClient())
-        {
-            await SignInAsync(browser);
-            login = await AdoptAsync(browser);
-        }
+        using var session = _fixture.CreateBrowserClient();
+        await SignInAsync(session);
+        var login = await AdoptAsync(session);
 
         using var admin = await _fixture.CreateAdminClientAsync();
         var users = await admin.GetFromJsonAsync<List<UserDto>>("/api/admin/users", IntegrationFixture.Json);
@@ -407,9 +411,11 @@ public class OidcRoundTripTests : IAsyncLifetime
             refused.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.AccountDisabled)}");
         }
 
+        using var refresh = new HttpRequestMessage(HttpMethod.Post, "/api/auth/refresh");
+        refresh.Headers.Add(RequireSessionHeaderAttribute.HeaderName, RequireSessionHeaderAttribute.HeaderValue);
+        (await session.SendAsync(refresh)).StatusCode.Should().Be(HttpStatusCode.Unauthorized, "disabling the user revoked the refresh cookie's token");
+
         using var anonymous = _fixture.CreateClient();
-        var refresh = await anonymous.PostAsJsonAsync("/api/auth/refresh", new RefreshTokenRequest(login.RefreshToken));
-        refresh.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
         var adminLogin = await anonymous.PostAsJsonAsync("/api/auth/login", new LoginRequest(IntegrationFixture.AdminUsername, IntegrationFixture.AdminPassword));
         adminLogin.StatusCode.Should().Be(HttpStatusCode.OK);

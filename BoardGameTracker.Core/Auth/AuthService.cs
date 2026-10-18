@@ -129,7 +129,7 @@ public class AuthService : IAuthService
             if (existingToken.WasRotatedWithin(RotationGracePeriod))
             {
                 _logger.LogInformation("A refresh token rotated moments ago was presented again for user {UserId}; treating it as a concurrent refresh", existingToken.UserId);
-                throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+                throw new AuthenticationFailedException(Constants.Errors.RefreshTokenSuperseded);
             }
 
             _logger.LogWarning("A rotated refresh token was presented again for user {UserId}; revoking every session", existingToken.UserId);
@@ -160,7 +160,7 @@ public class AuthService : IAuthService
         catch (DbUpdateConcurrencyException)
         {
             _logger.LogWarning("Two refreshes raced on one refresh token for user {UserId}; only the first got a new token", existingToken.UserId);
-            throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+            throw new AuthenticationFailedException(Constants.Errors.RefreshTokenSuperseded);
         }
 
         var accessToken = _tokenService.GenerateAccessToken(user, roles);
@@ -172,22 +172,21 @@ public class AuthService : IAuthService
             user.ToUserInfo(roles));
     }
 
-    public async Task LogoutAsync(string userId, string? refreshToken)
+    public async Task LogoutAsync(string? userId, string? refreshToken)
     {
-        if (!string.IsNullOrEmpty(refreshToken))
+        if (string.IsNullOrEmpty(refreshToken))
         {
-            var token = await _tokenService.GetRefreshTokenAsync(refreshToken);
-            if (token != null && token.UserId == userId)
-            {
-                await _tokenService.RevokeRefreshTokenAsync(token, "Logged out");
-            }
-        }
-        else
-        {
-            await _tokenService.RevokeAllUserTokensAsync(userId, "Logged out");
+            return;
         }
 
-        _logger.LogInformation("User {UserId} logged out", userId);
+        var token = await _tokenService.GetRefreshTokenAsync(refreshToken);
+        if (token == null || (userId != null && token.UserId != userId))
+        {
+            return;
+        }
+
+        await _tokenService.RevokeRefreshTokenAsync(token, "Logged out");
+        _logger.LogInformation("User {UserId} logged out", token.UserId);
     }
 
     public async Task<UserDto> RegisterAsync(RegisterRequest request)

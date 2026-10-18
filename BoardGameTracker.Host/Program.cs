@@ -69,6 +69,7 @@ builder.Services.AddHealthChecks()
     .AddDbContextCheck<BoardGameTracker.Core.Datastore.MainDbContext>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddScoped<AuthDisabledFilter>();
+builder.Services.AddSingleton<AuthSessionCookies>();
 builder.Services.AddProblemDetails();
 var environmentProvider = new EnvironmentProvider();
 builder.Services.AddDataProtection()
@@ -168,6 +169,14 @@ builder.Services.AddRateLimiter(options =>
         _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
+    options.AddPolicy("refresh", context => RateLimitPartition.GetFixedWindowLimiter(
+        ClientAddressKey.From(context.Connection.RemoteIpAddress),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 60,
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));

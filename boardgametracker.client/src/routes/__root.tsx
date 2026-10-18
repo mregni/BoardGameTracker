@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { MenuItem } from "@/models";
 import { getSettings } from "@/services/queries/settings";
 import { initSentry } from "@/utils/sentry";
+import { restoreSession, startSessionSync } from "@/utils/tokenRefresh";
 import { BottomNav } from "./-components/BottomNav";
 import { Sidebar } from "./-components/Sidebar";
 
@@ -44,10 +45,21 @@ function RootComponent() {
 	const fetchAuthStatus = useAuth((s) => s.fetchAuthStatus);
 	const [authChecked, setAuthChecked] = useState(false);
 
+	useEffect(() => startSessionSync(), []);
+
 	useEffect(() => {
+		let cancelled = false;
 		fetchAuthStatus()
-			.then(() => setAuthChecked(true))
-			.catch(() => setAuthChecked(true));
+			.then((status) => (status.authEnabled ? restoreSession() : false))
+			.catch(() => false)
+			.finally(() => {
+				if (!cancelled) {
+					setAuthChecked(true);
+				}
+			});
+		return () => {
+			cancelled = true;
+		};
 	}, [fetchAuthStatus]);
 
 	useEffect(() => {
