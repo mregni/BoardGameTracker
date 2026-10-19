@@ -457,6 +457,38 @@ public class OidcRoundTripTests : IAsyncLifetime
         (cookies ?? []).Should().NotContain(c => c.StartsWith($"{OidcController.StateCookieName}=", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("login?redirect=%2Fgames", "/login")]
+    [InlineData("callback?code=code&state=state", "/auth-callback")]
+    [InlineData("link-callback?code=code&state=state", "/auth-callback")]
+    public async Task OidcFlow_ShouldIgnoreSpoofedForwardedHeaders_WithoutATrustedProxy(string endpoint, string refusalPage)
+    {
+        using var browser = _fixture.CreateBrowserClient(LanHttp);
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/auth/oidc/{ProviderName}/{endpoint}");
+        request.Headers.Add("X-Forwarded-Proto", "https");
+        request.Headers.Add("X-Forwarded-Host", "localhost");
+        request.Headers.Add("X-Forwarded-For", "127.0.0.1");
+
+        var response = await browser.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Found);
+        response.Headers.Location!.ToString().Should().Be($"{refusalPage}?error={Uri.EscapeDataString(Constants.Errors.OidcHttpsRequired)}");
+        response.Headers.TryGetValues("Set-Cookie", out var cookies);
+        (cookies ?? []).Should().NotContain(c => c.StartsWith("bgt_oidc_", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Login_ShouldOnlyRedirectToTheProvidersAuthorizationEndpoint_WhateverTheRequestHost()
+    {
+        using var browser = _fixture.CreateBrowserClient(new Uri("https://evil.example.com"));
+
+        var start = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login?redirect=%2F%2Fevil.example.com");
+
+        start.StatusCode.Should().Be(HttpStatusCode.Found);
+        start.Headers.Location!.GetLeftPart(UriPartial.Path).Should().Be($"{_idp.Authority}/authorize");
+        start.Headers.Location.Fragment.Should().BeEmpty();
+    }
+
     [Fact]
     public async Task Login_ShouldSetSecureOidcCookies_OverHttps()
     {

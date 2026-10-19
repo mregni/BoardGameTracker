@@ -53,26 +53,20 @@ public class OidcController : ControllerBase
             return NotFound();
         }
 
-        return Ok(provider with { HttpsRequired = !await IsTransportAllowedAsync() });
+        return Ok(provider with { HttpsRequired = !await OidcTransportPolicy.IsAllowedAsync(Request, _publicUrlBuilder) });
     }
 
     [HttpGet("{provider}/login")]
     [AllowAnonymous]
     [EnableRateLimiting("auth")]
+    [RequireOidcHttps(OidcHttpsRefusal.LoginPage)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> Login(string provider, [FromQuery] string? redirect)
     {
         _logger.LogInformation("OIDC login initiated for provider {Provider}", provider);
         try
         {
-            var publicBaseUrl = await PublicBaseUrlAsync();
-            if (!OidcTransportPolicy.IsAllowed(Request) || !OidcTransportPolicy.IsAllowed(publicBaseUrl))
-            {
-                _logger.LogWarning("OIDC login via {Provider} refused because the connection is not HTTPS", provider);
-                return LocalRedirect($"/login?error={Uri.EscapeDataString(Constants.Errors.OidcHttpsRequired)}");
-            }
-
-            var request = await _oidcService.StartLoginAsync(provider, publicBaseUrl, redirect);
+            var request = await _oidcService.StartLoginAsync(provider, await PublicBaseUrlAsync(), redirect);
             SetCookie(StateCookieName, request.State, OidcService.PendingAuthorizationLifetime);
             return Redirect(request.Url);
         }
@@ -86,15 +80,10 @@ public class OidcController : ControllerBase
     [HttpGet("{provider}/callback")]
     [AllowAnonymous]
     [EnableRateLimiting("auth")]
+    [RequireOidcHttps(OidcHttpsRefusal.CallbackPage)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> Callback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error, [FromQuery] string? iss)
     {
-        if (!OidcTransportPolicy.IsAllowed(Request))
-        {
-            _logger.LogWarning("OIDC callback for {Provider} refused because the connection is not HTTPS", provider);
-            return Fail(Constants.Errors.OidcHttpsRequired);
-        }
-
         var browserState = Request.Cookies[StateCookieName];
         DeleteCookie(StateCookieName);
 
@@ -137,18 +126,13 @@ public class OidcController : ControllerBase
 
     [HttpGet("{provider}/link")]
     [Authorize]
+    [RequireOidcHttps(OidcHttpsRefusal.BadRequest)]
     [ProducesResponseType<AuthorizationUrlResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> LinkLogin(string provider)
     {
         var userId = GetCurrentUserId();
         _logger.LogInformation("OIDC link initiated for provider {Provider} by user {UserId}", provider, userId);
-        var publicBaseUrl = await PublicBaseUrlAsync();
-        if (!OidcTransportPolicy.IsAllowed(Request) || !OidcTransportPolicy.IsAllowed(publicBaseUrl))
-        {
-            throw new ValidationException(Constants.Errors.OidcHttpsRequired);
-        }
-
-        var request = await _oidcService.StartLinkAsync(userId, provider, publicBaseUrl);
+        var request = await _oidcService.StartLinkAsync(userId, provider, await PublicBaseUrlAsync());
         SetCookie(StateCookieName, request.State, OidcService.PendingAuthorizationLifetime);
         return Ok(new AuthorizationUrlResponse(request.Url));
     }
@@ -156,15 +140,10 @@ public class OidcController : ControllerBase
     [HttpGet("{provider}/link-callback")]
     [AllowAnonymous]
     [EnableRateLimiting("auth")]
+    [RequireOidcHttps(OidcHttpsRefusal.CallbackPage)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> LinkCallback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error, [FromQuery] string? iss)
     {
-        if (!OidcTransportPolicy.IsAllowed(Request))
-        {
-            _logger.LogWarning("OIDC link callback for {Provider} refused because the connection is not HTTPS", provider);
-            return Fail(Constants.Errors.OidcHttpsRequired);
-        }
-
         var browserState = Request.Cookies[StateCookieName];
         DeleteCookie(StateCookieName);
 
@@ -222,11 +201,6 @@ public class OidcController : ControllerBase
             EntityNotFoundException => Constants.Errors.InvalidAuthSession,
             _ => Constants.Errors.OidcFailed,
         };
-    }
-
-    private async Task<bool> IsTransportAllowedAsync()
-    {
-        return OidcTransportPolicy.IsAllowed(Request) && OidcTransportPolicy.IsAllowed(await PublicBaseUrlAsync());
     }
 
     private async Task<string> PublicBaseUrlAsync()

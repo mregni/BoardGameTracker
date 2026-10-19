@@ -168,42 +168,16 @@ public class OidcControllerTests
     }
 
     [Theory]
-    [InlineData("http", "192.168.1.20:5444", null)]
-    [InlineData("http", "games.example.com", null)]
-    [InlineData("https", "games.example.com", "http://games.example.com")]
-    public async Task Login_ShouldSendTheBrowserBackToTheLoginPage_WhenTheConnectionIsNotHttps(string scheme, string host, string? publicUrl)
+    [InlineData(nameof(OidcController.Login), OidcHttpsRefusal.LoginPage)]
+    [InlineData(nameof(OidcController.Callback), OidcHttpsRefusal.CallbackPage)]
+    [InlineData(nameof(OidcController.LinkLogin), OidcHttpsRefusal.BadRequest)]
+    [InlineData(nameof(OidcController.LinkCallback), OidcHttpsRefusal.CallbackPage)]
+    public void OidcFlowActions_ShouldRequireHttps(string action, OidcHttpsRefusal refusal)
     {
-        _publicUrlBuilderMock.Setup(x => x.GetConfiguredBaseUrlAsync()).ReturnsAsync(publicUrl);
-        var controller = CreateController(scheme: scheme, host: host);
+        var attribute = typeof(OidcController).GetMethod(action)!.GetCustomAttributes(typeof(RequireOidcHttpsAttribute), false)
+            .Should().ContainSingle().Which.Should().BeOfType<RequireOidcHttpsAttribute>().Subject;
 
-        var result = await controller.Login("kc", "/games");
-
-        result.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be("/login?error=error.auth.oidc-https-required");
-        SetCookies(controller).Should().BeEmpty();
-        _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task Callback_ShouldRefusePlainHttp_WithoutTouchingTheProvider()
-    {
-        var controller = CreateController(scheme: "http", host: "192.168.1.20:5444");
-
-        var result = await controller.Callback("kc", "code", "state", null, null);
-
-        result.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be("/auth-callback?error=error.auth.oidc-https-required");
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task LinkCallback_ShouldRefusePlainHttp_WithoutTouchingTheProvider()
-    {
-        var controller = CreateController(scheme: "http", host: "games.example.com");
-
-        var result = await controller.LinkCallback("kc", "code", "state", null, null);
-
-        result.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be("/auth-callback?error=error.auth.oidc-https-required");
-        VerifyNoOtherCalls();
+        attribute.Arguments.Should().Equal(refusal);
     }
 
     [Fact]
@@ -236,21 +210,6 @@ public class OidcControllerTests
             .Which.Should().Contain("secure");
         _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
         _oidcServiceMock.Verify(x => x.StartLinkAsync("user-1", "kc", "https://games.example.com"), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Theory]
-    [InlineData("http", "192.168.1.20:5444", null)]
-    [InlineData("https", "games.example.com", "http://games.example.com")]
-    public async Task LinkLogin_ShouldRefuse_WhenTheConnectionIsNotHttps(string scheme, string host, string? publicUrl)
-    {
-        _publicUrlBuilderMock.Setup(x => x.GetConfiguredBaseUrlAsync()).ReturnsAsync(publicUrl);
-        var controller = CreateController(scheme: scheme, host: host);
-
-        var act = () => controller.LinkLogin("kc");
-
-        (await act.Should().ThrowAsync<ValidationException>()).Which.Message.Should().Be(Constants.Errors.OidcHttpsRequired);
-        _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 
