@@ -11,11 +11,6 @@ public static class OidcTransportPolicy
         return request.IsHttps || IsLoopbackHost(request.Host.Host);
     }
 
-    public static async Task<bool> IsAllowedAsync(HttpRequest request, IPublicUrlBuilder publicUrlBuilder)
-    {
-        return IsAllowed(request) && IsAllowed((await PublicBaseUrl.ResolveAsync(publicUrlBuilder, request)).BaseUrl);
-    }
-
     public static bool IsAllowed(string baseUrl)
     {
         if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri))
@@ -24,6 +19,11 @@ public static class OidcTransportPolicy
         }
 
         return uri.Scheme == Uri.UriSchemeHttps || (uri.Scheme == Uri.UriSchemeHttp && IsLoopbackHost(uri.Host));
+    }
+
+    public static async Task<bool> IsAllowedAsync(HttpRequest request, IPublicUrlBuilder publicUrlBuilder)
+    {
+        return IsAllowed(request) && IsAllowed((await PublicBaseUrl.ResolveAsync(publicUrlBuilder, request)).BaseUrl);
     }
 
     public static bool IsLoopbackHost(string? host)

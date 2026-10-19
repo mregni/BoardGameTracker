@@ -14,6 +14,7 @@ public enum OidcHttpsRefusal
     BadRequest,
 }
 
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public sealed class RequireOidcHttpsAttribute : TypeFilterAttribute
 {
     public RequireOidcHttpsAttribute(OidcHttpsRefusal refusal) : base(typeof(RequireOidcHttpsFilter))
