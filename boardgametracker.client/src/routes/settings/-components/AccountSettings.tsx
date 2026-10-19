@@ -1,8 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BgtActionMenu } from "@/components/BgtActionMenu/BgtActionMenu";
 import BgtButton from "@/components/BgtButton/BgtButton";
+import {
+	BgtDialog,
+	BgtDialogContent,
+	BgtDialogDescription,
+	BgtDialogFooter,
+	BgtDialogTitle,
+} from "@/components/BgtDialog";
 import { BgtFieldLabel, BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
@@ -60,6 +68,8 @@ export const AccountSettings = () => {
 	const [deleteTarget, setDeleteTarget] = useState<UserDto | null>(null);
 	const [editTarget, setEditTarget] = useState<UserDto | null>(null);
 	const [accessTargetId, setAccessTargetId] = useState<string | null>(null);
+	const [resetTarget, setResetTarget] = useState<UserDto | null>(null);
+	const [isResetting, setIsResetting] = useState(false);
 	const accessTarget = users.find((user) => user.id === accessTargetId) ?? null;
 	const [tempPasswordData, setTempPasswordData] = useState<{ username: string; password: string } | null>(null);
 
@@ -90,14 +100,7 @@ export const AccountSettings = () => {
 					onCreateUser={createUserModal.show}
 					onEditUser={(user) => setEditTarget(user)}
 					onManageAccess={(user) => setAccessTargetId(user.id)}
-					onResetPassword={async (user) => {
-						try {
-							const result: ResetPasswordResponse = await resetPassword(user.id);
-							setTempPasswordData({ username: user.username, password: result.tempPassword });
-						} catch {
-							errorToast("settings:account.notifications.password-reset-failed");
-						}
-					}}
+					onResetPassword={(user) => setResetTarget(user)}
 					onDeleteUser={(user) => setDeleteTarget(user)}
 				/>
 			)}
@@ -141,6 +144,35 @@ export const AccountSettings = () => {
 					user={accessTarget}
 					isCurrentUser={accessTarget.id === currentUser?.id}
 				/>
+			)}
+
+			{resetTarget && (
+				<BgtDialog open onClose={() => setResetTarget(null)}>
+					<BgtDialogContent>
+						<BgtDialogTitle>{t("account.users.reset-password.title")}</BgtDialogTitle>
+						<BgtDialogDescription>
+							{t("account.users.reset-password.description", { user: resetTarget.username })}
+						</BgtDialogDescription>
+						<BgtDialogFooter
+							onCancel={() => setResetTarget(null)}
+							confirmLabel={t("account.users.reset-password.button")}
+							variant="destructive"
+							loading={isResetting}
+							onConfirm={async () => {
+								setIsResetting(true);
+								try {
+									const result: ResetPasswordResponse = await resetPassword(resetTarget.id);
+									setTempPasswordData({ username: resetTarget.username, password: result.tempPassword });
+								} catch {
+									errorToast("settings:account.notifications.password-reset-failed");
+								} finally {
+									setIsResetting(false);
+									setResetTarget(null);
+								}
+							}}
+						/>
+					</BgtDialogContent>
+				</BgtDialog>
 			)}
 
 			{tempPasswordData && (
@@ -306,6 +338,32 @@ const UserManagementSection = ({
 	const timeFormat = settings?.timeFormat ?? "HH:mm";
 	const uiLanguage = settings?.uiLanguage ?? "en-US";
 
+	const lastLogin = useCallback(
+		(user: UserDto) =>
+			user.lastLoginAt
+				? toDisplayDateTime(user.lastLoginAt, dateFormat, timeFormat, uiLanguage)
+				: t("account.users.never-logged-in"),
+		[t, dateFormat, timeFormat, uiLanguage],
+	);
+
+	const badges = useCallback(
+		(user: UserDto) => (
+			<>
+				{user.isDisabled && (
+					<span className="rounded-sm bg-error-strong/30 px-1.5 py-0.5 text-[11px] text-white">
+						{t("account.users.access.disabled-badge")}
+					</span>
+				)}
+				{user.externalLoginCount > 0 && (
+					<span className="rounded-sm bg-primary/30 px-1.5 py-0.5 text-[11px] text-white">
+						{t("account.users.access.sso-badge")}
+					</span>
+				)}
+			</>
+		),
+		[t],
+	);
+
 	const columns: ColumnDef<UserDto>[] = useMemo(
 		() => [
 			{
@@ -314,34 +372,19 @@ const UserManagementSection = ({
 				cell: ({ row }) => (
 					<div className="flex flex-wrap items-center gap-2">
 						<span>{row.original.username}</span>
-						{row.original.isDisabled && (
-							<span className="rounded-sm bg-error-strong/30 px-1.5 py-0.5 text-[11px] text-white">
-								{t("account.users.access.disabled-badge")}
-							</span>
-						)}
-						{row.original.externalLoginCount > 0 && (
-							<span className="rounded-sm bg-primary/30 px-1.5 py-0.5 text-[11px] text-white">
-								{t("account.users.access.sso-badge")}
-							</span>
-						)}
+						{badges(row.original)}
 					</div>
 				),
 			},
 			{
 				accessorKey: "roles",
-				header: () => <div className="hidden md:block">{t("account.users.role")}</div>,
-				cell: ({ row }) => <div className="text-white/70 hidden md:block">{row.original.roles.join(", ")}</div>,
+				header: t("account.users.role"),
+				cell: ({ row }) => <div className="text-white/70">{row.original.roles.join(", ")}</div>,
 			},
 			{
 				accessorKey: "lastLoginAt",
-				header: () => <div className="hidden md:block">{t("account.users.last-login")}</div>,
-				cell: ({ row }) => (
-					<div className="text-white/70 hidden md:block">
-						{row.original.lastLoginAt
-							? toDisplayDateTime(row.original.lastLoginAt, dateFormat, timeFormat, uiLanguage)
-							: t("account.users.never-logged-in")}
-					</div>
-				),
+				header: t("account.users.last-login"),
+				cell: ({ row }) => <div className="text-white/70">{lastLogin(row.original)}</div>,
 			},
 			{
 				id: "actions",
@@ -366,7 +409,7 @@ const UserManagementSection = ({
 				),
 			},
 		],
-		[t, currentUserId, onEditUser, onManageAccess, onResetPassword, onDeleteUser, dateFormat, timeFormat, uiLanguage],
+		[t, currentUserId, onEditUser, onManageAccess, onResetPassword, onDeleteUser, lastLogin, badges],
 	);
 
 	return (
@@ -374,7 +417,41 @@ const UserManagementSection = ({
 			<div className="mb-4">
 				<BgtButton onClick={onCreateUser}>{t("account.users.create-button")}</BgtButton>
 			</div>
-			<BgtDataTable columns={columns} data={users} noDataMessage={t("account.users.no-users")} />
+			<div className="hidden md:block">
+				<BgtDataTable columns={columns} data={users} noDataMessage={t("account.users.no-users")} />
+			</div>
+			<ul className="flex flex-col gap-2 md:hidden" aria-label={t("account.users.title")}>
+				{users.length === 0 && <li className="text-sm text-white/60">{t("account.users.no-users")}</li>}
+				{users.map((user) => (
+					<li
+						key={user.id}
+						data-testid="user-card"
+						className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-3"
+					>
+						<div className="flex min-w-0 flex-1 flex-col gap-1">
+							<div className="flex flex-wrap items-center gap-2">
+								<span className="truncate font-semibold text-white">{user.username}</span>
+								{badges(user)}
+							</div>
+							<span className="text-sm text-white/70">{user.roles.join(", ")}</span>
+							<span className="text-xs text-white/50">
+								{t("account.users.last-login")}: {lastLogin(user)}
+							</span>
+						</div>
+						<BgtActionMenu
+							label={t("account.users.actions", { username: user.username })}
+							items={[
+								{ label: t("common:edit"), onSelect: () => onEditUser(user) },
+								{ label: t("account.users.access.button"), onSelect: () => onManageAccess(user) },
+								{ label: t("account.users.reset-password.button"), onSelect: () => onResetPassword(user) },
+								...(user.id !== currentUserId
+									? [{ label: t("common:delete.button"), onSelect: () => onDeleteUser(user), destructive: true }]
+									: []),
+							]}
+						/>
+					</li>
+				))}
+			</ul>
 		</SettingsSection>
 	);
 };

@@ -1,12 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	BgtDialog,
-	BgtDialogContent,
-	BgtDialogDescription,
-	BgtDialogFooter,
-	BgtDialogTitle,
-} from "@/components/BgtDialog";
+import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { useAppForm } from "@/hooks/form";
 import {
@@ -88,10 +82,9 @@ export const CreateUserModal = ({ open, close, players, users, onSubmit, isLoadi
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent>
+			<BgtDialogContent aria-describedby={undefined}>
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
 					<BgtDialogTitle>{t("account.users.create.title")}</BgtDialogTitle>
-					<BgtDialogDescription>{t("account.users.create.description")}</BgtDialogDescription>
 					<div className="flex flex-col gap-2 mb-3 mt-3">
 						<form.Field name="username" validators={zodValidator(CreateUserSchema, "username")}>
 							{(field) => (

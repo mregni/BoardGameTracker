@@ -145,7 +145,8 @@
 		},
 		"account": {
 			"title": "Cuenta",
-			"description": "Perfil y gestión de usuarios"
+			"description": "Perfil y gestión de usuarios",
+			"description-user": "Perfil y contraseña"
 		},
 		"sso": {
 			"title": "Inicio de sesión único",
@@ -228,10 +229,9 @@
 				"label": "Jugador vinculado",
 				"none": "Sin vincular"
 			},
-			"create-button": "Crear usuario",
+			"create-button": "Añadir usuario",
 			"create": {
-				"title": "Crear usuario",
-				"description": "Rellena el formulario para crear un nuevo usuario.",
+				"title": "Añadir usuario",
 				"username": {
 					"label": "Nombre de usuario"
 				},
@@ -250,14 +250,16 @@
 					"link": "Vincular un jugador existente",
 					"none": "Sin jugador"
 				},
-				"save": "Crear usuario"
+				"save": "Añadir"
 			},
 			"edit": {
 				"title": "Editar usuario",
-				"description": "Cambia el rol de \"{{username}}\"."
+				"description": "Cambia el nombre de usuario, el correo, el rol o el jugador vinculado de “{{username}}”."
 			},
 			"reset-password": {
-				"button": "Restablecer contraseña"
+				"button": "Restablecer contraseña",
+				"title": "¿Restablecer la contraseña?",
+				"description": "¿Restablecer la contraseña de {{user}}? Su contraseña actual dejará de funcionar."
 			},
 			"temp-password": {
 				"title": "Contraseña temporal",
@@ -290,7 +292,8 @@
 				"manage-role": "Dejar que el proveedor de identidad gestione el rol",
 				"disabled-badge": "Desactivado",
 				"sso-badge": "SSO"
-			}
+			},
+			"actions": "Acciones para {{username}}"
 		},
 		"notifications": {
 			"profile-updated": "Perfil actualizado correctamente",

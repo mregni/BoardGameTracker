@@ -102,7 +102,11 @@ export const SettingsSidebar = ({ activeCategory, onCategoryChange, canManageSet
 									{t(category.label)}
 								</BgtText>
 								<BgtText size="1" color="white" opacity={50} className="truncate">
-									{t(category.description)}
+									{t(
+										category.id === "account" && !canManageSettings
+											? "settings:sidebar.account.description-user"
+											: category.description,
+									)}
 								</BgtText>
 							</div>
 						</button>
