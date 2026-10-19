@@ -87,7 +87,7 @@
   },
   "form": {
     "title": {
-      "label": "Título del evento",
+      "label": "Título",
       "placeholder": "Juegos del viernes"
     },
     "start": {
@@ -195,7 +195,8 @@
     "tonight": "Jugado esta noche",
     "after": "Jugado",
     "empty": "Aún no se ha jugado nada. Toca «Empezar un juego» cuando empiece una partida; la fecha, la hora, el lugar y los jugadores se rellenan solos.",
-    "empty-after": "No se registró nada para esta noche. Usa «Registrar partida» para añadir lo que se jugó."
+    "empty-after": "No se registró nada para esta noche. Usa «Registrar partida» para añadir lo que se jugó.",
+    "won": "ganó"
   },
   "table": {
     "title": "En la mesa",
@@ -206,7 +207,8 @@
   },
   "planned": {
     "title": "Planificados",
-    "played": "Jugado"
+    "played": "Jugado",
+    "playing": "en juego"
   },
   "end": {
     "button": "Cerrar la noche",
@@ -312,8 +314,8 @@
       "hosted": "anfitrión {{count}}×",
       "bar": "{{name}} vino a {{count}} de {{total}} noches",
       "select": "Mostrar las últimas noches de {{name}}",
-      "recent_one": "{{name}}, última noche",
-      "recent_other": "{{name}}, últimas {{count}} noches",
+      "recent_one": "Última noche",
+      "recent_other": "Últimas {{count}} noches",
       "came": "vino",
       "absent": "no estuvo",
       "dot": "{{title}} · {{date}}: {{state}}",
@@ -337,7 +339,7 @@
   "live": "Jugando ahora",
   "attendance": {
     "title": "¿Quién está?",
-    "hint": "Quien jugó está aquí. Toca a los demás que vinieron o no.",
+    "hint": "Marca a quien más haya venido.",
     "present": "Está",
     "absent": "No está",
     "played": "Jugó esta noche",
@@ -345,6 +347,7 @@
     "notifications": {
       "saved": "Asistencia guardada",
       "save-failed": "No se pudo guardar la asistencia"
-    }
+    },
+    "playing": "Jugando ahora"
   }
 }

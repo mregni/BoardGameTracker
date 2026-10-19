@@ -12,22 +12,22 @@ import { apiErrorMessage } from "@/utils/errorUtils";
 import { useInviteLink } from "../-hooks/useInviteLink";
 import { SendInvitesModal } from "../-modals/SendInvitesModal";
 import { inviteRecipients, inviteState } from "../-utils/inviteRecipients";
-import { DisabledActionHint } from "./DisabledActionHint";
 
 interface Props {
 	gameNight: GameNight;
 	players: Player[];
+	invitable: boolean;
 	onEdit: (gameNight: GameNight) => void;
 	onDelete: (gameNight: GameNight) => void;
 }
 
 export const GameNightActions = (props: Props) => {
-	const { gameNight, players, onEdit, onDelete } = props;
+	const { gameNight, players, invitable, onEdit, onDelete } = props;
 	const { t } = useTranslation("game-nights");
 	const { copied, copy } = useInviteLink(gameNight);
 	const { settings } = useSettingsData();
 	const { isAdmin } = usePermissions();
-	const { blocker, askAdmin } = inviteState(settings, isAdmin);
+	const { blocker } = inviteState(settings, isAdmin);
 	const confirmModal = useModalState();
 
 	const sendInvitesMutation = useMutation({
@@ -43,12 +43,12 @@ export const GameNightActions = (props: Props) => {
 
 	return (
 		<div className="flex flex-wrap items-center gap-2 md:justify-end">
-			<BgtButton variant="cancel" size="1" onClick={copy} disabled={copied}>
-				{copied ? t("card.copied") : t("card.copy-link")}
-			</BgtButton>
-			{askAdmin ? null : blocker ? (
-				<DisabledActionHint label={t("card.email-invites")} hint={t(`invites.${blocker}`)} />
-			) : (
+			{invitable && (
+				<BgtButton variant="cancel" size="1" onClick={copy} disabled={copied}>
+					{copied ? t("card.copied") : t("card.copy-link")}
+				</BgtButton>
+			)}
+			{invitable && blocker === null && (
 				<BgtButton variant="cancel" size="1" onClick={confirmModal.show} disabled={sendInvitesMutation.isPending}>
 					{t("card.email-invites")}
 				</BgtButton>

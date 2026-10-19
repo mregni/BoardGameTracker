@@ -142,6 +142,7 @@ export const GameNightDetailView = (props: Props) => {
 						attendees={attendees}
 						expected={table.expected}
 						playedGameIds={sessions.map((x) => x.gameId)}
+						playingGameIds={runningGames.map((x) => x.gameId)}
 						canWrite={canWrite}
 						onEditAttendees={onEditAttendees}
 					/>

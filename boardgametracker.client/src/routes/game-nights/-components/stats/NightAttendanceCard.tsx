@@ -19,7 +19,6 @@ export const NightAttendanceCard = ({ attendance, recentNights, nights, lookup }
 	const { t } = useTranslation("game-nights");
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 	const selected = attendance.find((entry) => entry.playerId === selectedId) ?? attendance[0];
-	const playerName = (id: number) => lookup.players.get(id)?.name ?? "";
 
 	return (
 		<StatsCard
@@ -61,7 +60,7 @@ export const NightAttendanceCard = ({ attendance, recentNights, nights, lookup }
 					</div>
 					<div className="flex flex-col gap-1">
 						<span className="text-xs font-semibold text-gray-400">
-							{t("stats.attendance.recent", { name: playerName(selected.playerId), count: recentNights.length })}
+							{t("stats.attendance.recent", { count: recentNights.length })}
 						</span>
 						<BgtProgressDots
 							items={recentNights.map((night, index) => {

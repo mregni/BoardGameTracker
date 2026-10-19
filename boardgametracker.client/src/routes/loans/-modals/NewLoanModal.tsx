@@ -51,21 +51,36 @@ const NewLoanModal = (props: ModalProps) => {
 		close();
 	};
 
-	const { games, players, isLoading, saveLoan } = useNewLoanModal({
+	const { games, players, activeLoans, isLoading, saveLoan } = useNewLoanModal({
 		onSuccess,
 	});
 
-	const gamesSelectItems = useMemo(
-		() =>
-			games
-				.filter((x) => x.state === GameState.Owned)
-				.map((x) => ({
+	const gamesSelectItems = useMemo(() => {
+		const loanByGame = new Map(activeLoans.map((loan) => [loan.gameId, loan]));
+		const onLoanHint = (gameId: number) => {
+			const loan = loanByGame.get(gameId);
+			if (!loan) {
+				return t("statistics.on-loan");
+			}
+			return t("new.with-borrower", {
+				name: players.find((player) => player.id === loan.playerId)?.name ?? "",
+				date: formatLoanDate(loan.loanDate, settings?.dateFormat, i18n.language),
+			});
+		};
+		return games
+			.filter((x) => x.state === GameState.Owned)
+			.map((x) => {
+				const lent = x.isLoaned || loanByGame.has(x.id);
+				return {
 					value: x.id,
 					label: x.title,
 					image: x.image,
-				})),
-		[games],
-	);
+					disabled: lent,
+					hint: lent ? onLoanHint(x.id) : undefined,
+				};
+			})
+			.sort((a, b) => Number(a.disabled) - Number(b.disabled));
+	}, [games, activeLoans, players, settings?.dateFormat, i18n.language, t]);
 
 	const playersSelectItems = useMemo(
 		() =>

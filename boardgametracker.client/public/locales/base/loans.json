@@ -59,7 +59,8 @@
       "none": "No due date",
       "custom": "Pick date",
       "custom-label": "Return by"
-    }
+    },
+    "with-borrower": "With {{name}} since {{date}}"
   },
   "edit": {
     "title": "Edit loan",

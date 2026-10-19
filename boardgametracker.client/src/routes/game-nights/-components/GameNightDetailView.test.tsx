@@ -192,6 +192,8 @@ describe("GameNightDetailView", () => {
 		expect(rows[0]).toHaveTextContent("#2");
 		expect(rows[0]).toHaveTextContent("Kathleen 82 · Mikhael 71");
 		expect(rows[1]).toHaveTextContent("Kathleen 90 · Mikhael");
+		expect(rows[0].textContent?.match(/Kathleen/g)).toHaveLength(1);
+		expect(within(rows[0]).getAllByLabelText("played.won")).toHaveLength(1);
 		expect(within(rows[0]).getByRole("link")).toHaveAttribute("href", "/sessions/update/2");
 		expect(screen.getByText("played.tonight")).toBeInTheDocument();
 		expect(screen.getByText("summary.leading")).toBeInTheDocument();
@@ -207,6 +209,16 @@ describe("GameNightDetailView", () => {
 		await user.click(screen.getByRole("button", { name: "table.edit" }));
 
 		expect(props.onEditAttendees).toHaveBeenCalled();
+	});
+
+	it("marks a planned game that is being played right now", () => {
+		const detail = buildDetail(tonight(), []);
+		detail.runningGames = [{ id: 12, gameNightId: 4, gameId: 8, start: addMinutes(new Date(), -12), playerIds: [1] }];
+		renderView(detail);
+
+		const planned = screen.getByRole("region", { name: "planned.title" });
+		expect(within(planned).getByText("planned.playing")).toBeInTheDocument();
+		expect(within(planned).queryByLabelText("planned.played")).not.toBeInTheDocument();
 	});
 
 	it("shows the night winner and only keeps logging once the night is over by time", () => {
@@ -337,6 +349,8 @@ describe("GameNightDetailView", () => {
 		const props = renderView(buildDetail(addHours(new Date(), 24 * 7), [], false));
 
 		expect(screen.getByTestId("night-plan")).toBeInTheDocument();
+		expect(screen.getByText("plan.rsvps")).not.toHaveClass("uppercase");
+		expect(screen.getByText("planned.title")).toHaveClass("uppercase");
 		expect(screen.getByText("plan.starts")).toBeInTheDocument();
 		expect(screen.getByTestId("rsvp-summary")).toHaveTextContent("rsvp.summary.coming · rsvp.summary.declined");
 		expect(screen.getByText("Carcassonne")).toBeInTheDocument();

@@ -83,7 +83,13 @@ export const GameNightCard = (props: Props) => {
 				</div>
 				{canWrite && (
 					<div className="md:self-start">
-						<GameNightActions gameNight={gameNight} players={players} onEdit={onEdit} onDelete={onDelete} />
+						<GameNightActions
+							gameNight={gameNight}
+							players={players}
+							invitable={!live}
+							onEdit={onEdit}
+							onDelete={onDelete}
+						/>
 					</div>
 				)}
 				<div className="flex min-w-0 flex-col gap-3 md:col-span-2">

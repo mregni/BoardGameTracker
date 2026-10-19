@@ -112,7 +112,7 @@
     "rsvp-closed": "Deze spelavond heeft al plaatsgevonden",
     "already-over": "Deze spelavond heeft al plaatsgevonden",
     "suggested-game-not-owned": "Je kunt alleen spellen in je bezit voorstellen voor een spelavond",
-    "games-running": "Beëindig of gooi de lopende spellen weg voor je de avond afsluit",
+    "games-running": "Beëindig de lopende spellen of stop ze zonder opslaan voor je de avond afsluit",
     "ended": "Deze spelavond is afgesloten, heropen ze om spellen toe te voegen",
     "not-started": "Deze spelavond is nog niet begonnen, spellen kunnen vanaf 12 uur voor de start gespeeld worden"
   },

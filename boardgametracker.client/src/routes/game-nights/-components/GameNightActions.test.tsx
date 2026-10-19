@@ -69,7 +69,7 @@ describe("GameNightActions", () => {
 
 	it("leaves the email invites button out for a non-admin while mailing is not set up", () => {
 		permissions.isAdmin = false;
-		renderWithProviders(<GameNightActions gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
+		renderWithProviders(<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
 
 		expect(screen.queryByRole("button", { name: "card.email-invites" })).not.toBeInTheDocument();
 		expect(screen.queryByText("invites.email-disabled")).not.toBeInTheDocument();
@@ -80,7 +80,7 @@ describe("GameNightActions", () => {
 		const user = userEvent.setup();
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		setClipboard({ writeText });
-		renderWithProviders(<GameNightActions gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
+		renderWithProviders(<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
 
 		await user.click(screen.getByRole("button", { name: "card.copy-link" }));
 
@@ -92,7 +92,7 @@ describe("GameNightActions", () => {
 	it("reports a failed copy instead of claiming success when the clipboard is unavailable", async () => {
 		const user = userEvent.setup();
 		setClipboard(undefined);
-		renderWithProviders(<GameNightActions gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
+		renderWithProviders(<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
 
 		await user.click(screen.getByRole("button", { name: "card.copy-link" }));
 
@@ -100,21 +100,38 @@ describe("GameNightActions", () => {
 		expect(screen.getByRole("button", { name: "card.copy-link" })).toBeInTheDocument();
 	});
 
-	it("disables mailing invitations with the reason when email is not set up", () => {
-		renderWithProviders(<GameNightActions gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
+	it("leaves the email invites button out for an admin too while email is not set up, as the list explains it once", () => {
+		renderWithProviders(
+			<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />,
+		);
 
-		const button = screen.getByRole("button", { name: "card.email-invites" });
-		expect(button).toBeDisabled();
-		expect(button).toHaveAccessibleDescription("invites.email-disabled");
+		expect(screen.queryByRole("button", { name: "card.email-invites" })).not.toBeInTheDocument();
+		expect(screen.queryByText("invites.email-disabled")).not.toBeInTheDocument();
 	});
 
-	it("disables mailing invitations with the reason when no public URL is set", () => {
+	it("leaves the email invites button out while no public URL is set", () => {
 		settingsMock.current = { publicUrl: "", emailEnabled: true };
-		renderWithProviders(<GameNightActions gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
+		renderWithProviders(
+			<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />,
+		);
 
-		const button = screen.getByRole("button", { name: "card.email-invites" });
-		expect(button).toBeDisabled();
-		expect(button).toHaveAccessibleDescription("invites.public-url-missing");
+		expect(screen.queryByRole("button", { name: "card.email-invites" })).not.toBeInTheDocument();
+	});
+
+	it("offers no invite actions once the night has started", () => {
+		settingsMock.current = { publicUrl: "https://games.example.com", emailEnabled: true };
+		renderWithProviders(
+			<GameNightActions
+				invitable={false}
+				gameNight={gameNight}
+				players={[]}
+				onEdit={vi.fn()}
+				onDelete={vi.fn()}
+			/>,
+		);
+
+		expect(screen.queryByRole("button", { name: "card.copy-link" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "card.email-invites" })).not.toBeInTheDocument();
 	});
 
 	it("asks before mailing, with who gets it and who has no email, and only sends on confirm", async () => {
@@ -122,7 +139,7 @@ describe("GameNightActions", () => {
 		settingsMock.current = { publicUrl: "https://games.example.com", emailEnabled: true };
 		sendInvitesCall.mockResolvedValue({ sent: 1 });
 		renderWithProviders(
-			<GameNightActions gameNight={invitingNight} players={invitees} onEdit={vi.fn()} onDelete={vi.fn()} />,
+			<GameNightActions invitable gameNight={invitingNight} players={invitees} onEdit={vi.fn()} onDelete={vi.fn()} />,
 		);
 
 		await user.click(screen.getByRole("button", { name: "card.email-invites" }));
@@ -145,7 +162,7 @@ describe("GameNightActions", () => {
 		const user = userEvent.setup();
 		settingsMock.current = { publicUrl: "https://games.example.com", emailEnabled: true };
 		renderWithProviders(
-			<GameNightActions gameNight={invitingNight} players={invitees} onEdit={vi.fn()} onDelete={vi.fn()} />,
+			<GameNightActions invitable gameNight={invitingNight} players={invitees} onEdit={vi.fn()} onDelete={vi.fn()} />,
 		);
 
 		await user.click(screen.getByRole("button", { name: "card.email-invites" }));
@@ -160,6 +177,7 @@ describe("GameNightActions", () => {
 		settingsMock.current = { publicUrl: "https://games.example.com", emailEnabled: true };
 		renderWithProviders(
 			<GameNightActions
+				invitable
 				gameNight={invitingNight}
 				players={invitees.map((x) => ({ ...x, email: null }))}
 				onEdit={vi.fn()}
@@ -179,7 +197,7 @@ describe("GameNightActions", () => {
 		settingsMock.current = { publicUrl: "https://games.example.com", emailEnabled: true };
 		sendInvitesCall.mockRejectedValue(new Error("boom"));
 		renderWithProviders(
-			<GameNightActions gameNight={invitingNight} players={invitees} onEdit={vi.fn()} onDelete={vi.fn()} />,
+			<GameNightActions invitable gameNight={invitingNight} players={invitees} onEdit={vi.fn()} onDelete={vi.fn()} />,
 		);
 
 		await user.click(screen.getByRole("button", { name: "card.email-invites" }));
@@ -192,7 +210,7 @@ describe("GameNightActions", () => {
 		const user = userEvent.setup();
 		const onEdit = vi.fn();
 		const onDelete = vi.fn();
-		renderWithProviders(<GameNightActions gameNight={gameNight} players={[]} onEdit={onEdit} onDelete={onDelete} />);
+		renderWithProviders(<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={onEdit} onDelete={onDelete} />);
 
 		await user.click(screen.getByRole("button", { name: "edit" }));
 		await user.click(screen.getByRole("button", { name: "delete.button" }));

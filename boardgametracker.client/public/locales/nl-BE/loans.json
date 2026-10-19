@@ -59,7 +59,8 @@
       "none": "Geen einddatum",
       "custom": "Datum kiezen",
       "custom-label": "Terugbrengen op"
-    }
+    },
+    "with-borrower": "Bij {{name}} sinds {{date}}"
   },
   "edit": {
     "title": "Uitlening bewerken",

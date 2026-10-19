@@ -5,6 +5,7 @@ import { useShortDuration } from "@/hooks/useShortDuration";
 import type { GameNightStatistics } from "@/models";
 
 const DAYS_PER_WEEK = 7;
+const MIN_NIGHTS_FOR_RHYTHM = 4;
 
 interface Props {
 	statistics: GameNightStatistics;
@@ -17,7 +18,7 @@ export const NightStatsTiles = ({ statistics }: Props) => {
 	const { nights, gamesPlayed, totalMinutes, averageTable, averageDaysBetweenNights } = statistics;
 
 	const frequency = () => {
-		if (averageDaysBetweenNights === null) return undefined;
+		if (averageDaysBetweenNights === null || nights < MIN_NIGHTS_FOR_RHYTHM) return undefined;
 		if (averageDaysBetweenNights >= DAYS_PER_WEEK) {
 			return t("stats.tiles.every-week", { count: Math.round(averageDaysBetweenNights / DAYS_PER_WEEK) });
 		}

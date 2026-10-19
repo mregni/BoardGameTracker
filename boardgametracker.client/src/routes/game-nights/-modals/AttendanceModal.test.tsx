@@ -23,7 +23,7 @@ const detail = {
 		summary: { attendeeIds: [1, 3], attendanceRecorded: false },
 	},
 	sessions: [{ playerSessions: [{ playerId: 3 }] }],
-	runningGames: [],
+	runningGames: [{ gameId: 8, playerIds: [5, 3] }],
 } as unknown as GameNightDetail;
 
 const renderModal = () => {
@@ -47,11 +47,20 @@ describe("AttendanceModal", () => {
 		expect(screen.getByRole("button", { name: /Kathleen/ })).toHaveAttribute("aria-pressed", "false");
 	});
 
+	it("says playing now for someone who is only in a running game", () => {
+		renderModal();
+
+		const anna = screen.getByRole("button", { name: /Anna/ });
+		expect(anna).toHaveTextContent("attendance.playing");
+		expect(anna).toBeDisabled();
+		expect(screen.getByRole("button", { name: /Bram/ })).toHaveTextContent("attendance.played");
+	});
+
 	it("lists who is here first, then the invited and then everyone else", () => {
 		renderModal();
 
 		const names = screen.getAllByRole("button", { pressed: undefined }).map((x) => x.textContent ?? "");
-		const order = ["Bram", "Mikhael", "Kathleen", "Zoe", "Anna"].map((name) =>
+		const order = ["Anna", "Bram", "Mikhael", "Kathleen", "Zoe"].map((name) =>
 			names.findIndex((x) => x.includes(name)),
 		);
 		expect(order).toEqual([...order].sort((a, b) => a - b));

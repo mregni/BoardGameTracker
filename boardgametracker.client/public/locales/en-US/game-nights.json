@@ -87,7 +87,7 @@
   },
   "form": {
     "title": {
-      "label": "Event title",
+      "label": "Title",
       "placeholder": "Friday games"
     },
     "start": {
@@ -195,7 +195,8 @@
     "tonight": "Played tonight",
     "after": "Played",
     "empty": "Nothing played yet. Tap “Start a game” when a game begins; date, time, location and players are filled in for you.",
-    "empty-after": "Nothing was logged for this night. Use “Log session” to add what was played."
+    "empty-after": "Nothing was logged for this night. Use “Log session” to add what was played.",
+    "won": "won"
   },
   "table": {
     "title": "At the table",
@@ -206,7 +207,8 @@
   },
   "planned": {
     "title": "Planned",
-    "played": "Played"
+    "played": "Played",
+    "playing": "playing now"
   },
   "end": {
     "button": "End night",
@@ -312,8 +314,8 @@
       "hosted": "host {{count}}×",
       "bar": "{{name}} came to {{count}} of {{total}} nights",
       "select": "Show the last nights of {{name}}",
-      "recent_one": "{{name}}, last night",
-      "recent_other": "{{name}}, last {{count}} nights",
+      "recent_one": "Last night",
+      "recent_other": "Last {{count}} nights",
       "came": "came",
       "absent": "not there",
       "dot": "{{title}} · {{date}}: {{state}}",
@@ -337,7 +339,7 @@
   "live": "Playing now",
   "attendance": {
     "title": "Who's here?",
-    "hint": "Everyone who played is here. Tap the others who came or didn't.",
+    "hint": "Mark anyone else who came.",
     "present": "Here",
     "absent": "Not here",
     "played": "Played tonight",
@@ -345,6 +347,7 @@
     "notifications": {
       "saved": "Attendance saved",
       "save-failed": "Failed to save attendance"
-    }
+    },
+    "playing": "Playing now"
   }
 }

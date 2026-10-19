@@ -59,7 +59,8 @@
       "none": "Sin fecha límite",
       "custom": "Elegir fecha",
       "custom-label": "Fecha de devolución"
-    }
+    },
+    "with-borrower": "Con {{name}} desde el {{date}}"
   },
   "edit": {
     "title": "Editar préstamo",

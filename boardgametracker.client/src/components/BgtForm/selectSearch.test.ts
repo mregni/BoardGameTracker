@@ -19,6 +19,10 @@ describe("findSearchMatch", () => {
 		expect(findSearchMatch(games, "   ")).toBeUndefined();
 	});
 
+	it("skips items that cannot be picked", () => {
+		expect(findSearchMatch([{ value: 3, label: "Catan", disabled: true }, ...games], "cat")?.value).toBe(14);
+	});
+
 	it("returns nothing when no label matches", () => {
 		expect(findSearchMatch(games, "brass")).toBeUndefined();
 	});

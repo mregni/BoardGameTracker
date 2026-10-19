@@ -99,7 +99,7 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent size="sheet">
+			<BgtDialogContent size="sheet" className="lg:max-w-5xl">
 				<div className="flex flex-col gap-0.5 pr-6">
 					<BgtDialogTitle>{t("rsvp.title")}</BgtDialogTitle>
 					<BgtDialogDescription className="text-sm">
@@ -115,11 +115,11 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 					</BgtDialogDescription>
 				</div>
 
-				<div className="flex flex-col gap-4">
+				<div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-6" data-testid="rsvp-columns">
 					<div className="flex min-w-0 flex-col gap-3">
 						<RsvpProgress rsvps={gameNight.invitedPlayers} />
 
-						<ul className="flex flex-col gap-1.5 md:max-h-[45vh] md:overflow-y-auto">
+						<ul className="flex flex-col gap-1.5 md:max-h-[45vh] md:overflow-y-auto lg:max-h-[60vh]">
 							{rsvps.map((rsvp) => {
 								const isHost = rsvp.playerId === gameNight.hostId;
 								return (
