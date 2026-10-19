@@ -54,6 +54,7 @@
     "milestones": "Mijlpalen",
     "feats": "Bijzondere prestaties",
     "next": "Volgende: {{goal}}",
-    "complete": "Alle niveaus behaald"
+    "complete": "Alle niveaus behaald",
+    "see-all": "Alle prestaties bekijken"
   }
 }

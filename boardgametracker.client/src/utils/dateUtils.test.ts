@@ -198,6 +198,14 @@ describe("dateUtils", () => {
 			expect(toRelative(undefined, "en")).toBe("");
 		});
 
+		it("should measure from a given moment, the same way as from now", () => {
+			const lastPlay = new Date("2023-05-10T20:00:00");
+
+			expect(toRelative(lastPlay, "en", { now: new Date("2024-06-15T10:30:00") })).toBe(toRelative(lastPlay, "en"));
+			expect(toRelative(lastPlay, "en", { now: new Date("2024-06-15T10:30:00") })).toBe("about 1 year ago");
+			expect(toRelative(null, "en", { now: new Date() })).toBe("");
+		});
+
 		it("should return relative time for a past date", () => {
 			const pastDate = new Date("2024-06-14T10:30:00");
 			const result = toRelative(pastDate, "en");

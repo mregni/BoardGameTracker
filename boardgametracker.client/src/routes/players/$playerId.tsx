@@ -14,7 +14,7 @@ import { useGameById } from "../-hooks/useGameById";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { MostPlayedGamesCard } from "./-components/MostPlayedGamesCard";
 import { PlayerAchievementsCard } from "./-components/PlayerAchievementsCard";
-import { PlayerAchievementsSummary } from "./-components/PlayerAchievementsSummary";
+import { ACHIEVEMENTS_ANCHOR, PlayerAchievementsSummary } from "./-components/PlayerAchievementsSummary";
 import { PlayerHeader } from "./-components/PlayerHeader";
 import { PlayerStatisticsGrid } from "./-components/PlayerStatisticsGrid";
 import { PlayerWinRecordCard } from "./-components/PlayerWinRecordCard";
@@ -110,11 +110,9 @@ function RouteComponent() {
 									<MostPlayedGamesCard games={statistics.mostPlayedGames} />
 								</div>
 							)}
-							{statistics.playCount !== 0 && (
-								<div className="max-lg:order-7">
-									<PlayerAchievementsCard playerBadges={player.badges} badges={badges} />
-								</div>
-							)}
+							<div id={ACHIEVEMENTS_ANCHOR} className="max-lg:order-7 scroll-mt-4">
+								<PlayerAchievementsCard playerBadges={player.badges} badges={badges} />
+							</div>
 						</BgtDetailLayout>
 						<BgtDeleteModal
 							title={player.name}

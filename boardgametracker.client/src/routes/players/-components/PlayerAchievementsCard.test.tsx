@@ -33,7 +33,7 @@ describe("PlayerAchievementsCard", () => {
 });
 
 describe("PlayerAchievementsSummary", () => {
-	it("shows the earned count, the progress and the highest earned badge per type", () => {
+	it("shows the earned count and the progress, and links to the full list instead of repeating the badges", () => {
 		renderWithTheme(<PlayerAchievementsSummary badges={allBadges} playerBadges={earnedBadges} />);
 
 		expect(screen.getByText("titles.achievements (2/4)")).toBeInTheDocument();
@@ -41,11 +41,8 @@ describe("PlayerAchievementsSummary", () => {
 		expect(progress).toHaveAttribute("value", "2");
 		expect(progress).toHaveAttribute("max", "4");
 		expect(within(progress.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({ width: "50%" });
-		const icons = screen.getAllByRole("img");
-		expect(icons.map((icon) => icon.getAttribute("src"))).toEqual([
-			"/images/badges/sessions-blue.png",
-			"/images/badges/firstTry.png",
-		]);
+		expect(screen.queryAllByRole("img")).toHaveLength(0);
+		expect(screen.getByRole("link", { name: "achievements.see-all" })).toHaveAttribute("href", "#player-achievements");
 	});
 
 	it("shows an empty progress bar when there are no badges", () => {

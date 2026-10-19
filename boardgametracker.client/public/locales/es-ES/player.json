@@ -54,6 +54,7 @@
     "milestones": "Hitos",
     "feats": "Hazañas",
     "next": "Siguiente: {{goal}}",
-    "complete": "Todos los niveles conseguidos"
+    "complete": "Todos los niveles conseguidos",
+    "see-all": "Ver todos los logros"
   }
 }

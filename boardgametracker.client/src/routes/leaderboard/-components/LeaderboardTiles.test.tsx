@@ -56,7 +56,7 @@ describe("LeaderboardTiles", () => {
 		]);
 		expect(screen.getByText("1,054")).toBeInTheDocument();
 		expect(screen.getByText("142")).toBeInTheDocument();
-		expect(screen.getByText("41.2%")).toBeInTheDocument();
+		expect(screen.getByText("41%")).toBeInTheDocument();
 		expect(screen.getByText("short-duration.hours")).toBeInTheDocument();
 	});
 

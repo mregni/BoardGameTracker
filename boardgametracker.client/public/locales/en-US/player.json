@@ -54,6 +54,7 @@
     "milestones": "Milestones",
     "feats": "Feats",
     "next": "Next: {{goal}}",
-    "complete": "All levels earned"
+    "complete": "All levels earned",
+    "see-all": "See all achievements"
   }
 }

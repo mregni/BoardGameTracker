@@ -24,7 +24,7 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 
 	const summary = (entry: LeaderboardEntry) => {
 		const wins = t("values.wins", { count: entry.winCount });
-		const rate = format.percent(entry.winPercentage / 100, 1);
+		const rate = format.percent(entry.winPercentage / 100);
 		const sessions = t("values.sessions", { count: entry.playCount });
 		if (rankBy === "winRate") return `${rate} · ${wins}`;
 		if (rankBy === "sessions") return `${sessions} · ${rate}`;

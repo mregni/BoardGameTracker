@@ -58,8 +58,6 @@
     "players_other": "{{range}} spelers",
     "minutes": "{{range}} min",
     "never-played": "Nooit gespeeld",
-    "months-ago_one": "{{count}} maand geleden",
-    "months-ago_other": "{{count}} maanden geleden",
     "no-price": "Geen prijs",
     "planned": "Gepland · {{date}}",
     "plan": "Plan",

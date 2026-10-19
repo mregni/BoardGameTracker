@@ -138,14 +138,23 @@ describe("LeaderboardRanking", () => {
 		renderRanking();
 
 		expect(screen.getAllByText("columns.podiums-hint").length).toBeGreaterThan(0);
-		expect(screen.getByText("ranking.ties")).toBeInTheDocument();
+		expect(screen.getByText("ranking.ties-wins")).toBeInTheDocument();
+	});
+
+	it.each([
+		["winRate", "ranking.ties-win-rate"],
+		["sessions", "ranking.ties-sessions"],
+	] as const)("should name the tiebreak of ranking by %s", (rankBy, key) => {
+		renderRanking(players, 0, rankBy);
+
+		expect(screen.getByText(key)).toBeInTheDocument();
 	});
 
 	it("should leave out the divider when everybody is ranked", () => {
 		renderRanking(players.slice(0, 1));
 
 		expect(screen.queryByRole("heading", { name: "ranking.not-ranked" })).not.toBeInTheDocument();
-		expect(screen.queryByText("ranking.ties")).not.toBeInTheDocument();
+		expect(screen.queryByText("ranking.ties-wins")).not.toBeInTheDocument();
 	});
 
 	it("should only show the divider when nobody is ranked yet", () => {
@@ -158,7 +167,7 @@ describe("LeaderboardRanking", () => {
 	it("should explain co-op wins when some wins come from co-op sessions", () => {
 		renderRanking(players, 24);
 
-		expect(screen.getByText("ranking.coop ranking.ties")).toBeInTheDocument();
+		expect(screen.getByText("ranking.coop ranking.ties-wins")).toBeInTheDocument();
 	});
 
 	it("should leave out the co-op note without co-op wins", () => {

@@ -58,8 +58,6 @@
     "players_other": "{{range}} players",
     "minutes": "{{range}} min",
     "never-played": "Never played",
-    "months-ago_one": "{{count}} month ago",
-    "months-ago_other": "{{count}} months ago",
     "no-price": "No price",
     "planned": "Planned · {{date}}",
     "plan": "Plan",

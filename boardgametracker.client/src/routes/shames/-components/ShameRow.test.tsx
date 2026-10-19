@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import type { Shame, ShameGameNight } from "@/models";
 import { render, screen, userEvent } from "@/test/test-utils";
+import { toRelative } from "@/utils/dateUtils";
 import { ShameRow } from "./ShameRow";
 
 vi.mock("@tanstack/react-router", () => ({
@@ -92,13 +93,13 @@ describe("ShameRow", () => {
 
 		expect(screen.getByText("€45")).toBeInTheDocument();
 		expect(screen.getByText("row.owned-since · row.plays")).toBeInTheDocument();
-		expect(screen.getByText("row.months-ago")).toHaveClass("text-warn");
+		expect(screen.getByText("over 1 year ago")).toHaveClass("text-warn");
 	});
 
 	it("uses a grey pill when the last play is less than a year ago", () => {
 		renderRow({ shame: { ...root, playCount: 6, lastSessionDate: new Date(2025, 10, 1) } });
 
-		expect(screen.getByText("row.months-ago")).toHaveClass("text-white/60");
+		expect(screen.getByText(toRelative(new Date(2025, 10, 1), "en", { now }))).toHaveClass("text-white/60");
 	});
 
 	it("plans the game for the next night", async () => {

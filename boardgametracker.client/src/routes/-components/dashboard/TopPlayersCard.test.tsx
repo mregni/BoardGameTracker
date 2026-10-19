@@ -33,6 +33,20 @@ describe("TopPlayersCard", () => {
 		expect(screen.getByText("top-players.hint")).toBeInTheDocument();
 	});
 
+	it("shows the shared rank of players with identical stats", () => {
+		const tied = [
+			{ id: 1, rank: 1, name: "Sofie", image: null, playCount: 20, winCount: 20 },
+			{ id: 2, rank: 2, name: "Anna", image: null, playCount: 26, winCount: 13 },
+			{ id: 3, rank: 2, name: "Bram", image: null, playCount: 26, winCount: 13 },
+		];
+		renderWithTheme(<TopPlayersCard players={tied} includesCoopWins={false} />);
+
+		const rows = screen.getAllByRole("listitem");
+		expect(within(rows[1]).getByText("2")).toBeInTheDocument();
+		expect(within(rows[2]).getByText("2")).toBeInTheDocument();
+		expect(within(rows[2]).queryByText("3")).not.toBeInTheDocument();
+	});
+
 	it("says co-op wins are included when there are co-op wins", () => {
 		renderWithTheme(<TopPlayersCard players={players} includesCoopWins />);
 

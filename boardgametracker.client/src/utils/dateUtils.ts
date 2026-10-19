@@ -3,6 +3,7 @@ import {
 	differenceInDays,
 	differenceInMonths,
 	format,
+	formatDistance,
 	formatDistanceToNow,
 	parseISO,
 } from "date-fns";
@@ -142,9 +143,9 @@ export const toDisplayTime = (
 };
 
 export const toRelative = (
-	date: Date | string | undefined,
+	date: Date | string | undefined | null,
 	uiLanguage: string,
-	options?: { includeSeconds?: boolean },
+	options?: { includeSeconds?: boolean; now?: Date },
 ): string => {
 	if (!date) {
 		return "";
@@ -157,11 +158,10 @@ export const toRelative = (
 	}
 
 	const locale = getDateFnsLocale(uiLanguage);
-	return formatDistanceToNow(dateObj, {
-		locale,
-		includeSeconds: options?.includeSeconds,
-		addSuffix: true,
-	});
+	const distanceOptions = { locale, includeSeconds: options?.includeSeconds, addSuffix: true };
+	return options?.now
+		? formatDistance(dateObj, options.now, distanceOptions)
+		: formatDistanceToNow(dateObj, distanceOptions);
 };
 
 export const isValidDate = (date: unknown): boolean => {

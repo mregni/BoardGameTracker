@@ -36,7 +36,7 @@ export const TopPlayersCard = (props: Props) => {
 				) : (
 					<>
 						<ol className="flex flex-col gap-1.5">
-							{players.map((player, index) => {
+							{players.map((player) => {
 								const winRate = player.playCount > 0 ? player.winCount / player.playCount : 0;
 								return (
 									<li key={player.id}>
@@ -51,10 +51,10 @@ export const TopPlayersCard = (props: Props) => {
 											})}
 											className={cx(
 												"grid grid-cols-[1.25rem_auto_minmax(0,1fr)_minmax(3rem,5rem)_auto] items-center gap-3 rounded-md border border-transparent px-2 py-1.5 transition-colors hover:border-primary/40 hover:bg-primary/10",
-												index === 0 && "bg-primary/10",
+												player.rank === 1 && "bg-primary/10",
 											)}
 										>
-											<span className="text-sm font-semibold tabular-nums text-white/60">{index + 1}</span>
+											<span className="text-sm font-semibold tabular-nums text-white/60">{player.rank}</span>
 											<BgtAvatar image={player.image} title={player.name} size="medium" />
 											<span className="flex min-w-0 flex-col">
 												<span className="truncate font-semibold text-white">{player.name}</span>

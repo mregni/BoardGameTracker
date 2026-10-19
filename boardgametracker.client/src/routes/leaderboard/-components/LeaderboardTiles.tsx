@@ -50,7 +50,7 @@ export const LeaderboardTiles = ({ leaderboard }: Props) => {
 			key: "best-win-rate",
 			title: t("highlights.best-win-rate"),
 			entry: leaderboard.bestWinRate,
-			value: (entry) => format.percent(entry.winPercentage / 100, 1),
+			value: (entry) => format.percent(entry.winPercentage / 100),
 			suffix: t("highlights.min-sessions", { count: leaderboard.minimumSessions }),
 		},
 		{

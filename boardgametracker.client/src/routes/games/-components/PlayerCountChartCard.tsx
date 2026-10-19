@@ -17,6 +17,8 @@ export const PlayerCountChartCard = (props: Props) => {
 	const { playerCountChart } = props;
 	const { t } = useTranslation("game");
 
+	if (playerCountChart.length <= 1) return null;
+
 	const chartData = transformPlayerCountChartData(playerCountChart, t);
 
 	return (
