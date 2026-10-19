@@ -82,7 +82,7 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 				<BgtAvatar image={entry.image} title={entry.name} size="medium" shape="round" />
 				<span className="min-w-0">
 					<strong className="block truncate">{entry.name}</strong>
-					<small className="line-clamp-2 text-[11px] text-white/60 md:hidden">{details}</small>
+					<small className="block text-[11px] text-white/60 md:hidden">{details}</small>
 				</span>
 				<span className={cx(desktopOnly, "text-right font-bold")}>{format.integer(entry.winCount)}</span>
 				<span className={cx(desktopOnly, "text-right")}>{format.integer(entry.playCount)}</span>

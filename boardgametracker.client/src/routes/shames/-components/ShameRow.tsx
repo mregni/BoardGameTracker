@@ -92,11 +92,11 @@ export const ShameRow = ({
 					params={{ gameId: shame.id }}
 					className="inline-flex max-w-full items-center gap-1 font-semibold text-white hover:text-primary hover:underline"
 				>
-					<span className="line-clamp-2 md:truncate">{shame.title}</span>
+					<span className="break-words md:truncate">{shame.title}</span>
 					<CaretRight aria-hidden="true" className="size-3.5 shrink-0 text-white/50" />
 				</Link>
 				{detailText && (
-					<small className="line-clamp-2 text-xs text-white/50 md:block md:truncate" title={detailText}>
+					<small className="block text-xs text-white/50 md:truncate" title={detailText}>
 						{detailText}
 					</small>
 				)}
