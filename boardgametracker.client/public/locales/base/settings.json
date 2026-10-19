@@ -109,7 +109,7 @@
 				"button": "Factory reset",
 				"confirm": {
 					"title": "Factory reset",
-					"description": "This permanently deletes EVERYTHING — all data, all settings, and all user accounts — and resets the app to its initial state. The default admin login (admin / admin) is recreated and you will be logged out. Change that password immediately. This cannot be undone.",
+					"description": "This permanently deletes EVERYTHING — all data, all settings, and all user accounts — and resets the app to its initial state. The admin account is recreated with the password from ADMIN_PASSWORD, or admin when that is not set, and you will be logged out. Change that password immediately. This cannot be undone.",
 					"keyword": "FACTORY RESET",
 					"input-label": "Type FACTORY RESET to confirm",
 					"button": "Factory reset everything"

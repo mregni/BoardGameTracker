@@ -109,7 +109,7 @@
 				"button": "Restablecer de fábrica",
 				"confirm": {
 					"title": "Restablecer de fábrica",
-					"description": "Esto elimina de forma permanente TODO —todos los datos, todos los ajustes y todas las cuentas de usuario— y devuelve la aplicación a su estado inicial. Se vuelve a crear el inicio de sesión de administrador predeterminado (admin / admin) y se cerrará tu sesión. Cambia esa contraseña de inmediato. Esta acción no se puede deshacer.",
+					"description": "Esto elimina de forma permanente TODO —todos los datos, todos los ajustes y todas las cuentas de usuario— y devuelve la aplicación a su estado inicial. Se vuelve a crear la cuenta admin con la contraseña de ADMIN_PASSWORD, o con admin si no está definida, y se cerrará tu sesión. Cambia esa contraseña de inmediato. Esta acción no se puede deshacer.",
 					"keyword": "RESTABLECER DE FÁBRICA",
 					"input-label": "Escribe RESTABLECER DE FÁBRICA para confirmar",
 					"button": "Restablecer todo de fábrica"

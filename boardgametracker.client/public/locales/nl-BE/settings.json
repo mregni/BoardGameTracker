@@ -109,7 +109,7 @@
 				"button": "Fabrieksreset",
 				"confirm": {
 					"title": "Fabrieksreset",
-					"description": "Dit verwijdert definitief ALLES — alle gegevens, alle instellingen en alle gebruikersaccounts — en zet de app terug naar de begintoestand. Het standaard beheerdersaccount (admin / admin) wordt opnieuw aangemaakt en je wordt afgemeld. Wijzig dat wachtwoord meteen. Dit kan niet ongedaan worden gemaakt.",
+					"description": "Dit verwijdert definitief ALLES — alle gegevens, alle instellingen en alle gebruikersaccounts — en zet de app terug naar de begintoestand. Het account admin wordt opnieuw aangemaakt met het wachtwoord uit ADMIN_PASSWORD, of met admin als dat niet ingesteld is, en je wordt afgemeld. Wijzig dat wachtwoord meteen. Dit kan niet ongedaan worden gemaakt.",
 					"keyword": "FABRIEKSRESET",
 					"input-label": "Typ FABRIEKSRESET om te bevestigen",
 					"button": "Alles terugzetten naar fabrieksinstellingen"
