@@ -1,11 +1,13 @@
 ---
 title: Upgrading
 description: How to move an existing BoardGameTracker install to a new release, and what to back up first.
+banner:
+  content: These docs follow the <code>beta</code> image. Until the next stable release after v0.2.181, <code>latest</code> lacks some of the features described here; use <code>uping/boardgametracker:beta</code> to get them.
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
-BoardGameTracker applies its database migrations automatically when the container starts, so an upgrade is normally just pulling the new image. Two releases changed requirements, so read the notes below before you pull.
+BoardGameTracker applies its database migrations automatically when the container starts, so an upgrade is normally just pulling the new image. Some releases changed requirements; each note below says which release, so read them before you pull.
 
 ## Back up first
 
@@ -36,14 +38,21 @@ To restore, recreate an empty database, load the dump with `psql`, put the folde
 | Tag | What you get |
 | --- | --- |
 | `uping/boardgametracker:latest` | The last stable release. |
+| `uping/boardgametracker:x.y` / `:x` | The latest stable release within a minor or major version, for example `0.2` or `0`. |
+| `uping/boardgametracker:x.y.z` | A fixed version, for installs that should not move on their own. Beta builds get their own `x.y.z` tag too. |
 | `uping/boardgametracker:beta` | Every change merged to `master`, published automatically. May contain unfinished features. |
-| `uping/boardgametracker:x.y.z` | A fixed version, for installs that should not move on their own. |
 
 ## Breaking changes
 
+### `JWT_SECRET` is required (since v0.2.6)
+
+Authentication is on by default. The container exits at startup with `JWT_SECRET is not set` unless you either set `JWT_SECRET` to a random value of at least 32 characters, or set `AUTH_ENABLED=false` to run without login.
+
+The notes below apply to the next stable release after v0.2.181, and to the `beta` image today.
+
 ### The database needs the `vector` extension
 
-Releases after `v0.2.181` store rulebook embeddings for the rules assistant and require the PostgreSQL `vector` extension. The application checks for it before migrating and refuses to start with a clear error when it is missing.
+The application stores rulebook embeddings for the rules assistant and requires the PostgreSQL `vector` extension. It checks for it before migrating and refuses to start with a clear error when it is missing.
 
 If your compose file still uses `postgres:16`, switch the `db` service to `pgvector/pgvector:pg16`. It is the same PostgreSQL 16 with the extension pre-installed, so your existing `postgres-data` folder keeps working:
 
@@ -66,9 +75,9 @@ If you run your own PostgreSQL server instead, install the [pgvector](https://gi
 Moving to a newer PostgreSQL major version (for example `pg17`) is a separate step that requires a dump and restore. Staying on `pg16` is fine.
 </Aside>
 
-### `JWT_SECRET` is required
+### Placeholder secrets are refused
 
-Authentication is on by default. The container exits at startup with `JWT_SECRET not set` unless you either set `JWT_SECRET` to a random value of at least 32 characters, or set `AUTH_ENABLED=false` to run without login.
+A `JWT_SECRET` or `DATA_PROTECTION_KEY` that starts with `CHANGEME` (any case) stops the application at startup with an error naming the variable. Older compose files and `.env.example` shipped `CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS`, which the application used to accept. Replace it with the output of `openssl rand -base64 48`; a new `JWT_SECRET` signs everyone out once.
 
 ### The `manuals` folder
 
@@ -76,16 +85,22 @@ Uploaded rulebooks are stored under `/app/manuals`. Mount it (`./manuals:/app/ma
 
 ### Everyone signs in once more
 
-Refresh tokens are now stored hashed and OIDC client secrets encrypted. Sessions that were open before the upgrade stop refreshing, so every user is asked to sign in again once. Existing OIDC client secrets keep working and are encrypted the next time the provider is saved.
+Refresh tokens are now stored hashed and kept in an `HttpOnly` cookie instead of browser storage, and OIDC client secrets are stored encrypted. Sessions that were open before the upgrade stop refreshing, so every user is asked to sign in again once. Scripts that sent the refresh token in the request body to `/api/auth/refresh` stop working; they have to sign in again instead. Existing OIDC client secrets keep working and are encrypted the next time the provider is saved.
 
 ### Set `DATA_PROTECTION_KEY`
 
-Installs without `DATA_PROTECTION_KEY` keep their data protection keys unencrypted in the database, so a dump is enough to read the stored OpenID Connect client secret and API keys. The application keeps working but logs a warning at every start. To fix it, add a random value of at least 32 characters (`openssl rand -base64 48`) and restart: the existing keys are encrypted in place at startup and everything you stored keeps working. Back up the value separately from the database; see [Data protection key](/BoardGameTracker/getting-started/environment-variables/#data-protection-key) for what happens when it is lost or changed. Dumps taken before you set it still contain the unencrypted keys, so treat them as sensitive.
+Installs without `DATA_PROTECTION_KEY` keep their data protection keys unencrypted in the database, and the application logs a warning at every start. Add a random value of at least 32 characters (`openssl rand -base64 48`) and restart: the existing keys are encrypted in place and everything you stored keeps working. See [Data protection key](/BoardGameTracker/getting-started/environment-variables/#data-protection-key) before you set it.
 
 ### Reverse proxies must be trusted explicitly
 
 Forwarded headers are only honoured when `TRUSTED_PROXIES` names your proxy (an IP address or a network such as `172.16.0.0/12`). Without it, HTTPS detection and the login limiter use the proxy's address, and the log shows a warning the first time a forwarded request arrives.
 
+### Single sign-on requires HTTPS
+
+Single sign-on only works over HTTPS, `localhost` excepted. Over plain HTTP on another address the sign-in button disappears and a provider cannot be enabled. Behind a proxy, set `TRUSTED_PROXIES` and an `https` Public URL; see [Behind a reverse proxy](/BoardGameTracker/getting-started/proxy/#https). Local password login keeps working over HTTP.
+
 ## Rolling back
 
 Pin the previous image tag in your compose file and start again. Migrations are forward-only, so restore the database dump you took before upgrading if the previous version fails to start on the newer schema.
+
+A newer version encrypts the stored BoardGameGeek and changedetection.io API keys when it starts, which an older version cannot read. After rolling back, restore the dump or enter those keys again.

@@ -17,6 +17,14 @@ export default defineConfig({
 			description:
 				"Self-hosted board game collection, play-session and statistics tracker.",
 			favicon: "/favicon.svg",
+			head: [
+				{ tag: "link", attrs: { rel: "icon", href: "/BoardGameTracker/favicon.ico", sizes: "32x32" } },
+				{ tag: "link", attrs: { rel: "icon", type: "image/png", sizes: "16x16", href: "/BoardGameTracker/favicon-16x16.png" } },
+				{ tag: "link", attrs: { rel: "icon", type: "image/png", sizes: "32x32", href: "/BoardGameTracker/favicon-32x32.png" } },
+				{ tag: "link", attrs: { rel: "icon", type: "image/png", sizes: "192x192", href: "/BoardGameTracker/android-chrome-192x192.png" } },
+				{ tag: "link", attrs: { rel: "icon", type: "image/png", sizes: "512x512", href: "/BoardGameTracker/android-chrome-512x512.png" } },
+				{ tag: "link", attrs: { rel: "apple-touch-icon", sizes: "180x180", href: "/BoardGameTracker/apple-touch-icon.png" } },
+			],
 			social: [
 				{
 					icon: "github",
@@ -35,30 +43,31 @@ export default defineConfig({
 			},
 			sidebar: [
 				{
-					label: "Getting Started",
+					label: "Install",
 					items: [
 						"getting-started/quick-start",
 						"getting-started/docker",
 						"getting-started/upgrading",
-						"getting-started/environment-variables",
-						"getting-started/authentication",
-						"getting-started/rag",
-						"getting-started/email",
 						"getting-started/proxy",
 					],
 				},
 				{
-					label: "User Guide",
+					label: "Configure",
+					items: [
+						"getting-started/environment-variables",
+						"getting-started/authentication",
+						"getting-started/email",
+						"getting-started/rag",
+						"extra/logging",
+					],
+				},
+				{
+					label: "User guide",
 					items: ["user-guide"],
 				},
 				{
-					label: "Extra",
-					items: [
-						"extra/development",
-						"extra/translations",
-						"extra/bugs-features",
-						"extra/logging",
-					],
+					label: "Contribute",
+					items: ["extra/development", "extra/translations", "extra/bugs-features"],
 				},
 			],
 		}),

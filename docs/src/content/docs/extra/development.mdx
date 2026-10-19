@@ -5,10 +5,7 @@ description: Set up a local development environment to contribute to BoardGameTr
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-Want to contribute to BoardGameTracker? The local dev environment is orchestrated with
-[.NET Aspire](https://aspire.dev). A single AppHost project starts everything you need —
-the PostgreSQL (pgvector) database, the backend API, and the frontend dev server — so you
-don't have to run or maintain the database container or the UI yourself.
+The local environment runs on [.NET Aspire](https://aspire.dev): one AppHost starts the pgvector database, Ollama, the API and the Vite dev server. [CONTRIBUTING.md](https://github.com/mregni/BoardGameTracker/blob/master/CONTRIBUTING.md) lists the checks that run on every pull request and the conventions used in the code base.
 
 ## Prerequisites
 
@@ -23,7 +20,7 @@ don't have to run or maintain the database container or the UI yourself.
 
 1. Clone the repository and install the dependencies:
 
-   ```sh title="Clone & install"
+   ```sh title="Terminal"
    git clone https://github.com/mregni/BoardGameTracker.git
    cd BoardGameTracker
    dotnet restore
@@ -32,29 +29,22 @@ don't have to run or maintain the database container or the UI yourself.
    pnpm install
    ```
 
-2. **(Optional)** Configure SMTP only if you want to test outgoing email. Put your provider's
-   settings and password in the AppHost's [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets)
-   store so they stay out of source control (the `Smtp` section in
-   `BoardGameTracker.AppHost/appsettings.Development.json` lists every key):
+2. Optionally configure SMTP. Without your own SMTP settings Aspire points at `smtp.example.com`: the email features show up but sending fails. To test email, put your provider's settings, or those of a local catcher such as smtp4dev or Mailpit, in the AppHost's [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) store so they stay out of source control (the `Smtp` section in `BoardGameTracker.AppHost/appsettings.Development.json` lists every key):
 
-   ```sh title="SMTP settings (optional)"
+   ```sh title="Terminal"
    dotnet user-secrets set "Smtp:Host" "smtp.your-provider.com" --project BoardGameTracker.AppHost
    dotnet user-secrets set "Smtp:Username" "<your-smtp-user>" --project BoardGameTracker.AppHost
    dotnet user-secrets set "Smtp:FromAddress" "noreply@your-domain.com" --project BoardGameTracker.AppHost
    dotnet user-secrets set "Parameters:smtp-password" "<your-smtp-password>" --project BoardGameTracker.AppHost
    ```
 
-   Skip this entirely if you don't need email — the app runs fine without it.
+3. Start the whole stack:
 
-3. Start the whole stack with a single command:
-
-   ```sh title="Run"
+   ```sh title="Terminal"
    dotnet run --project BoardGameTracker.AppHost --launch-profile http
    ```
 
-   This launches the Aspire dashboard and, as separate resources, the database, the API,
-   and the UI. All backend configuration (database, auth, SMTP, AI/RAG, …) is defined in
-   `BoardGameTracker.AppHost/AppHost.cs` — there is no `launchSettings.json` to maintain.
+   This launches the Aspire dashboard and, as separate resources, the database, Ollama, the API and the UI. All backend configuration (database, auth, SMTP, AI/RAG, …) is defined in `BoardGameTracker.AppHost/AppHost.cs`; the `http` and `https` launch profiles are in `BoardGameTracker.AppHost/Properties/launchSettings.json`, and the Host project has no `launchSettings.json`.
 
 4. Once the resources are healthy, open:
 
@@ -62,28 +52,28 @@ don't have to run or maintain the database container or the UI yourself.
    - **API & Swagger** — `http://localhost:6554/swagger`
    - **Aspire dashboard** — the URL printed in the console at startup
 
-   The database is created and migrated automatically on first run, and its data persists in
-   a Docker volume across restarts, so you only pay the setup cost once.
+   The database is created and migrated automatically on first run, and its data persists in a Docker volume across restarts.
 
 </Steps>
 
 <Aside type="note" title="AI rules assistant (RAG)">
-The optional [rules assistant](/BoardGameTracker/getting-started/rag/) runs entirely locally — Aspire
-starts an Ollama resource automatically, and the required models are downloaded on first use (a few GB,
-then cached in a Docker volume). GPU acceleration is on by default; set `Ollama__UseGpu=false` to run
-Ollama on CPU if your host has no GPU with container passthrough. To use a hosted chat model instead,
-set `Ai:Provider` to `openai` plus `Ai:BaseUrl` and `Ai:ChatModel` in the AppHost user-secrets, and the
-key with `dotnet user-secrets set "Parameters:ai-api-key" "<key>" --project BoardGameTracker.AppHost`;
-Aspire then no longer waits for Ollama before starting the API.
+The optional [rules assistant](/BoardGameTracker/getting-started/rag/) runs locally: Aspire starts an Ollama resource, and the required models are pulled when the API starts (a few GB the first time, then cached in a Docker volume). GPU acceleration is on by default; set `Ollama__UseGpu=false` to run Ollama on CPU if your host has no GPU with container passthrough. To use a hosted chat model instead, set `Ai:Provider` to `openai` plus `Ai:BaseUrl` and `Ai:ChatModel` in the AppHost user-secrets, and the key with `dotnet user-secrets set "Parameters:ai-api-key" "<key>" --project BoardGameTracker.AppHost`; Aspire then no longer waits for Ollama before starting the API.
 </Aside>
 
 <Aside type="tip" title="HTTPS dashboard">
-The `http` launch profile serves the Aspire dashboard over plain HTTP for convenience. To use
-the default `https` profile instead, trust the local dev certificate once with
-`dotnet dev-certs https --trust`.
+The `http` launch profile serves the Aspire dashboard over plain HTTP. To use the `https` profile instead, trust the local dev certificate once with `dotnet dev-certs https --trust`.
 </Aside>
 
+## Tests
+
+```sh title="Terminal"
+dotnet test
+cd boardgametracker.client
+pnpm test:run
+```
+
+The integration tests start a PostgreSQL container, so Docker must be running.
+
 <Aside type="note" title="Production uses Docker">
-Aspire is a development-only tool and is never deployed. Production runs from the published
-container via Docker Compose — see the [Quick Start](/BoardGameTracker/getting-started/quick-start/).
+Aspire is a development-only tool and is never deployed. Production runs from the published container via Docker Compose; see the [quick start](/BoardGameTracker/getting-started/quick-start/).
 </Aside>

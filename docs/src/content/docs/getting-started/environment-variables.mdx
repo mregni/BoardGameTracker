@@ -1,35 +1,35 @@
 ---
-title: Environment Variables
+title: Environment variables
 description: All environment variables used to configure BoardGameTracker.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
-Configure your application using the following environment variables. Some of them have default values and are not mandatory to set, but you can override them if needed.
+Variables marked **Required** must be set; the rest have the defaults shown.
 
 With the provided compose files you can put any of these variables in a `.env` file next to `docker-compose.yml`; the file is forwarded to the application container. Variables set directly under `environment:` in the compose file win over the `.env` file.
 
 | Configuration | Variable | Default | Info |
 | --- | --- | --- | --- |
 | Timezone | `TZ` | `UTC` | IANA name such as `Europe/Brussels`. |
-| Data protection key | `DATA_PROTECTION_KEY` | | Strongly recommended, at least 32 characters, for example `openssl rand -base64 48`. Encrypts the data protection keys stored in the database. Without it a copy of the database is enough to read the stored secrets; the application still starts but logs a warning. See [Data protection key](#data-protection-key) below. |
-| JWT secret | `JWT_SECRET` | | **Required** unless `AUTH_ENABLED=false`. Used for signing login tokens; a strong, random value of at least 32 characters (64 or more recommended), for example `openssl rand -base64 48`. |
+| Data protection key | `DATA_PROTECTION_KEY` | | Strongly recommended, at least 32 characters, for example `openssl rand -base64 48`. Encrypts the data protection keys stored in the database. See [Data protection key](#data-protection-key) below. |
+| JWT secret | `JWT_SECRET` | | **Required** unless `AUTH_ENABLED=false`. Used for signing login tokens; a strong, random value of at least 32 characters (64 or more recommended), for example `openssl rand -base64 48`. A value that starts with `CHANGEME` is refused at startup. |
 | Database host | `DB_HOST` | | **Required.** Hostname of the PostgreSQL server; `db` when you use the provided compose file. The server must provide the `vector` extension (`pgvector/pgvector:pg16`). |
 | Database port | `DB_PORT` | `5432` | |
 | Database name | `DB_NAME` | `boardgametracker` | |
 | Database user | `DB_USER` | | **Required.** |
 | Database password | `DB_PASSWORD` | | **Required.** Password used to connect to the database. |
 | File owner | `PUID` / `PGID` | `1654` | User and group id that own the mounted `images`, `logs` and `manuals` folders. When the container itself runs as a non-root user these are ignored and the folders must already be writable by that user. |
-| BGG API key | `BGG_API_KEY` | | Personal BoardGameGeek API key. Can also be entered under *Settings → BoardGameGeek*; the environment variable wins and makes the setting read-only. |
-| Log level | `LOGLEVEL` | `warn` | Sets the logging level for the application. Possible values are `debug`, `info`, `warn`, `error`. |
+| BGG API key | `BGG_API_KEY` | | Personal BoardGameGeek API key. Can also be entered under *Settings → Integrations*; the environment variable wins and makes the setting read-only. |
+| Log level | `LOGLEVEL` | `warn` | Sets the logging level for the application. Possible values are `debug`, `info`, `warn`, `error`. See [Logging](/BoardGameTracker/extra/logging/). |
 | Sensitive database logging | `EF_SENSITIVE_LOGGING` | `false` | Local debugging only. Set to `true` to write database parameter values and full PostgreSQL error details to the logs. These include API keys, password hashes and tokens, so never enable it on a server you care about. Off in every environment, including development; a warning is logged at startup while it is on. |
-| Enable Sentry logging | `STATISTICS_ENABLED` | `false` | Enables or disables the collection of usage statistics. Set to `true` to enable, `false` to disable. |
-| Sentry DSN | `SENTRY_DSN` | | Overrides the built-in Sentry project when `STATISTICS_ENABLED=true`, so error reports go to your own Sentry instead of the maintainer's. |
+| Error reporting (Sentry) | `STATISTICS_ENABLED` | `false` | Set to `true` to send errors, a sample of performance traces and, in the browser, scrubbed session replays to Sentry. See [Logging](/BoardGameTracker/extra/logging/#sentry-integration). |
+| Sentry DSN | `SENTRY_DSN` | | Overrides the backend Sentry project when `STATISTICS_ENABLED=true`. Browser errors and replays still go to the DSN built into the image. |
 | Enable authentication | `AUTH_ENABLED` | `true` | Set to `false` to disable authentication and allow anyone to access the application. |
-| Admin password | `ADMIN_PASSWORD` | | Initial password for the default `admin` account, applied when that account is first created. If left empty the default password `admin` is used — change it after your first login. |
-| Trusted proxies | `TRUSTED_PROXIES` | | Comma-separated list of reverse-proxy IP addresses or networks (CIDR) to trust, so the real client IP and HTTPS are read from the forwarded headers. Required behind Traefik, nginx or Caddy: without it the login rate limit is shared by everyone behind the proxy, and single sign-on is refused because the forwarded `https` scheme is ignored. For Docker use the bridge network, for example `172.16.0.0/12`. |
+| Admin password | `ADMIN_PASSWORD` | | Password for the `admin` account. Only used when no account exists yet (the first start, and again after a factory reset). At least 8 characters, otherwise the application stops at startup. When empty the password is `admin`; change it after your first login. |
+| Trusted proxies | `TRUSTED_PROXIES` | | Comma-separated list of reverse-proxy IP addresses or networks (CIDR) to trust, so the real client IP and HTTPS are read from the forwarded headers. Required behind Traefik, nginx or Caddy: without it the login rate limit is shared by everyone behind the proxy, and single sign-on is refused because the forwarded `https` scheme is ignored. For Docker use the bridge network, for example `172.16.0.0/12`. See [Behind a reverse proxy](/BoardGameTracker/getting-started/proxy/). |
 | CORS origins | `CORS_ORIGINS` | | Comma-separated list of extra origins allowed to call the API. |
 | Swagger UI | `SWAGGER_ENABLED` | `false` | Set to `true` to expose the Swagger API UI. Enabled automatically in development. |
+| Listening port | `ASPNETCORE_HTTP_PORTS` | `5444` | Port the application listens on inside the container. To publish it on another host port, change the left side of `5444:5444` in the compose file instead. |
+| Environment | `ASPNETCORE_ENVIRONMENT` | `production` | Set by the image; leave it at `production`. `Development` allows API calls from any origin, turns on Swagger by default and turns off the `Strict-Transport-Security` header, so it is meant for local development only. |
 
 ## Data protection key
 
@@ -41,29 +41,15 @@ Generate a value once and keep it with your other secrets:
 openssl rand -base64 48
 ```
 
-- **Not set:** the key ring is stored unencrypted and the application logs a warning at every start. Everything keeps working.
-- **Set on an existing install:** at the next start the keys already in the database are encrypted in place, so secrets saved before keep working and are no longer readable from a dump. Keys created from then on are encrypted straight away. Backups taken before that still hold the unencrypted keys.
+- **Not set:** the key ring is stored unencrypted, so a copy of the database is enough to read the stored secrets. The application logs a warning at every start. Everything keeps working.
+- **Set on an existing install:** at the next start the keys already in the database are encrypted in place, so secrets saved before keep working and are no longer readable from a dump. Keys created from then on are encrypted straight away. Backups taken before that still hold the unencrypted keys, so treat them as sensitive.
 - **Keep it safe and stable:** store it in your password manager or secret store, separately from the database backups. A dump without the value cannot be decrypted, which is the point, so a lost value cannot be recovered.
 - **Changed or removed:** the existing keys can no longer be read. The application starts and creates a new key, but everything protected with the old keys is lost: single sign-on fails until you enter the OpenID Connect client secret again under *Single sign-on*, the BoardGameGeek and changedetection.io API keys show as not configured until you enter them again, and open password-reset links stop working. Rotating the value without re-entering those secrets is not supported.
-- A value shorter than 32 characters stops the application at startup with an error naming the variable.
+- A value shorter than 32 characters, or one that starts with `CHANGEME`, stops the application at startup with an error naming the variable.
 
 ## Email (SMTP)
 
-BoardGameTracker can also send game-night invites and password-reset emails. See the [Email (SMTP)](/BoardGameTracker/getting-started/email/) page for ports, TLS and a full example.
-
-| Configuration | Variable | Default | Info |
-| --- | --- | --- | --- |
-| SMTP host | `SMTP_HOST` | | Hostname of your SMTP server. Leave empty to keep email disabled. |
-| SMTP port | `SMTP_PORT` | `587` | Port of your SMTP server. Port `465` (implicit TLS) is detected automatically. |
-| SMTP username | `SMTP_USERNAME` | | Username to authenticate with. Leave empty for a server that needs no authentication. |
-| SMTP password | `SMTP_PASSWORD` | | Password to authenticate with. |
-| Use TLS | `SMTP_USE_SSL` | `true` | Set to `false` for a server without TLS, such as a local mail catcher. |
-| From address | `SMTP_FROM_ADDRESS` | | Address emails are sent from. Required to enable email. |
-| From name | `SMTP_FROM_NAME` | `BoardGameTracker` | Display name shown as the sender. |
-
-<Aside type="note">
-Email is enabled only when both `SMTP_HOST` and `SMTP_FROM_ADDRESS` are set; until then the game-night invite and password-reset options stay hidden. Restart the container after changing any `SMTP_*` variable.
-</Aside>
+BoardGameTracker can send game-night invites and password-reset emails. The `SMTP_*` variables, ports and TLS are described on the [Email (SMTP)](/BoardGameTracker/getting-started/email/) page.
 
 ## Rules assistant (RAG)
 
@@ -74,7 +60,7 @@ The optional [rules assistant](/BoardGameTracker/getting-started/rag/) answers q
 | Enable rules assistant | `RAG_ENABLED` | `false` | Master switch. Set to `true` to enable rulebook Q&A. Requires an embedding server (local Ollama) and a chat model. |
 | Chat provider | `AI_PROVIDER` | `ollama` | `ollama` for a local chat model, or `openai` for any OpenAI-compatible endpoint (OpenAI, or Anthropic/Claude). |
 | Chat base URL | `AI_BASE_URL` | `http://ollama:11434` | Endpoint of the **chat** provider. For Claude: `https://api.anthropic.com/v1`. |
-| Chat model | `AI_CHAT_MODEL` | `qwen3:4b` | The model used to write answers — a local model name, or a hosted one like `gpt-4o-mini` / `claude-sonnet-4`. |
+| Chat model | `AI_CHAT_MODEL` | `qwen3:4b` | The model used to write answers: a local model name, or the exact model id of a hosted one, such as `gpt-4o-mini` or `claude-sonnet-5-5`. |
 | Chat API key | `AI_API_KEY` | | Only needed when `AI_PROVIDER=openai`. |
 | Embedding base URL | `AI_EMBEDDING_BASE_URL` | `http://ollama:11434` | Endpoint of the local Ollama server used for embeddings. Embeddings always run locally on `bge-m3`. |
 | Embedding GPU layers | `AI_EMBEDDING_NUM_GPU` | `-1` | `-1` lets Ollama place the embedder (uses the GPU when free); `0` pins it to CPU so a local chat model keeps the GPU to itself. |
@@ -82,19 +68,31 @@ The optional [rules assistant](/BoardGameTracker/getting-started/rag/) answers q
 
 ## Forcing a setting through the environment
 
-Everything under *Settings* in the application is stored in the database, and the keys in the table below can also be forced through an environment variable: take the setting key, upper-cased. The changedetection.io base URL and API key are the exception: they can only be set in the application. A forced setting is shown greyed out in the UI with a note naming the variable, and saving the settings page leaves it untouched.
+Everything under *Settings* in the application is stored in the database, and the keys in the table below can also be forced through an environment variable: take the setting key, upper-cased. The changedetection.io base URL and API key are the exception: they can only be set in the application. A forced setting is shown greyed out in the UI with a note naming the variable, and saving the settings page leaves it untouched. The rules-assistant settings above and the update interval have no screen in the app, so the environment is the only way to change them.
 
 | Setting | Variable | Values |
 | --- | --- | --- |
-| Currency | `CURRENCY` | e.g. `EUR`, `USD` |
+| Currency | `CURRENCY` | Free text shown in front of prices, for example `€` (the default), `$` or `CHF`. |
 | Date format | `DATE_FORMAT` | e.g. `yyyy-MM-dd` |
 | Time format | `TIME_FORMAT` | e.g. `HH:mm` |
-| UI language | `UI_LANGUAGE` | `en-US`, `nl-BE`, `nl-NL`, `es-ES` |
+| UI language | `UI_LANGUAGE` | `en-us`, `nl-be`, `nl-nl`, `es-es` (the values the language picker stores) |
 | Public URL | `PUBLIC_URL` | The address users reach the app on; used in RSVP and password-reset links and as the base of the OpenID Connect redirect URI. Single sign-on can only be enabled when it starts with `https://` (or is a `localhost` address). |
 | Shelf of Shame | `SHELF_OF_SHAME_ENABLED`, `SHELF_OF_SHAME_MONTHS` | `true`/`false`, number of months |
 | Game nights | `GAME_NIGHTS_ENABLED`, `RSVP_AUTHENTICATION_ENABLED` | `true`/`false` |
 | Update check | `UPDATE_CHECK_ENABLED`, `UPDATE_TRACK`, `UPDATE_CHECK_INTERVAL_HOURS` | `true`/`false`, `stable`/`beta`, hours |
 | BoardGameGeek | `BGG_API_KEY` | see above |
-| Rules assistant | `AI_PROVIDER`, `AI_BASE_URL`, `AI_CHAT_MODEL`, `AI_API_KEY`, `AI_EMBEDDING_BASE_URL`, `AI_EMBEDDING_NUM_GPU`, `AI_TOP_K` | see above |
 
 A value that cannot be parsed (for example `SHELF_OF_SHAME_MONTHS=six`) is ignored and the stored setting is used instead.
+
+## Compose file variables
+
+These variables are read by the compose files themselves, not by the application.
+
+| Variable | Default | Used in | Info |
+| --- | --- | --- | --- |
+| `IMAGE_PATH` | `./images` | `docker-compose.build.yml` | Host folder mounted at `/app/images`. |
+| `LOG_PATH` | `./logs` | `docker-compose.build.yml` | Host folder mounted at `/app/logs`. |
+| `MANUALS_PATH` | `./manuals` | `docker-compose.build.yml` | Host folder mounted at `/app/manuals`. |
+| `DB_PATH` | `./postgres-data` | `docker-compose.build.yml` | Host folder for the database files. |
+| `OLLAMA_PATH` | `./ollama` | `docker-compose.build.yml` | Host folder for the Ollama models. |
+| `APP_PORT` | `5444` | `docker-compose.build.yml` | Host port the application is published on. |

@@ -1,35 +1,36 @@
 ---
-title: Rules Assistant (RAG)
+title: Rules assistant (RAG)
 description: Ask natural-language questions about your game rulebooks, answered locally by AI.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-The rules assistant lets you ask natural-language questions about a game's uploaded rulebook(s) — for example *"how many cards do you start with?"* — and get an answer with page citations. Answers are grounded in the manuals you uploaded: the assistant only uses their content.
+The rules assistant lets you ask natural-language questions about a game's uploaded rulebook(s) — for example *"how many cards do you start with?"* — and get an answer with page citations. Answers are based on passages from the manuals you uploaded and cite the pages they come from, so you can check them.
 
-It runs **fully locally** by default through [Ollama](https://ollama.com/), so your rulebooks and questions never leave your server. No API keys and no cloud services are required.
+By default it runs locally through [Ollama](https://ollama.com/), so your rulebooks and questions stay on your server. No API keys and no cloud services are required.
+
+Each user can ask 10 questions per minute. Readers cannot use the assistant.
 
 <Aside type="caution">
-The rules assistant is **disabled by default** and needs enough hardware to run a local language model. On a low-powered server (for example a Raspberry Pi or a small NAS), leave it disabled.
+The rules assistant is disabled by default and needs enough hardware to run a local language model. On a low-powered server (for example a Raspberry Pi or a small NAS), leave it disabled.
 </Aside>
 
 ## Enabling it
 
-If you downloaded the `docker-compose.yml` from the repository, it already has an `ollama` service behind the `rag` profile. Put `RAG_ENABLED=true` in a `.env` file next to the compose file and start the stack with that profile:
+If you downloaded the `docker-compose.yml` from the repository, it already has an `ollama` service behind the `rag` profile. Put `RAG_ENABLED=true` in the `.env` file next to the compose file and start the stack with that profile:
 
-```bash
+```sh title="Terminal"
 docker compose --profile rag up -d
 ```
 
 A plain `docker compose up -d` does not start Ollama, so keep `RAG_ENABLED` off in that case.
 
-The compose file shown in the [quick start](/BoardGameTracker/getting-started/quick-start/) doesn't include the AI service. To turn the assistant on there, add an `ollama` service to your `docker-compose.yml` and point the app at it:
+The compose file on the [Docker](/BoardGameTracker/getting-started/docker/) page doesn't include the AI service. To turn the assistant on there, add an `ollama` service to your `docker-compose.yml` and point the app at it:
 
 ```yaml title="docker-compose.yml (additions)"
 services:
   boardgametracker:
     environment:
-      # ...your existing values...
       - RAG_ENABLED=true
       - AI_BASE_URL=http://ollama:11434
       - AI_CHAT_MODEL=qwen3:4b
@@ -41,26 +42,26 @@ services:
       - ./ollama:/root/.ollama
 ```
 
-Then (re)start the stack:
+Keep your existing `environment` entries and add these three. Then (re)start the stack:
 
-```bash
+```sh title="Terminal"
 docker compose up -d
 ```
 
-The required models (`bge-m3` for search, plus your `AI_CHAT_MODEL`) are pulled **automatically when the container starts**, and re-checked on every restart — no manual `ollama pull` needed. Changing the chat model later just needs a redeploy.
+The required models (`bge-m3` for search, plus your `AI_CHAT_MODEL`) are pulled when the application starts, and re-checked on every restart, so no manual `ollama pull` is needed. Changing the chat model later only needs a redeploy.
 
-Once enabled, every uploaded manual is indexed automatically in the background. Manuals uploaded before enabling are indexed on the next start.
+Once enabled, every uploaded manual is indexed in the background. Manuals uploaded before enabling are indexed on the next start.
 
 ## Models
 
 | Role | Model | Where it runs |
 | --- | --- | --- |
-| Embeddings (search) | `bge-m3` (fixed) | Always **local Ollama**. Chosen for multilingual rulebooks (English, Dutch, French, German, …). |
-| Chat (answers) | `qwen3:4b` by default | Local Ollama **or** a hosted provider — set `AI_CHAT_MODEL` / `AI_PROVIDER`. |
+| Embeddings (search) | `bge-m3` (fixed) | Always on local Ollama. Chosen for multilingual rulebooks (English, Dutch, French, German, …). |
+| Chat (answers) | `qwen3:4b` by default | Local Ollama or a hosted provider; set `AI_CHAT_MODEL` / `AI_PROVIDER`. |
 
-The embedding model is fixed at `bge-m3` (1024 dimensions) so the vector search stays consistent with what's already stored in the database — it always runs locally. The **chat** model is independent: run it locally, or point it at a hosted provider (see [below](#using-a-hosted-chat-model)) while embeddings stay on your server.
+The embedding model is fixed at `bge-m3` (1024 dimensions) so the vector search stays consistent with what's already stored in the database; it always runs locally. The chat model is independent: run it locally, or point it at a hosted provider (see [below](#using-a-hosted-chat-model)) while embeddings stay on your server.
 
-## Which chat model should I use?
+## Choosing a chat model
 
 Larger models give better answers but need more memory, and ideally a GPU. Set your choice with `AI_CHAT_MODEL`.
 
@@ -76,65 +77,30 @@ The `bge-m3` embedding model runs fine on CPU across the board.
 
 ## GPU acceleration (NVIDIA)
 
-By default Ollama runs on the CPU. To use an NVIDIA GPU for much faster answers:
+By default Ollama runs on the CPU. To use an NVIDIA GPU for faster answers:
 
 1. Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) on the host.
-2. Start the bundled **`docker-compose.gpu.yml`** — a complete, ready-to-run stack with the assistant enabled and the GPU reserved for Ollama:
+2. Download [`docker-compose.gpu.yml`](https://github.com/mregni/BoardGameTracker/blob/master/docker-compose.gpu.yml) and the `.env` file from the [quick start](/BoardGameTracker/getting-started/quick-start/). It is the same stack with Ollama always started and the GPU reserved for it. It also needs Docker Compose 2.24 or newer. `RAG_ENABLED` defaults to `true` in this file, but a `.env` copied from `.env.example` sets it to `false`, so change that line to `RAG_ENABLED=true`.
+3. Start it:
 
-   ```bash
+   ```sh title="Terminal"
    docker compose -f docker-compose.gpu.yml up -d
    ```
 
-The full file:
+The part that reserves the GPU is the `deploy` block on the `ollama` service:
 
-```yaml
-services:
-  boardgametracker:
-    image: uping/boardgametracker:latest
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ./images:/app/images
-      - ./logs:/app/logs
-      - ./manuals:/app/manuals
-    ports:
-      - "5444:5444"
-    environment:
-      - DB_HOST=db
-      - DB_USER=dbuser
-      - DB_PASSWORD=CHANGEME
-      - DB_NAME=boardgametracker
-      - DB_PORT=5432
-      - JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
-      - DATA_PROTECTION_KEY=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
-      - TZ=UTC
-      - RAG_ENABLED=true
-      - AI_BASE_URL=http://ollama:11434
-      - AI_CHAT_MODEL=qwen3:8b
-
-  db:
-    image: pgvector/pgvector:pg16
-    restart: unless-stopped
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=boardgametracker
-      - POSTGRES_USER=dbuser
-      - POSTGRES_PASSWORD=CHANGEME
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dbuser -d boardgametracker"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
+```yaml title="docker-compose.gpu.yml (excerpt)"
   ollama:
     image: ollama/ollama:latest
     restart: unless-stopped
     volumes:
       - ./ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     deploy:
       resources:
         reservations:
@@ -144,45 +110,44 @@ services:
               capabilities: [gpu]
 ```
 
+The GPU file also uses `qwen3:4b` unless you choose another model. For a 6–8 GB card set `AI_CHAT_MODEL=qwen3:8b` in `.env`.
+
 A 6 GB card such as a GTX 1060 can run `qwen3:8b`, but not while the embedder is also on the GPU: the chat model needs roughly 5.5 GB and `bge-m3` another ~0.6 GB, so the two don't both fit in 6 GB. Pin the embedder to the CPU (see below) and the chat model gets the whole card.
 
 ### Small GPUs: keep the embedder off the card
 
-On a tight GPU (around 4 GB) a local chat model and the `bge-m3` embedder compete for memory. When they don't both fit, Ollama offloads part of the chat model to the CPU and generation slows to a crawl. Because the embedder is small and only handles one short query per question, the fix is to **pin it to the CPU** so the chat model keeps the whole GPU:
+On a tight GPU (around 4 GB) a local chat model and the `bge-m3` embedder compete for memory. When they don't both fit, Ollama offloads part of the chat model to the CPU and generation slows down sharply. Because the embedder is small and only handles one short query per question, the fix is to pin it to the CPU so the chat model keeps the whole GPU:
 
-```yaml
-    environment:
-      - AI_EMBEDDING_NUM_GPU=0   # run bge-m3 on CPU
+```sh title=".env"
+AI_EMBEDDING_NUM_GPU=0
 ```
 
-With this set, the chat model stays resident on the GPU across questions — only the first answer after startup pays the load time. The default (`-1`) lets Ollama decide, which is right when the GPU has room to spare (a bigger card, or a hosted chat model that leaves the GPU free).
+With this set, the chat model stays resident on the GPU across questions; only the first answer after startup pays the load time. The default (`-1`) lets Ollama decide, which is right when the GPU has room to spare (a bigger card, or a hosted chat model that leaves the GPU free).
 
 ## Rulebook page images
 
-Each answer's citations include a thumbnail of the actual rulebook page they were drawn from, so you can check the source at a glance. Pages are rendered on the server on demand and cached — no configuration is needed, as the container ships with the renderer (`poppler-utils`) built in. If the renderer is ever unavailable, answers simply fall back to text-only citations.
+Each answer's citations include a thumbnail of the rulebook page they were drawn from. Pages are rendered on the server on demand and cached. No configuration is needed: the container ships with the renderer (`poppler-utils`). If the renderer is unavailable, answers fall back to text-only citations.
 
 ## Using a hosted chat model
 
-You can keep embeddings local while sending the **chat** step to a hosted, OpenAI-compatible provider — a good option if you want stronger answers than your hardware can run locally. Only the chat model is hosted; `bge-m3` embeddings and the vector search always stay on your server.
+You can keep embeddings local while sending the chat step to a hosted, OpenAI-compatible provider, for stronger answers than your hardware can run locally. Only the chat model is hosted; `bge-m3` embeddings and the vector search always stay on your server. Use the exact model id from your provider.
 
-**OpenAI (ChatGPT):**
+**OpenAI:**
 
-```yaml
-    environment:
-      - AI_PROVIDER=openai
-      - AI_BASE_URL=https://api.openai.com/v1
-      - AI_CHAT_MODEL=gpt-4o-mini
-      - AI_API_KEY=sk-...
+```sh title=".env"
+AI_PROVIDER=openai
+AI_BASE_URL=https://api.openai.com/v1
+AI_CHAT_MODEL=gpt-4o-mini
+AI_API_KEY=<your-openai-api-key>
 ```
 
-**Claude (Anthropic)** — through its OpenAI-compatible endpoint:
+**Claude (Anthropic)**, through its OpenAI-compatible endpoint:
 
-```yaml
-    environment:
-      - AI_PROVIDER=openai
-      - AI_BASE_URL=https://api.anthropic.com/v1
-      - AI_CHAT_MODEL=claude-sonnet-4
-      - AI_API_KEY=sk-ant-...
+```sh title=".env"
+AI_PROVIDER=openai
+AI_BASE_URL=https://api.anthropic.com/v1
+AI_CHAT_MODEL=claude-sonnet-5-5
+AI_API_KEY=<your-anthropic-api-key>
 ```
 
 You still need the local Ollama service for embeddings (it only has to run `bge-m3`, which is small). With a hosted chat model the GPU is used for embeddings alone, or you can skip a GPU entirely.
@@ -192,5 +157,5 @@ Only the current question and the rulebook excerpts retrieved for it are sent to
 </Aside>
 
 <Aside type="note">
-Changing `AI_CHAT_MODEL` takes effect after a redeploy: the container pulls any missing local model on startup, so no manual `ollama pull` is needed. The database (`pgvector/pgvector:pg16`) image is required whether or not the assistant is enabled.
+The database (`pgvector/pgvector:pg16`) image is required whether or not the assistant is enabled.
 </Aside>
