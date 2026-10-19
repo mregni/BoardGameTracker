@@ -39,7 +39,7 @@ export const TopPlayersCard = (props: Props) => {
 								: null,
 						]
 							.filter(Boolean)
-							.join(" • ");
+							.join(" · ");
 						const trendLabel =
 							player.trend === Trend.Up
 								? t("top-players.trend-up", { sessions: TREND_WINDOW })

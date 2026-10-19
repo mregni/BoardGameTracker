@@ -36,7 +36,7 @@ export const RecentSessionsCard = (props: Props) => {
 							<li
 								key={session.id}
 								className="flex items-center gap-2 py-2"
-								title={`${t("common:player", { count: session.playerSessions.length })} • ${shortDuration(session.minutes)}`}
+								title={`${t("common:player", { count: session.playerSessions.length })} · ${shortDuration(session.minutes)}`}
 							>
 								<span className="shrink-0 text-sm tabular-nums text-white/60">
 									{toDisplay(session.start, dateFormat, i18n.language)}

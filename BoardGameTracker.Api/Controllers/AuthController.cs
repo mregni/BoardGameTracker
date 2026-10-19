@@ -53,11 +53,24 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Refresh()
     {
-        var refreshToken = AuthSessionCookies.ReadRefreshToken(Request)
-            ?? throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
-        var response = await _authService.RefreshAsync(refreshToken);
-        _sessionCookies.Issue(HttpContext, response.RefreshToken);
-        return Ok(response);
+        try
+        {
+            var refreshToken = AuthSessionCookies.ReadRefreshToken(Request)
+                ?? throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+            var response = await _authService.RefreshAsync(refreshToken);
+            _sessionCookies.Issue(HttpContext, response.RefreshToken);
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            var context = HttpContext;
+            context.Response.OnStarting(() =>
+            {
+                AuthSessionCookies.Clear(context);
+                return Task.CompletedTask;
+            });
+            throw;
+        }
     }
 
     [HttpPost("logout")]

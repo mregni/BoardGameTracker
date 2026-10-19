@@ -123,6 +123,17 @@ describe("Dashboard page", () => {
 		expect(screen.queryByText(/shame.title/)).not.toBeInTheDocument();
 	});
 
+	it("names expansions in the games tile only when there are any", () => {
+		const { unmount } = renderWithProviders(<mocks.captured.Page />);
+		expect(screen.getByText("tiles.games-detail")).toBeInTheDocument();
+		unmount();
+
+		mocks.data = { statistics: { ...statistics, expansionsOwned: 0 }, settings };
+		renderWithProviders(<mocks.captured.Page />);
+		expect(screen.getByText("tiles.games-owned")).toBeInTheDocument();
+		expect(screen.queryByText("tiles.games-detail")).not.toBeInTheDocument();
+	});
+
 	it("leaves out the average session time before the first session", () => {
 		mocks.data = { statistics: { ...statistics, sessionsPlayed: 0, totalPlayedTime: 0 }, settings };
 		renderWithProviders(<mocks.captured.Page />);

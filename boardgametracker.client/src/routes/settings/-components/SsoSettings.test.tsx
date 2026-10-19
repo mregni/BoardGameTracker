@@ -95,18 +95,52 @@ describe("SsoSettings", () => {
 		expect(screen.getByText("sso.fields.enabled.description")).toBeInTheDocument();
 	});
 
-	it("warns that https is required and disables the enabled toggle with the reason", async () => {
-		const user = userEvent.setup();
+	it("names the provider by its short name once it is configured", () => {
+		mocks.state.provider = provider;
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.getByText("sso.description.configured")).toBeInTheDocument();
+		expect(screen.queryByText("sso.description.inactive")).not.toBeInTheDocument();
+	});
+
+	it("shows an enabled provider as configured but inactive without https, locked at its stored value", () => {
 		mocks.state.provider = provider;
 		mocks.state.setup = { ...setup, publicBaseUrl: "http://games.example.com", httpsRequired: true };
 		renderWithProviders(<SsoSettings />);
 
-		expect(screen.getByRole("alert")).toHaveTextContent("sso.https-required");
+		expect(screen.getByText("sso.description.inactive")).toBeInTheDocument();
+		expect(screen.getAllByRole("alert")).toHaveLength(1);
+		expect(screen.getByRole("alert")).toHaveTextContent("sso.https-required-locked");
 		const toggle = screen.getByRole("switch", { name: "sso.fields.enabled.label" });
 		expect(toggle).toBeDisabled();
-		expect(toggle).toHaveAttribute("aria-checked", "false");
-		expect(screen.getByText("sso.fields.enabled.https-required")).toBeInTheDocument();
+		expect(toggle).toHaveAttribute("aria-checked", "true");
+		expect(screen.getByText("sso.fields.enabled.description")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "sso.save" })).toBeDisabled();
+		expect(mocks.state.save).not.toHaveBeenCalled();
+	});
 
+	it("greys out the redirect URIs until the public URL is https", () => {
+		mocks.state.provider = provider;
+		mocks.state.setup = { ...setup, publicUrlConfigured: false, httpsRequired: true };
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.getByText("sso.setup.https-pending")).toBeInTheDocument();
+		expect(screen.queryByText("sso.setup.public-url-warning")).not.toBeInTheDocument();
+		expect(screen.getByTestId("sso-redirect-uris")).toHaveClass("opacity-50");
+		for (const copy of screen.getAllByRole("button", { name: "sso.setup.copy" })) {
+			expect(copy).toBeDisabled();
+		}
+	});
+
+	it("keeps a disabled provider disabled and lets its other fields be saved without https", async () => {
+		const user = userEvent.setup();
+		mocks.state.provider = { ...provider, enabled: false };
+		mocks.state.setup = { ...setup, httpsRequired: true };
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.getByText("sso.description.configured")).toBeInTheDocument();
+		expect(screen.getByRole("alert")).toHaveTextContent("sso.https-required");
+		expect(screen.getByRole("switch", { name: "sso.fields.enabled.label" })).toHaveAttribute("aria-checked", "false");
 		await user.click(screen.getByRole("button", { name: "sso.save" }));
 
 		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));

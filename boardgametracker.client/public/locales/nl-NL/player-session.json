@@ -5,14 +5,14 @@
   "title-update": "Sessie bijwerken",
   "new": {
     "notifications": {
-      "created": "Sessie is aangemaakt",
+      "created": "Sessie opgeslagen",
       "create-failed": "Sessie aanmaken mislukt"
     },
     "player": {
       "label": "Speler",
       "required": "Speler is verplicht"
     },
-    "create-player": "Speler toevoegen",
+    "create-player": "Nieuwe speler",
     "players": {
       "minimum": "Voeg minstens één speler toe aan deze sessie"
     },
@@ -45,7 +45,7 @@
   },
   "update": {
     "notifications": {
-      "updated": "Sessie is bijgewerkt",
+      "updated": "Sessie opgeslagen",
       "update-failed": "Sessie bijwerken mislukt"
     }
   },
@@ -53,7 +53,7 @@
     "required": "Score is verplicht"
   },
   "delete": {
-    "successfull": "Sessie is verwijderd.",
+    "successfull": "Sessie verwijderd",
     "failed": "Sessie verwijderen mislukt, bekijk de logs voor meer details."
   },
   "form": {

@@ -1,4 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,6 +14,7 @@ import { useAppForm } from "@/hooks/form";
 import { ResetPasswordSchema } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { confirmResetPasswordCall } from "@/services/authService";
+import { getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 
@@ -39,6 +41,8 @@ function ResetPasswordPage() {
 function IncompleteResetLink() {
 	const { t } = useTranslation("auth");
 	const navigate = useNavigate();
+	const { data: settings } = useQuery(getSettings());
+	const emailEnabled = settings?.emailEnabled === true;
 
 	return (
 		<BgtPage>
@@ -49,12 +53,14 @@ function IncompleteResetLink() {
 							{t("reset-incomplete")}
 						</BgtText>
 						<BgtText size="2" color="gray">
-							{t("reset-incomplete-description")}
+							{emailEnabled ? t("reset-incomplete-description") : t("ask-admin-reset")}
 						</BgtText>
 					</div>
-					<BgtButton size="3" className="w-full" onClick={() => navigate({ to: "/forgot-password" })}>
-						{t("forgot-link")}
-					</BgtButton>
+					{emailEnabled && (
+						<BgtButton size="3" className="w-full" onClick={() => navigate({ to: "/forgot-password" })}>
+							{t("forgot-link")}
+						</BgtButton>
+					)}
 					<BgtButton variant="cancel" size="3" className="w-full" onClick={() => navigate({ to: "/login" })}>
 						{t("back-to-login")}
 					</BgtButton>

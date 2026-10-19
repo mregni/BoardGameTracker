@@ -5,14 +5,14 @@
   "title-update": "Actualizar partida",
   "new": {
     "notifications": {
-      "created": "Partida creada correctamente",
+      "created": "Partida registrada",
       "create-failed": "Error al crear la partida"
     },
     "player": {
       "label": "Jugador",
       "required": "El jugador es obligatorio"
     },
-    "create-player": "Añadir jugador",
+    "create-player": "Nuevo jugador",
     "players": {
       "minimum": "Añade al menos un jugador a esta partida"
     },
@@ -45,7 +45,7 @@
   },
   "update": {
     "notifications": {
-      "updated": "Partida actualizada correctamente",
+      "updated": "Partida guardada",
       "update-failed": "Error al actualizar la partida"
     }
   },
@@ -53,7 +53,7 @@
     "required": "La puntuación es obligatoria"
   },
   "delete": {
-    "successfull": "Partida eliminada correctamente.",
+    "successfull": "Partida eliminada",
     "failed": "Error al eliminar la partida, revisa los registros para más detalles."
   },
   "form": {

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { BgtDateTimePicker, BgtInputField, BgtSelect, BgtTextArea } from "@/components/BgtForm";
 import { useAppForm } from "@/hooks/form";
-import type { Game, Location, Player } from "@/models";
+import { type Game, GameState, type Location, type Player } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { defaultGameNightStart } from "../-utils/defaultStartDate";
@@ -55,14 +55,17 @@ export const GameNightForm = (props: Props) => {
 		[players],
 	);
 
+	const keptGameIds = defaultValues?.suggestedGameIds;
 	const gameOptions = useMemo(
 		() =>
-			games.map((g) => ({
-				value: g.id,
-				label: g.title,
-				image: g.image,
-			})),
-		[games],
+			games
+				.filter((g) => g.state === GameState.Owned || keptGameIds?.includes(g.id))
+				.map((g) => ({
+					value: g.id,
+					label: g.title,
+					image: g.image,
+				})),
+		[games, keptGameIds],
 	);
 
 	const locationOptions = useMemo(

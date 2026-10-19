@@ -87,7 +87,7 @@
   },
   "form": {
     "title": {
-      "label": "Titel van het evenement",
+      "label": "Titel",
       "placeholder": "Spelletjes op vrijdag"
     },
     "start": {
@@ -116,11 +116,11 @@
   "notifications": {
     "created": "Spelavond aangemaakt",
     "create-failed": "Spelavond aanmaken mislukt",
-    "updated": "Spelavond bijgewerkt",
+    "updated": "Spelavond opgeslagen",
     "update-failed": "Spelavond bijwerken mislukt",
     "deleted": "Spelavond verwijderd",
     "delete-failed": "Spelavond verwijderen mislukt",
-    "rsvp-updated": "RSVP bijgewerkt",
+    "rsvp-updated": "Antwoord opgeslagen",
     "rsvp-update-failed": "RSVP bijwerken mislukt"
   },
   "validation": {
@@ -195,7 +195,8 @@
     "tonight": "Vanavond gespeeld",
     "after": "Gespeeld",
     "empty": "Nog niets gespeeld. Tik op “Start een spel” zodra een spel begint; datum, tijd, locatie en spelers worden voor je ingevuld.",
-    "empty-after": "Er werd niets gespeeld genoteerd voor deze avond. Gebruik “Sessie registreren” om toe te voegen wat er gespeeld werd."
+    "empty-after": "Er werd niets gespeeld genoteerd voor deze avond. Gebruik “Sessie registreren” om toe te voegen wat er gespeeld werd.",
+    "won": "gewonnen"
   },
   "table": {
     "title": "Aan tafel",
@@ -206,13 +207,14 @@
   },
   "planned": {
     "title": "Gepland",
-    "played": "Gespeeld"
+    "played": "Gespeeld",
+    "playing": "wordt nu gespeeld"
   },
   "end": {
     "button": "Avond afsluiten",
     "title": "Deze spelavond afsluiten?",
     "description": "Er kan niets meer gestart of toegevoegd worden tot de avond weer geopend wordt.",
-    "running-hint": "Beëindig of gooi eerst de lopende spellen weg",
+    "running-hint": "Beëindig eerst de lopende spellen of stop ze zonder opslaan",
     "reopen": "Avond heropenen",
     "notifications": {
       "ended": "Spelavond afgesloten",
@@ -227,12 +229,6 @@
     "stats": "Statistieken"
   },
   "stats": {
-    "period": {
-      "label": "Periode",
-      "allTime": "Altijd",
-      "thisYear": "Dit jaar",
-      "last12Months": "Laatste 12 maanden"
-    },
     "logged_one": "{{count}} van {{total}} avonden heeft gelogde sessies",
     "logged_other": "{{count}} van {{total}} avonden hebben gelogde sessies",
     "empty": {
@@ -312,8 +308,8 @@
       "hosted": "gastheer {{count}}×",
       "bar": "{{name}} kwam naar {{count}} van {{total}} avonden",
       "select": "Toon de laatste avonden van {{name}}",
-      "recent_one": "{{name}}, laatste avond",
-      "recent_other": "{{name}}, laatste {{count}} avonden",
+      "recent_one": "Laatste avond",
+      "recent_other": "Laatste {{count}} avonden",
       "came": "aanwezig",
       "absent": "niet aanwezig",
       "dot": "{{title}} · {{date}}: {{state}}",
@@ -337,7 +333,7 @@
   "live": "Nu bezig",
   "attendance": {
     "title": "Wie is er?",
-    "hint": "Wie meespeelde, is er. Tik de anderen aan die er wel of niet waren.",
+    "hint": "Geef aan wie er verder nog was.",
     "present": "Aanwezig",
     "absent": "Afwezig",
     "played": "Speelde mee",
@@ -345,6 +341,7 @@
     "notifications": {
       "saved": "Aanwezigheid opgeslagen",
       "save-failed": "Aanwezigheid opslaan is mislukt"
-    }
+    },
+    "playing": "Speelt nu"
   }
 }

@@ -1,11 +1,14 @@
 import type { KeyboardEvent } from "react";
 
-export const findSearchMatch = <T extends { label: string }>(items: T[], searchTerm: string): T | undefined => {
+export const findSearchMatch = <T extends { label: string; disabled?: boolean }>(
+	items: T[],
+	searchTerm: string,
+): T | undefined => {
 	const term = searchTerm.trim().toLowerCase();
 	if (!term) {
 		return undefined;
 	}
-	return items.find((item) => item.label.toLowerCase().includes(term));
+	return items.find((item) => !item.disabled && item.label.toLowerCase().includes(term));
 };
 
 export const handleSelectSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>, selectMatch: () => void) => {

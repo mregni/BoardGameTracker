@@ -3,7 +3,7 @@
   "import": {
     "loading": "BGG-gegevens laden...",
     "importing": "Spellen importeren van BoardGameGeek ({{done}}/{{total}})...",
-    "success": "Spellen zijn geïmporteerd van BoardGameGeek",
+    "success": "Spellen geïmporteerd van BoardGameGeek",
     "start": {
       "bgg-username": {
         "label": "BGG-gebruikersnaam",
@@ -30,8 +30,8 @@
   },
   "title": "Spellen",
   "new": "Spel toevoegen",
-  "count_other": "{{count}} spellen gevonden",
-  "count_one": "{{count}} spel gevonden",
+  "count_other": "{{count}} spellen",
+  "count_one": "{{count}} spel",
   "cards": {
     "games": "Spellen"
   },

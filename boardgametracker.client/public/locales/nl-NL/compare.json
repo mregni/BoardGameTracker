@@ -73,7 +73,8 @@
     "same-team_one": "Zelfde team · {{won}} van {{count}} gewonnen",
     "same-team_other": "Zelfde team · {{won}} van {{count}} gewonnen",
     "same-team-extra_one": "+{{count}} zelfde team",
-    "same-team-extra_other": "+{{count}} zelfde team"
+    "same-team-extra_other": "+{{count}} zelfde team",
+    "scores": "{{one}} – {{two}}"
   },
   "best-worst": {
     "against": "{{player}} tegen {{opponent}}",

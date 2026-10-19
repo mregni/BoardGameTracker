@@ -16,6 +16,7 @@ describe("NotFound", () => {
 		expect(screen.queryByText("description")).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "go-back" })).toBeInTheDocument();
 		expect(screen.getByText("quick-nav")).toBeInTheDocument();
-		expect(screen.getByText("not-found:nav.game-nights-description")).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: "common:game-nights" })).toHaveAttribute("href", "/game-nights");
+		expect(screen.queryByText(/-description$/)).not.toBeInTheDocument();
 	});
 });

@@ -56,7 +56,6 @@
     "plays_other": "{{count}} keer gespeeld",
     "players_one": "{{range}} speler",
     "players_other": "{{range}} spelers",
-    "minutes": "{{range}} min",
     "never-played": "Nooit gespeeld",
     "no-price": "Geen prijs",
     "planned": "Gepland · {{date}}",

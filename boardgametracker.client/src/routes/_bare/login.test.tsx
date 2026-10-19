@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
 	search: {} as { redirect?: string; error?: string },
 	provider: null as OidcProvider | null,
 	captured: {} as { Page: FC },
+	auth: { isAuthenticated: false, authEnabled: true as boolean | undefined },
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -16,6 +17,7 @@ vi.mock("@tanstack/react-router", () => ({
 		return { ...config, useSearch: () => mocks.search };
 	},
 	useNavigate: () => mocks.navigate,
+	Navigate: ({ to }: { to: string }) => <div data-testid="redirect">{to}</div>,
 }));
 
 vi.mock("@/services/authService", () => ({
@@ -26,9 +28,21 @@ vi.mock("@/services/queries/settings", () => ({
 	getSettings: () => ({ queryKey: ["settings"], queryFn: () => Promise.resolve({ emailEnabled: false }) }),
 }));
 
+interface AuthState {
+	login: () => Promise<void>;
+	isLoading: boolean;
+	isAuthenticated: boolean;
+	authStatus: { authEnabled: boolean } | null;
+}
+
 vi.mock("@/hooks/useAuth", () => ({
-	useAuth: (selector: (state: { login: () => Promise<void>; isLoading: boolean }) => unknown) =>
-		selector({ login: vi.fn(), isLoading: false }),
+	useAuth: (selector: (state: AuthState) => unknown) =>
+		selector({
+			login: vi.fn(),
+			isLoading: false,
+			isAuthenticated: mocks.auth.isAuthenticated,
+			authStatus: mocks.auth.authEnabled === undefined ? null : { authEnabled: mocks.auth.authEnabled },
+		}),
 }));
 
 const translations: Record<string, string> = {
@@ -57,6 +71,7 @@ describe("LoginPage", () => {
 		vi.clearAllMocks();
 		mocks.search = {};
 		mocks.provider = provider;
+		mocks.auth = { isAuthenticated: false, authEnabled: true };
 	});
 
 	it("shows the single sign-on button when it is usable over this connection", async () => {
@@ -65,26 +80,47 @@ describe("LoginPage", () => {
 		expect(await screen.findByRole("button", { name: "Company login" })).toBeInTheDocument();
 	});
 
-	it("hides the single sign-on button when the connection is not https", async () => {
+	it("keeps the single sign-on button but disables it with one line when the connection is not https", async () => {
 		mocks.provider = { ...provider, httpsRequired: true };
 		renderWithProviders(<mocks.captured.Page />);
 
-		expect(await screen.findByRole("button", { name: "login" })).toBeInTheDocument();
-		await new Promise((resolve) => setTimeout(resolve, 0));
-		expect(screen.queryByRole("button", { name: "Company login" })).not.toBeInTheDocument();
-		expect(screen.queryByText("or-continue-with")).not.toBeInTheDocument();
+		expect(await screen.findByRole("button", { name: "Company login" })).toBeDisabled();
+		expect(screen.getByText("sso-https-hint")).toBeInTheDocument();
+		expect(screen.getByText("or-continue-with")).toBeInTheDocument();
 	});
 
-	it("explains a refused single sign-on start from the error in the address", async () => {
+	it("tells the person signing in what to do, not the admin, when single sign-on was refused for https", async () => {
 		mocks.search = { error: "error.auth.oidc-https-required" };
 		mocks.provider = { ...provider, httpsRequired: true };
 		renderWithProviders(<mocks.captured.Page />);
 
-		expect(
-			await screen.findByText(
-				"Single sign-on requires HTTPS. Put BoardGameTracker behind a reverse proxy with TLS and set an https public URL.",
-			),
-		).toBeInTheDocument();
+		expect(await screen.findByText("sso-https-error")).toBeInTheDocument();
+		expect(screen.queryByText(/reverse proxy/)).not.toBeInTheDocument();
+		expect(await screen.findByRole("button", { name: "Company login" })).toBeDisabled();
+		expect(screen.queryByText("sso-https-hint")).not.toBeInTheDocument();
+	});
+
+	it("still translates other single sign-on errors from the address", async () => {
+		mocks.search = { error: "error.auth.oidc-https-required-elsewhere" };
+		renderWithProviders(<mocks.captured.Page />);
+
+		expect(await screen.findByText("error:auth.oidc-failed")).toBeInTheDocument();
+	});
+
+	it("sends someone who is already signed in to where they were going", () => {
+		mocks.auth = { isAuthenticated: true, authEnabled: true };
+		mocks.search = { redirect: "/games" };
+		renderWithProviders(<mocks.captured.Page />);
+
+		expect(screen.getByTestId("redirect")).toHaveTextContent("/games");
+		expect(screen.queryByRole("button", { name: "login" })).not.toBeInTheDocument();
+	});
+
+	it("leaves the sign-in page when sign-in is turned off", () => {
+		mocks.auth = { isAuthenticated: false, authEnabled: false };
+		renderWithProviders(<mocks.captured.Page />);
+
+		expect(screen.getByTestId("redirect")).toHaveTextContent("/");
 	});
 
 	it("shows no error without one in the address", async () => {

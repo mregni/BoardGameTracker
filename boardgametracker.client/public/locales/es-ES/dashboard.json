@@ -44,7 +44,8 @@
     "sessions-detail_one": "{{value}} este mes",
     "sessions-detail_other": "{{value}} este mes",
     "play-time": "Tiempo de juego",
-    "play-time-detail": "media de {{duration}} por partida"
+    "play-time-detail": "media de {{duration}} por partida",
+    "games-owned": "{{owned}} en propiedad"
   },
   "last-sessions": {
     "title": "Últimas partidas",
@@ -54,8 +55,8 @@
     "empty": "Aún no hay partidas registradas"
   },
   "shame": {
-    "title_one": "{{value}} juego en la estantería de la vergüenza",
-    "title_other": "{{value}} juegos en la estantería de la vergüenza",
+    "title_one": "{{value}} juego en la Estantería de la vergüenza",
+    "title_other": "{{value}} juegos en la Estantería de la vergüenza",
     "never-played_one": "{{value}} nunca jugado",
     "never-played_other": "{{value}} nunca jugados",
     "paid": "{{value}} pagados"
@@ -75,8 +76,6 @@
   "most-played": {
     "title": "Más jugados",
     "period": "Periodo",
-    "this-month": "Este mes",
-    "all-time": "Siempre",
     "times": "{{value}}×",
     "empty": "Aún no se han jugado partidas",
     "empty-month": "Aún no se ha jugado nada este mes"

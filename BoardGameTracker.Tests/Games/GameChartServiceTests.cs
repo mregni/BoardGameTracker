@@ -357,6 +357,7 @@ public class GameChartServiceTests
     {
         var gameId = 1;
         SetupHasScoring(true);
+        SetupScoredSessions(3);
 
         _gameStatisticsRepositoryMock
             .Setup(x => x.GetHighestScoringPlayer(gameId))
@@ -393,6 +394,7 @@ public class GameChartServiceTests
         _gameStatisticsRepositoryMock.Verify(x => x.GetLowestWinning(gameId), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetLowestScoringPlayer(gameId), Times.Once);
         VerifyHasScoringChecked();
+        VerifyScoredSessionsCounted();
         VerifyNoOtherCalls();
     }
 
@@ -401,6 +403,7 @@ public class GameChartServiceTests
     {
         var gameId = 1;
         SetupHasScoring(true);
+        SetupScoredSessions(3);
 
         _gameStatisticsRepositoryMock
             .Setup(x => x.GetHighestScoringPlayer(gameId))
@@ -427,6 +430,24 @@ public class GameChartServiceTests
         _gameStatisticsRepositoryMock.Verify(x => x.GetLowestWinning(gameId), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetLowestScoringPlayer(gameId), Times.Once);
         VerifyHasScoringChecked();
+        VerifyScoredSessionsCounted();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task GetScoringRankedChart_ShouldReturnEmptyList_WithoutQueryingScores_UntilThreeSessionsAreScored(int scored)
+    {
+        SetupHasScoring(true);
+        SetupScoredSessions(scored);
+
+        var result = await _gameChartService.GetScoringRankedChart(1, 69);
+
+        result.Should().BeEmpty();
+        VerifyHasScoringChecked();
+        VerifyScoredSessionsCounted();
         VerifyNoOtherCalls();
     }
 
@@ -449,6 +470,20 @@ public class GameChartServiceTests
         _gameRepositoryMock
             .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(hasScoring);
+    }
+
+    private void SetupScoredSessions(int count)
+    {
+        _sessionRepositoryMock
+            .Setup(x => x.CountAsync(It.IsAny<ScoredSessionsByGameSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(count);
+    }
+
+    private void VerifyScoredSessionsCounted()
+    {
+        _sessionRepositoryMock.Verify(
+            x => x.CountAsync(It.IsAny<ScoredSessionsByGameSpec>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     private void VerifyHasScoringChecked()

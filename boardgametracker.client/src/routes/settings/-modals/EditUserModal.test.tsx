@@ -47,10 +47,10 @@ describe("EditUserModal", () => {
 		expect(buttons[1]).toHaveClass("bg-primary/60");
 	});
 
-	it("describes everything the dialog edits", () => {
+	it("has no subtitle that repeats the title", () => {
 		renderModal();
 
-		expect(screen.getByText("account.users.edit.description")).toBeInTheDocument();
+		expect(screen.queryByText("account.users.edit.description")).not.toBeInTheDocument();
 		expect(screen.getByRole("textbox", { name: "auth:username" })).toBeInTheDocument();
 	});
 

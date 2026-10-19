@@ -73,11 +73,20 @@ describe("ExternalLoginsSection", () => {
 		expect(mocks.state.link).toHaveBeenCalledWith("keycloak");
 	});
 
-	it("does not offer linking when single sign-on needs https", () => {
+	it("explains instead of offering linking when single sign-on needs https", () => {
 		mocks.state.provider = { ...provider, httpsRequired: true };
 		renderWithProviders(<ExternalLoginsSection />);
 
 		expect(screen.queryByRole("button", { name: "account.external-logins.link" })).not.toBeInTheDocument();
+		expect(screen.getByText(/sso-https-hint/)).toBeInTheDocument();
+	});
+
+	it("does not mention https once the account is linked", () => {
+		mocks.state.provider = { ...provider, httpsRequired: true };
+		mocks.state.logins = [login];
+		renderWithProviders(<ExternalLoginsSection />);
+
+		expect(screen.queryByText(/sso-https-hint/)).not.toBeInTheDocument();
 	});
 
 	it("lists linked logins with the provider label and lets the user unlink", async () => {

@@ -47,6 +47,13 @@ const renderModal = (overrides: Partial<Parameters<typeof ManageRSVPsModal>[0]> 
 };
 
 describe("ManageRSVPsModal", () => {
+	it("uses a wide two-column dialog from lg, guests left and inviting right", () => {
+		renderModal();
+
+		expect(screen.getByRole("dialog")).toHaveClass("lg:max-w-5xl");
+		expect(screen.getByTestId("rsvp-columns")).toHaveClass("lg:grid", "lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]");
+	});
+
 	it("sends the invited player's id when the RSVP changes", async () => {
 		const user = userEvent.setup();
 		const { onUpdateRsvp } = renderModal();

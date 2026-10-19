@@ -8,6 +8,7 @@ public interface ITokenService
     Task<RefreshToken> GenerateRefreshTokenAsync(string userId);
     Task<RefreshToken> RotateRefreshTokenAsync(RefreshToken current);
     Task<RefreshToken?> GetRefreshTokenAsync(string token);
+    Task<RefreshToken?> GetSuccessorAsync(RefreshToken token);
     Task RevokeRefreshTokenAsync(RefreshToken token, string? reason = null);
     Task RevokeAllUserTokensAsync(string userId, string? reason = null);
     DateTime GetAccessTokenExpiry();

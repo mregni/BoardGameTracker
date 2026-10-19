@@ -18,6 +18,11 @@ describe("BgtTextStatistic", () => {
 			expect(screen.getByText("of 41 owned games")).toHaveAttribute("title", "of 41 owned games");
 		});
 
+		it("should let a caption wrap on phones and truncate it from md", () => {
+			renderWithTheme(<BgtTextStatistic title="Paid" content="€458" caption="2 of 2 priced · 37% of €1,240" />);
+			expect(screen.getByText("2 of 2 priced · 37% of €1,240")).toHaveClass("break-words", "md:truncate");
+		});
+
 		it("should render a caption that is not plain text without a title", () => {
 			renderWithTheme(<BgtTextStatistic title="Games together" content={49} caption={<em>since 12-03-2025</em>} />);
 			const caption = screen.getByText("since 12-03-2025").parentElement;

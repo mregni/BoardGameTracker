@@ -22,6 +22,12 @@ const PERIODS = [
 	GameNightStatisticsPeriod.Last12Months,
 ];
 
+const PERIOD_LABELS: Record<GameNightStatisticsPeriod, string> = {
+	[GameNightStatisticsPeriod.AllTime]: "common:period.all-time",
+	[GameNightStatisticsPeriod.ThisYear]: "common:period.this-year",
+	[GameNightStatisticsPeriod.Last12Months]: "common:period.last-12-months",
+};
+
 interface Props {
 	period: GameNightStatisticsPeriod;
 	onPeriodChange: (period: GameNightStatisticsPeriod) => void;
@@ -55,11 +61,11 @@ export const GameNightStatsView = (props: Props) => {
 		<div className="flex flex-col gap-3">
 			<div className="flex flex-wrap items-center justify-between gap-2">
 				<BgtSegmentedControl
-					aria-label={t("stats.period.label")}
+					aria-label={t("common:period.label")}
 					size="sm"
 					value={period}
 					onChange={onPeriodChange}
-					options={PERIODS.map((value) => ({ value, label: t(`stats.period.${value}`) }))}
+					options={PERIODS.map((value) => ({ value, label: t(PERIOD_LABELS[value]) }))}
 				/>
 				{statistics && statistics.totalNights > 0 && (
 					<span className="text-xs text-gray-400">

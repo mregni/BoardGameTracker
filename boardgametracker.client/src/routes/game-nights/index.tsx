@@ -89,7 +89,7 @@ function RouteComponent() {
 		[gameNights, selectedGameNightId],
 	);
 
-	const { askAdmin } = inviteState(settings, isAdmin);
+	const { blocker, askAdmin } = inviteState(settings, isAdmin);
 
 	const actions = useGameNightActions({
 		createGameNight,
@@ -184,9 +184,9 @@ function RouteComponent() {
 							/>
 						) : (
 							<>
-								{canWrite && askAdmin && (liveGameNights.length > 0 || upcomingGameNights.length > 0) && (
-									<BgtText size="2" color="gray" data-testid="invites-ask-admin">
-										{t("invites.ask-admin")}
+								{canWrite && blocker && upcomingGameNights.length > 0 && (
+									<BgtText size="2" color="gray" data-testid="invites-hint">
+										{askAdmin ? t("invites.ask-admin") : t(`invites.${blocker}`)}
 									</BgtText>
 								)}
 

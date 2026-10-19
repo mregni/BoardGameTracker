@@ -17,3 +17,22 @@ export const getPublicUrlWarning = (
 	if (parsed.host.toLowerCase() !== current.host.toLowerCase()) return "host-mismatch";
 	return null;
 };
+
+const isLoopbackHost = (hostname: string): boolean => {
+	const name = hostname
+		.toLowerCase()
+		.replace(/\.$/, "")
+		.replace(/^\[(.*)\]$/, "$1");
+	return name === "localhost" || name.endsWith(".localhost") || name === "::1" || /^127(\.\d{1,3}){3}$/.test(name);
+};
+
+export const breaksSingleSignOn = (url: string): boolean => {
+	let parsed: URL;
+	try {
+		parsed = new URL(url);
+	} catch {
+		return false;
+	}
+
+	return parsed.protocol === "http:" && !isLoopbackHost(parsed.hostname);
+};

@@ -6,13 +6,7 @@ import { ToggleButton, ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import Plus from "@/assets/icons/plus.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import {
-	BgtDialog,
-	BgtDialogContent,
-	BgtDialogDescription,
-	BgtDialogFooter,
-	BgtDialogTitle,
-} from "@/components/BgtDialog";
+import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtDatePicker, BgtSelect } from "@/components/BgtForm";
 import { BgtFieldLabel } from "@/components/BgtForm/BgtFieldLabel";
 import { useAppForm } from "@/hooks/form";
@@ -52,21 +46,36 @@ const NewLoanModal = (props: ModalProps) => {
 		close();
 	};
 
-	const { games, players, isLoading, saveLoan } = useNewLoanModal({
+	const { games, players, activeLoans, isLoading, saveLoan } = useNewLoanModal({
 		onSuccess,
 	});
 
-	const gamesSelectItems = useMemo(
-		() =>
-			games
-				.filter((x) => x.state === GameState.Owned)
-				.map((x) => ({
+	const gamesSelectItems = useMemo(() => {
+		const loanByGame = new Map(activeLoans.map((loan) => [loan.gameId, loan]));
+		const onLoanHint = (gameId: number) => {
+			const loan = loanByGame.get(gameId);
+			if (!loan) {
+				return t("statistics.on-loan");
+			}
+			return t("new.with-borrower", {
+				name: players.find((player) => player.id === loan.playerId)?.name ?? "",
+				date: formatLoanDate(loan.loanDate, settings?.dateFormat, i18n.language),
+			});
+		};
+		return games
+			.filter((x) => x.state === GameState.Owned)
+			.map((x) => {
+				const lent = x.isLoaned || loanByGame.has(x.id);
+				return {
 					value: x.id,
 					label: x.title,
 					image: x.image,
-				})),
-		[games],
-	);
+					disabled: lent,
+					hint: lent ? onLoanHint(x.id) : undefined,
+				};
+			})
+			.sort((a, b) => Number(a.disabled) - Number(b.disabled));
+	}, [games, activeLoans, players, settings?.dateFormat, i18n.language, t]);
 
 	const playersSelectItems = useMemo(
 		() =>
@@ -121,10 +130,9 @@ const NewLoanModal = (props: ModalProps) => {
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent>
+			<BgtDialogContent aria-describedby={undefined}>
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
 					<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
-					<BgtDialogDescription>{t("new.description")}</BgtDialogDescription>
 					<div className="mt-3 mb-3 flex w-full flex-col gap-3">
 						<form.Field name="gameId" validators={zodValidator(CreateLoanSchema, "gameId")}>
 							{(field: AnyFieldApi) => (

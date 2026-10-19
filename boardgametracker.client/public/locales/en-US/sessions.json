@@ -3,7 +3,7 @@
   "title-of": "{{name}} sessions",
   "title": "Sessions",
   "notifications": {
-    "deleted": "Session is successfully deleted",
+    "deleted": "Session deleted",
     "delete-failed": "Failed deleting session"
   },
   "delete": {

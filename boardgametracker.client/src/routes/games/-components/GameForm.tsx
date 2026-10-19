@@ -50,7 +50,7 @@ export const GameForm = (props: Props) => {
 			hasCoopMode: game?.hasCoopMode ?? false,
 			coopByDefault: game?.coopByDefault ?? false,
 			description: game?.description ?? "",
-			state: game?.state ?? GameState.Wanted,
+			state: game?.state ?? GameState.Owned,
 			yearPublished: game?.yearPublished ?? undefined,
 			maxPlayers: game?.maxPlayers ?? undefined,
 			minPlayers: game?.minPlayers ?? undefined,

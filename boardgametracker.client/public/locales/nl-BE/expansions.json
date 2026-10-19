@@ -1,7 +1,7 @@
 {
   "label": "Uitbreidingen",
   "delete": {
-    "successfull": "Uitbreiding is verwijderd.",
+    "successfull": "Uitbreiding verwijderd",
     "failed": "Uitbreiding verwijderen mislukt, bekijk de logs voor meer details."
   },
   "manual": {

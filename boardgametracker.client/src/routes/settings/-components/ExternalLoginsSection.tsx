@@ -12,7 +12,7 @@ import { useExternalLogins } from "../-hooks/useExternalLogins";
 import { SettingsSection } from "./SettingsSection";
 
 export const ExternalLoginsSection = () => {
-	const { t } = useTranslation(["settings", "common"]);
+	const { t } = useTranslation(["settings", "common", "auth"]);
 	const { logins, provider, isLoading, unlink, isUnlinking, link, isLinking } = useExternalLogins();
 	const { data: settings } = useQuery(getSettings());
 	const [pendingUnlink, setPendingUnlink] = useState<ExternalLogin | null>(null);
@@ -28,8 +28,9 @@ export const ExternalLoginsSection = () => {
 		return null;
 	}
 
-	const canLink =
-		provider !== null && !provider.httpsRequired && !logins.some((login) => login.provider === provider.name);
+	const canOfferLink = provider !== null && !logins.some((login) => login.provider === provider.name);
+	const canLink = canOfferLink && !provider.httpsRequired;
+	const linkBlockedByHttps = canOfferLink && provider.httpsRequired;
 	const providerLabel = (login: ExternalLogin) =>
 		provider?.name === login.provider ? provider.displayName : login.provider;
 
@@ -70,6 +71,11 @@ export const ExternalLoginsSection = () => {
 						{t("account.external-logins.link", { provider: provider.displayName })}
 					</BgtButton>
 				</div>
+			)}
+			{linkBlockedByHttps && (
+				<BgtText size="2" color="gray">
+					{t("auth:sso-https-hint")}
+				</BgtText>
 			)}
 			{pendingUnlink && (
 				<BgtDeleteModal

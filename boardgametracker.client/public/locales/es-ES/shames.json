@@ -22,9 +22,9 @@
     "planned": "Planificados",
     "planned-for": "para el {{date}}",
     "planned-next": "la próxima el {{date}}",
-    "planned-across_one": "en {{count}} noche de juegos",
-    "planned-across_other": "en {{count}} noches de juegos",
-    "no-night": "no hay noche de juegos prevista"
+    "planned-across_one": "en {{count}} noche de juego",
+    "planned-across_other": "en {{count}} noches de juego",
+    "no-night": "no hay noche de juego prevista"
   },
   "filters": {
     "show": "Mostrar",
@@ -56,7 +56,6 @@
     "plays_other": "{{count}} partidas",
     "players_one": "{{range}} jugador",
     "players_other": "{{range}} jugadores",
-    "minutes": "{{range}} min",
     "never-played": "Nunca jugado",
     "no-price": "Sin precio",
     "planned": "Planificado · {{date}}",
@@ -69,10 +68,10 @@
     "added": "{{game}} añadido a las sugerencias de {{night}} · {{date}}",
     "undo": "Deshacer",
     "removed": "{{game}} ya no está sugerido",
-    "failed": "No se pudo añadir el juego a la noche de juegos",
-    "undo-failed": "No se pudo deshacer, quita el juego en la noche de juegos",
-    "no-night": "Aún no hay ninguna noche de juegos prevista, así que todavía no puedes planificar juegos.",
-    "plan-night": "Planificar una noche de juegos"
+    "failed": "No se pudo añadir el juego a la noche de juego",
+    "undo-failed": "No se pudo deshacer, quita el juego en la noche de juego",
+    "no-night": "Aún no hay ninguna noche de juego prevista, así que todavía no puedes planificar juegos.",
+    "plan-night": "Planificar una noche de juego"
   },
   "money": {
     "title": "Dinero en la estantería",

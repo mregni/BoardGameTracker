@@ -44,7 +44,8 @@
     "sessions-detail_one": "{{value}} deze maand",
     "sessions-detail_other": "{{value}} deze maand",
     "play-time": "Speeltijd",
-    "play-time-detail": "gem. {{duration}} per sessie"
+    "play-time-detail": "gem. {{duration}} per sessie",
+    "games-owned": "{{owned}} in bezit"
   },
   "last-sessions": {
     "title": "Laatste sessies",
@@ -75,8 +76,6 @@
   "most-played": {
     "title": "Meest gespeeld",
     "period": "Periode",
-    "this-month": "Deze maand",
-    "all-time": "Altijd",
     "times": "{{value}}×",
     "empty": "Nog geen sessies gespeeld",
     "empty-month": "Deze maand nog niets gespeeld"

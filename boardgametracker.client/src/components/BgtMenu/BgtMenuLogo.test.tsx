@@ -6,7 +6,7 @@ describe("BgtMenuLogo", () => {
 	describe("Rendering", () => {
 		it("should render logo text", () => {
 			renderWithTheme(<BgtMenuLogo />);
-			expect(screen.getByText("Board games")).toBeInTheDocument();
+			expect(screen.getByText("BoardGameTracker")).toBeInTheDocument();
 		});
 	});
 });

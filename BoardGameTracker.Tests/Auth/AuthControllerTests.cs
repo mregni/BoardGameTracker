@@ -9,6 +9,7 @@ using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -180,31 +181,78 @@ public class AuthControllerTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public async Task Refresh_ShouldThrow_WhenThereIsNoRefreshCookie(string? cookie)
+    public async Task Refresh_ShouldThrow_AndClearTheCookie_WhenThereIsNoRefreshCookie(string? cookie)
     {
-        _controller.ControllerContext = new ControllerContext { HttpContext = ContextWithRefreshCookie(cookie) };
+        var context = ContextWithRefreshCookie(cookie);
+        var response = new StartableResponseFeature();
+        context.Features.Set<IHttpResponseFeature>(response);
+        _controller.ControllerContext = new ControllerContext { HttpContext = context };
 
         var act = () => _controller.Refresh();
 
         await act.Should().ThrowAsync<AuthenticationFailedException>().WithMessage(Constants.Errors.InvalidRefreshToken);
-        _controller.HttpContext.Response.Headers.SetCookie.Should().BeEmpty();
+        await response.StartAsync();
+        SetCookie(AuthSessionCookies.RefreshCookieName).Should().StartWith($"{AuthSessionCookies.RefreshCookieName}=;").And.Contain("expires=Thu, 01 Jan 1970");
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(Constants.Errors.InvalidRefreshToken)]
+    [InlineData(Constants.Errors.RefreshTokenSuperseded)]
+    [InlineData(Constants.Errors.AccountDisabled)]
+    public async Task Refresh_ShouldPropagateException_AndClearBothCookies_WhenTheRefreshFails(string error)
+    {
+        var context = ContextWithRefreshCookie("stale-token");
+        var response = new StartableResponseFeature();
+        context.Features.Set<IHttpResponseFeature>(response);
+        _controller.ControllerContext = new ControllerContext { HttpContext = context };
+        _authServiceMock.Setup(x => x.RefreshAsync("stale-token")).ThrowsAsync(new AuthenticationFailedException(error));
+
+        var act = () => _controller.Refresh();
+
+        await act.Should().ThrowAsync<AuthenticationFailedException>().WithMessage(error);
+        context.Response.Headers.SetCookie.Should().BeEmpty();
+        context.Response.Headers.Clear();
+        await response.StartAsync();
+        SetCookie(AuthSessionCookies.RefreshCookieName).Should().StartWith($"{AuthSessionCookies.RefreshCookieName}=;").And.Contain("path=/api/auth;");
+        SetCookie(ProfileImageCookie.Name).Should().Contain("expires=Thu, 01 Jan 1970");
+
+        _authServiceMock.Verify(x => x.RefreshAsync("stale-token"), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task Refresh_ShouldPropagateException_AndLeaveTheCookieAlone_WhenTokenIsInvalid()
+    public async Task Refresh_ShouldNotClearTheCookie_WhenTheRefreshFailsForAnotherReason()
     {
-        _controller.ControllerContext = new ControllerContext { HttpContext = ContextWithRefreshCookie("invalid-token") };
-        _authServiceMock.Setup(x => x.RefreshAsync("invalid-token"))
-            .ThrowsAsync(new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken));
+        var context = ContextWithRefreshCookie("valid-token");
+        var response = new StartableResponseFeature();
+        context.Features.Set<IHttpResponseFeature>(response);
+        _controller.ControllerContext = new ControllerContext { HttpContext = context };
+        _authServiceMock.Setup(x => x.RefreshAsync("valid-token")).ThrowsAsync(new InvalidOperationException("database down"));
 
         var act = () => _controller.Refresh();
 
-        await act.Should().ThrowAsync<AuthenticationFailedException>();
-        _controller.HttpContext.Response.Headers.SetCookie.Should().BeEmpty();
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        await response.StartAsync();
+        context.Response.Headers.SetCookie.Should().BeEmpty();
 
-        _authServiceMock.Verify(x => x.RefreshAsync("invalid-token"), Times.Once);
+        _authServiceMock.Verify(x => x.RefreshAsync("valid-token"), Times.Once);
         VerifyNoOtherCalls();
+    }
+
+    private sealed class StartableResponseFeature : HttpResponseFeature
+    {
+        private readonly List<(Func<object, Task> Callback, object State)> _onStarting = [];
+
+        public override void OnStarting(Func<object, Task> callback, object state) => _onStarting.Add((callback, state));
+
+        public async Task StartAsync()
+        {
+            foreach (var (callback, state) in _onStarting)
+            {
+                await callback(state);
+            }
+        }
     }
 
     #endregion

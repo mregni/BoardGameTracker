@@ -93,7 +93,7 @@ describe("useSsoSettings", () => {
 		expect(successToast).not.toHaveBeenCalled();
 	});
 
-	it("creates the provider and confirms it when none exists yet", async () => {
+	it("creates the provider without a toast when none exists yet, as the page itself changes", async () => {
 		vi.mocked(createOidcProviderCall).mockResolvedValue({} as never);
 		const { result } = renderHook(() => useSsoSettings(), { wrapper: createWrapper() });
 		await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -102,7 +102,7 @@ describe("useSsoSettings", () => {
 
 		expect(createOidcProviderCall).toHaveBeenCalledWith(request);
 		expect(updateOidcProviderCall).not.toHaveBeenCalled();
-		expect(successToast).toHaveBeenCalledWith("settings:sso.notifications.saved");
+		expect(successToast).not.toHaveBeenCalled();
 	});
 
 	it("updates the existing provider with its stored configuration", async () => {

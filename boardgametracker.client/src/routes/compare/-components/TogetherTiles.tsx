@@ -47,7 +47,7 @@ export const TogetherTiles = ({ compare, playerOne, playerTwo, dateFormat, uiLan
 				title={t("tiles.time-together")}
 				icon={<Clock />}
 				content={duration(compare.minutesPlayed)}
-				caption={count > 0 ? t("tiles.average", { duration: duration(compare.minutesPlayed / count) }) : null}
+				caption={count > 1 ? t("tiles.average", { duration: duration(compare.minutesPlayed / count) }) : null}
 			/>
 			{mostPlayed && compare.preferredGame && (
 				<BgtTextStatistic

@@ -25,6 +25,10 @@ export const AttendanceModal = (props: Props) => {
 	const { close, detail, players, isPending, onSave } = props;
 	const { t } = useTranslation("game-nights");
 	const played = useMemo(() => new Set(playedPlayerIds(detail)), [detail]);
+	const finished = useMemo(
+		() => new Set(detail.sessions.flatMap((session) => session.playerSessions.map((x) => x.playerId))),
+		[detail],
+	);
 	const [present, setPresent] = useState(() => new Set([...nightTable(detail).playerIds, ...played]));
 	const [ordered] = useState(() => {
 		const invited = new Set(detail.gameNight.invitedPlayers.map((rsvp) => rsvp.playerId));
@@ -70,11 +74,13 @@ export const AttendanceModal = (props: Props) => {
 									<span className="flex min-w-0 flex-1 flex-col">
 										<span className="truncate text-sm font-semibold text-white">{player.name}</span>
 										<span className="text-xs text-gray-400">
-											{hasPlayed
+											{finished.has(player.id)
 												? t("attendance.played")
-												: isPresent
-													? t("attendance.present")
-													: t("attendance.absent")}
+												: hasPlayed
+													? t("attendance.playing")
+													: isPresent
+														? t("attendance.present")
+														: t("attendance.absent")}
 										</span>
 									</span>
 									{isPresent && <CheckIcon className="size-4 shrink-0 text-green-300" aria-hidden="true" />}

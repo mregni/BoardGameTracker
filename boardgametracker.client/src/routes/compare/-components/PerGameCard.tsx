@@ -112,7 +112,7 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 									{coopOnly
 										? t("per-game.coop")
 										: hasScores
-											? t("per-game.average", {
+											? t(game.sessionCount === 1 ? "per-game.scores" : "per-game.average", {
 													one: average(game.playerOneAverageScore),
 													two: average(game.playerTwoAverageScore),
 												})

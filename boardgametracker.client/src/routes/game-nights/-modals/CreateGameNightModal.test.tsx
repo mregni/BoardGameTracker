@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import type { Game, Location, Player } from "@/models";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+import { type Game, GameState, type Location, type Player } from "@/models";
 import { renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
 import { CreateGameNightModal } from "./CreateGameNightModal";
 
@@ -11,7 +11,17 @@ vi.mock("@/services/queries/settings", () => ({
 }));
 
 const players = [{ id: 1, name: "Host", image: null }] as unknown as Player[];
-const games = [{ id: 9, title: "Everdell", image: null }] as unknown as Game[];
+const games = [
+	{ id: 9, title: "Everdell", image: null, state: GameState.Owned },
+	{ id: 10, title: "Ark Nova", image: null, state: GameState.Wanted },
+	{ id: 11, title: "Monopoly", image: null, state: GameState.PreviouslyOwned },
+] as unknown as Game[];
+
+beforeAll(() => {
+	Element.prototype.hasPointerCapture = vi.fn(() => false);
+	Element.prototype.releasePointerCapture = vi.fn();
+	Element.prototype.scrollIntoView = vi.fn();
+});
 const locations = [{ id: 3, name: "Living room", playCount: 0 }] as Location[];
 
 const renderModal = (overrides: Partial<Parameters<typeof CreateGameNightModal>[0]> = {}) => {
@@ -85,6 +95,18 @@ describe("CreateGameNightModal", () => {
 		expect(selectTrigger("form.location.label")).toHaveTextContent("form.location.placeholder");
 		expect(selectTrigger("form.invited-players.label")).toHaveTextContent("form.invited-players.description");
 		expect(selectTrigger("form.suggested-games.label")).toHaveTextContent("form.suggested-games.description");
+	});
+
+	it("only suggests games that are on the shelf", async () => {
+		const user = userEvent.setup();
+		renderModal();
+
+		await user.click(selectTrigger("form.suggested-games.label"));
+		await screen.findByRole("listbox");
+
+		expect(screen.getByRole("option", { name: /Everdell/ })).toBeInTheDocument();
+		expect(screen.queryByRole("option", { name: /Ark Nova/ })).not.toBeInTheDocument();
+		expect(screen.queryByRole("option", { name: /Monopoly/ })).not.toBeInTheDocument();
 	});
 
 	it("truncates the value of a select and keeps it left aligned", () => {

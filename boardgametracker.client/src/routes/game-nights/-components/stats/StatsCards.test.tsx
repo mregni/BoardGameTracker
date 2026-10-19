@@ -41,6 +41,16 @@ describe("NightStatsTiles", () => {
 		expect(screen.queryByText(/stats.tiles.every/)).not.toBeInTheDocument();
 		expect(screen.getAllByText("0").length).toBeGreaterThan(0);
 	});
+
+	it("waits for four nights before it names a rhythm", () => {
+		const { rerender } = render(
+			<NightStatsTiles statistics={{ ...statistics, nights: 3, averageDaysBetweenNights: 3 }} />,
+		);
+		expect(screen.queryByText(/stats.tiles.every/)).not.toBeInTheDocument();
+
+		rerender(<NightStatsTiles statistics={{ ...statistics, nights: 4, averageDaysBetweenNights: 3 }} />);
+		expect(screen.getByText("stats.tiles.every-day")).toBeInTheDocument();
+	});
 });
 
 describe("NightWinnersCard", () => {

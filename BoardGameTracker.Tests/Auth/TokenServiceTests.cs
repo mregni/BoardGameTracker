@@ -139,6 +139,28 @@ public class TokenServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetSuccessorAsync_ShouldReturnTheTokenItWasRotatedInto()
+    {
+        var first = await _tokenService.GenerateRefreshTokenAsync("user-1");
+        var second = await _tokenService.RotateRefreshTokenAsync(first);
+
+        var successor = await _tokenService.GetSuccessorAsync(first);
+
+        successor.Should().NotBeNull();
+        successor!.Id.Should().Be(second.Id);
+    }
+
+    [Fact]
+    public async Task GetSuccessorAsync_ShouldReturnNull_WhenTheTokenWasNeverRotated()
+    {
+        var token = await _tokenService.GenerateRefreshTokenAsync("user-1");
+
+        var successor = await _tokenService.GetSuccessorAsync(token);
+
+        successor.Should().BeNull();
+    }
+
+    [Fact]
     public async Task RotateRefreshTokenAsync_ShouldRefuseTheSecondOfTwoConcurrentRotations()
     {
         var databaseName = Guid.NewGuid().ToString();

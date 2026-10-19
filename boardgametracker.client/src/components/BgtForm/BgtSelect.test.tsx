@@ -214,6 +214,28 @@ describe("BgtSelect", () => {
 			expect(screen.getByText("Add a player")).toBeInTheDocument();
 		});
 
+		it("shows an item that cannot be picked as disabled with its reason", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(
+				<BgtSelect
+					label="Game"
+					value={null}
+					onValueChange={vi.fn()}
+					items={[
+						{ value: "1", label: "Azul" },
+						{ value: "2", label: "Catan", disabled: true, hint: "With Bram since 09-09" },
+					]}
+				/>,
+			);
+
+			await user.click(screen.getByRole("combobox", { name: "Game" }));
+
+			const catan = await screen.findByRole("option", { name: /Catan/ });
+			expect(catan).toHaveAttribute("aria-disabled", "true");
+			expect(catan).toHaveTextContent("With Bram since 09-09");
+			expect(screen.getByRole("option", { name: "Azul" })).not.toHaveAttribute("aria-disabled", "true");
+		});
+
 		it("shows group headings and drops them while searching", async () => {
 			const user = userEvent.setup();
 			renderWithTheme(

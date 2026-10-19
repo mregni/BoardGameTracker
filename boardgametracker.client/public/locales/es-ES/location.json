@@ -16,20 +16,20 @@
     "title": "Editar ubicación"
   },
   "notifications": {
-    "created": "Ubicación creada correctamente",
+    "created": "Ubicación añadida",
     "create-failed": "Error al crear la ubicación",
     "failed": "Error al crear la ubicación",
-    "update": "Ubicación actualizada correctamente",
+    "update": "Ubicación guardada",
     "update-failed": "Error al actualizar la ubicación",
-    "deleted": "Ubicación eliminada correctamente",
+    "deleted": "Ubicación eliminada",
     "delete-failed": "Error al eliminar la ubicación"
   },
   "delete": {
     "description": "¿Seguro que quieres eliminar la ubicación '{{name}}'?",
     "extra-description": "La ubicación está vinculada a {{count}} partidas, que se desvincularán."
   },
-  "count_one": "{{count}} ubicación encontrada",
-  "count_other": "{{count}} ubicaciones encontradas",
+  "count_one": "{{count}} ubicación",
+  "count_other": "{{count}} ubicaciones",
   "detail": {
     "label": "Ubicación",
     "back": "Volver a ubicaciones",

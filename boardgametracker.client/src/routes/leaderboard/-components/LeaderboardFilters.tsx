@@ -25,19 +25,18 @@ const RANK_BY_KEYS = {
 interface Props {
 	search: LeaderboardSearch;
 	games: Game[];
-	today: Date;
 	onChange: (next: Partial<LeaderboardSearch>) => void;
 }
 
-export const LeaderboardFilters = ({ search, games, today, onChange }: Props) => {
+export const LeaderboardFilters = ({ search, games, onChange }: Props) => {
 	const { t } = useTranslation("leaderboard");
 	const period: LeaderboardPeriod = search.range ?? "all";
 
 	const periodLabels: Record<LeaderboardPeriod, string> = {
-		all: t("filters.all-time"),
-		year: String(today.getFullYear()),
-		"12m": t("filters.last-12-months"),
-		custom: t("filters.custom"),
+		all: t("common:period.all-time"),
+		year: t("common:period.this-year"),
+		"12m": t("common:period.last-12-months"),
+		custom: t("common:period.custom"),
 	};
 
 	const gameItems = useMemo<(BgtSelectItem | BgtSelectImageItem)[]>(
@@ -69,7 +68,7 @@ export const LeaderboardFilters = ({ search, games, today, onChange }: Props) =>
 		<div className="flex flex-col gap-3">
 			<div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,auto)_minmax(0,1fr)_minmax(0,11rem)_minmax(0,11rem)] xl:items-end">
 				<fieldset className="min-w-0">
-					<legend className="p-0 text-[15px] font-medium leading-7">{t("filters.period")}</legend>
+					<legend className="p-0 text-[15px] font-medium leading-7">{t("common:period.label")}</legend>
 					<div className="grid h-11 grid-cols-4 gap-1 rounded-lg border border-primary/30 bg-background p-1 md:h-10">
 						{PERIODS.map((option) => (
 							<button

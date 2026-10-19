@@ -6,12 +6,12 @@
     "description": "Registra una partida de este juego para ver sus estadísticas."
   },
   "notifications": {
-    "created": "Juego creado correctamente",
+    "created": "Juego añadido",
     "create-failed": "Error al crear el juego",
     "not-found": "No se encontró el juego",
     "duplicate": "El juego ya existe",
-    "deleted": "Juego eliminado correctamente",
-    "updated": "Juego actualizado correctamente",
+    "deleted": "Juego eliminado",
+    "updated": "Juego guardado",
     "update-failed": "Error al actualizar el juego"
   },
   "added-date": {
@@ -30,13 +30,13 @@
   },
   "language-independent": "Independiente del idioma",
   "update": {
-    "save": "Actualizar juego",
-    "title": "Actualizar juego",
+    "save": "Guardar",
+    "title": "Editar juego",
     "rating": {
-      "label": "Valoración (0-10)"
+      "label": "Valoración (0–10)"
     },
     "weight": {
-      "label": "Complejidad (0-5)"
+      "label": "Complejidad (0–5)"
     },
     "sold-price": {
       "label": "Precio de venta"
@@ -61,9 +61,9 @@
     "description": "Sube, descarga o elimina manuales de este juego.",
     "none": "No se han subido manuales para este juego.",
     "add": "Subir",
-    "upload-success": "Manuales subidos correctamente.",
+    "upload-success": "Manuales subidos",
     "upload-failed": "Error al subir el manual, revisa los registros para más detalles.",
-    "delete-success": "Manual eliminado correctamente.",
+    "delete-success": "Manual eliminado",
     "delete-failed": "Error al eliminar el manual, revisa los registros para más detalles.",
     "download-failed": "Error al descargar el manual, revisa los registros para más detalles.",
     "status": {
@@ -149,7 +149,7 @@
     "title": "Detalles de {{title}}"
   },
   "delete": {
-    "successfull": "Juego eliminado correctamente.",
+    "successfull": "Juego eliminado",
     "failed": "Error al eliminar el juego, revisa los registros para más detalles."
   },
   "scoring": {

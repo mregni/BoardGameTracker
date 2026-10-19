@@ -87,7 +87,7 @@
   },
   "form": {
     "title": {
-      "label": "Título del evento",
+      "label": "Título",
       "placeholder": "Juegos del viernes"
     },
     "start": {
@@ -114,13 +114,13 @@
     }
   },
   "notifications": {
-    "created": "Noche de juego creada correctamente",
+    "created": "Noche de juego creada",
     "create-failed": "No se pudo crear la noche de juego",
-    "updated": "Noche de juego actualizada correctamente",
+    "updated": "Noche de juego guardada",
     "update-failed": "No se pudo actualizar la noche de juego",
-    "deleted": "Noche de juego eliminada correctamente",
+    "deleted": "Noche de juego eliminada",
     "delete-failed": "No se pudo eliminar la noche de juego",
-    "rsvp-updated": "RSVP actualizado correctamente",
+    "rsvp-updated": "Respuesta guardada",
     "rsvp-update-failed": "No se pudo actualizar el RSVP"
   },
   "validation": {
@@ -137,7 +137,7 @@
     "winner": "ganador {{names}}"
   },
   "detail": {
-    "back": "Noches de juegos"
+    "back": "Noches de juego"
   },
   "play": {
     "start": {
@@ -195,7 +195,8 @@
     "tonight": "Jugado esta noche",
     "after": "Jugado",
     "empty": "Aún no se ha jugado nada. Toca «Empezar un juego» cuando empiece una partida; la fecha, la hora, el lugar y los jugadores se rellenan solos.",
-    "empty-after": "No se registró nada para esta noche. Usa «Registrar partida» para añadir lo que se jugó."
+    "empty-after": "No se registró nada para esta noche. Usa «Registrar partida» para añadir lo que se jugó.",
+    "won": "ganó"
   },
   "table": {
     "title": "En la mesa",
@@ -206,19 +207,20 @@
   },
   "planned": {
     "title": "Planificados",
-    "played": "Jugado"
+    "played": "Jugado",
+    "playing": "en juego"
   },
   "end": {
     "button": "Cerrar la noche",
-    "title": "¿Cerrar esta noche de juegos?",
+    "title": "¿Cerrar esta noche de juego?",
     "description": "No se puede empezar ni registrar nada en esta noche hasta que se vuelva a abrir.",
     "running-hint": "Termina o descarta primero los juegos en curso",
     "reopen": "Reabrir la noche",
     "notifications": {
-      "ended": "Noche de juegos cerrada",
-      "end-failed": "No se pudo cerrar la noche de juegos",
-      "reopened": "Noche de juegos reabierta",
-      "reopen-failed": "No se pudo reabrir la noche de juegos"
+      "ended": "Noche de juego cerrada",
+      "end-failed": "No se pudo cerrar la noche de juego",
+      "reopened": "Noche de juego reabierta",
+      "reopen-failed": "No se pudo reabrir la noche de juego"
     }
   },
   "view": {
@@ -227,20 +229,14 @@
     "stats": "Estadísticas"
   },
   "stats": {
-    "period": {
-      "label": "Periodo",
-      "allTime": "Siempre",
-      "thisYear": "Este año",
-      "last12Months": "Últimos 12 meses"
-    },
     "logged_one": "{{count}} de {{total}} noches tiene partidas registradas",
     "logged_other": "{{count}} de {{total}} noches tienen partidas registradas",
     "empty": {
-      "title": "Aún no hay noches de juegos que contar",
+      "title": "Aún no hay noches de juego que contar",
       "description": "Las estadísticas cuentan las noches con partidas registradas o que se cerraron. Registra juegos desde la página de una noche para verlas aquí."
     },
     "tiles": {
-      "nights": "Noches de juegos",
+      "nights": "Noches de juego",
       "every-week_one": "más o menos una por semana",
       "every-week_other": "más o menos una cada {{count}} semanas",
       "every-day_one": "más o menos una por día",
@@ -289,7 +285,7 @@
       "times": "{{count}}×",
       "bar": "{{name}}: jugado {{count}} veces",
       "never-played": "Planificado pero nunca jugado:",
-      "empty": "Aún no se ha jugado nada en las noches de juegos."
+      "empty": "Aún no se ha jugado nada en las noches de juego."
     },
     "streaks": {
       "title": "Rachas",
@@ -312,8 +308,8 @@
       "hosted": "anfitrión {{count}}×",
       "bar": "{{name}} vino a {{count}} de {{total}} noches",
       "select": "Mostrar las últimas noches de {{name}}",
-      "recent_one": "{{name}}, última noche",
-      "recent_other": "{{name}}, últimas {{count}} noches",
+      "recent_one": "Última noche",
+      "recent_other": "Últimas {{count}} noches",
       "came": "vino",
       "absent": "no estuvo",
       "dot": "{{title}} · {{date}}: {{state}}",
@@ -337,7 +333,7 @@
   "live": "Jugando ahora",
   "attendance": {
     "title": "¿Quién está?",
-    "hint": "Quien jugó está aquí. Toca a los demás que vinieron o no.",
+    "hint": "Marca a quien más haya venido.",
     "present": "Está",
     "absent": "No está",
     "played": "Jugó esta noche",
@@ -345,6 +341,7 @@
     "notifications": {
       "saved": "Asistencia guardada",
       "save-failed": "No se pudo guardar la asistencia"
-    }
+    },
+    "playing": "Jugando ahora"
   }
 }

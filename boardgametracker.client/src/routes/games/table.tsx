@@ -15,6 +15,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
+import { useDurationRange } from "@/hooks/useDurationRange";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTimeouts } from "@/hooks/useTimeouts";
 import { type Game, GameState, QUERY_KEYS } from "@/models";
@@ -112,11 +113,14 @@ function RouteComponent() {
 		},
 	});
 
-	const formatRange = useCallback((min: number | null, max: number | null, suffix = ""): string => {
-		const range = formatValueRange(min, max);
-		if (range === null) return "-";
-		return suffix ? `${range} ${suffix}` : range;
+	const durationRange = useDurationRange();
+	const formatRange = useCallback((min: number | null, max: number | null): string => {
+		return formatValueRange(min, max) ?? "-";
 	}, []);
+	const formatDuration = useCallback(
+		(min: number | null, max: number | null): string => durationRange(min, max) ?? "-",
+		[durationRange],
+	);
 
 	const filtered = useMemo(
 		() =>
@@ -194,7 +198,7 @@ function RouteComponent() {
 				id: "play-time",
 				accessorFn: (game) => game.minPlayTime ?? game.maxPlayTime ?? 0,
 				header: t("games:columns.play-time"),
-				cell: ({ row }) => formatRange(row.original.minPlayTime, row.original.maxPlayTime, "min"),
+				cell: ({ row }) => formatDuration(row.original.minPlayTime, row.original.maxPlayTime),
 				meta: { hideOnMobile: true },
 			},
 			{
@@ -336,6 +340,7 @@ function RouteComponent() {
 			uiLanguage,
 			dateFormat,
 			formatRange,
+			formatDuration,
 			updateGame,
 			stateEditItems,
 			languageEditItems,
@@ -448,6 +453,7 @@ function RouteComponent() {
 						stateItems={stateEditItems}
 						languageItems={languageEditItems}
 						formatRange={formatRange}
+						formatDuration={formatDuration}
 						isEditing={isEditing}
 						startEdit={startEdit}
 						stopEdit={stopEdit}

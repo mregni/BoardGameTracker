@@ -70,30 +70,32 @@ describe("useUserAccess", () => {
 	});
 
 	it.each([
-		["disable", disableUserCall, "settings:account.notifications.user-disabled"],
-		["enable", enableUserCall, "settings:account.notifications.user-enabled"],
-		["manageRoleByIdentityProvider", manageRoleByIdentityProviderCall, "settings:account.notifications.role-managed"],
-	] as const)("%s calls the API, confirms and refreshes the users", async (action, call, toast) => {
-		vi.mocked(call).mockResolvedValue({} as never);
-		const { result, invalidate } = await renderUseUserAccess();
+		["disable", disableUserCall],
+		["enable", enableUserCall],
+		["manageRoleByIdentityProvider", manageRoleByIdentityProviderCall],
+	] as const)(
+		"%s calls the API and refreshes the users without a toast, as the dialog shows the change",
+		async (action, call) => {
+			vi.mocked(call).mockResolvedValue({} as never);
+			const { result, invalidate } = await renderUseUserAccess();
 
-		act(() => result.current[action]());
+			act(() => result.current[action]());
 
-		await waitFor(() => expect(successToast).toHaveBeenCalledWith(toast));
-		expect(call).toHaveBeenCalledWith("user-2");
-		expect(invalidate).toHaveBeenCalledWith({ queryKey: ["users"] });
-	});
+			await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ["users"] }));
+			expect(call).toHaveBeenCalledWith("user-2");
+			expect(successToast).not.toHaveBeenCalled();
+		},
+	);
 
 	it("unlinks one identity of the user", async () => {
 		vi.mocked(unlinkUserExternalLoginCall).mockResolvedValue(undefined);
-		const { result } = await renderUseUserAccess();
+		const { result, invalidate } = await renderUseUserAccess();
 
 		act(() => result.current.unlink(4));
 
-		await waitFor(() =>
-			expect(successToast).toHaveBeenCalledWith("settings:account.notifications.external-login-unlinked"),
-		);
+		await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ["users"] }));
 		expect(unlinkUserExternalLoginCall).toHaveBeenCalledWith("user-2", 4);
+		expect(successToast).not.toHaveBeenCalled();
 	});
 
 	it.each([

@@ -12,7 +12,7 @@ import { apiErrorMessage } from "@/utils/errorUtils";
 
 export const useUserAccess = (userId: string) => {
 	const queryClient = useQueryClient();
-	const { successToast, errorToast } = useToasts();
+	const { errorToast } = useToasts();
 
 	const loginsQuery = useQuery({
 		queryKey: [QUERY_KEYS.users, userId, QUERY_KEYS.externalLogins],
@@ -23,38 +23,26 @@ export const useUserAccess = (userId: string) => {
 
 	const disableMutation = useMutation({
 		mutationFn: () => disableUserCall(userId),
-		onSuccess: async () => {
-			successToast("settings:account.notifications.user-disabled");
-			await refresh();
-		},
+		onSuccess: refresh,
 		onError: (error) => errorToast(apiErrorMessage(error, "settings:account.notifications.user-disable-failed")),
 	});
 
 	const enableMutation = useMutation({
 		mutationFn: () => enableUserCall(userId),
-		onSuccess: async () => {
-			successToast("settings:account.notifications.user-enabled");
-			await refresh();
-		},
+		onSuccess: refresh,
 		onError: (error) => errorToast(apiErrorMessage(error, "settings:account.notifications.user-enable-failed")),
 	});
 
 	const unlinkMutation = useMutation({
 		mutationFn: (loginId: number) => unlinkUserExternalLoginCall(userId, loginId),
-		onSuccess: async () => {
-			successToast("settings:account.notifications.external-login-unlinked");
-			await refresh();
-		},
+		onSuccess: refresh,
 		onError: (error) =>
 			errorToast(apiErrorMessage(error, "settings:account.notifications.external-login-unlink-failed")),
 	});
 
 	const manageRoleMutation = useMutation({
 		mutationFn: () => manageRoleByIdentityProviderCall(userId),
-		onSuccess: async () => {
-			successToast("settings:account.notifications.role-managed");
-			await refresh();
-		},
+		onSuccess: refresh,
 		onError: (error) => errorToast(apiErrorMessage(error, "settings:account.notifications.role-manage-failed")),
 	});
 

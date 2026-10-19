@@ -1,4 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +11,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAppForm } from "@/hooks/form";
 import { forgotPasswordCall } from "@/services/authService";
+import { getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
 
 export const Route = createFileRoute("/_bare/forgot-password")({
@@ -21,6 +23,8 @@ function ForgotPasswordPage() {
 	const navigate = useNavigate();
 	const [submitted, setSubmitted] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const { data: settings } = useQuery(getSettings());
+	const emailDisabled = settings?.emailEnabled === false;
 
 	const form = useAppForm({
 		defaultValues: {
@@ -48,11 +52,15 @@ function ForgotPasswordPage() {
 							{t("forgot-title")}
 						</BgtText>
 						<BgtText size="2" color="gray">
-							{t("forgot-subtitle")}
+							{emailDisabled ? t("ask-admin-reset") : t("forgot-subtitle")}
 						</BgtText>
 					</div>
 
-					{submitted ? (
+					{emailDisabled ? (
+						<BgtButton size="3" className="w-full" onClick={() => navigate({ to: "/login" })}>
+							{t("back-to-login")}
+						</BgtButton>
+					) : submitted ? (
 						<div className="space-y-4">
 							<BgtText size="2" color="gray" className="block text-center">
 								{t("forgot-confirmation")}

@@ -109,7 +109,7 @@ describe("Games table price tiles", () => {
 	it("collapses an equal play time range to one value", () => {
 		renderTable();
 
-		expect(screen.getAllByText("45 min").length).toBeGreaterThan(0);
+		expect(screen.getAllByText("short-duration.minutes").length).toBeGreaterThan(0);
 		expect(screen.getAllByText("2–4").length).toBeGreaterThan(0);
 	});
 });

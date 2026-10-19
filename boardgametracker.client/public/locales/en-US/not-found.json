@@ -2,11 +2,5 @@
   "title": "Page not found",
   "subtitle": "This page doesn't exist.",
   "go-back": "Go back",
-  "quick-nav": "Quick navigation",
-  "nav": {
-    "dashboard-description": "View your gaming stats",
-    "games-description": "Browse your collection",
-    "players-description": "Check player profiles",
-    "game-nights-description": "Plan your next game night"
-  }
+  "quick-nav": "Quick navigation"
 }

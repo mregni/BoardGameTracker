@@ -3,7 +3,7 @@
   "import": {
     "loading": "Loading BGG data...",
     "importing": "Importing games from BoardGameGeek ({{done}}/{{total}})...",
-    "success": "Games are successfully imported from BoardGameGeek",
+    "success": "Games imported from BoardGameGeek",
     "start": {
       "bgg-username": {
         "label": "BGG username",
@@ -30,8 +30,8 @@
   },
   "title": "Games",
   "new": "Add game",
-  "count_other": "{{count}} games found",
-  "count_one": "{{count}} game found",
+  "count_other": "{{count}} games",
+  "count_one": "{{count}} game",
   "cards": {
     "games": "Games"
   },

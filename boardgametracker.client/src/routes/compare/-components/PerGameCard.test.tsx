@@ -73,6 +73,29 @@ describe("PerGameCard", () => {
 		expect(screen.getAllByTestId("per-game-row")).toHaveLength(5);
 	});
 
+	it("shows the scores of a single session without calling them an average", () => {
+		render(
+			<PerGameCard
+				games={[
+					gameRow({
+						gameId: 10,
+						sessionCount: 1,
+						playerOneWins: 1,
+						playerOneAverageScore: 6,
+						playerTwoAverageScore: 10,
+					}),
+				]}
+				playerOne={playerOne}
+				playerTwo={playerTwo}
+				dateFormat="dd-MM-yyyy"
+				uiLanguage="en-US"
+			/>,
+		);
+
+		expect(screen.getByTestId("per-game-row")).toHaveTextContent("1 session · 6 – 10");
+		expect(screen.getByTestId("per-game-row")).not.toHaveTextContent("avg");
+	});
+
 	it("shows counts, averages, other winners and the last result per game", () => {
 		renderCard();
 		const [azul, carcassonne, brass, inventors] = screen.getAllByTestId("per-game-row");

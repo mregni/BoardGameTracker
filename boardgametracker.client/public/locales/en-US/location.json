@@ -16,20 +16,20 @@
     "title": "Edit location"
   },
   "notifications": {
-    "created": "Location is successfully created",
+    "created": "Location added",
     "create-failed": "Failed creating location",
     "failed": "Failed creating location",
-    "update": "Location is successfully updated",
+    "update": "Location saved",
     "update-failed": "Failed updating location",
-    "deleted": "Location is successfully deleted",
+    "deleted": "Location deleted",
     "delete-failed": "Failed deleting location"
   },
   "delete": {
     "description": "Are you sure you want to delete location '{{name}}'?",
     "extra-description": "The location is connected to {{count}} game sessions, they will be disconnected."
   },
-  "count_one": "{{count}} location found",
-  "count_other": "{{count}} locations found",
+  "count_one": "{{count}} location",
+  "count_other": "{{count}} locations",
   "detail": {
     "label": "Location",
     "back": "Back to locations",

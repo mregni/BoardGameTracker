@@ -223,7 +223,8 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 											<Select.Item
 												value={item.value.toString()}
 												key={item.value}
-												className="text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center pr-[35px] pl-[25px] relative select-none data-disabled:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
+												disabled={item.disabled}
+												className="text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center gap-2 pr-[35px] pl-[25px] relative select-none data-disabled:opacity-50 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
 											>
 												<Select.ItemText>
 													<div className="flex flex-row justify-start items-center gap-2">
@@ -231,6 +232,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 														{item.label}
 													</div>
 												</Select.ItemText>
+												{item.hint && <span className="ml-auto truncate text-xs text-gray-400">{item.hint}</span>}
 												<Select.ItemIndicator className="absolute left-0 w-[25px] inline-flex items-center justify-center">
 													<CheckIcon className="size-4" />
 												</Select.ItemIndicator>

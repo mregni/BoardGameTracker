@@ -4,15 +4,15 @@
     "button": "Add player"
   },
   "back": "Back to players",
-  "count_other": "{{count}} players found",
-  "count_one": "{{count}} player found",
+  "count_other": "{{count}} players",
+  "count_one": "{{count}} player",
   "notifications": {
-    "created": "Player is successfully created",
+    "created": "Player added",
     "create-failed": "Failed creating player",
     "not-found": "Could not find player",
-    "deleted": "Player is successfully deleted",
+    "deleted": "Player deleted",
     "delete-failed": "Failed deleting player",
-    "updated": "Player is successfully updated",
+    "updated": "Player saved",
     "update-failed": "Failed updating player"
   },
   "name": {
@@ -37,7 +37,7 @@
     "title": "Edit player"
   },
   "delete": {
-    "successfull": "Player is successfully deleted.",
+    "successfull": "Player deleted",
     "failed": "Player deletion failed, check logs for more details.",
     "description": "Are you sure you want to delete player {{name}}? This cannot be reversed and will delete all game sessions connected to this player."
   },

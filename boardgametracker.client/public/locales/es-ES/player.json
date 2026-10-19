@@ -4,15 +4,15 @@
     "button": "Añadir jugador"
   },
   "back": "Volver a jugadores",
-  "count_other": "{{count}} jugadores encontrados",
-  "count_one": "{{count}} jugador encontrado",
+  "count_other": "{{count}} jugadores",
+  "count_one": "{{count}} jugador",
   "notifications": {
-    "created": "Jugador creado correctamente",
+    "created": "Jugador añadido",
     "create-failed": "Error al crear el jugador",
     "not-found": "No se encontró el jugador",
-    "deleted": "Jugador eliminado correctamente",
+    "deleted": "Jugador eliminado",
     "delete-failed": "Error al eliminar el jugador",
-    "updated": "Jugador actualizado correctamente",
+    "updated": "Jugador guardado",
     "update-failed": "Error al actualizar el jugador"
   },
   "name": {
@@ -37,7 +37,7 @@
     "title": "Editar jugador"
   },
   "delete": {
-    "successfull": "Jugador eliminado correctamente.",
+    "successfull": "Jugador eliminado",
     "failed": "Error al eliminar el jugador, revisa los registros para más detalles.",
     "description": "¿Seguro que quieres eliminar al jugador {{name}}? Esta acción no se puede deshacer y eliminará todas las partidas vinculadas a este jugador."
   },

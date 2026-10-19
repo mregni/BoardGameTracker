@@ -16,20 +16,20 @@
     "title": "Locatie bewerken"
   },
   "notifications": {
-    "created": "Locatie is aangemaakt",
+    "created": "Locatie toegevoegd",
     "create-failed": "Locatie aanmaken mislukt",
     "failed": "Locatie aanmaken mislukt",
-    "update": "Locatie is bijgewerkt",
+    "update": "Locatie opgeslagen",
     "update-failed": "Locatie bijwerken mislukt",
-    "deleted": "Locatie is verwijderd",
+    "deleted": "Locatie verwijderd",
     "delete-failed": "Locatie verwijderen mislukt"
   },
   "delete": {
     "description": "Weet je zeker dat je locatie '{{name}}' wilt verwijderen?",
     "extra-description": "De locatie is gekoppeld aan {{count}} spelsessies, die worden ontkoppeld."
   },
-  "count_one": "{{count}} locatie gevonden",
-  "count_other": "{{count}} locaties gevonden",
+  "count_one": "{{count}} locatie",
+  "count_other": "{{count}} locaties",
   "detail": {
     "label": "Locatie",
     "back": "Terug naar locaties",

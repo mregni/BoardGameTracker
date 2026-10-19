@@ -22,6 +22,7 @@ vi.mock("../-hooks/useNewLoanModal", () => ({
 	useNewLoanModal: ({ onSuccess }: { onSuccess: () => void }) => ({
 		games,
 		players: mocks.players,
+		activeLoans: [{ id: 3, gameId: 1, playerId: 7, loanDate: new Date(2026, 8, 9), isActive: true }],
 		isLoading: false,
 		saveLoan: async (data: unknown) => {
 			mocks.saveLoan(data);
@@ -39,7 +40,7 @@ vi.mock("@/components/BgtForm", async (importOriginal) => ({
 	}: {
 		field: AnyFieldApi;
 		label: string;
-		items: { value: number; label: string }[];
+		items: { value: number; label: string; disabled?: boolean; hint?: string }[];
 	}) => (
 		<label>
 			{label}
@@ -49,8 +50,8 @@ vi.mock("@/components/BgtForm", async (importOriginal) => ({
 			>
 				<option value="">-</option>
 				{items.map((item) => (
-					<option key={item.value} value={item.value}>
-						{item.label}
+					<option key={item.value} value={item.value} disabled={item.disabled}>
+						{item.hint ? `${item.label} (${item.hint})` : item.label}
 					</option>
 				))}
 			</select>
@@ -107,6 +108,15 @@ describe("NewLoanModal", () => {
 		within(group)
 			.getAllByRole("spinbutton")
 			.map((segment) => segment.getAttribute("aria-valuenow"));
+
+	it("lists games that are out on loan last and disabled, with who has them", () => {
+		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
+
+		const options = within(screen.getByLabelText("player-session:new.game.label")).getAllByRole("option");
+		expect(options.map((option) => option.textContent)).toEqual(["-", "Everdell Duo", "Everdell (new.with-borrower)"]);
+		expect(options[2]).toBeDisabled();
+		expect(options[1]).toBeEnabled();
+	});
 
 	it("defaults to a two week due date and switches between presets", async () => {
 		renderWithProviders(<NewLoanModal open close={vi.fn()} />);

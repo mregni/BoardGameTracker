@@ -10,20 +10,20 @@
     "due-this-week": "Terug deze week"
   },
   "notifications": {
-    "created": "Uitleen is aangemaakt",
+    "created": "Spel uitgeleend",
     "create-failed": "Uitleen aanmaken mislukt",
-    "updated": "Uitleen is bijgewerkt",
+    "updated": "Uitleen opgeslagen",
     "update-failed": "Uitleen bijwerken mislukt"
   },
   "delete": {
     "button": "Verwijderen",
     "title": "Uitlening van {{game}} verwijderen",
     "description": "Weet je zeker dat je deze uitleen wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
-    "successfull": "Uitleen is verwijderd.",
+    "successfull": "Uitleen verwijderd",
     "failed": "Uitleen verwijderen mislukt, bekijk de logs voor meer details."
   },
   "return": {
-    "successfull": "Spel is gemarkeerd als teruggebracht.",
+    "successfull": "Gemarkeerd als teruggebracht",
     "failed": "Spel markeren als teruggebracht mislukt, bekijk de logs voor meer details.",
     "title": "{{game}} terugbrengen",
     "description": "Wanneer werd het spel teruggebracht?",
@@ -36,7 +36,6 @@
   "new": {
     "title": "Spel uitlenen",
     "save": "Uitlenen",
-    "description": "Kies een spel, wie het leent en wanneer het terug moet zijn.",
     "start": {
       "label": "Uitleendatum",
       "required": "Uitleendatum is verplicht",
@@ -60,7 +59,8 @@
       "none": "Geen einddatum",
       "custom": "Datum kiezen",
       "custom-label": "Terugbrengen op"
-    }
+    },
+    "with-borrower": "Bij {{name}} sinds {{date}}"
   },
   "edit": {
     "title": "Uitleen bewerken",

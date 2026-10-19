@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { PlayerStatisticsGrid } from "@/routes/players/-components/PlayerStatisticsGrid";
 import { renderWithProviders, screen } from "@/test/test-utils";
-import { GameStatisticsGrid } from "./GameStatisticsGrid";
+import { GameStatisticsGrid, statisticsGridColumns } from "./GameStatisticsGrid";
 
 vi.mock("@/services/queries/settings", () => ({
 	getSettings: () => ({ queryKey: ["settings"], queryFn: async () => ({ uiLanguage: "en-US" }) }),
@@ -27,6 +27,25 @@ const playerStats = (coopWinCount: number, coopLossCount: number) => ({
 	coopWinCount,
 	coopLossCount,
 	mostPlayedGames: [],
+});
+
+describe("game statistics grid", () => {
+	it("picks columns that leave no tile alone on a row", () => {
+		expect(statisticsGridColumns(2)).toBe("md:grid-cols-2");
+		expect(statisticsGridColumns(3)).toBe("md:grid-cols-3");
+		expect(statisticsGridColumns(4)).toBe("md:grid-cols-2 xl:grid-cols-4");
+		expect(statisticsGridColumns(5)).toBe("md:grid-cols-3 xl:grid-cols-5");
+		expect(statisticsGridColumns(6)).toBe("md:grid-cols-3 2xl:grid-cols-6");
+		expect(statisticsGridColumns(7)).toBe("md:grid-cols-4");
+	});
+
+	it("lays four tiles out as two by two, then four in a row", async () => {
+		const stats = { ...gameStats(0, 0), pricePerPlay: 12.5, lastPlayed: "2026-10-01T10:00:00Z" };
+		renderWithProviders(<GameStatisticsGrid gameStats={stats} currency="EUR" hasScoringResults />);
+
+		await screen.findByText("last-played");
+		expect(screen.getByTestId("game-statistics-grid")).toHaveClass("md:grid-cols-2", "xl:grid-cols-4");
+	});
 });
 
 describe("co-op statistics", () => {

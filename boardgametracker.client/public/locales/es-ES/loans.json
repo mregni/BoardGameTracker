@@ -10,20 +10,20 @@
     "due-this-week": "Vencen esta semana"
   },
   "notifications": {
-    "created": "Préstamo creado correctamente",
+    "created": "Juego prestado",
     "create-failed": "Error al crear el préstamo",
-    "updated": "Préstamo actualizado correctamente",
+    "updated": "Préstamo guardado",
     "update-failed": "Error al actualizar el préstamo"
   },
   "delete": {
     "button": "Eliminar",
     "title": "Eliminar préstamo de {{game}}",
     "description": "¿Seguro que quieres eliminar este préstamo? Esta acción no se puede deshacer.",
-    "successfull": "Préstamo eliminado correctamente.",
+    "successfull": "Préstamo eliminado",
     "failed": "Error al eliminar el préstamo, revisa los registros para más detalles."
   },
   "return": {
-    "successfull": "Juego marcado como devuelto correctamente.",
+    "successfull": "Marcado como devuelto",
     "failed": "Error al marcar el juego como devuelto, revisa los registros para más detalles.",
     "title": "Devolver {{game}}",
     "description": "¿Cuándo se devolvió el juego?",
@@ -36,7 +36,6 @@
   "new": {
     "title": "Prestar un juego",
     "save": "Prestar",
-    "description": "Elige un juego, quién se lo lleva y cuándo debe volver.",
     "start": {
       "label": "Inicio del préstamo",
       "required": "La fecha de inicio del préstamo es obligatoria",
@@ -60,7 +59,8 @@
       "none": "Sin fecha límite",
       "custom": "Elegir fecha",
       "custom-label": "Fecha de devolución"
-    }
+    },
+    "with-borrower": "Con {{name}} desde el {{date}}"
   },
   "edit": {
     "title": "Editar préstamo",

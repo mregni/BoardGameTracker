@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
+import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
@@ -24,6 +26,7 @@ const byScore = (a: Session["playerSessions"][number], b: Session["playerSession
 export const PlayedSessionsList = (props: Props) => {
 	const { sessions, games, players, uiLanguage, canOpen, emptyText } = props;
 
+	const { t } = useTranslation("game-nights");
 	const { number } = useNumberFormat(uiLanguage);
 	const shortDuration = useShortDuration();
 	const nameOf = (playerId: number) => players.find((player) => player.id === playerId)?.name ?? "";
@@ -42,13 +45,9 @@ export const PlayedSessionsList = (props: Props) => {
 		<ul className="flex flex-col gap-1.5">
 			{sessions.map((session, index) => {
 				const game = games.find((x) => x.id === session.gameId);
-				const winners = session.playerSessions.filter((x) => x.won).map((x) => nameOf(x.playerId));
-				const scores = [...session.playerSessions]
-					.sort(byScore)
-					.map((x) =>
-						x.score === null || x.score === undefined ? nameOf(x.playerId) : `${nameOf(x.playerId)} ${number(x.score)}`,
-					)
-					.join(" · ");
+				const results = [...session.playerSessions].sort(byScore);
+				const label = (x: Session["playerSessions"][number]) =>
+					x.score === null || x.score === undefined ? nameOf(x.playerId) : `${nameOf(x.playerId)} ${number(x.score)}`;
 				const row = (
 					<>
 						<span className="w-7 shrink-0 text-xs tabular-nums text-gray-400">#{sessions.length - index}</span>
@@ -57,14 +56,22 @@ export const PlayedSessionsList = (props: Props) => {
 							<span className="flex flex-wrap items-center gap-x-2 gap-y-1">
 								<span className="font-semibold wrap-anywhere">{game?.title}</span>
 								{session.isCoop && <CoopResultPill won={session.teamWon === true} />}
-								{!session.isCoop && winners.length > 0 && (
-									<span className="inline-flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-semibold text-green-300">
-										<Crown className="size-3.5" />
-										{winners.join(", ")}
-									</span>
-								)}
 							</span>
-							<span className="text-xs text-gray-400 wrap-anywhere">{scores}</span>
+							<span className="text-xs text-gray-400 wrap-anywhere">
+								{results.map((x, position) => (
+									<Fragment key={x.playerId}>
+										{position > 0 && " · "}
+										{x.won && !session.isCoop ? (
+											<span className="inline-flex items-center gap-0.5 font-semibold text-green-300">
+												<Crown className="size-3" aria-label={t("played.won")} />
+												{label(x)}
+											</span>
+										) : (
+											label(x)
+										)}
+									</Fragment>
+								))}
+							</span>
 						</span>
 						<span className="shrink-0 text-sm tabular-nums text-gray-400">{shortDuration(session.minutes)}</span>
 					</>

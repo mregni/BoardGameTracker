@@ -25,7 +25,8 @@ interface Props {
 	dateFormat?: string;
 	stateItems: BgtSelectItem[];
 	languageItems: BgtSelectItem[];
-	formatRange: (min: number | null, max: number | null, suffix?: string) => string;
+	formatRange: (min: number | null, max: number | null) => string;
+	formatDuration: (min: number | null, max: number | null) => string;
 	isEditing: (gameId: number, column: GameTableColumn) => boolean;
 	startEdit: (gameId: number, column: GameTableColumn) => void;
 	stopEdit: () => void;
@@ -53,6 +54,7 @@ export const GameTableCards = (props: Props) => {
 		stateItems,
 		languageItems,
 		formatRange,
+		formatDuration,
 		isEditing,
 		startEdit,
 		stopEdit,
@@ -92,7 +94,7 @@ export const GameTableCards = (props: Props) => {
 							{priceMap && game.changeDetectionWatchId && <TrackedPriceIcon livePrice={livePrice} />}
 						</Link>
 						<Row label={t("games:columns.players")}>{formatRange(game.minPlayers, game.maxPlayers)}</Row>
-						<Row label={t("games:columns.play-time")}>{formatRange(game.minPlayTime, game.maxPlayTime, "min")}</Row>
+						<Row label={t("games:columns.play-time")}>{formatDuration(game.minPlayTime, game.maxPlayTime)}</Row>
 						<Row label={t("games:columns.weight")}>
 							{game.weight != null && game.weight > 0 ? formatDecimal(game.weight, uiLanguage) : "-"}
 						</Row>

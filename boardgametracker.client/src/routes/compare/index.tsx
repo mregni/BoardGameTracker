@@ -147,8 +147,8 @@ function RouteComponent() {
 								uiLanguage={settings.uiLanguage}
 								canOpen={canWrite}
 							/>
-							<OverallTable compare={compare} playerOne={shownOne} playerTwo={shownTwo} />
 							<Highlights compare={compare} dateFormat={settings.dateFormat} uiLanguage={settings.uiLanguage} />
+							<OverallTable compare={compare} playerOne={shownOne} playerTwo={shownTwo} />
 						</div>
 					</div>
 				)}

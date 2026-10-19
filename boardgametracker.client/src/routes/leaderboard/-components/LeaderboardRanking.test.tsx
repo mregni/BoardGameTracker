@@ -134,6 +134,18 @@ describe("LeaderboardRanking", () => {
 		expect(second).toHaveTextContent("short-duration.hours-minutes");
 	});
 
+	it("should hide the podiums column and podium counts when nobody has a podium", () => {
+		renderRanking(players.map((player) => ({ ...player, podiumCount: 0 })));
+
+		expect(screen.queryByText("columns.podiums")).not.toBeInTheDocument();
+		expect(screen.queryByText("columns.podiums-hint")).not.toBeInTheDocument();
+		const [first] = screen.getAllByTestId("leaderboard-row");
+		expect(first).not.toHaveTextContent("values.podiums");
+		expect(first.className).toContain(
+			"md:grid-cols-[1.625rem_1.875rem_minmax(0,1.3fr)_3.5rem_4.25rem_minmax(8rem,1.3fr)_4.25rem_1rem]",
+		);
+	});
+
 	it("should explain the podium column and that ties share the rank", () => {
 		renderRanking();
 

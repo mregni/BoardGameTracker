@@ -16,18 +16,19 @@
 	"save": {
 		"button": "Save settings",
 		"failed": "Failed saving settings",
-		"successfull": "Settings are successfully saved"
+		"successfull": "Settings saved"
 	},
 	"general": {
 		"public-url": {
 			"title": "Public address",
-			"description": "The address people use to reach BoardGameTracker, for example https://games.example.com. Invitation and password-reset emails link to it, and SSO uses it for its redirect URIs. Emails with links are only sent once it is set.",
+			"description": "The address people use to reach BoardGameTracker; email links and single sign-on point to it.",
 			"label": "Public URL",
-			"placeholder": "https://myboardgametracker.app",
+			"placeholder": "https://games.example.com",
 			"invalid": "Enter a valid http(s) URL",
-			"not-set": "Not set. Invitation and password-reset emails are not sent, and SSO uses the address you open the app on.",
-			"insecure-warning": "The public URL uses http while BoardGameTracker is opened over https. Links in emails, RSVP invitations and SSO redirects will use the insecure address.",
-			"host-mismatch-warning": "The public URL points to a different host than {{host}}. Links in emails, RSVP invitations and SSO redirects will use that host."
+			"not-set": "Not set. Invitation and password-reset emails are not sent, and single sign-on uses the address you open the app on.",
+			"insecure-warning": "The public URL uses http while BoardGameTracker is opened over https. Links in emails, RSVP invitations and single sign-on redirects will use the insecure address.",
+			"host-mismatch-warning": "The public URL points to a different host than {{host}}. Links in emails, RSVP invitations and single sign-on redirects will use that host.",
+			"sso-warning": "Single sign-on stops working with an http address."
 		},
 		"ui-language": {
 			"label": "Language",
@@ -35,18 +36,12 @@
 		},
 		"title": "General settings",
 		"description": "Change the general settings of the application.",
-		"date-time": {
-			"title": "Date and time",
+		"regional": {
+			"title": "Language and formats",
+			"language": "Language",
+			"currency": "Currency",
 			"date-format": "Date format",
 			"time-format": "Time format"
-		},
-		"currency": {
-			"title": "Currency",
-			"label": "Currency"
-		},
-		"language": {
-			"title": "Language",
-			"label": "Language"
 		}
 	},
 	"shame": {
@@ -94,12 +89,11 @@
 		"translate": "Help us translate the app",
 		"danger": {
 			"title": "Danger zone",
-			"description": "Irreversible actions. Proceed with caution.",
 			"reset": {
 				"button": "Reset data",
 				"confirm": {
 					"title": "Reset data",
-					"description": "This permanently deletes all games, sessions, players, people, locations, loans, game nights, badge awards, and uploaded images. Your settings, user accounts, and login are kept. This cannot be undone.",
+					"description": "Deletes all games, sessions, players, locations, loans, game nights, badges, images and uploaded manuals. Settings and user accounts stay. This cannot be undone.",
 					"keyword": "RESET",
 					"input-label": "Type RESET to confirm",
 					"button": "Reset data"
@@ -109,14 +103,16 @@
 				"button": "Factory reset",
 				"confirm": {
 					"title": "Factory reset",
-					"description": "This permanently deletes EVERYTHING — all data, all settings, and all user accounts — and resets the app to its initial state. The admin account is recreated with the password from ADMIN_PASSWORD, or admin when that is not set, and you will be logged out. Change that password immediately. This cannot be undone.",
+					"description": "Deletes all data, settings and user accounts, and signs you out. This cannot be undone.",
 					"keyword": "FACTORY RESET",
 					"input-label": "Type FACTORY RESET to confirm",
-					"button": "Factory reset everything"
+					"button": "Factory reset everything",
+					"admin-account": "The admin account comes back with its first-login password.",
+					"admin-account-link": "How is it set?"
 				}
 			},
 			"notifications": {
-				"reset-success": "Data reset successfully",
+				"reset-success": "Data reset",
 				"reset-failed": "Failed to reset data",
 				"factory-reset-failed": "Failed to factory reset"
 			}
@@ -150,7 +146,7 @@
 		},
 		"sso": {
 			"title": "Single sign-on",
-			"description": "OpenID Connect provider"
+			"description": "Identity provider"
 		}
 	},
 	"bgg": {
@@ -168,18 +164,11 @@
 			"read-only": "The API key is read only.",
 			"read-only-description": "The API key is managed via the BGG_API_KEY environment variable and cannot be changed here.",
 			"help-description": "Get a key from the BoardGameGeek <requestPage>request page</requestPage>."
-		},
-		"notifications": {
-			"saved": "BGG API key saved successfully",
-			"save-failed": "Failed to save BGG API key",
-			"cleared": "BGG API key removed",
-			"clear-failed": "Failed to remove BGG API key"
 		}
 	},
 	"account": {
 		"profile": {
 			"title": "My account",
-			"description": "Manage your profile and password.",
 			"display-name": {
 				"label": "Display name"
 			},
@@ -253,13 +242,12 @@
 				"save": "Add"
 			},
 			"edit": {
-				"title": "Edit user",
-				"description": "Change the username, email, role or linked player of “{{username}}”."
+				"title": "Edit user"
 			},
 			"reset-password": {
 				"button": "Reset password",
-				"title": "Reset password?",
-				"description": "Reset the password for {{user}}? Their current password stops working."
+				"title": "Reset {{user}}'s password?",
+				"description": "Their current password stops working."
 			},
 			"temp-password": {
 				"title": "Temporary password",
@@ -276,58 +264,55 @@
 			"access": {
 				"button": "Access",
 				"title": "Sign-in access",
-				"description": "Sign-in and single sign-on settings for \"{{username}}\".",
 				"enabled": "Can sign in",
 				"disabled": "Disabled",
 				"enable": "Enable",
 				"disable": "Disable",
 				"disable-hint": "Disabling ends every session and blocks sign-in with a password and with single sign-on. Removing someone at the identity provider does not do this for you.",
-				"sso-title": "Single sign-on identities",
+				"sso-title": "Single sign-on",
 				"sso-none": "No identity provider account is linked.",
 				"sso-linked": "subject {{subject}} · linked on {{date}}",
 				"unlink": "Unlink",
-				"unlink-confirm": "This identity provider account can no longer sign in as \"{{username}}\" until it is linked again.",
+				"unlink-confirm": "This identity provider account can no longer sign in as “{{username}}” until it is linked again.",
 				"role-managed": "The role follows the identity provider's groups on every sign-in.",
 				"role-local": "The role was set here and the identity provider does not change it.",
 				"manage-role": "Let the identity provider manage the role",
 				"disabled-badge": "Disabled",
-				"sso-badge": "SSO"
+				"sso-badge": "SSO",
+				"disable-confirm": {
+					"title": "Disable {{username}}?",
+					"description": "They are signed out on every device and can't sign in until you enable them."
+				}
 			},
 			"actions": "Actions for {{username}}"
 		},
 		"notifications": {
-			"profile-updated": "Profile updated successfully",
+			"profile-updated": "Profile saved",
 			"profile-update-failed": "Failed to update profile",
-			"password-changed": "Password changed successfully",
+			"password-changed": "Password changed",
 			"password-change-failed": "Failed to change password. Check your current password.",
-			"user-created": "User created successfully",
+			"user-created": "User created",
 			"user-create-failed": "Failed to create user",
-			"user-deleted": "User deleted successfully",
+			"user-deleted": "User deleted",
 			"user-delete-failed": "Failed to delete user",
-			"role-updated": "User role updated successfully",
-			"role-update-failed": "Failed to update user role",
-			"user-updated": "User updated successfully",
+			"user-updated": "User saved",
 			"user-update-failed": "Failed to update user",
 			"password-reset-failed": "Failed to reset password",
-			"user-disabled": "User disabled",
 			"user-disable-failed": "Failed to disable the user",
-			"user-enabled": "User enabled",
 			"user-enable-failed": "Failed to enable the user",
-			"external-login-unlinked": "Identity provider account unlinked",
 			"external-login-unlink-failed": "Failed to unlink the identity provider account",
-			"role-managed": "The identity provider now manages this role",
 			"role-manage-failed": "Failed to hand the role to the identity provider"
 		},
 		"external-logins": {
-			"title": "External logins",
+			"title": "Single sign-on",
 			"description": "Sign in with your identity provider instead of a password.",
-			"none": "No external login linked yet.",
+			"none": "No identity provider account linked yet.",
 			"linked-on": "linked on {{date}}",
 			"link": "Link {{provider}}",
 			"unlink": "Unlink",
 			"notifications": {
-				"unlinked": "External login removed.",
-				"unlink-failed": "The external login could not be removed.",
+				"unlinked": "Identity provider account unlinked",
+				"unlink-failed": "The identity provider account could not be unlinked.",
 				"link-failed": "The link could not be started."
 			},
 			"unlink-confirm": "You will no longer be able to sign in with this provider until you link it again."
@@ -335,10 +320,11 @@
 	},
 	"env-override": "Set by the environment variable {{variable}}. Change it there to update this setting.",
 	"sso": {
-		"title": "OpenID Connect provider",
+		"title": "Identity provider",
 		"description": {
 			"empty": "Let people sign in through your identity provider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Register a public client there first, then fill in the details below.",
-			"configured": "Sign-in through {{name}} is configured. Changes apply to the next sign-in."
+			"configured": "Provider {{name}} is configured. Changes apply to the next sign-in.",
+			"inactive": "Provider {{name}} is configured but inactive: it needs an https public URL."
 		},
 		"https-required": "Single sign-on requires HTTPS. Put BoardGameTracker behind a reverse proxy with TLS and set an https public URL.",
 		"fields": {
@@ -371,7 +357,7 @@
 				"label": "Username claim"
 			},
 			"email-claim": {
-				"label": "E-mail claim"
+				"label": "Email claim"
 			},
 			"display-name-claim": {
 				"label": "Display name claim"
@@ -389,8 +375,7 @@
 			},
 			"enabled": {
 				"label": "Enabled",
-				"description": "Show the sign-in button on the login page.",
-				"https-required": "Single sign-on can only be turned on over HTTPS."
+				"description": "Show the sign-in button on the login page."
 			},
 			"default-role": {
 				"label": "Default role"
@@ -416,7 +401,8 @@
 			"redirect-uri": "Sign-in redirect URI",
 			"link-redirect-uri": "Account-linking redirect URI",
 			"copy": "Copy",
-			"post-logout-redirect-uri": "Post-logout redirect URI"
+			"post-logout-redirect-uri": "Post-logout redirect URI",
+			"https-pending": "Available once the public URL uses https."
 		},
 		"validation": {
 			"name": "Use lowercase letters, digits and dashes (1–100 characters)",
@@ -428,13 +414,14 @@
 		"create": "Create provider",
 		"save": "Save provider",
 		"delete": "Remove provider",
-		"delete-description": "Removing the provider also removes every linked external account. People keep their local password if they have one.",
+		"delete-description": "Removing the provider also unlinks every identity provider account. People keep their local password if they have one.",
 		"notifications": {
 			"saved": "Provider saved.",
 			"save-failed": "The provider could not be saved.",
 			"deleted": "Provider removed.",
 			"delete-failed": "The provider could not be removed."
-		}
+		},
+		"https-required-locked": "Single sign-on requires HTTPS. Put BoardGameTracker behind a reverse proxy with TLS and set an https public URL. Until then the enabled provider can't be changed."
 	},
 	"changedetection": {
 		"title": "changedetection.io",

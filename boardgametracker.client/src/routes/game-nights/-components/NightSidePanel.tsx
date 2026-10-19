@@ -12,12 +12,13 @@ interface Props {
 	attendees: Player[];
 	expected: boolean;
 	playedGameIds: number[];
+	playingGameIds: number[];
 	canWrite: boolean;
 	onEditAttendees: () => void;
 }
 
 export const NightSidePanel = (props: Props) => {
-	const { gameNight, attendees, expected, playedGameIds, canWrite, onEditAttendees } = props;
+	const { gameNight, attendees, expected, playedGameIds, playingGameIds, canWrite, onEditAttendees } = props;
 	const { t } = useTranslation("game-nights");
 	const navigate = useNavigate();
 
@@ -59,6 +60,7 @@ export const NightSidePanel = (props: Props) => {
 					<div className="flex flex-wrap gap-2">
 						{gameNight.suggestedGames.map((game) => {
 							const played = playedGameIds.includes(game.id);
+							const playing = !played && playingGameIds.includes(game.id);
 							return (
 								<AvatarChip
 									key={game.id}
@@ -68,6 +70,7 @@ export const NightSidePanel = (props: Props) => {
 									onClick={() => navigate({ to: `/games/${game.id}` })}
 								>
 									{played && <CheckIcon className="size-3.5 text-green-300" aria-label={t("planned.played")} />}
+									{playing && <span className="text-gray-400">{t("planned.playing")}</span>}
 								</AvatarChip>
 							);
 						})}

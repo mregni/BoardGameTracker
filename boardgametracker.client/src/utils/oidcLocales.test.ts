@@ -37,7 +37,7 @@ const keys = {
 		"auth.cannot-disable-last-admin",
 		"auth.oidc-https-required",
 	],
-	auth: ["oidc.sign-in-with-password"],
+	auth: ["oidc.sign-in-with-password", "sso-https-hint", "sso-https-error"],
 	settings: [
 		"sso.fields.name.rename-warning",
 		"sso.fields.default-role.label",
@@ -49,10 +49,11 @@ const keys = {
 		"account.users.access.disable-hint",
 		"account.users.access.unlink-confirm",
 		"account.users.access.manage-role",
-		"account.notifications.user-disabled",
-		"account.notifications.external-login-unlinked",
+		"account.users.access.disable-confirm.title",
+		"account.notifications.user-disable-failed",
 		"sso.https-required",
-		"sso.fields.enabled.https-required",
+		"sso.https-required-locked",
+		"sso.description.inactive",
 	],
 } as const;
 
@@ -67,7 +68,7 @@ describe("OIDC phase 3 translations", () => {
 
 	it("tells an IdP user with a clashing username exactly how to continue", () => {
 		const message =
-			"An account with this username already exists. Sign in with your password and link SSO under Settings → Account.";
+			"An account with this username already exists. Sign in with your password and link single sign-on under Settings → Account.";
 
 		expect(lookup(enError, "auth.oidc-username-taken")).toBe(message);
 		expect(lookup(baseError, "auth.oidc-username-taken")).toBe(message);

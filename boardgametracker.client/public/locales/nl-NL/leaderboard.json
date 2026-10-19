@@ -1,10 +1,6 @@
 {
   "title": "Ranglijst",
   "filters": {
-    "period": "Periode",
-    "all-time": "Altijd",
-    "last-12-months": "12 maanden",
-    "custom": "Aangepast",
     "from": "Van",
     "to": "Tot",
     "game": "Spel",
@@ -26,7 +22,6 @@
     "min-sessions": "min. {{count}}"
   },
   "columns": {
-    "rank": "Rang",
     "player": "Speler",
     "wins": "Overwinningen",
     "sessions": "Sessies",
@@ -47,7 +42,6 @@
   },
   "ranking": {
     "label": "Rangschikking",
-    "podium": "Podium",
     "not-ranked-rank": "Niet gerangschikt",
     "not-ranked_one": "Minder dan {{count}} sessie · niet gerangschikt",
     "not-ranked_other": "Minder dan {{count}} sessies · niet gerangschikt",
@@ -56,16 +50,6 @@
     "ties-wins": "Evenveel overwinningen: het hoogste winstpercentage eerst, dan de meeste sessies. Gelijke cijfers delen de rang.",
     "ties-win-rate": "Hetzelfde winstpercentage: de meeste overwinningen eerst, dan de meeste sessies. Gelijke cijfers delen de rang.",
     "ties-sessions": "Evenveel sessies: de meeste overwinningen eerst. Gelijke cijfers delen de rang."
-  },
-  "no-podium": {
-    "all_one": "Geen podium: slechts {{count}} speler is gerangschikt. Een podium vraagt er minstens {{minimum}}, anders staat iedereen erop.",
-    "all_other": "Geen podium: slechts {{count}} spelers zijn gerangschikt. Een podium vraagt er minstens {{minimum}}, anders staat iedereen erop.",
-    "game_one": "Geen podium: slechts {{count}} speler is gerangschikt voor {{game}}. Een podium vraagt er minstens {{minimum}}, anders staat iedereen erop.",
-    "game_other": "Geen podium: slechts {{count}} spelers zijn gerangschikt voor {{game}}. Een podium vraagt er minstens {{minimum}}, anders staat iedereen erop.",
-    "none": "Geen podium: nog niemand is gerangschikt.",
-    "none-game": "Geen podium: nog niemand is gerangschikt voor {{game}}.",
-    "include-one": "Verlaag het minimum om {{name}} mee te tellen.",
-    "include-more": "Verlaag het minimum om meer spelers mee te tellen."
   },
   "empty": {
     "title": "Nog geen partijen geregistreerd",

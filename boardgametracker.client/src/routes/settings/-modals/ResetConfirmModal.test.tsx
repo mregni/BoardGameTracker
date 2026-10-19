@@ -23,6 +23,27 @@ const confirmButton = () => within(footer()).getByRole("button", { name: "Reset"
 const keywordInput = () => screen.getByRole("textbox", { name: "Type RESET" });
 
 describe("ResetConfirmModal", () => {
+	it("starts with the focus in the confirm field", async () => {
+		renderModal();
+
+		await vi.waitFor(() => expect(keywordInput()).toHaveFocus());
+	});
+
+	it("shows an optional note with a link that opens in a new tab", () => {
+		renderModal({ note: { text: "The admin comes back.", linkLabel: "How?", href: "https://example.com/docs" } });
+
+		expect(screen.getByText(/The admin comes back\./)).toBeInTheDocument();
+		const link = screen.getByRole("link", { name: "How?" });
+		expect(link).toHaveAttribute("href", "https://example.com/docs");
+		expect(link).toHaveAttribute("target", "_blank");
+	});
+
+	it("shows no note when none is given", () => {
+		renderModal();
+
+		expect(screen.queryByRole("link")).not.toBeInTheDocument();
+	});
+
 	it("puts cancel on the left and the confirm on the right", () => {
 		renderModal();
 
