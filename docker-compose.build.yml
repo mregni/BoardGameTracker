@@ -6,6 +6,7 @@ services:
       args:
         VERSION: ${VERSION:-0.0.1}
         ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-production}
+        APK_CACHE_BUST: ${APK_CACHE_BUST:-}
     restart: unless-stopped
     depends_on:
       db:
