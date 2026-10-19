@@ -27,7 +27,13 @@ vi.mock("@/services/queries/settings", () => ({
 
 import { ExternalLoginsSection } from "./ExternalLoginsSection";
 
-const provider: OidcProvider = { name: "keycloak", displayName: "Company login", iconUrl: null, buttonColor: null };
+const provider: OidcProvider = {
+	name: "keycloak",
+	displayName: "Company login",
+	iconUrl: null,
+	buttonColor: null,
+	httpsRequired: false,
+};
 const login: ExternalLogin = {
 	id: 9,
 	provider: "keycloak",
@@ -65,6 +71,13 @@ describe("ExternalLoginsSection", () => {
 		await user.click(screen.getByRole("button", { name: "account.external-logins.link" }));
 
 		expect(mocks.state.link).toHaveBeenCalledWith("keycloak");
+	});
+
+	it("does not offer linking when single sign-on needs https", () => {
+		mocks.state.provider = { ...provider, httpsRequired: true };
+		renderWithProviders(<ExternalLoginsSection />);
+
+		expect(screen.queryByRole("button", { name: "account.external-logins.link" })).not.toBeInTheDocument();
 	});
 
 	it("lists linked logins with the provider label and lets the user unlink", async () => {

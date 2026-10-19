@@ -83,6 +83,7 @@ public static class Constants
         public const string OidcUsernameTaken = "error.auth.oidc-username-taken";
         public const string OidcProviderNameInvalid = "error.auth.oidc-provider-name-invalid";
         public const string OidcRoleNotManaged = "error.auth.oidc-role-not-managed";
+        public const string OidcHttpsRequired = "error.auth.oidc-https-required";
         public const string AccountDisabled = "error.auth.account-disabled";
         public const string CannotDisableSelf = "error.auth.cannot-disable-self";
         public const string CannotDisableLastAdmin = "error.auth.cannot-disable-last-admin";

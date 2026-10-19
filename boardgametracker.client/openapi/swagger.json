@@ -6366,6 +6366,9 @@
           "defaultRole": {
             "type": "string",
             "nullable": true
+          },
+          "enabled": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -8415,6 +8418,9 @@
           "buttonColor": {
             "type": "string",
             "nullable": true
+          },
+          "httpsRequired": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -8455,6 +8461,9 @@
           },
           "postLogoutRedirectUri": {
             "type": "string"
+          },
+          "httpsRequired": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

@@ -340,6 +340,7 @@
 			"empty": "Laat mensen zich aanmelden via je identiteitsprovider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Registreer daar eerst een publieke client en vul daarna de gegevens hieronder in.",
 			"configured": "Aanmelden via {{name}} is geconfigureerd. Wijzigingen gelden vanaf de volgende aanmelding."
 		},
+		"https-required": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL.",
 		"fields": {
 			"name": {
 				"label": "Korte naam",
@@ -388,7 +389,8 @@
 			},
 			"enabled": {
 				"label": "Ingeschakeld",
-				"description": "Toon de aanmeldknop op de aanmeldpagina."
+				"description": "Toon de aanmeldknop op de aanmeldpagina.",
+				"https-required": "Single sign-on kan alleen via HTTPS ingeschakeld worden."
 			},
 			"default-role": {
 				"label": "Standaardrol"

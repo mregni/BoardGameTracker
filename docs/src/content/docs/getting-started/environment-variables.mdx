@@ -27,7 +27,7 @@ With the provided compose files you can put any of these variables in a `.env` f
 | Sentry DSN | `SENTRY_DSN` | | Overrides the built-in Sentry project when `STATISTICS_ENABLED=true`, so error reports go to your own Sentry instead of the maintainer's. |
 | Enable authentication | `AUTH_ENABLED` | `true` | Set to `false` to disable authentication and allow anyone to access the application. |
 | Admin password | `ADMIN_PASSWORD` | | Initial password for the default `admin` account, applied when that account is first created. If left empty the default password `admin` is used — change it after your first login. |
-| Trusted proxies | `TRUSTED_PROXIES` | | Comma-separated list of reverse-proxy IP addresses or networks (CIDR) to trust, so the real client IP and HTTPS are read from the forwarded headers. Required behind Traefik, nginx or Caddy: without it the login rate limit is shared by everyone behind the proxy. For Docker use the bridge network, for example `172.16.0.0/12`. |
+| Trusted proxies | `TRUSTED_PROXIES` | | Comma-separated list of reverse-proxy IP addresses or networks (CIDR) to trust, so the real client IP and HTTPS are read from the forwarded headers. Required behind Traefik, nginx or Caddy: without it the login rate limit is shared by everyone behind the proxy, and single sign-on is refused because the forwarded `https` scheme is ignored. For Docker use the bridge network, for example `172.16.0.0/12`. |
 | CORS origins | `CORS_ORIGINS` | | Comma-separated list of extra origins allowed to call the API. |
 | Swagger UI | `SWAGGER_ENABLED` | `false` | Set to `true` to expose the Swagger API UI. Enabled automatically in development. |
 
@@ -90,7 +90,7 @@ Everything under *Settings* in the application is stored in the database, and th
 | Date format | `DATE_FORMAT` | e.g. `yyyy-MM-dd` |
 | Time format | `TIME_FORMAT` | e.g. `HH:mm` |
 | UI language | `UI_LANGUAGE` | `en-US`, `nl-BE`, `nl-NL`, `es-ES` |
-| Public URL | `PUBLIC_URL` | The address users reach the app on; used in RSVP and password-reset links and as the base of the OpenID Connect redirect URI. |
+| Public URL | `PUBLIC_URL` | The address users reach the app on; used in RSVP and password-reset links and as the base of the OpenID Connect redirect URI. Single sign-on can only be enabled when it starts with `https://` (or is a `localhost` address). |
 | Shelf of Shame | `SHELF_OF_SHAME_ENABLED`, `SHELF_OF_SHAME_MONTHS` | `true`/`false`, number of months |
 | Game nights | `GAME_NIGHTS_ENABLED`, `RSVP_AUTHENTICATION_ENABLED` | `true`/`false` |
 | Update check | `UPDATE_CHECK_ENABLED`, `UPDATE_TRACK`, `UPDATE_CHECK_INTERVAL_HOURS` | `true`/`false`, `stable`/`beta`, hours |

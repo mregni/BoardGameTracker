@@ -22,14 +22,14 @@ import { useSsoSettings } from "../-hooks/useSsoSettings";
 import { SettingsSection } from "./SettingsSection";
 import { SettingsToggle } from "./SettingsToggle";
 
-const toForm = (provider: OidcProviderConfig | null): OidcProviderForm => ({
+const toForm = (provider: OidcProviderConfig | null, httpsRequired: boolean): OidcProviderForm => ({
 	name: provider?.name ?? "",
 	displayName: provider?.displayName ?? "",
 	authority: provider?.authority ?? "",
 	clientId: provider?.clientId ?? "",
 	clientSecret: "",
 	scopes: provider?.scopes ?? "openid profile email",
-	enabled: provider?.enabled ?? true,
+	enabled: !httpsRequired && (provider?.enabled ?? true),
 	autoProvisionUsers: provider?.autoProvisionUsers ?? true,
 	defaultRole: provider?.defaultRole ?? "User",
 	usernameClaimType: provider?.usernameClaimType ?? "",
@@ -105,11 +105,12 @@ export const SsoSettings = () => {
 	}));
 
 	const schema = provider === null ? OidcProviderSchema : OidcProviderUpdateSchema;
+	const httpsRequired = setup?.httpsRequired ?? false;
 
 	const form = useAppForm({
-		defaultValues: toForm(provider),
+		defaultValues: toForm(provider, httpsRequired),
 		onSubmit: async ({ value }) => {
-			await save(schema.parse(value));
+			await save(schema.parse({ ...value, enabled: value.enabled && !httpsRequired }));
 		},
 	});
 
@@ -127,6 +128,13 @@ export const SsoSettings = () => {
 					provider ? t("sso.description.configured", { name: provider.displayName }) : t("sso.description.empty")
 				}
 			>
+				{httpsRequired && (
+					<div role="alert" className="p-3 bg-error/10 border border-error/20 rounded-md">
+						<BgtText size="2" color="amber">
+							{t("sso.https-required")}
+						</BgtText>
+					</div>
+				)}
 				<form onSubmit={handleFormSubmit(form)} className="flex flex-col gap-3">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 						<form.Field name="name" validators={zodValidator(schema, "name")}>
@@ -330,8 +338,10 @@ export const SsoSettings = () => {
 								<SettingsToggle
 									field={field}
 									label={t("sso.fields.enabled.label")}
-									description={t("sso.fields.enabled.description")}
-									disabled={busy}
+									description={
+										httpsRequired ? t("sso.fields.enabled.https-required") : t("sso.fields.enabled.description")
+									}
+									disabled={busy || httpsRequired}
 								/>
 							)}
 						</form.Field>

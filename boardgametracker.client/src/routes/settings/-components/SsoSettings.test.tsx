@@ -30,6 +30,7 @@ const setup: OidcSetup = {
 	callbackUriTemplate: "https://games.example.com/api/auth/oidc/{name}/callback",
 	linkCallbackUriTemplate: "https://games.example.com/api/auth/oidc/{name}/link-callback",
 	postLogoutRedirectUri: "https://games.example.com/login",
+	httpsRequired: false,
 };
 
 const provider: OidcProviderConfig = {
@@ -83,6 +84,49 @@ describe("SsoSettings", () => {
 		expect(screen.getByText("https://games.example.com/login")).toBeInTheDocument();
 		expect(screen.getByText("sso.setup.post-logout-redirect-uri")).toBeInTheDocument();
 		expect(screen.queryByText("sso.setup.public-url-warning")).not.toBeInTheDocument();
+	});
+
+	it("does not warn about https when single sign-on is usable", () => {
+		mocks.state.provider = provider;
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.queryByText("sso.https-required")).not.toBeInTheDocument();
+		expect(screen.getByRole("switch", { name: "sso.fields.enabled.label" })).toBeEnabled();
+		expect(screen.getByText("sso.fields.enabled.description")).toBeInTheDocument();
+	});
+
+	it("warns that https is required and disables the enabled toggle with the reason", async () => {
+		const user = userEvent.setup();
+		mocks.state.provider = provider;
+		mocks.state.setup = { ...setup, publicBaseUrl: "http://games.example.com", httpsRequired: true };
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.getByRole("alert")).toHaveTextContent("sso.https-required");
+		const toggle = screen.getByRole("switch", { name: "sso.fields.enabled.label" });
+		expect(toggle).toBeDisabled();
+		expect(toggle).toHaveAttribute("aria-checked", "false");
+		expect(screen.getByText("sso.fields.enabled.https-required")).toBeInTheDocument();
+
+		await user.click(screen.getByRole("button", { name: "sso.save" }));
+
+		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
+		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ enabled: false });
+	});
+
+	it("creates a new provider disabled when https is required", async () => {
+		const user = userEvent.setup();
+		mocks.state.setup = { ...setup, httpsRequired: true };
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.getByRole("alert")).toHaveTextContent("sso.https-required");
+		await user.type(screen.getByLabelText("sso.fields.name.label"), "keycloak");
+		await user.type(screen.getByLabelText("sso.fields.display-name.label"), "Company login");
+		await user.type(screen.getByLabelText("sso.fields.authority.label"), "https://sso.example.com/realms/games");
+		await user.type(screen.getByLabelText("sso.fields.client-id.label"), "bgt");
+		await user.click(screen.getByRole("button", { name: "sso.create" }));
+
+		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
+		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ name: "keycloak", enabled: false });
 	});
 
 	it("warns when the public URL is derived from the request", () => {

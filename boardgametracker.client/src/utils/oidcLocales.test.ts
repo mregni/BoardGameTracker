@@ -35,6 +35,7 @@ const keys = {
 		"auth.account-disabled",
 		"auth.cannot-disable-self",
 		"auth.cannot-disable-last-admin",
+		"auth.oidc-https-required",
 	],
 	auth: ["oidc.sign-in-with-password"],
 	settings: [
@@ -50,6 +51,8 @@ const keys = {
 		"account.users.access.manage-role",
 		"account.notifications.user-disabled",
 		"account.notifications.external-login-unlinked",
+		"sso.https-required",
+		"sso.fields.enabled.https-required",
 	],
 } as const;
 

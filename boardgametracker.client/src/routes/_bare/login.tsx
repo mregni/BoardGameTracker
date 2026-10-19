@@ -16,12 +16,14 @@ import type { OidcProvider } from "@/models/Auth/Auth";
 import { getOidcProviderCall } from "@/services/authService";
 import { getSettings } from "@/services/queries/settings";
 import { apiUrl } from "@/utils/apiUrl";
+import { translateApiError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { safeRedirectPath } from "@/utils/redirectUtils";
 import { loginErrorKey } from "./-utils/loginError";
 
 const loginSearchSchema = z.object({
 	redirect: z.string().optional(),
+	error: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_bare/login")({
@@ -34,8 +36,10 @@ function LoginPage() {
 	const navigate = useNavigate();
 	const login = useAuth((s) => s.login);
 	const isLoading = useAuth((s) => s.isLoading);
-	const [error, setError] = useState<string | null>(null);
-	const { redirect } = Route.useSearch();
+	const { redirect, error: searchError } = Route.useSearch();
+	const [error, setError] = useState<string | null>(() =>
+		searchError ? translateApiError(searchError, "error:auth.oidc-failed") : null,
+	);
 
 	const { data: oidcProvider } = useQuery<OidcProvider | null>({
 		queryKey: ["oidcProvider"],
@@ -127,7 +131,7 @@ function LoginPage() {
 						)}
 					</form>
 
-					{oidcProvider && (
+					{oidcProvider && !oidcProvider.httpsRequired && (
 						<>
 							<div className="relative">
 								<div className="absolute inset-0 flex items-center">

@@ -6,14 +6,16 @@ public record OidcProviderInfo(
     string Name,
     string DisplayName,
     string? IconUrl,
-    string? ButtonColor);
+    string? ButtonColor,
+    bool HttpsRequired = false);
 
 public record OidcSetupDto(
     string PublicBaseUrl,
     bool PublicUrlConfigured,
     string CallbackUriTemplate,
     string LinkCallbackUriTemplate,
-    string PostLogoutRedirectUri);
+    string PostLogoutRedirectUri,
+    bool HttpsRequired = false);
 
 public record TestOidcDiscoveryRequest([Required, Url] string Authority);
 
@@ -43,7 +45,8 @@ public record CreateOidcProviderRequest(
     string? AdminGroupValue,
     [Url] string? IconUrl,
     string? ButtonColor,
-    string? DefaultRole = null);
+    string? DefaultRole = null,
+    bool Enabled = true);
 
 public record UpdateOidcProviderRequest(
     [Range(1, int.MaxValue)] int Id,

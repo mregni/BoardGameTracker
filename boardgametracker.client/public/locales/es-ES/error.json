@@ -47,6 +47,7 @@
     "oidc-username-taken": "Ya existe una cuenta con este nombre de usuario. Inicia sesión con tu contraseña y vincula el SSO en Ajustes → Cuenta.",
     "oidc-provider-name-invalid": "Usa letras minúsculas, dígitos y guiones para el nombre corto, y elige uno que no esté en uso.",
     "oidc-role-not-managed": "Este usuario no tiene ninguna cuenta del proveedor de identidad vinculada, así que el proveedor no puede gestionar su rol.",
+    "oidc-https-required": "El inicio de sesión único requiere HTTPS. Pon BoardGameTracker detrás de un proxy inverso con TLS y configura una URL pública https.",
     "account-disabled": "Esta cuenta está desactivada. Pide a tu administrador que la active.",
     "cannot-disable-self": "No puedes desactivar tu propia cuenta.",
     "cannot-disable-last-admin": "No puedes desactivar al último administrador activo."

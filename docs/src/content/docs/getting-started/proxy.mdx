@@ -24,7 +24,16 @@ Set the **Public URL** under *Settings → General* (or the `PUBLIC_URL` environ
 
 ## HTTPS
 
-Terminate TLS on the proxy. When `TRUSTED_PROXIES` is set the application sees the original scheme and sends the `Strict-Transport-Security` header on HTTPS requests. Raise the proxy's request body limit for rulebook uploads: PDFs are sent in one request and the application itself accepts up to 1 GB.
+Terminate TLS on the proxy. When `TRUSTED_PROXIES` is set the application sees the original scheme and sends the `Strict-Transport-Security` header on HTTPS requests.
+
+[Single sign-on](/BoardGameTracker/getting-started/authentication/#https-is-required) only works over HTTPS (a `localhost` address excepted), so it needs this setup:
+
+- the proxy terminates TLS and sends `X-Forwarded-Proto: https` (Traefik and Caddy do this by themselves, nginx needs the line in the example below);
+- the proxy passes the original `Host` header (`proxy_set_header Host $host` in nginx); `X-Forwarded-Host` is not read;
+- `TRUSTED_PROXIES` contains the address the proxy connects from, otherwise the forwarded scheme is ignored;
+- the **Public URL** starts with `https://`.
+
+Local password login keeps working over plain HTTP, for example on `http://<server-ip>:5444` inside your own network, but the password is sent unencrypted. Anything reachable from outside your network belongs behind the TLS proxy. Raise the proxy's request body limit for rulebook uploads: PDFs are sent in one request and the application itself accepts up to 1 GB.
 
 ## Traefik
 

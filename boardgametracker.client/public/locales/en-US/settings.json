@@ -340,6 +340,7 @@
 			"empty": "Let people sign in through your identity provider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Register a public client there first, then fill in the details below.",
 			"configured": "Sign-in through {{name}} is configured. Changes apply to the next sign-in."
 		},
+		"https-required": "Single sign-on requires HTTPS. Put BoardGameTracker behind a reverse proxy with TLS and set an https public URL.",
 		"fields": {
 			"name": {
 				"label": "Short name",
@@ -388,7 +389,8 @@
 			},
 			"enabled": {
 				"label": "Enabled",
-				"description": "Show the sign-in button on the login page."
+				"description": "Show the sign-in button on the login page.",
+				"https-required": "Single sign-on can only be turned on over HTTPS."
 			},
 			"default-role": {
 				"label": "Default role"

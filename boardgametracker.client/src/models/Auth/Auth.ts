@@ -23,6 +23,7 @@ export interface OidcProvider {
 	displayName: string;
 	iconUrl: string | null;
 	buttonColor: string | null;
+	httpsRequired: boolean;
 }
 
 export interface AuthStatus {

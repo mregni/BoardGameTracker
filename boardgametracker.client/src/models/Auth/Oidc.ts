@@ -36,6 +36,7 @@ export interface OidcSetup {
 	callbackUriTemplate: string;
 	linkCallbackUriTemplate: string;
 	postLogoutRedirectUri: string;
+	httpsRequired: boolean;
 }
 
 export interface OidcDiscoveryResult {

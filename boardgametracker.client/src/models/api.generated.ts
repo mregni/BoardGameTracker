@@ -5132,6 +5132,7 @@ export interface components {
             iconUrl: string | null;
             buttonColor: string | null;
             defaultRole: string | null;
+            enabled: boolean;
         };
         CreatePlayerCommand: {
             name: string;
@@ -5848,6 +5849,7 @@ export interface components {
             displayName: string;
             iconUrl: string | null;
             buttonColor: string | null;
+            httpsRequired: boolean;
         };
         OidcProviderListDto: {
             /** Format: int32 */
@@ -5862,6 +5864,7 @@ export interface components {
             callbackUriTemplate: string;
             linkCallbackUriTemplate: string;
             postLogoutRedirectUri: string;
+            httpsRequired: boolean;
         };
         /** @enum {string} */
         PersonType: "designer" | "artist" | "publisher";
