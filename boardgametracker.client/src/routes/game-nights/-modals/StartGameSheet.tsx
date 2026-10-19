@@ -5,9 +5,10 @@ import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/
 import { BgtSelect } from "@/components/BgtForm";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { AvatarChipButton } from "@/components/GameNight/AvatarChip";
-import type { Game, Player, StartRunningGame } from "@/models";
+import type { Game, Player, RunningGame, StartRunningGame } from "@/models";
 import { toGameSelectItems } from "@/routes/sessions/-utils/gameSelectItems";
 import { splitSuggested } from "@/routes/sessions/-utils/splitSuggested";
+import { busyPlayers } from "../-utils/gameNightPlay";
 
 interface Props {
 	close: () => void;
@@ -15,6 +16,7 @@ interface Props {
 	players: Player[];
 	nightGameIds: number[];
 	attendeeIds: number[];
+	runningGames?: RunningGame[];
 	initialGameId: number | null;
 	initialPlayerIds: number[];
 	isPending: boolean;
@@ -22,8 +24,18 @@ interface Props {
 }
 
 export const StartGameSheet = (props: Props) => {
-	const { close, games, players, nightGameIds, attendeeIds, initialGameId, initialPlayerIds, isPending, onStart } =
-		props;
+	const {
+		close,
+		games,
+		players,
+		nightGameIds,
+		attendeeIds,
+		runningGames = [],
+		initialGameId,
+		initialPlayerIds,
+		isPending,
+		onStart,
+	} = props;
 	const { t } = useTranslation(["game-nights", "player-session", "common"]);
 	const [gameId, setGameId] = useState<number | null>(initialGameId);
 	const [playerIds, setPlayerIds] = useState<number[]>(initialPlayerIds);
@@ -44,6 +56,16 @@ export const StartGameSheet = (props: Props) => {
 		.filter((player): player is Player => player !== undefined);
 
 	const selectedGame = games.find((game) => game.id === gameId);
+	const busy = busyPlayers(runningGames);
+	const busyWarnings = selectedPlayers
+		.filter((player) => busy.has(player.id))
+		.map((player) => ({
+			id: player.id,
+			text: t("play.start.busy", {
+				name: player.name,
+				game: games.find((game) => game.id === busy.get(player.id))?.title ?? "",
+			}),
+		}));
 
 	const handleStart = async () => {
 		if (gameId === null) return;
@@ -98,6 +120,11 @@ export const StartGameSheet = (props: Props) => {
 							</div>
 						</div>
 					)}
+					{busyWarnings.map((warning) => (
+						<BgtText key={warning.id} size="2" color="amber" role="status">
+							{warning.text}
+						</BgtText>
+					))}
 				</div>
 				<BgtDialogFooter
 					onCancel={close}

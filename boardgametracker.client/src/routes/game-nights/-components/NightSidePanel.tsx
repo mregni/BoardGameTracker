@@ -10,23 +10,24 @@ import { NightSectionTitle } from "./NightSectionTitle";
 interface Props {
 	gameNight: GameNight;
 	attendees: Player[];
+	expected: boolean;
 	playedGameIds: number[];
 	canWrite: boolean;
 	onEditAttendees: () => void;
 }
 
 export const NightSidePanel = (props: Props) => {
-	const { gameNight, attendees, playedGameIds, canWrite, onEditAttendees } = props;
+	const { gameNight, attendees, expected, playedGameIds, canWrite, onEditAttendees } = props;
 	const { t } = useTranslation("game-nights");
 	const navigate = useNavigate();
 
 	return (
 		<div className="flex flex-col gap-3">
 			<section className="flex flex-col gap-2" aria-labelledby="at-the-table">
-				<NightSectionTitle id="at-the-table">{t("table.title")}</NightSectionTitle>
+				<NightSectionTitle id="at-the-table">{expected ? t("table.expected") : t("table.title")}</NightSectionTitle>
 				{attendees.length === 0 ? (
 					<BgtText size="2" color="gray">
-						{t("past-night.nobody")}
+						{t("table.nobody")}
 					</BgtText>
 				) : (
 					<div className="flex flex-wrap gap-2">

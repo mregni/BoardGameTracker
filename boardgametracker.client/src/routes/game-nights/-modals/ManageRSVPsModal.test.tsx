@@ -69,7 +69,7 @@ describe("ManageRSVPsModal", () => {
 		const { onUpdateRsvp } = renderModal();
 
 		const guestRow = screen.getByTestId("rsvp-row-7");
-		await user.click(within(guestRow).getByRole("button", { name: "common:pending" }));
+		await user.click(within(guestRow).getByRole("button", { name: "rsvp.no-answer" }));
 
 		expect(onUpdateRsvp).not.toHaveBeenCalled();
 	});
@@ -78,15 +78,15 @@ describe("ManageRSVPsModal", () => {
 		renderModal();
 
 		const guestGroup = within(screen.getByTestId("rsvp-row-7")).getByRole("group", { name: "rsvp.player-status" });
-		expect(within(guestGroup).getByRole("button", { name: "common:pending" })).toHaveAttribute("aria-pressed", "true");
+		expect(within(guestGroup).getByRole("button", { name: "rsvp.no-answer" })).toHaveAttribute("aria-pressed", "true");
 		expect(within(guestGroup).getByRole("button", { name: "rsvp.coming" })).toHaveAttribute("aria-pressed", "false");
-		expect(within(guestGroup).getByRole("button", { name: "common:declined" })).toHaveAttribute(
+		expect(within(guestGroup).getByRole("button", { name: "rsvp.not-coming" })).toHaveAttribute(
 			"aria-pressed",
 			"false",
 		);
 
 		const otherGroup = within(screen.getByTestId("rsvp-row-8")).getByRole("group");
-		expect(within(otherGroup).getByRole("button", { name: "common:declined" })).toHaveAttribute("aria-pressed", "true");
+		expect(within(otherGroup).getByRole("button", { name: "rsvp.not-coming" })).toHaveAttribute("aria-pressed", "true");
 	});
 
 	it("offers maybe and no answer as separate states, in the same order as the counters", () => {
@@ -97,7 +97,7 @@ describe("ManageRSVPsModal", () => {
 			within(guestGroup)
 				.getAllByRole("button")
 				.map((button) => button.textContent),
-		).toEqual(["rsvp.coming", "rsvp.maybe", "common:pending", "common:declined"]);
+		).toEqual(["rsvp.coming", "rsvp.maybe", "rsvp.no-answer", "rsvp.not-coming"]);
 		expect(screen.getAllByRole("button", { name: "rsvp.maybe" })).toHaveLength(2);
 	});
 

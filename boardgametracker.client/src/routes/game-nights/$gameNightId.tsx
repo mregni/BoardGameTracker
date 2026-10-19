@@ -22,12 +22,14 @@ import { GameNightDetailView } from "./-components/GameNightDetailView";
 import { useGameNightData } from "./-hooks/useGameNightData";
 import { useGameNightDetail } from "./-hooks/useGameNightDetail";
 import { useGameNightModals } from "./-hooks/useGameNightModals";
+import { AttendanceModal } from "./-modals/AttendanceModal";
 import { EditGameNightModal } from "./-modals/EditGameNightModal";
 import { EndNightModal } from "./-modals/EndNightModal";
 import { ManageRSVPsModal } from "./-modals/ManageRSVPsModal";
 import { PlaySessionSheet } from "./-modals/PlaySessionSheet";
 import { StartGameSheet } from "./-modals/StartGameSheet";
-import { attendeeIds, nightGameIds } from "./-utils/gameNightPlay";
+import { deleteNightDescription } from "./-utils/deleteNightDescription";
+import { nightGameIds, nightTable } from "./-utils/gameNightPlay";
 
 export const Route = createFileRoute("/game-nights/$gameNightId")({
 	component: RouteComponent,
@@ -61,6 +63,7 @@ function RouteComponent() {
 	const modals = useGameNightModals();
 	const [sheet, setSheet] = useState<Sheet | null>(null);
 	const [discarding, setDiscarding] = useState<RunningGame | null>(null);
+	const attendanceModal = useModalState();
 
 	const {
 		settings,
@@ -82,6 +85,7 @@ function RouteComponent() {
 		discardGame,
 		endNight,
 		reopenNight,
+		saveAttendance,
 		isPending,
 	} = useGameNightDetail(gameNightId);
 	const endModal = useModalState();
@@ -107,7 +111,7 @@ function RouteComponent() {
 			<BgtPageHeader backAction={goBack} backText={t("detail.back")} />
 			<BgtPageContent isLoading={isLoading || isDetailLoading} data={{ detail, settings }}>
 				{({ detail, settings }) => {
-					const attendees = attendeeIds(detail.gameNight);
+					const attendees = nightTable(detail).playerIds;
 					const gameIds = nightGameIds(detail);
 
 					const saveSheet = (session: CreateSession) =>
@@ -140,7 +144,8 @@ function RouteComponent() {
 								onDelete={modals.deleteModal.show}
 								onEnd={endModal.show}
 								onReopen={() => reopenNight()}
-								onEditAttendees={modals.manageRsvpModal.show}
+								onEditAttendees={attendanceModal.show}
+								onManageRsvps={modals.manageRsvpModal.show}
 								onStart={(gameId, playerIds) => setSheet({ kind: "start", gameId, playerIds })}
 								onLog={() => setSheet({ kind: "log" })}
 								onFinish={(runningGame) => setSheet({ kind: "finish", runningGame })}
@@ -154,6 +159,7 @@ function RouteComponent() {
 									players={players}
 									nightGameIds={gameIds}
 									attendeeIds={attendees}
+									runningGames={detail.runningGames}
 									initialGameId={sheet.gameId}
 									initialPlayerIds={sheet.playerIds}
 									isPending={isPending}
@@ -199,6 +205,16 @@ function RouteComponent() {
 								isLoading={isUpdating}
 							/>
 
+							{attendanceModal.isOpen && (
+								<AttendanceModal
+									close={attendanceModal.hide}
+									detail={detail}
+									players={players}
+									isPending={isPending}
+									onSave={saveAttendance}
+								/>
+							)}
+
 							<EndNightModal open={endModal.isOpen} close={endModal.hide} isPending={isPending} onConfirm={endNight} />
 
 							<BgtDeleteModal
@@ -207,7 +223,7 @@ function RouteComponent() {
 								onDelete={handleDelete}
 								title={detail.gameNight.title}
 								heading={t("delete.title")}
-								description={t("delete.description", { title: detail.gameNight.title })}
+								description={deleteNightDescription(t, detail.gameNight)}
 							/>
 
 							<BgtDeleteModal
@@ -217,6 +233,7 @@ function RouteComponent() {
 								title={detail.gameNight.title}
 								heading={t("play.discard.title")}
 								description={t("play.discard.description")}
+								confirmLabel={t("play.discard.confirm")}
 							/>
 						</>
 					);

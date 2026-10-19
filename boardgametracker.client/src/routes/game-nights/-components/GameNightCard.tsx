@@ -23,13 +23,24 @@ interface Props {
 	players: Player[];
 	canWrite: boolean;
 	highlight?: boolean;
+	live?: boolean;
 	onEdit: (gameNight: GameNight) => void;
 	onDelete: (gameNight: GameNight) => void;
 	onManageRsvps: (gameNight: GameNight) => void;
 }
 
 export const GameNightCard = (props: Props) => {
-	const { gameNight, settings, players, canWrite, highlight = false, onEdit, onDelete, onManageRsvps } = props;
+	const {
+		gameNight,
+		settings,
+		players,
+		canWrite,
+		highlight = false,
+		live = false,
+		onEdit,
+		onDelete,
+		onManageRsvps,
+	} = props;
 	const { t } = useTranslation("game-nights");
 	const navigate = useNavigate();
 
@@ -52,10 +63,12 @@ export const GameNightCard = (props: Props) => {
 								highlight ? "bg-primary/20 text-indigo-300" : "bg-white/10 text-gray-300",
 							)}
 						>
-							{t("card.when", {
-								when: relativeDay(gameNight.startDate, settings.uiLanguage),
-								time: format(gameNight.startDate, settings.timeFormat),
-							})}
+							{live
+								? t("card.live")
+								: t("card.when", {
+										when: relativeDay(gameNight.startDate, settings.uiLanguage),
+										time: format(gameNight.startDate, settings.timeFormat),
+									})}
 						</span>
 						<BgtHeading size="5" className="wrap-anywhere">
 							<Link
@@ -90,7 +103,7 @@ export const GameNightCard = (props: Props) => {
 						<div className="flex flex-wrap items-center justify-between gap-2">
 							<RsvpAvatarStack rsvps={rsvps} />
 							<div className="flex flex-wrap items-center gap-2">
-								{canWrite && (
+								{canWrite && !live && (
 									<BgtButton variant="cancel" size="1" onClick={() => onManageRsvps(gameNight)}>
 										{t("card.manage-rsvps")}
 									</BgtButton>

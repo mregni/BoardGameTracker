@@ -12,10 +12,10 @@
       "coming_other": "{{count}} vienen",
       "maybe_one": "{{count}} quizás",
       "maybe_other": "{{count}} quizás",
-      "pending_one": "{{count}} pendiente",
-      "pending_other": "{{count}} pendientes",
-      "declined_one": "{{count}} rechazado",
-      "declined_other": "{{count}} rechazados"
+      "pending_one": "{{count}} sin respuesta",
+      "pending_other": "{{count}} sin respuesta",
+      "declined_one": "{{count}} no viene",
+      "declined_other": "{{count}} no vienen"
     },
     "player-status": "RSVP de {{name}}",
     "remove": "Quitar a {{name}} de esta noche",
@@ -24,28 +24,32 @@
     "no-players-found": "No se encontraron jugadores",
     "invite": "Invitar a {{name}}",
     "invite-link": "Enlace de invitación",
-    "copy": "Copiar"
+    "copy": "Copiar",
+    "no-answer": "Sin respuesta",
+    "not-coming": "No viene"
   },
   "empty": {
-    "title": "Aún no hay noches de juego planificadas",
-    "description": "Invita a jugadores para planificar una noche de juego.",
+    "title": "Aún no hay noches de juego",
     "upcoming": "No hay próximas noches de juego"
   },
   "delete": {
     "title": "Eliminar noche de juego",
-    "description": "¿Seguro que quieres eliminar la noche de juego \"{{title}}\"? Esta acción no se puede deshacer y eliminará todas las respuestas RSVP asociadas."
+    "description": "¿Eliminar “{{title}}”? No se puede deshacer.",
+    "running_one": "Se descarta {{count}} juego en curso.",
+    "running_other": "Se descartan {{count}} juegos en curso.",
+    "sessions_one": "Se conserva {{count}} sesión registrada, pero ya no queda vinculada a esta noche.",
+    "sessions_other": "Se conservan {{count}} sesiones registradas, pero ya no quedan vinculadas a esta noche.",
+    "rsvps": "Se eliminan las respuestas RSVP."
   },
   "title": "Noches de juego",
   "create": {
-    "button": "Crear noche de juego",
-    "title": "Crear nueva noche de juego",
-    "description": "Rellena el formulario para crear un nuevo evento de noche de juego.",
-    "save": "Crear noche de juego"
+    "button": "Añadir noche de juego",
+    "title": "Añadir noche de juego",
+    "save": "Añadir"
   },
   "edit": {
     "title": "Editar noche de juego",
-    "description": "Actualiza los detalles de este evento de noche de juego.",
-    "save": "Guardar cambios"
+    "save": "Guardar"
   },
   "upcoming": "Próximas",
   "past": "Pasadas",
@@ -60,7 +64,8 @@
     "invites-failed": "No se pudieron enviar las invitaciones",
     "when": "{{when}} · {{time}}",
     "host": "Anfitrión: {{host}}",
-    "open": "Abrir la noche"
+    "open": "Abrir la noche",
+    "live": "Esta noche · jugando ahora"
   },
   "plan": {
     "starts": "Empieza {{when}} · {{date}} · {{time}}",
@@ -69,31 +74,32 @@
   },
   "invites": {
     "title": "¿Enviar las invitaciones por correo?",
-    "description_one": "{{count}} invitado sin respuesta recibe un correo con el enlace RSVP de {{title}}:",
-    "description_other": "{{count}} invitados sin respuesta reciben un correo con el enlace RSVP de {{title}}:",
-    "nobody": "Nadie sin respuesta para {{title}} tiene correo electrónico, así que no hay nada que enviar.",
+    "description_one": "{{count}} invitado que aún no ha respondido recibe un correo con el enlace RSVP de {{title}}:",
+    "description_other": "{{count}} invitados que aún no han respondido reciben un correo con el enlace RSVP de {{title}}:",
+    "nobody": "Nadie que aún no haya respondido a {{title}} tiene correo electrónico, así que no hay nada que enviar.",
     "without-email_one": "Sin correo electrónico, no se envía: {{names}}",
     "without-email_other": "Sin correo electrónico, no se envía: {{names}}",
     "send_one": "Enviar {{count}} correo",
     "send_other": "Enviar {{count}} correos",
     "email-disabled": "El correo no está configurado en el servidor, así que no se pueden enviar invitaciones.",
-    "public-url-missing": "Configura la URL pública en Ajustes > General antes de enviar invitaciones."
+    "public-url-missing": "Configura la URL pública en Ajustes > General antes de enviar invitaciones.",
+    "ask-admin": "Pide a un administrador que configure las invitaciones por correo."
   },
   "form": {
     "title": {
       "label": "Título del evento",
-      "placeholder": "Introduce el título de la noche de juego"
+      "placeholder": "Juegos del viernes"
     },
     "start": {
       "label": "Fecha"
     },
     "location": {
       "label": "Ubicación",
-      "placeholder": "Ubicación"
+      "placeholder": "Elige una ubicación"
     },
     "host": {
       "label": "Anfitrión",
-      "placeholder": "Anfitrión"
+      "placeholder": "Elige un anfitrión"
     },
     "invited-players": {
       "label": "Jugadores invitados",
@@ -125,7 +131,6 @@
   "past-night": {
     "attended-count_one": "{{count}} asistió",
     "attended-count_other": "{{count}} asistieron",
-    "nobody": "Nadie confirmó su asistencia",
     "nothing-logged": "aún no hay nada registrado",
     "games-played_one": "{{count}} juego jugado",
     "games-played_other": "{{count}} juegos jugados",
@@ -136,13 +141,14 @@
   },
   "play": {
     "start": {
-      "button": "▶ Empezar un juego",
+      "button": "Empezar un juego",
       "title": "Empezar un juego",
       "game": "Juego",
       "players": "¿Quién juega?",
       "save": "Empezar",
       "coop-default": "Juego cooperativo: eliges “Ganamos” o “Perdimos” al terminarlo.",
-      "coop-optional": "Este juego se puede jugar en cooperativo: lo activas al terminarlo."
+      "coop-optional": "Este juego se puede jugar en cooperativo: lo activas al terminarlo.",
+      "busy": "{{name}} está jugando a {{game}}"
     },
     "log": {
       "button": "Registrar partida",
@@ -156,7 +162,8 @@
     "discard": {
       "button": "Descartar {{game}}",
       "title": "¿Descartar este juego?",
-      "description": "El juego en curso se elimina y no se guarda ninguna sesión."
+      "description": "El juego en curso se elimina y no se guarda ninguna sesión.",
+      "confirm": "Descartar"
     },
     "games": {
       "tonight": "Esta noche y planificados"
@@ -193,7 +200,9 @@
   "table": {
     "title": "En la mesa",
     "host": "· anfitrión",
-    "edit": "Editar quién está"
+    "edit": "Editar quién está",
+    "expected": "Jugadores esperados",
+    "nobody": "Todavía no hay nadie."
   },
   "planned": {
     "title": "Planificados",
@@ -269,7 +278,8 @@
       "no-sessions": "Sin partidas registradas",
       "coop-shared_one": "{{count}} comparte la noche",
       "coop-shared_other": "Los {{count}} comparten la noche",
-      "coop-only": "solo cooperativo"
+      "coop-only": "solo cooperativo",
+      "so-far": "por ahora"
     },
     "games": {
       "title": "Lo más jugado en las noches",
@@ -322,6 +332,19 @@
       "mostly": "sobre todo {{name}}",
       "finish": "{{title}} · {{game}}, {{duration}}",
       "empty": "Aún no hay récords."
+    }
+  },
+  "live": "Jugando ahora",
+  "attendance": {
+    "title": "¿Quién está?",
+    "hint": "Quien jugó está aquí. Toca a los demás que vinieron o no.",
+    "present": "Está",
+    "absent": "No está",
+    "played": "Jugó esta noche",
+    "save": "Guardar",
+    "notifications": {
+      "saved": "Asistencia guardada",
+      "save-failed": "No se pudo guardar la asistencia"
     }
   }
 }

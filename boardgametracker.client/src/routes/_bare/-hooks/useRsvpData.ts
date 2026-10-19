@@ -10,6 +10,7 @@ import { apiErrorMessage } from "@/utils/errorUtils";
 export interface RsvpAnswer {
 	playerId: number;
 	state: GameNightRsvpState;
+	hostNotified: boolean;
 }
 
 export const useRsvpData = (linkId: string) => {
@@ -22,8 +23,8 @@ export const useRsvpData = (linkId: string) => {
 
 	const rsvpMutation = useMutation({
 		mutationFn: (rsvp: UpdateGameNightRsvp) => updateGameNightRsvpByLinkCall(linkId, rsvp),
-		onSuccess: (_data, rsvp) => {
-			setAnswer({ playerId: rsvp.playerId, state: rsvp.state });
+		onSuccess: (data, rsvp) => {
+			setAnswer({ playerId: rsvp.playerId, state: rsvp.state, hostNotified: data.hostNotified });
 			setIsEditing(false);
 			void refetch();
 		},

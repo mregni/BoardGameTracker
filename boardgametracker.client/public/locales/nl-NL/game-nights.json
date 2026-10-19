@@ -12,10 +12,10 @@
       "coming_other": "{{count}} komen",
       "maybe_one": "{{count}} misschien",
       "maybe_other": "{{count}} misschien",
-      "pending_one": "{{count}} in afwachting",
-      "pending_other": "{{count}} in afwachting",
-      "declined_one": "{{count}} afgewezen",
-      "declined_other": "{{count}} afgewezen"
+      "pending_one": "{{count}} geen antwoord",
+      "pending_other": "{{count}} geen antwoord",
+      "declined_one": "{{count}} komt niet",
+      "declined_other": "{{count}} komen niet"
     },
     "player-status": "RSVP van {{name}}",
     "remove": "{{name}} verwijderen van deze avond",
@@ -24,28 +24,32 @@
     "no-players-found": "Geen spelers gevonden",
     "invite": "{{name}} uitnodigen",
     "invite-link": "Uitnodigingslink",
-    "copy": "Kopiëren"
+    "copy": "Kopiëren",
+    "no-answer": "Geen antwoord",
+    "not-coming": "Komt niet"
   },
   "empty": {
-    "title": "Nog geen spelavonden gepland",
-    "description": "Nodig spelers uit om een spelavond te plannen.",
+    "title": "Nog geen spelavonden",
     "upcoming": "Geen komende spelavonden"
   },
   "delete": {
     "title": "Spelavond verwijderen",
-    "description": "Weet je zeker dat je de spelavond \"{{title}}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt en verwijdert ook alle bijbehorende RSVP's."
+    "description": "“{{title}}” verwijderen? Dit kan niet ongedaan worden gemaakt.",
+    "running_one": "{{count}} lopend spel wordt gestopt zonder opslaan.",
+    "running_other": "{{count}} lopende spellen worden gestopt zonder opslaan.",
+    "sessions_one": "{{count}} gespeelde sessie blijft bewaard, maar hoort niet meer bij deze avond.",
+    "sessions_other": "{{count}} gespeelde sessies blijven bewaard, maar horen niet meer bij deze avond.",
+    "rsvps": "De RSVP's worden verwijderd."
   },
   "title": "Spelavonden",
   "create": {
-    "button": "Spelavond aanmaken",
-    "title": "Nieuwe spelavond aanmaken",
-    "description": "Vul het formulier in om een nieuwe spelavond aan te maken.",
-    "save": "Spelavond aanmaken"
+    "button": "Spelavond toevoegen",
+    "title": "Spelavond toevoegen",
+    "save": "Toevoegen"
   },
   "edit": {
     "title": "Spelavond bewerken",
-    "description": "Werk de details van deze spelavond bij.",
-    "save": "Wijzigingen opslaan"
+    "save": "Opslaan"
   },
   "upcoming": "Komend",
   "past": "Voorbij",
@@ -60,7 +64,8 @@
     "invites-failed": "Uitnodigingen versturen mislukt",
     "when": "{{when}} · {{time}}",
     "host": "Gastheer: {{host}}",
-    "open": "Avond openen"
+    "open": "Avond openen",
+    "live": "Vanavond · nu bezig"
   },
   "plan": {
     "starts": "Begint {{when}} · {{date}} · {{time}}",
@@ -69,31 +74,32 @@
   },
   "invites": {
     "title": "Uitnodigingen mailen?",
-    "description_one": "{{count}} genodigde zonder antwoord krijgt een e-mail met de RSVP-link voor {{title}}:",
-    "description_other": "{{count}} genodigden zonder antwoord krijgen een e-mail met de RSVP-link voor {{title}}:",
-    "nobody": "Niemand zonder antwoord voor {{title}} heeft een e-mailadres, er valt dus niets te versturen.",
+    "description_one": "{{count}} genodigde die nog niet antwoordde krijgt een e-mail met de RSVP-link voor {{title}}:",
+    "description_other": "{{count}} genodigden die nog niet antwoordden krijgen een e-mail met de RSVP-link voor {{title}}:",
+    "nobody": "Niemand die nog niet antwoordde op {{title}} heeft een e-mailadres, er valt dus niets te versturen.",
     "without-email_one": "Geen e-mailadres, niet gemaild: {{names}}",
     "without-email_other": "Geen e-mailadres, niet gemaild: {{names}}",
     "send_one": "{{count}} e-mail versturen",
     "send_other": "{{count}} e-mails versturen",
     "email-disabled": "E-mail is niet ingesteld op de server, dus uitnodigingen kunnen niet gemaild worden.",
-    "public-url-missing": "Stel eerst de publieke URL in onder Instellingen > Algemeen voor je uitnodigingen mailt."
+    "public-url-missing": "Stel eerst de publieke URL in onder Instellingen > Algemeen voor je uitnodigingen mailt.",
+    "ask-admin": "Vraag een beheerder om e-mailuitnodigingen in te stellen."
   },
   "form": {
     "title": {
       "label": "Titel van het evenement",
-      "placeholder": "Voer de titel van de spelavond in"
+      "placeholder": "Spelletjes op vrijdag"
     },
     "start": {
       "label": "Datum"
     },
     "location": {
       "label": "Locatie",
-      "placeholder": "Locatie"
+      "placeholder": "Kies een locatie"
     },
     "host": {
       "label": "Gastheer",
-      "placeholder": "Gastheer"
+      "placeholder": "Kies een gastheer"
     },
     "invited-players": {
       "label": "Uitgenodigde spelers",
@@ -125,7 +131,6 @@
   "past-night": {
     "attended-count_one": "{{count}} aanwezig",
     "attended-count_other": "{{count}} aanwezig",
-    "nobody": "Niemand stond als aanwezig genoteerd",
     "nothing-logged": "nog niets gespeeld",
     "games-played_one": "{{count}} spel gespeeld",
     "games-played_other": "{{count}} spellen gespeeld",
@@ -136,13 +141,14 @@
   },
   "play": {
     "start": {
-      "button": "▶ Start een spel",
+      "button": "Start een spel",
       "title": "Start een spel",
       "game": "Spel",
       "players": "Wie speelt er mee?",
       "save": "Starten",
       "coop-default": "Coöperatief spel: je kiest “We wonnen” of “We verloren” bij het afronden.",
-      "coop-optional": "Dit spel kan coöperatief gespeeld worden: je zet het aan bij het afronden."
+      "coop-optional": "Dit spel kan coöperatief gespeeld worden: je zet het aan bij het afronden.",
+      "busy": "{{name}} speelt {{game}}"
     },
     "log": {
       "button": "Sessie registreren",
@@ -154,9 +160,10 @@
       "subtitle": "Gestart om {{time}} · {{duration}} · {{location}}"
     },
     "discard": {
-      "button": "{{game}} weggooien",
-      "title": "Dit spel weggooien?",
-      "description": "Het lopende spel wordt verwijderd en er wordt geen sessie opgeslagen."
+      "button": "{{game}} stoppen zonder opslaan",
+      "title": "Dit spel stoppen?",
+      "description": "Het lopende spel stopt en er wordt geen sessie opgeslagen.",
+      "confirm": "Stoppen zonder opslaan"
     },
     "games": {
       "tonight": "Vanavond & gepland"
@@ -171,8 +178,8 @@
     "notifications": {
       "started": "Spel gestart",
       "start-failed": "Spel starten mislukt",
-      "discarded": "Lopend spel weggegooid",
-      "discard-failed": "Lopend spel weggooien mislukt"
+      "discarded": "Lopend spel gestopt zonder opslaan",
+      "discard-failed": "Het lopende spel stoppen is mislukt"
     }
   },
   "summary": {
@@ -193,7 +200,9 @@
   "table": {
     "title": "Aan tafel",
     "host": "· gastheer",
-    "edit": "Aanwezigen aanpassen"
+    "edit": "Aanwezigen aanpassen",
+    "expected": "Verwachte spelers",
+    "nobody": "Nog niemand aanwezig."
   },
   "planned": {
     "title": "Gepland",
@@ -269,7 +278,8 @@
       "no-sessions": "Geen sessies gelogd",
       "coop-shared_one": "{{count}} deelt de avond",
       "coop-shared_other": "Alle {{count}} delen de avond",
-      "coop-only": "alleen co-op"
+      "coop-only": "alleen co-op",
+      "so-far": "tot nu toe"
     },
     "games": {
       "title": "Meest gespeeld op spelavonden",
@@ -322,6 +332,19 @@
       "mostly": "vooral {{name}}",
       "finish": "{{title}} · {{game}}, {{duration}}",
       "empty": "Nog geen records."
+    }
+  },
+  "live": "Nu bezig",
+  "attendance": {
+    "title": "Wie is er?",
+    "hint": "Wie meespeelde, is er. Tik de anderen aan die er wel of niet waren.",
+    "present": "Aanwezig",
+    "absent": "Afwezig",
+    "played": "Speelde mee",
+    "save": "Opslaan",
+    "notifications": {
+      "saved": "Aanwezigheid opgeslagen",
+      "save-failed": "Aanwezigheid opslaan is mislukt"
     }
   }
 }

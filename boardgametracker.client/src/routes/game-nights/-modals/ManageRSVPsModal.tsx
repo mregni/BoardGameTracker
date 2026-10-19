@@ -47,8 +47,8 @@ const MAX_SUGGESTIONS = 8;
 const options = [
 	{ state: GameNightRsvpState.Accepted, label: "rsvp.coming", active: "bg-green-500/20 text-green-300" },
 	{ state: GameNightRsvpState.Maybe, label: "rsvp.maybe", active: "bg-amber-500/20 text-amber-300" },
-	{ state: GameNightRsvpState.Pending, label: "common:pending", active: "bg-white/15 text-gray-200" },
-	{ state: GameNightRsvpState.Declined, label: "common:declined", active: "bg-red-500/20 text-red-300" },
+	{ state: GameNightRsvpState.Pending, label: "rsvp.no-answer", active: "bg-white/15 text-gray-200" },
+	{ state: GameNightRsvpState.Declined, label: "rsvp.not-coming", active: "bg-red-500/20 text-red-300" },
 ] as const;
 
 export const ManageRSVPsModal = (props: Props) => {

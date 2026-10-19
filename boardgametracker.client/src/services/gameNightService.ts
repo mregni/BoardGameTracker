@@ -60,7 +60,10 @@ export const updateGameNightRsvpCall = (rsvp: UpdateGameNightRsvp): Promise<Game
 	});
 };
 
-export const updateGameNightRsvpByLinkCall = (linkId: string, rsvp: UpdateGameNightRsvp): Promise<GameNightRsvpUpdate> => {
+export const updateGameNightRsvpByLinkCall = (
+	linkId: string,
+	rsvp: UpdateGameNightRsvp,
+): Promise<GameNightRsvpUpdate> => {
 	return axiosInstance.put<GameNightRsvpUpdate>(`${domain}/link/${linkId}/rsvp`, { ...rsvp }).then((response) => {
 		return response.data;
 	});

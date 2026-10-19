@@ -30,7 +30,9 @@
     "more_one": "{{count}} more planned",
     "more_other": "{{count}} more planned",
     "none": "No game night planned",
-    "plan": "Plan one"
+    "plan": "Plan one",
+    "live": "Tonight · playing now",
+    "live-label": "Game night in progress"
   },
   "tiles": {
     "games": "Games",

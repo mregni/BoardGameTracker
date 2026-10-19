@@ -54,7 +54,15 @@ const gameNight = (startDate: Date) =>
 			{ id: 12, playerId: 7, gameNightId: 4, state: GameNightRsvpState.Pending, player: player(7, "Guest") },
 			{ id: 13, playerId: 8, gameNightId: 4, state: GameNightRsvpState.Declined, player: player(8, "Other") },
 		],
-		summary: { gamesPlayed: 0, totalMinutes: 0, mostWins: 0, winnerIds: [] },
+		summary: {
+			gamesPlayed: 0,
+			totalMinutes: 0,
+			mostWins: 0,
+			winnerIds: [],
+			runningGames: 0,
+			attendeeIds: [1],
+			attendanceRecorded: false,
+		},
 	}) as unknown as GameNight;
 
 describe("GameNightCard", () => {
@@ -190,13 +198,40 @@ describe("PastGameNightItem", () => {
 		);
 
 		expect(screen.getByRole("link")).toHaveAttribute("href", "/game-nights/4");
+		expect(screen.getByText("Home · past-night.nothing-logged")).toBeInTheDocument();
+	});
+
+	it("counts the recorded attendance of a night without games", () => {
+		const night = {
+			...gameNight(addDays(new Date(), -2)),
+			summary: {
+				gamesPlayed: 0,
+				totalMinutes: 0,
+				mostWins: 0,
+				winnerIds: [],
+				runningGames: 0,
+				attendeeIds: [1, 7],
+				attendanceRecorded: true,
+			},
+		} as GameNight;
+
+		renderWithProviders(<PastGameNightItem gameNight={night} settings={settings} players={[]} />);
+
 		expect(screen.getByText("Home · past-night.attended-count · past-night.nothing-logged")).toBeInTheDocument();
 	});
 
 	it("shows how many games were played and who won the night", () => {
 		const night = {
 			...gameNight(addDays(new Date(), -2)),
-			summary: { gamesPlayed: 4, totalMinutes: 200, mostWins: 2, winnerIds: [1, 7] },
+			summary: {
+				gamesPlayed: 4,
+				totalMinutes: 200,
+				mostWins: 2,
+				winnerIds: [1, 7],
+				runningGames: 0,
+				attendeeIds: [1, 7],
+				attendanceRecorded: false,
+			},
 		} as GameNight;
 
 		renderWithProviders(

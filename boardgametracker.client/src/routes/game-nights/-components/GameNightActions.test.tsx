@@ -2,11 +2,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type GameNight, GameNightRsvpState, type Player } from "@/models";
 import { renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
 
-const { toastError, toastSuccess, sendInvitesCall, settingsMock } = vi.hoisted(() => ({
+const { toastError, toastSuccess, sendInvitesCall, settingsMock, permissions } = vi.hoisted(() => ({
 	toastError: vi.fn(),
 	toastSuccess: vi.fn(),
 	sendInvitesCall: vi.fn(),
 	settingsMock: { current: { publicUrl: "https://games.example.com", emailEnabled: false } },
+	permissions: { isAdmin: true },
+}));
+
+vi.mock("@/hooks/usePermissions", () => ({
+	usePermissions: () => ({ isAdmin: permissions.isAdmin, canWrite: true }),
 }));
 
 vi.mock("sonner", () => ({
@@ -59,6 +64,16 @@ describe("GameNightActions", () => {
 		toastSuccess.mockClear();
 		sendInvitesCall.mockReset();
 		settingsMock.current = { publicUrl: "https://games.example.com", emailEnabled: false };
+		permissions.isAdmin = true;
+	});
+
+	it("leaves the email invites button out for a non-admin while mailing is not set up", () => {
+		permissions.isAdmin = false;
+		renderWithProviders(<GameNightActions gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
+
+		expect(screen.queryByRole("button", { name: "card.email-invites" })).not.toBeInTheDocument();
+		expect(screen.queryByText("invites.email-disabled")).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "card.copy-link" })).toBeInTheDocument();
 	});
 
 	it("copies the invite link and says so", async () => {

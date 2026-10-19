@@ -3,23 +3,23 @@
   "hosted-by": "Anfitrión",
   "whos-coming": "Quién viene",
   "group": {
-    "coming": "Vienen ({{count}})",
+    "coming": "Viene ({{count}})",
     "maybe": "Quizás ({{count}})",
-    "pending": "Sin respuesta todavía ({{count}})",
-    "declined": "No pueden venir ({{count}})"
+    "pending": "Sin respuesta ({{count}})",
+    "declined": "No viene ({{count}})"
   },
   "host": "anfitrión",
   "can-you-make-it": "¿Puedes venir?",
   "who-are-you": "¿Quién eres?",
   "select-your-name": "Selecciona tu nombre…",
-  "coming": "Voy",
+  "coming": "Viene",
   "maybe": "Quizás",
-  "cant-come": "No puedo",
+  "cant-come": "No viene",
   "send-answer": "Enviar respuesta",
   "answered-accepted": "Vienes, {{name}}",
   "answered-maybe": "Puede que vengas, {{name}}",
   "answered-pending": "Todavía no has respondido, {{name}}",
-  "answered-declined": "No puedes venir, {{name}}",
+  "answered-declined": "No vienes, {{name}}",
   "host-notified": "Se ha avisado al anfitrión.",
   "change-response": "Cambiar respuesta",
   "suggested-games": "Juegos a los que podríamos jugar",
@@ -29,5 +29,8 @@
   "past-description": "Ya no puedes responder.",
   "not-found": "Este enlace de invitación no funciona",
   "not-found-description": "Puede que haya caducado o que no se haya copiado bien. Pide al anfitrión un enlace nuevo.",
-  "rsvp-failed": "No se pudo enviar tu respuesta"
+  "rsvp-failed": "No se pudo enviar tu respuesta",
+  "answer-saved": "Tu respuesta se ha guardado.",
+  "in-progress-title": "{{title}} está en curso",
+  "in-progress-description": "Ya no se aceptan respuestas."
 }

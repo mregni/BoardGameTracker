@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
 	discardGame: vi.fn(),
 	endNight: vi.fn(),
 	reopenNight: vi.fn(),
+	saveAttendance: vi.fn(),
 	saveSession: vi.fn(),
 	deleteGameNight: vi.fn(),
 	invalidateGameNights: vi.fn(),
@@ -61,7 +62,15 @@ const detail = {
 		invitedPlayers: [
 			{ id: 11, playerId: 1, gameNightId: 4, state: GameNightRsvpState.Accepted, player: { id: 1, name: "Mikhael" } },
 		],
-		summary: { gamesPlayed: 0, totalMinutes: 0, mostWins: 0, winnerIds: [] },
+		summary: {
+			gamesPlayed: 2,
+			totalMinutes: 0,
+			mostWins: 0,
+			winnerIds: [],
+			runningGames: 1,
+			attendeeIds: [1],
+			attendanceRecorded: false,
+		},
 	},
 	sessions: [],
 	runningGames: [runningGame],
@@ -92,6 +101,7 @@ vi.mock("./-hooks/useGameNightDetail", () => ({
 		discardGame: mocks.discardGame,
 		endNight: mocks.endNight,
 		reopenNight: mocks.reopenNight,
+		saveAttendance: mocks.saveAttendance,
 		isPending: false,
 	}),
 }));
@@ -105,6 +115,13 @@ vi.mock("@/routes/sessions/-hooks/useNewSessionData", () => ({
 
 vi.mock("./-modals/EditGameNightModal", () => ({ EditGameNightModal: () => null }));
 vi.mock("./-modals/ManageRSVPsModal", () => ({ ManageRSVPsModal: () => null }));
+vi.mock("./-modals/AttendanceModal", () => ({
+	AttendanceModal: ({ onSave }: { onSave: (ids: number[]) => void }) => (
+		<button type="button" onClick={() => onSave([1, 3])}>
+			save-attendance
+		</button>
+	),
+}));
 
 vi.mock("./-modals/StartGameSheet", () => ({
 	StartGameSheet: ({ onStart }: { onStart: (command: unknown) => void }) => (
@@ -235,9 +252,32 @@ describe("Game night detail page", () => {
 		renderPage();
 
 		await user.click(screen.getByRole("button", { name: "play.discard.button" }));
-		await user.click(await screen.findByRole("button", { name: "delete.button" }));
+		await user.click(await screen.findByRole("button", { name: "play.discard.confirm" }));
 
 		await waitFor(() => expect(mocks.discardGame).toHaveBeenCalledWith(12));
+	});
+
+	it("marks who is here from the at-the-table panel", async () => {
+		const user = userEvent.setup();
+		renderPage();
+
+		await user.click(screen.getByRole("button", { name: "table.edit" }));
+		await user.click(screen.getByRole("button", { name: "save-attendance" }));
+
+		expect(mocks.saveAttendance).toHaveBeenCalledWith([1, 3]);
+	});
+
+	it("tells what deleting the night does to its games and RSVPs", async () => {
+		const user = userEvent.setup();
+		renderPage();
+
+		await user.click(screen.getByRole("button", { name: "delete.button" }));
+
+		expect(
+			await screen.findByText(
+				"game-nights:delete.description game-nights:delete.running game-nights:delete.sessions game-nights:delete.rsvps",
+			),
+		).toBeInTheDocument();
 	});
 
 	it("deletes the night after confirming and goes back to the overview", async () => {

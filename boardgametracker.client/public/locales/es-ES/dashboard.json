@@ -30,7 +30,9 @@
     "more_one": "{{count}} más planificada",
     "more_other": "{{count}} más planificadas",
     "none": "No hay ninguna noche de juego planificada",
-    "plan": "Planifica una"
+    "plan": "Planifica una",
+    "live": "Esta noche · jugando ahora",
+    "live-label": "Noche de juego en curso"
   },
   "tiles": {
     "games": "Juegos",

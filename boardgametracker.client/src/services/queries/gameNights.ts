@@ -17,6 +17,7 @@ export const getGameNightByLink = (linkId: string) =>
 		queryKey: [QUERY_KEYS.gameNights, "link", linkId],
 		queryFn: () => getGameNightByLinkCall(linkId),
 		enabled: !!linkId,
+		meta: { silent: true },
 	});
 
 export const getGameNightStatistics = (period: GameNightStatisticsPeriod) =>

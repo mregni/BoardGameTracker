@@ -38,6 +38,33 @@ const renderSheet = (initialGameId: number | null = null) => {
 };
 
 describe("StartGameSheet", () => {
+	it("warns when a player who is in a running game is added", async () => {
+		const onStart = vi.fn().mockResolvedValue(undefined);
+		renderWithProviders(
+			<StartGameSheet
+				close={vi.fn()}
+				games={games}
+				players={players}
+				nightGameIds={[3]}
+				attendeeIds={[2]}
+				runningGames={[{ id: 9, gameNightId: 4, gameId: 2, start: new Date(), playerIds: [2] }]}
+				initialGameId={1}
+				initialPlayerIds={[1, 2]}
+				isPending={false}
+				onStart={onStart}
+			/>,
+		);
+
+		expect(screen.getByRole("status")).toHaveTextContent("play.start.busy");
+		expect(screen.getAllByRole("status")).toHaveLength(1);
+	});
+
+	it("does not warn when nobody selected is playing", () => {
+		renderSheet();
+
+		expect(screen.queryByText("play.start.busy")).not.toBeInTheDocument();
+	});
+
 	it("needs a game before it can start", () => {
 		renderSheet();
 

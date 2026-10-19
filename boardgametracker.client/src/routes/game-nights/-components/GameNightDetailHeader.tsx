@@ -2,6 +2,7 @@ import { cx } from "class-variance-authority";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import MapPin from "@/assets/icons/map-pin.svg?react";
+import Play from "@/assets/icons/play.svg?react";
 import User from "@/assets/icons/user.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
@@ -12,6 +13,7 @@ import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
 import type { GameNight, Settings } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { relativeDay } from "@/utils/relativeDay";
+import { isInsidePlayWindow, isNightInProgress } from "../-utils/gameNightPlay";
 import { NightEndAction } from "./NightEndAction";
 
 interface Props {
@@ -49,7 +51,8 @@ export const GameNightDetailHeader = (props: Props) => {
 	const { t } = useTranslation("game-nights");
 
 	const hasEnded = gameNight.endedAt !== null;
-	const showEndAction = canWrite && (hasEnded || (!isOver && !isPlanned));
+	const canReopen = hasEnded && isInsidePlayWindow(gameNight);
+	const showEndAction = canWrite && (canReopen || (!hasEnded && !isOver && !isPlanned));
 	const showLog = canWrite && !hasEnded && !isPlanned;
 	const showStart = showLog && !isOver;
 	const hasActions = showEndAction || showLog;
@@ -75,11 +78,13 @@ export const GameNightDetailHeader = (props: Props) => {
 					>
 						{isOver
 							? toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage)
-							: t(isPlanned ? "plan.starts" : "card.when", {
-									when: relativeDay(gameNight.startDate, settings.uiLanguage),
-									date: toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage),
-									time: format(gameNight.startDate, settings.timeFormat),
-								})}
+							: isNightInProgress(gameNight)
+								? t("card.live")
+								: t(isPlanned ? "plan.starts" : "card.when", {
+										when: relativeDay(gameNight.startDate, settings.uiLanguage),
+										date: toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage),
+										time: format(gameNight.startDate, settings.timeFormat),
+									})}
 					</span>
 					<BgtHeading size="5" className="wrap-anywhere">
 						{gameNight.title}
@@ -127,6 +132,7 @@ export const GameNightDetailHeader = (props: Props) => {
 										className={cx(phoneButton, "order-first md:order-none")}
 										onClick={onStart}
 									>
+										<Play className="size-3.5" aria-hidden="true" />
 										{t("play.start.button")}
 									</BgtButton>
 								)}

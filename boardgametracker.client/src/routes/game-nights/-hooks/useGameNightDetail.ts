@@ -8,6 +8,7 @@ import {
 	finishRunningGameCall,
 	reopenGameNightCall,
 	startRunningGameCall,
+	updateAttendanceCall,
 } from "@/services/gameNightService";
 import { getGameNight } from "@/services/queries/gameNights";
 import { apiErrorMessage } from "@/utils/errorUtils";
@@ -82,8 +83,20 @@ export const useGameNightDetail = (gameNightId: number) => {
 		},
 	});
 
+	const attendanceMutation = useMutation({
+		mutationFn: (presentPlayerIds: number[]) => updateAttendanceCall(gameNightId, { presentPlayerIds }),
+		onSuccess: async () => {
+			successToast("game-nights:attendance.notifications.saved");
+			await invalidator.invalidateGameNights();
+		},
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "game-nights:attendance.notifications.save-failed"));
+		},
+	});
+
 	return {
 		detail: detailQuery.data,
+		saveAttendance: attendanceMutation.mutateAsync,
 		endNight: endMutation.mutateAsync,
 		reopenNight: reopenMutation.mutateAsync,
 		isLoading: detailQuery.isLoading,
@@ -95,6 +108,7 @@ export const useGameNightDetail = (gameNightId: number) => {
 			finishMutation.isPending ||
 			discardMutation.isPending ||
 			endMutation.isPending ||
-			reopenMutation.isPending,
+			reopenMutation.isPending ||
+			attendanceMutation.isPending,
 	};
 };

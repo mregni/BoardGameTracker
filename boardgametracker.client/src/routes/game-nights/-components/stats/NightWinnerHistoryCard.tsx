@@ -50,7 +50,12 @@ const Outcome = ({ night, lookup }: { night: NightHistory; lookup: StatsLookup }
 					</AvatarChip>
 				);
 			})}
-			{night.winnerStreak >= STREAK_PILL_FROM && (
+			{night.inProgress && (
+				<span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-semibold text-indigo-300">
+					{t("stats.history.so-far")}
+				</span>
+			)}
+			{!night.inProgress && night.winnerStreak >= STREAK_PILL_FROM && (
 				<span className="rounded-full bg-warn/15 px-2 py-0.5 text-xs font-semibold text-warn">
 					{t("stats.history.streak", { count: night.winnerStreak })}
 				</span>
