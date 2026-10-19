@@ -61,6 +61,17 @@ describe("sessionSync", () => {
 		expect(handler).toHaveBeenCalledTimes(1);
 	});
 
+	it("passes on another tab's refresh", async () => {
+		vi.stubGlobal("BroadcastChannel", FakeChannel);
+		const { listenForSessionChanges } = await loadModule();
+		const handler = vi.fn();
+
+		listenForSessionChanges(handler);
+		FakeChannel.instances[0].deliver("refreshed");
+
+		expect(handler).toHaveBeenCalledWith("refreshed");
+	});
+
 	it("does nothing when the browser has no BroadcastChannel", async () => {
 		vi.stubGlobal("BroadcastChannel", undefined);
 		const { announceSessionChange, listenForSessionChanges } = await loadModule();

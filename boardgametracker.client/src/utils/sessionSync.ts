@@ -1,4 +1,4 @@
-export type SessionChange = "login" | "logout";
+export type SessionChange = "login" | "logout" | "refreshed";
 
 const CHANNEL_NAME = "bgt-session";
 
@@ -11,7 +11,8 @@ const sessionChannel = (): BroadcastChannel | null => {
 	return channel;
 };
 
-const isSessionChange = (value: unknown): value is SessionChange => value === "login" || value === "logout";
+const isSessionChange = (value: unknown): value is SessionChange =>
+	value === "login" || value === "logout" || value === "refreshed";
 
 export const announceSessionChange = (change: SessionChange) => {
 	sessionChannel()?.postMessage(change);

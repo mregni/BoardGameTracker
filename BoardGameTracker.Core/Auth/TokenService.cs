@@ -92,6 +92,16 @@ public class TokenService : ITokenService
             .FirstOrDefaultAsync(x => x.Token == hash);
     }
 
+    public async Task<RefreshToken?> GetSuccessorAsync(RefreshToken token)
+    {
+        if (token.ReplacedByToken == null)
+        {
+            return null;
+        }
+
+        return await _context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == token.ReplacedByToken);
+    }
+
     public async Task RevokeRefreshTokenAsync(RefreshToken token, string? reason = null)
     {
         var current = token;

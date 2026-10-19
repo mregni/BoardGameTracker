@@ -132,8 +132,16 @@ public class AuthService : IAuthService
                 throw new AuthenticationFailedException(Constants.Errors.RefreshTokenSuperseded);
             }
 
-            _logger.LogWarning("A rotated refresh token was presented again for user {UserId}; revoking every session", existingToken.UserId);
-            await _tokenService.RevokeAllUserTokensAsync(existingToken.UserId, "Refresh token reuse detected");
+            var successor = await _tokenService.GetSuccessorAsync(existingToken);
+            if (successor?.ReplacedByToken != null)
+            {
+                _logger.LogWarning("A rotated refresh token was presented again after its successor was used for user {UserId}; revoking every session", existingToken.UserId);
+                await _tokenService.RevokeAllUserTokensAsync(existingToken.UserId, "Refresh token reuse detected");
+                throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+            }
+
+            _logger.LogWarning("A rotated refresh token whose successor was never used was presented again for user {UserId}; ending that session only", existingToken.UserId);
+            await _tokenService.RevokeRefreshTokenAsync(existingToken, "Stale refresh token replayed");
             throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
         }
 

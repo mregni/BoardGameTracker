@@ -333,12 +333,13 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldRevokeEverySession_WhenARotatedTokenIsPresentedAgain()
+    public async Task RefreshAsync_ShouldRevokeEverySession_WhenARotatedTokenIsPresentedAgainAfterItsSuccessorWasUsed()
     {
-        var rotatedToken = RefreshToken.Create("user-id-123", 7);
-        rotatedToken.Revoke("Replaced by new token", "next-token-hash");
-        typeof(RefreshToken).GetProperty(nameof(RefreshToken.RevokedAt))!.SetValue(rotatedToken, DateTime.UtcNow.AddMinutes(-5));
+        var rotatedToken = RotatedLongAgo("user-id-123");
+        var successor = RefreshToken.Create("user-id-123", 7);
+        successor.Revoke("Replaced by new token", "third-token-hash");
         _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(rotatedToken);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(rotatedToken)).ReturnsAsync(successor);
         _tokenServiceMock.Setup(x => x.RevokeAllUserTokensAsync("user-id-123", "Refresh token reuse detected")).Returns(Task.CompletedTask);
 
         var act = () => _authService.RefreshAsync("old-token");
@@ -347,8 +348,57 @@ public class AuthServiceTests : IDisposable
             .WithMessage(Constants.Errors.InvalidRefreshToken);
 
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(rotatedToken), Times.Once);
         _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync("user-id-123", "Refresh token reuse detected"), Times.Once);
         VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldEndOnlyThatSession_WhenAStaleTokenIsReplayedAndItsSuccessorWasNeverUsed()
+    {
+        var rotatedToken = RotatedLongAgo("user-id-123");
+        var unusedSuccessor = RefreshToken.Create("user-id-123", 7);
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(rotatedToken);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(rotatedToken)).ReturnsAsync(unusedSuccessor);
+        _tokenServiceMock.Setup(x => x.RevokeRefreshTokenAsync(rotatedToken, "Stale refresh token replayed")).Returns(Task.CompletedTask);
+
+        var act = () => _authService.RefreshAsync("old-token");
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>()
+            .WithMessage(Constants.Errors.InvalidRefreshToken);
+
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(rotatedToken), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeRefreshTokenAsync(rotatedToken, "Stale refresh token replayed"), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldEndOnlyThatSession_WhenTheSuccessorIsGone()
+    {
+        var rotatedToken = RotatedLongAgo("user-id-123");
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(rotatedToken);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(rotatedToken)).ReturnsAsync((RefreshToken?)null);
+        _tokenServiceMock.Setup(x => x.RevokeRefreshTokenAsync(rotatedToken, "Stale refresh token replayed")).Returns(Task.CompletedTask);
+
+        var act = () => _authService.RefreshAsync("old-token");
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>()
+            .WithMessage(Constants.Errors.InvalidRefreshToken);
+
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(rotatedToken), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeRefreshTokenAsync(rotatedToken, "Stale refresh token replayed"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    private static RefreshToken RotatedLongAgo(string userId)
+    {
+        var token = RefreshToken.Create(userId, 7);
+        token.Revoke("Replaced by new token", "next-token-hash");
+        typeof(RefreshToken).GetProperty(nameof(RefreshToken.RevokedAt))!.SetValue(token, DateTime.UtcNow.AddMinutes(-5));
+        return token;
     }
 
     [Fact]

@@ -4,13 +4,14 @@ import { useAuth } from "@/hooks/useAuth";
 import type { User } from "@/models/Auth/Auth";
 
 const sync = vi.hoisted(() => ({
-	handler: null as ((change: "login" | "logout") => void) | null,
+	handler: null as ((change: "login" | "logout" | "refreshed") => void) | null,
 	stop: vi.fn(),
+	announce: vi.fn(),
 }));
 
 vi.mock("./sessionSync", () => ({
-	announceSessionChange: vi.fn(),
-	listenForSessionChanges: (handler: (change: "login" | "logout") => void) => {
+	announceSessionChange: sync.announce,
+	listenForSessionChanges: (handler: (change: "login" | "logout" | "refreshed") => void) => {
 		sync.handler = handler;
 		return sync.stop;
 	},
@@ -77,11 +78,23 @@ describe("tokenRefresh", () => {
 		expect(request).toHaveBeenCalledWith("bgt-token-refresh", expect.any(Function));
 	});
 
+	it("tells other tabs after a successful refresh", async () => {
+		vi.spyOn(axios, "post").mockResolvedValue({ data: { accessToken: "access-2", user } });
+
+		await refreshSession();
+
+		expect(sync.announce).toHaveBeenCalledWith("refreshed");
+	});
+
 	it("retries once when another tab rotated the cookie at the same moment", async () => {
 		vi.useFakeTimers();
+		startSessionSync();
 		const post = vi
 			.spyOn(axios, "post")
-			.mockRejectedValueOnce(rejection(401, "error.auth.refresh-token-superseded"))
+			.mockImplementationOnce(async () => {
+				sync.handler?.("refreshed");
+				throw rejection(401, "error.auth.refresh-token-superseded");
+			})
 			.mockResolvedValueOnce({ data: { accessToken: "access-3", user } });
 
 		const pending = refreshSession();
@@ -89,6 +102,30 @@ describe("tokenRefresh", () => {
 
 		await expect(pending).resolves.toBe("access-3");
 		expect(post).toHaveBeenCalledTimes(2);
+	});
+
+	it("goes to sign-in without replaying the stale cookie when no other tab refreshed", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(Date.now() + 60_000);
+		startSessionSync();
+		const post = vi.spyOn(axios, "post").mockRejectedValue(rejection(401, "error.auth.refresh-token-superseded"));
+
+		const pending = restoreSession();
+		await vi.runAllTimersAsync();
+
+		await expect(pending).resolves.toBe(false);
+		expect(post).toHaveBeenCalledTimes(1);
+		expect(useAuth.getState().isAuthenticated).toBe(false);
+	});
+
+	it("does not refresh again when another tab only reports its own refresh", () => {
+		const post = vi.spyOn(axios, "post");
+		startSessionSync();
+
+		sync.handler?.("refreshed");
+
+		expect(post).not.toHaveBeenCalled();
+		expect(useAuth.getState().accessToken).toBe("access-1");
 	});
 
 	it("does not retry an expired or revoked session", async () => {
