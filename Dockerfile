@@ -1,8 +1,8 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 ARG VERSION=0.0.1
 
 # Stage 1: Build Frontend
-FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend-build
+FROM --platform=$BUILDPLATFORM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS frontend-build
 ARG VITE_SENTRY_DSN
 WORKDIR /src
 
@@ -24,7 +24,7 @@ ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
 RUN --mount=type=secret,id=sentry_auth_token,env=SENTRY_AUTH_TOKEN pnpm build
 
 # Stage 2: Build Backend (runs natively on the build host; the framework-dependent output is architecture-neutral)
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS backend-build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine@sha256:230c3fbae0ceedc70bca04eed2bfb5694e8b248cadbb81010f41b7a993601f55 AS backend-build
 ARG VERSION
 WORKDIR /src
 
@@ -71,7 +71,7 @@ RUN case "${TARGETARCH}" in arm64) rid=linux-musl-arm64 ;; *) rid=linux-musl-x64
     test -f "/app/publish/runtimes/${rid}/native/libSkiaSharp.so"
 
 # Stage 3: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine@sha256:819bd3649d8bf53f35527c68d62e17b348ef6f24ae73073f497f00a878348062 AS runtime
 
 # Build arguments for runtime configuration
 ARG ASPNETCORE_ENVIRONMENT=production
