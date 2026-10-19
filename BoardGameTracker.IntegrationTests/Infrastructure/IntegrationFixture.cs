@@ -44,10 +44,11 @@ public sealed class IntegrationFixture : IAsyncLifetime
 
     public HttpClient CreateClient() => WithClientAddress(_factory.CreateClient());
 
-    public HttpClient CreateBrowserClient() => WithClientAddress(_factory.CreateClient(new WebApplicationFactoryClientOptions
+    public HttpClient CreateBrowserClient(Uri? baseAddress = null) => WithClientAddress(_factory.CreateClient(new WebApplicationFactoryClientOptions
     {
         AllowAutoRedirect = false,
         HandleCookies = true,
+        BaseAddress = baseAddress ?? new Uri("http://localhost"),
     }));
 
     private HttpClient WithClientAddress(HttpClient client)

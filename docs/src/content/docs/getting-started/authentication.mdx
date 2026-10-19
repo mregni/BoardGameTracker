@@ -28,6 +28,10 @@ Users are managed under **Settings → Account → User Management** (admins onl
 - An admin can reset any password from the user list; a temporary password is shown once.
 - When [email](/BoardGameTracker/getting-started/email/) is configured, the login page shows a *Forgot password* link that mails a reset link. The link uses the **Public URL** setting under *Settings → General*, so set that to the address your users reach the app on; without it no reset email is sent.
 
+## Plain HTTP on your own network
+
+Local password login also works over plain HTTP, so a home install reached as `http://192.168.1.20:5444` keeps working without certificates. The password then travels unencrypted, so anyone who can watch the network traffic can read it. Put any install that is reachable from outside your own network behind a [reverse proxy with TLS](/BoardGameTracker/getting-started/proxy/) and use the `https` address. Single sign-on is stricter and needs HTTPS, see [below](#https-is-required).
+
 ## Running without authentication
 
 Set `AUTH_ENABLED=false` to turn authentication off. Every visitor is then treated as an administrator, and the application prints a warning at startup to remind you of that.
@@ -47,6 +51,14 @@ Five failed logins for the same username from the same address block further att
 ## OpenID Connect
 
 One generic OpenID Connect provider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …) can sit next to local accounts. The flow is the authorization-code flow with PKCE, exchanged by the backend: the browser is sent to the provider, the provider sends it back to the backend, and the backend hands the session to the app without ever putting a token or code in a URL the app sees.
+
+### HTTPS is required
+
+Single sign-on only runs over HTTPS. Starting a sign-in or a link and both callbacks are refused over plain HTTP: the login page shows *Single sign-on requires HTTPS* and hides the provider button, and the link button under **Settings → Account** is hidden as well. The only exception is a loopback address (`localhost`, `*.localhost`, `127.0.0.1`, `[::1]`) for development, which browsers treat as secure too.
+
+The scheme is the one the browser used. Behind a reverse proxy that terminates TLS the application only sees it when [`TRUSTED_PROXIES`](/BoardGameTracker/getting-started/proxy/#trust-the-proxy) contains the proxy and the proxy sends `X-Forwarded-Proto`; without that every request looks like plain HTTP and single sign-on is refused.
+
+Under **Settings → Single sign-on** the provider cannot be enabled while the **Public URL** starts with `http://` and is not a loopback address (or, without a public URL, while you are connected over plain HTTP); the page explains why and the server refuses the change with the same message. The sign-in cookies of the flow are always marked `Secure`.
 
 ### Register the client at your provider
 

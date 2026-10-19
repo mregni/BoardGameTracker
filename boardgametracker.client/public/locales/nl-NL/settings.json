@@ -337,6 +337,7 @@
 			"empty": "Laat mensen inloggen via je identiteitsprovider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Registreer daar eerst een publieke client en vul daarna de gegevens hieronder in.",
 			"configured": "Inloggen via {{name}} is geconfigureerd. Wijzigingen gelden vanaf de volgende keer dat iemand inlogt."
 		},
+		"https-required": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL.",
 		"fields": {
 			"name": {
 				"label": "Korte naam",
@@ -385,7 +386,8 @@
 			},
 			"enabled": {
 				"label": "Ingeschakeld",
-				"description": "Toon de inlogknop op de inlogpagina."
+				"description": "Toon de inlogknop op de inlogpagina.",
+				"https-required": "Single sign-on kan alleen via HTTPS worden ingeschakeld."
 			},
 			"default-role": {
 				"label": "Standaardrol"

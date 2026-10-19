@@ -1,6 +1,7 @@
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
@@ -38,7 +39,8 @@ public class OidcProvidersController : ControllerBase
             configured,
             $"{baseUrl}/api/auth/oidc/{{name}}/callback",
             $"{baseUrl}/api/auth/oidc/{{name}}/link-callback",
-            OidcLogoutUrl.PostLogoutRedirectUri(baseUrl)));
+            OidcLogoutUrl.PostLogoutRedirectUri(baseUrl),
+            !OidcTransportPolicy.IsAllowed(baseUrl)));
     }
 
     [HttpPost("test-discovery")]
@@ -68,13 +70,14 @@ public class OidcProvidersController : ControllerBase
     [ProducesResponseType<OidcProviderDto>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateProvider([FromBody] CreateOidcProviderRequest request)
     {
+        await EnsureEnableAllowedAsync(request.Enabled);
         var provider = await _service.CreateAsync(
             request.Name, request.DisplayName, request.Authority, request.ClientId,
             request.ClientSecret, request.Scopes, request.AutoProvisionUsers,
             request.AuthorizationEndpoint, request.TokenEndpoint, request.UserInfoEndpoint,
             request.UsernameClaimType, request.EmailClaimType, request.DisplayNameClaimType,
             request.RolesClaimType, request.AdminGroupValue,
-            request.IconUrl, request.ButtonColor, request.DefaultRole);
+            request.IconUrl, request.ButtonColor, request.DefaultRole, request.Enabled);
 
         return CreatedAtAction(nameof(GetProvider), new { id = provider.Id }, provider.ToDto());
     }
@@ -83,6 +86,7 @@ public class OidcProvidersController : ControllerBase
     [ProducesResponseType<OidcProviderDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateProvider(int id, [FromBody] UpdateOidcProviderRequest request)
     {
+        await EnsureEnableAllowedAsync(request.Enabled);
         var provider = await _service.UpdateAsync(
             id, request.DisplayName, request.Authority, request.ClientId,
             request.ClientSecret, request.Enabled, request.Scopes, request.AutoProvisionUsers,
@@ -100,5 +104,13 @@ public class OidcProvidersController : ControllerBase
     {
         await _service.DeleteAsync(id);
         return NoContent();
+    }
+
+    private async Task EnsureEnableAllowedAsync(bool enabled)
+    {
+        if (enabled && !OidcTransportPolicy.IsAllowed((await PublicBaseUrl.ResolveAsync(_publicUrlBuilder, Request)).BaseUrl))
+        {
+            throw new ValidationException(Constants.Errors.OidcHttpsRequired);
+        }
     }
 }

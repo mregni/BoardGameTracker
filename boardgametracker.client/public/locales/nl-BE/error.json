@@ -45,6 +45,7 @@
     "oidc-username-taken": "Er bestaat al een account met deze gebruikersnaam. Meld je aan met je wachtwoord en koppel SSO via Instellingen → Account.",
     "oidc-provider-name-invalid": "Gebruik kleine letters, cijfers en streepjes voor de korte naam, en kies er een die nog niet in gebruik is.",
     "oidc-role-not-managed": "Deze gebruiker heeft geen gekoppeld account bij de identiteitsprovider, dus de provider kan de rol niet beheren.",
+    "oidc-https-required": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL.",
     "account-disabled": "Dit account is uitgeschakeld. Vraag je beheerder om het in te schakelen.",
     "cannot-disable-self": "Je kunt je eigen account niet uitschakelen.",
     "cannot-disable-last-admin": "Je kunt de laatste actieve beheerder niet uitschakelen."

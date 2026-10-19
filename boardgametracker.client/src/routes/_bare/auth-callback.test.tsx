@@ -42,6 +42,8 @@ const translations: Record<string, string> = {
 		"An account with this username already exists. Sign in with your password and link SSO under Settings → Account.",
 	"error:auth.oidc-id-token-invalid": "The identity provider's sign-in token could not be verified.",
 	"error:auth.account-disabled": "This account is disabled. Ask your administrator to enable it.",
+	"error:auth.oidc-https-required":
+		"Single sign-on requires HTTPS. Put BoardGameTracker behind a reverse proxy with TLS and set an https public URL.",
 };
 
 vi.mock("@/utils/i18n", () => ({
@@ -113,6 +115,19 @@ describe("AuthCallbackPage", () => {
 		expect(screen.getByRole("link")).toHaveAttribute("href", "/login");
 		expect(mocks.adoptOidcLoginCall).not.toHaveBeenCalled();
 		expect(mocks.navigate).not.toHaveBeenCalled();
+	});
+
+	it("explains that single sign-on needs https when the callback arrived over plain http", async () => {
+		mocks.search = { error: "error.auth.oidc-https-required" };
+
+		renderWithTheme(<mocks.captured.Page />);
+
+		expect(
+			await screen.findByText(
+				"Single sign-on requires HTTPS. Put BoardGameTracker behind a reverse proxy with TLS and set an https public URL.",
+			),
+		).toBeInTheDocument();
+		expect(mocks.adoptOidcLoginCall).not.toHaveBeenCalled();
 	});
 
 	it("sends a signed-in user back to the settings when linking a provider failed", async () => {

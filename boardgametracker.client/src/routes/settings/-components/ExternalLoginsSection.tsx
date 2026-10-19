@@ -28,7 +28,8 @@ export const ExternalLoginsSection = () => {
 		return null;
 	}
 
-	const canLink = provider !== null && !logins.some((login) => login.provider === provider.name);
+	const canLink =
+		provider !== null && !provider.httpsRequired && !logins.some((login) => login.provider === provider.name);
 	const providerLabel = (login: ExternalLogin) =>
 		provider?.name === login.provider ? provider.displayName : login.provider;
 

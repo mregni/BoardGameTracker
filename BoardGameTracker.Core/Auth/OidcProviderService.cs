@@ -41,7 +41,7 @@ public partial class OidcProviderService : IOidcProviderService
         string? authorizationEndpoint, string? tokenEndpoint, string? userInfoEndpoint,
         string? usernameClaimType, string? emailClaimType, string? displayNameClaimType,
         string? rolesClaimType, string? adminGroupValue,
-        string? iconUrl, string? buttonColor, string? defaultRole = null)
+        string? iconUrl, string? buttonColor, string? defaultRole = null, bool enabled = true)
     {
         var existingCount = await _context.OidcProviders.CountAsync();
         if (existingCount > 0)
@@ -51,7 +51,7 @@ public partial class OidcProviderService : IOidcProviderService
 
         EnsureSecureAuthority(authority);
         var provider = new OidcProvider(name, displayName, authority, clientId);
-        provider.Update(displayName, authority, clientId, ProtectSecret(clientSecret), true, scopes, autoProvisionUsers,
+        provider.Update(displayName, authority, clientId, ProtectSecret(clientSecret), enabled, scopes, autoProvisionUsers,
             authorizationEndpoint, tokenEndpoint, userInfoEndpoint,
             usernameClaimType, emailClaimType, displayNameClaimType,
             rolesClaimType, adminGroupValue,

@@ -337,6 +337,7 @@
 			"empty": "Permite que la gente inicie sesión mediante tu proveedor de identidad (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Primero registra allí un cliente público y después rellena los datos de abajo.",
 			"configured": "El inicio de sesión mediante {{name}} está configurado. Los cambios se aplican en el siguiente inicio de sesión."
 		},
+		"https-required": "El inicio de sesión único requiere HTTPS. Pon BoardGameTracker detrás de un proxy inverso con TLS y configura una URL pública https.",
 		"fields": {
 			"name": {
 				"label": "Nombre corto",
@@ -385,7 +386,8 @@
 			},
 			"enabled": {
 				"label": "Activado",
-				"description": "Muestra el botón de inicio de sesión en la página de acceso."
+				"description": "Muestra el botón de inicio de sesión en la página de acceso.",
+				"https-required": "El inicio de sesión único solo se puede activar a través de HTTPS."
 			},
 			"default-role": {
 				"label": "Rol predeterminado"

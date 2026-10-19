@@ -639,6 +639,18 @@ public class OidcProviderServiceTests : IDisposable
     }
 
     [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateAsync_ShouldStoreTheEnabledFlag(bool enabled)
+    {
+        var result = await _service.CreateAsync("kc", "Keycloak", "https://sso.example.com", "bgt", null, "openid", true,
+            null, null, null, null, null, null, null, null, null, null, null, enabled);
+
+        result.Enabled.Should().Be(enabled);
+        (await _context.OidcProviders.SingleAsync(TestContext.Current.CancellationToken)).Enabled.Should().Be(enabled);
+    }
+
+    [Theory]
     [InlineData("Admin")]
     [InlineData("Owner")]
     public async Task CreateAsync_ShouldRejectADefaultRoleOtherThanUserOrReader(string defaultRole)

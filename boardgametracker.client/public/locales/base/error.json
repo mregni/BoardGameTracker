@@ -45,6 +45,7 @@
     "oidc-username-taken": "An account with this username already exists. Sign in with your password and link SSO under Settings → Account.",
     "oidc-provider-name-invalid": "Use lowercase letters, digits and dashes for the short name, and pick one that is not in use.",
     "oidc-role-not-managed": "This user has no linked identity provider account, so the provider cannot manage their role.",
+    "oidc-https-required": "Single sign-on requires HTTPS. Put BoardGameTracker behind a reverse proxy with TLS and set an https public URL.",
     "account-disabled": "This account is disabled. Ask your administrator to enable it.",
     "cannot-disable-self": "You cannot disable your own account.",
     "cannot-disable-last-admin": "You cannot disable the last active admin."
