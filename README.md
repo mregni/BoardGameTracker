@@ -48,7 +48,7 @@ BoardGameTracker is a self-hosted application designed for board game enthusiast
 - Monitor player performance and win rates
 - Visualize gaming trends over time
 
-**BoardGameGeek (BGG) integration** works with a personal BGG API key: request one at [boardgamegeek.com/applications](https://boardgamegeek.com/applications) and paste it under *Settings → BoardGameGeek* (or set `BGG_API_KEY`). It unlocks single-game import, collection import and expansion lookup.
+**BoardGameGeek (BGG) integration** works with a personal BGG API key: request one at [boardgamegeek.com/applications](https://boardgamegeek.com/applications) and paste it under *Settings → Integrations* (or set `BGG_API_KEY`). It unlocks single-game import, collection import and expansion lookup.
 
 > ⚠️ **Note**: This project is under active development. Breaking changes may occur between releases.
 
@@ -56,88 +56,52 @@ BoardGameTracker is a self-hosted application designed for board game enthusiast
 
 ## Installation
 
+> **Note:** the documentation follows the `beta` image. Until the next stable release after v0.2.181, `latest` lacks some of the features described here; use `uping/boardgametracker:beta` to get them.
+
 ### Prerequisites
-- Docker installed on your system, with Docker Compose 2.24 or newer for the downloadable `docker-compose.yml` (older versions, such as some NAS container managers, reject its optional `.env` block; delete the `env_file` lines or use the minimal file below)
-- PostgreSQL database (can be run via Docker Compose)
+- Docker with Docker Compose 2.24 or newer for the downloadable `docker-compose.yml` (older versions, such as some NAS container managers, reject its optional `.env` block; use the compose file on the [Docker](https://mregni.github.io/BoardGameTracker/getting-started/docker/) docs page instead)
+- PostgreSQL with the `vector` extension (the compose file runs `pgvector/pgvector:pg16`; plain `postgres:16` does not work)
 
-### Quick Start with Docker Compose (Recommended)
+### Quick start with Docker Compose
 
-1. Download the [docker-compose.yml](docker-compose.yml) file (it also contains the optional rules assistant, off until you enable it) or create a minimal one with the following content:
+1. Download the compose file (it also contains the optional rules assistant, off until you enable it) and the example environment file:
 
-```yaml
-services:
-  boardgametracker:
-    image: uping/boardgametracker:latest
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ./images:/app/images
-      - ./logs:/app/logs
-      - ./manuals:/app/manuals
-    ports:
-      - "5444:5444"
-    environment:
-      - DB_HOST=db
-      - DB_USER=dbuser
-      - DB_PASSWORD=CHANGEME
-      - DB_NAME=boardgametracker
-      - DB_PORT=5432
-      - JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
-      - DATA_PROTECTION_KEY=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
-      - TZ=UTC
-
-  db:
-    image: pgvector/pgvector:pg16
-    restart: unless-stopped
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=boardgametracker
-      - POSTGRES_USER=dbuser
-      - POSTGRES_PASSWORD=CHANGEME
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dbuser -d boardgametracker"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
+```sh
+wget https://raw.githubusercontent.com/mregni/BoardGameTracker/refs/heads/master/docker-compose.yml
+wget -O .env https://raw.githubusercontent.com/mregni/BoardGameTracker/refs/heads/master/.env.example
 ```
 
-> The database image must provide the `vector` extension (`pgvector/pgvector:pg16` does; plain `postgres:16` does not). The application refuses to start against a server without it.
-
-2. Update the placeholder values:
-   - Change the `CHANGEME` passwords to secure values
-   - Set `JWT_SECRET` to a random value of at least 32 characters (for example `openssl rand -base64 48`). It is required unless you run with `AUTH_ENABLED=false`
-   - Set `DATA_PROTECTION_KEY` to a second, different random value of at least 32 characters. It encrypts the keys that protect stored secrets (OIDC client secret, API keys) so a database backup alone cannot reveal them. Keep it safe: losing or changing it means entering those secrets again
-   - Adjust the timezone (`TZ`) to your location
+2. Fill in `.env`:
+   - `DB_PASSWORD`: a password for the database
+   - `JWT_SECRET` and `DATA_PROTECTION_KEY`: each its own random value of at least 32 characters, from `openssl rand -base64 48`. The application does not start while `JWT_SECRET` is empty or still starts with `CHANGEME`. Keep `DATA_PROTECTION_KEY` safe: losing or changing it means entering the stored secrets (OIDC client secret, API keys) again
+   - `TZ`: your timezone
 
 3. Start the containers:
-```bash
+```sh
 docker compose up -d
 ```
 
-To also run the rules assistant with the downloaded file, set `RAG_ENABLED=true` in a `.env` file next to it and start the stack with the `rag` profile: `docker compose --profile rag up -d`.
+To also run the rules assistant, set `RAG_ENABLED=true` in `.env` and start the stack with the `rag` profile: `docker compose --profile rag up -d`.
 
-4. Access the application at `http://localhost:5444` and log in with `admin` / `admin` (or the `ADMIN_PASSWORD` you set). Change the password after the first login.
+4. Open `http://localhost:5444` and sign in as `admin`, with the `ADMIN_PASSWORD` you set or `admin` when it is empty. Change the password after the first login.
 
-### Docker Run Command
+The [documentation](https://mregni.github.io/BoardGameTracker/getting-started/quick-start/) covers the full compose file, `docker run`, upgrading and reverse proxies.
 
-If you prefer using Docker CLI or have an existing PostgreSQL instance (with the `vector` extension installed):
+### Docker run
 
-```bash
+With an existing PostgreSQL server that has the `vector` extension installed. Fill in `JWT_SECRET` and `DATA_PROTECTION_KEY` with the output of `openssl rand -base64 48`, each its own value:
+
+```sh
 docker run -d \
   --name boardgametracker \
   --restart unless-stopped \
-  -e DB_HOST=<DB_HOST> \
+  -e DB_HOST=<your-postgres-host> \
   -e DB_USER=dbuser \
   -e DB_PASSWORD=CHANGEME \
   -e DB_NAME=boardgametracker \
   -e DB_PORT=5432 \
-  -e JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS \
-  -e DATA_PROTECTION_KEY=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS \
+  -e JWT_SECRET= \
+  -e DATA_PROTECTION_KEY= \
   -e TZ=UTC \
   -p 5444:5444 \
   -v ./images:/app/images \
@@ -150,7 +114,7 @@ docker run -d \
 
 ## Configuration
 
-### Environment Variables
+### Environment variables
 
 | Variable          | Default            | Required | Description |
 |-------------------|--------------------|:--------:|-------------|
@@ -159,12 +123,12 @@ docker run -d \
 | `DB_USER`         | -                  | ✅       | PostgreSQL username |
 | `DB_PASSWORD`     | -                  | ✅       | PostgreSQL password |
 | `DB_NAME`         | `boardgametracker` | ❌       | PostgreSQL database name |
-| `JWT_SECRET`      | -                  | ✅       | Signing key for login tokens, at least 32 characters. Not needed when `AUTH_ENABLED=false` |
+| `JWT_SECRET`      | -                  | ✅       | Signing key for login tokens, at least 32 characters; values starting with `CHANGEME` are refused. Not needed when `AUTH_ENABLED=false` |
 | `DATA_PROTECTION_KEY` | -              | ❌       | Strongly recommended, at least 32 characters. Encrypts the stored data protection keys; a warning is logged while it is missing |
 | `AUTH_ENABLED`    | `true`             | ❌       | Set to `false` to run without login (anyone on the network gets full access) |
-| `ADMIN_PASSWORD`  | `admin`            | ❌       | Password of the `admin` account when it is first created |
+| `ADMIN_PASSWORD`  | -                  | ❌       | Password (at least 8 characters) of the `admin` account when no account exists yet; `admin` when empty |
 | `TZ`              | `UTC`              | ❌       | Timezone (e.g., `America/New_York`, `Asia/Tokyo`) |
-| `STATISTICS_ENABLED` | `false`         | ❌       | Send anonymous error reports to Sentry |
+| `STATISTICS_ENABLED` | `false`         | ❌       | Send error reports, a sample of performance traces and scrubbed browser session replays to Sentry |
 | `PUID` / `PGID`   | `1654`             | ❌       | User and group that own the mounted `images`, `logs` and `manuals` folders |
 
 Date format, time format, currency and language are set in the application under *Settings*. The full list, including email, reverse-proxy and rules-assistant settings, is in the [documentation](https://mregni.github.io/BoardGameTracker/getting-started/environment-variables/).

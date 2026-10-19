@@ -9,7 +9,7 @@ BoardGameTracker serves plain HTTP on port `5444`. Put a reverse proxy in front 
 
 ## Trust the proxy
 
-Set `TRUSTED_PROXIES` to the IP address or network of the proxy. Without it the forwarded headers are ignored: every visitor then shares the proxy's IP address, so the login rate limit (10 attempts per minute) applies to your whole household at once, HTTPS is not detected and the logs show the proxy instead of the client. With Docker, the proxy usually lives in the default bridge range:
+Set `TRUSTED_PROXIES` to the IP address or network of the proxy. Without it the forwarded headers are ignored: every visitor then shares the proxy's IP address, so the login limits (10 requests per minute per address, and the lockout described under [Authentication](/BoardGameTracker/getting-started/authentication/#tokens-and-sessions)) apply to your whole household at once, HTTPS is not detected and the logs show the proxy instead of the client. With Docker, the proxy usually lives in the default bridge range:
 
 ```yaml title="docker-compose.yml"
 environment:
@@ -24,7 +24,7 @@ Set the **Public URL** under *Settings → General* (or the `PUBLIC_URL` environ
 
 ## HTTPS
 
-Terminate TLS on the proxy. When `TRUSTED_PROXIES` is set the application sees the original scheme and sends the `Strict-Transport-Security` header on HTTPS requests.
+Terminate TLS on the proxy. When `TRUSTED_PROXIES` is set the application sees the original scheme, sends the `Strict-Transport-Security` header on HTTPS requests and marks the sign-in cookies `Secure`.
 
 [Single sign-on](/BoardGameTracker/getting-started/authentication/#https-is-required) only works over HTTPS (a `localhost` address excepted), so it needs this setup:
 
@@ -33,7 +33,7 @@ Terminate TLS on the proxy. When `TRUSTED_PROXIES` is set the application sees t
 - `TRUSTED_PROXIES` contains the address the proxy connects from, otherwise the forwarded scheme is ignored;
 - the **Public URL** starts with `https://`.
 
-Local password login keeps working over plain HTTP, for example on `http://<server-ip>:5444` inside your own network, but the password is sent unencrypted. Anything reachable from outside your network belongs behind the TLS proxy. Raise the proxy's request body limit for rulebook uploads: PDFs are sent in one request and the application itself accepts up to 1 GB.
+Local password login keeps working over plain HTTP, for example on `http://<server-ip>:5444` inside your own network, but the password is sent unencrypted. Anything reachable from outside your network belongs behind the TLS proxy. Raise the proxy's request body limit for rulebook uploads: PDFs are sent in one request and the application itself accepts up to 1 GB. The examples below allow 100 MB, which is enough for most rulebooks.
 
 ## Traefik
 

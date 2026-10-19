@@ -3,18 +3,23 @@ title: Logging
 description: Configure log levels and view logs for BoardGameTracker.
 ---
 
-BoardGameTracker uses structured logging to help you (and me) debug issues. To change the log level, stop the application, set the `LOGLEVEL` environment variable to the desired level, then restart the application. The available log levels are `debug`, `info`, `warn`, and `error`. The default log level is `warn`.
+BoardGameTracker logs with Serilog. To change the log level, set the `LOGLEVEL` environment variable and restart the container. The available levels are `debug`, `info`, `warn` and `error`; the default is `warn`.
 
 ## Viewing logs
 
-You can view the application logs with the following Docker command:
+Follow the container output with:
 
-```sh title="Docker logs"
+```sh title="Terminal"
 docker compose logs -f boardgametracker
 ```
 
+The same logs are written to `./logs/app-<date>.log` in the mounted `logs` folder, one file per day; the last 30 files are kept.
+
 ## Sentry integration
 
-BoardGameTracker is integrated with Sentry for error tracking. You can enable or disable this feature by setting the `STATISTICS_ENABLED` environment variable. When `true`, any unhandled exceptions are sent to Sentry along with relevant context and metadata to help diagnose and fix issues quickly. No IP address, server name or hardware info is ever sent to Sentry — only stack traces and spans.
+Set `STATISTICS_ENABLED=true` to send error reports to Sentry. It is off by default. When it is on:
 
-By enabling this you help improve the application by providing valuable insight into any errors that occur. For privacy reasons this feature is disabled by default.
+- the server sends unhandled exceptions and a 10% sample of performance traces;
+- the browser sends errors, a 20% sample of performance traces and scrubbed session replays (10% of sessions, and every session with an error).
+
+No IP address or server name is sent, and reports are scrubbed before they leave. The reports go to the maintainer's Sentry project and help fix errors. `SENTRY_DSN` redirects the server reports to your own project; browser reports always use the project built into the image.

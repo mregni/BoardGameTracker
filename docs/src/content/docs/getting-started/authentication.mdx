@@ -1,11 +1,11 @@
 ---
-title: Authentication & Users
+title: Authentication and users
 description: Local accounts, roles, the admin password, running without authentication, and signing in through an OpenID Connect provider.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-BoardGameTracker ships with local accounts. Authentication is on by default and every request to the API needs a signed-in user, except the public RSVP page for game nights.
+BoardGameTracker ships with local accounts. Authentication is on by default and every request to the API needs a signed-in user, except signing in, the health check, game covers and the public RSVP page for game nights.
 
 ## First login
 
@@ -19,9 +19,9 @@ The `admin` account is recreated with the same rule after a *factory reset* (**S
 | --- | --- |
 | **Admin** | Everything: manage users, change settings, reset data. |
 | **User** | Add and edit games, sessions, players, locations, loans and game nights; upload rulebooks; use the rules assistant. |
-| **Reader** | Look around. Every page is read-only; the add/edit/delete buttons are hidden. |
+| **Reader** | Look around: every page is read-only, the add/edit/delete buttons are hidden and the rules assistant is not available. |
 
-Users are managed under **Settings → Account → User Management** (admins only). Each user can be linked to a player, which the dashboard uses for the "welcome back" card and personal statistics.
+Users are managed under **Settings → Account → User management** (admins only). Each user can be linked to a player, which the dashboard uses for the "welcome back" card and personal statistics.
 
 ## Forgotten passwords
 
@@ -42,11 +42,11 @@ Only do this on a network you trust or behind a proxy that authenticates for you
 
 ## Tokens and sessions
 
-Logins use short-lived access tokens (60 minutes) and refresh tokens (7 days) signed with `JWT_SECRET`. Refresh tokens are stored hashed; reusing an already rotated token revokes every session of that user. Changing `JWT_SECRET` signs everyone out.
+Logins use short-lived access tokens (60 minutes) and refresh tokens (7 days) signed with `JWT_SECRET`. The access token is kept only in the browser's memory. The refresh token is an `HttpOnly` cookie named `bgt_refresh`, scoped to `/api/auth`, `SameSite=Lax` and marked `Secure` on HTTPS requests; the server stores it hashed. Presenting a refresh token again more than 30 seconds after it was rotated revokes every session of that user; within 30 seconds it counts as a concurrent refresh from another tab. Changing `JWT_SECRET` signs everyone out.
 
 Player photos under `/images/profile` are only served to signed-in browsers: logging in sets an `HttpOnly` cookie scoped to that path (it lives as long as the refresh token and is cleared on logout), and API clients can pass their bearer token instead. Game covers stay public. The public RSVP page therefore shows initials instead of photos.
 
-Five failed logins for the same username from the same address block further attempts from that address for 15 minutes (IPv6 clients are grouped per /64 network). After 20 failures for one username across all addresses, that username gets one attempt every 30 seconds until the failures age out; the account is slowed down, never locked. Behind a reverse proxy this only works when [`TRUSTED_PROXIES`](/BoardGameTracker/getting-started/proxy/) is set.
+Five failed logins for one username from one address block that username from that address for 15 minutes after the last failure (IPv6 clients are grouped per /64 network). On top of that, one address can try 10 logins per minute. After 20 failures for one username across all addresses, that username gets one attempt every 30 seconds until the failures age out; the account is slowed down, never locked. Behind a reverse proxy this only works when [`TRUSTED_PROXIES`](/BoardGameTracker/getting-started/proxy/) is set.
 
 ## OpenID Connect
 
@@ -89,8 +89,8 @@ The same configuration is available through the API (`POST /api/admin/oidc-provi
 }
 ```
 
-- **authority** must use `https` (plain `http` is accepted only for local addresses) and must match the `issuer` in the provider's discovery document. Pointing an existing provider at a different authority unlinks every account linked to it, because a user id from one issuer says nothing about the same id at another; users sign in with their password and link the provider again.
-- **autoProvisionUsers** creates an account with the default role on first sign-in. When the username or the e-mail already belongs to a local account that is not linked, the sign-in is refused and the user is told to log in with the password first and link the provider under **Settings → Account → External logins**. Accounts are never linked automatically by username or e-mail.
+- **authority** (the provider's address, not BoardGameTracker's) must use `https`; plain `http` is accepted only for a provider on a local address, and single sign-on itself still needs HTTPS as described [above](#https-is-required). It must match the `issuer` in the provider's discovery document. Pointing an existing provider at a different authority unlinks every account linked to it, because a user id from one issuer says nothing about the same id at another; users sign in with their password and link the provider again.
+- **autoProvisionUsers** creates an account with the default role on first sign-in. When the username or the email already belongs to a local account that is not linked, the sign-in is refused and the user is told to log in with the password first and link the provider under **Settings → Account → External logins**. Accounts are never linked automatically by username or email.
 - **rolesClaimType** / **adminGroupValue** / **defaultRole** map the provider's groups to a role: `Admin` when the named group is present in that claim, otherwise the default role (`User` or `Reader`). For accounts created through the provider this is applied again on every sign-in, so a group change at the provider takes effect at the next sign-in. Without a groups claim and admin group nothing is changed after the first sign-in. The last active admin is never demoted; the server logs a warning instead.
 - A role that an admin sets under **Settings → Account** is a local override and is no longer changed by the provider. **Access → Let the identity provider manage the role** hands it back. Local accounts that were linked to the provider later keep their local role.
 - **Short name** can be changed later. Linked accounts keep working because links are stored per issuer and subject, not per name, but the redirect URIs change, so register the new ones at the provider.
@@ -99,7 +99,7 @@ The same configuration is available through the API (`POST /api/admin/oidc-provi
 
 ### Linking an existing account
 
-Anyone with a local account can link it to the provider under **Settings → Account → External logins**. Afterwards both the password and the provider sign in to the same account, and the same screen shows when the link was made and lets the user unlink it again. An account created through the provider has no password, so its last external login cannot be unlinked until a password is set (Forgot password, or an admin reset). A sign-in through the provider is refused when the e-mail already belongs to an unlinked local account, so link first.
+Anyone with a local account can link it to the provider under **Settings → Account → External logins**. Afterwards both the password and the provider sign in to the same account, and the same screen shows when the link was made and lets the user unlink it again. An account created through the provider has no password, so its last external login cannot be unlinked until a password is set (Forgot password, or an admin reset). A sign-in through the provider is refused when the email already belongs to an unlinked local account, so link first.
 
 ### How the sign-in is checked
 
@@ -111,7 +111,7 @@ An admin opens **Settings → Account → Access** next to a user to see the ide
 
 ### What to expect
 
-- Sign-in errors come back to the app as a short message (provider refused, e-mail already registered, provisioning disabled, …); the details are in the server log.
+- Sign-in errors come back to the app as a short message (provider refused, email already registered, provisioning disabled, …); the details are in the server log.
 - Local accounts keep working, and admins can still create local users (for example Reader accounts for the kids) while a provider is enabled. Keep the local `admin` password somewhere safe: it is the way in when the provider is down.
 - Removing a user at the provider does not end an existing BoardGameTracker session. Disable or delete the user under **Settings → Account** as well.
 - Signing out of BoardGameTracker after a provider sign-in also signs out at the provider when its discovery document advertises an `end_session_endpoint`; the id_token needed for that stays on the server.
