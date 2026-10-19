@@ -1,8 +1,7 @@
 {
   "empty": {
-    "title": "Nog geen spelers toegevoegd",
-    "description": "Je hebt nog geen spelers toegevoegd. Voeg je eerste speler toe om spelsessies en statistieken per speler bij te houden.",
-    "button": "Voeg je eerste speler toe"
+    "title": "Nog geen spelers",
+    "button": "Speler toevoegen"
   },
   "back": "Terug naar spelers",
   "count_other": "{{count}} spelers gevonden",
@@ -26,18 +25,16 @@
     "invalid": "Voer een geldig e-mailadres in"
   },
   "new": {
-    "button": "Nieuwe speler toevoegen",
-    "description": "Vul het formulier in om een nieuwe speler aan te maken.",
-    "save": "Speler aanmaken",
-    "title": "Speler aanmaken",
+    "button": "Speler toevoegen",
+    "save": "Toevoegen",
+    "title": "Speler toevoegen",
     "players": {
       "none": "Nog geen spelers in deze sessie"
     }
   },
   "update": {
-    "save": "Speler bijwerken",
-    "title": "Speler bijwerken",
-    "description": "Wijzig de naam of afbeelding om de speler bij te werken."
+    "save": "Opslaan",
+    "title": "Speler bewerken"
   },
   "delete": {
     "successfull": "Speler is verwijderd.",
@@ -57,6 +54,7 @@
     "milestones": "Mijlpalen",
     "feats": "Bijzondere prestaties",
     "next": "Volgende: {{goal}}",
-    "complete": "Alle niveaus behaald"
+    "complete": "Alle niveaus behaald",
+    "see-all": "Alle prestaties bekijken"
   }
 }

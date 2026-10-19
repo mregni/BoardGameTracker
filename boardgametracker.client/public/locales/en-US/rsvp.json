@@ -5,8 +5,8 @@
   "group": {
     "coming": "Coming ({{count}})",
     "maybe": "Maybe ({{count}})",
-    "pending": "No answer yet ({{count}})",
-    "declined": "Can't come ({{count}})"
+    "pending": "No answer ({{count}})",
+    "declined": "Not coming ({{count}})"
   },
   "host": "host",
   "can-you-make-it": "Can you make it?",
@@ -14,12 +14,12 @@
   "select-your-name": "Select your name…",
   "coming": "Coming",
   "maybe": "Maybe",
-  "cant-come": "Can't come",
+  "cant-come": "Not coming",
   "send-answer": "Send answer",
   "answered-accepted": "You're coming, {{name}}",
   "answered-maybe": "You might come, {{name}}",
   "answered-pending": "You haven't answered yet, {{name}}",
-  "answered-declined": "You can't come, {{name}}",
+  "answered-declined": "You're not coming, {{name}}",
   "host-notified": "The host has been notified.",
   "change-response": "Change answer",
   "suggested-games": "Games we might play",
@@ -29,5 +29,8 @@
   "past-description": "You can't answer any more.",
   "not-found": "This invite link doesn't work",
   "not-found-description": "It may have expired or been copied incorrectly. Ask the host for a new link.",
-  "rsvp-failed": "Failed to send your answer"
+  "rsvp-failed": "Failed to send your answer",
+  "answer-saved": "Your answer is saved.",
+  "in-progress-title": "{{title}} is in progress",
+  "in-progress-description": "Answers are closed."
 }

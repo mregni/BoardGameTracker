@@ -4,11 +4,14 @@ using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
+using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -30,7 +33,8 @@ public class AuthControllerTests
         _imageTicketsMock.Setup(x => x.Issue()).Returns("image-ticket");
         _imageTicketsMock.Setup(x => x.Lifetime).Returns(TimeSpan.FromDays(7));
         _loggerMock = new Mock<ILogger<AuthController>>();
-        _controller = new AuthController(_authServiceMock.Object, _oidcServiceMock.Object, _imageTicketsMock.Object, _loggerMock.Object);
+        var sessionCookies = new AuthSessionCookies(_imageTicketsMock.Object, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }));
+        _controller = new AuthController(_authServiceMock.Object, _oidcServiceMock.Object, sessionCookies, _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -39,9 +43,12 @@ public class AuthControllerTests
         _oidcServiceMock.VerifyNoOtherCalls();
     }
 
+    private string SetCookie(string name) =>
+        _controller.HttpContext.Response.Headers.SetCookie.Single(c => c!.StartsWith(name + "=", StringComparison.Ordinal))!;
+
     private void VerifyImageCookie(bool issued)
     {
-        var cookie = _controller.HttpContext.Response.Headers.SetCookie.ToString();
+        var cookie = SetCookie(ProfileImageCookie.Name);
         cookie.Should().Contain(ProfileImageCookie.Name + "=" + (issued ? "image-ticket" : ""));
         cookie.Should().Contain("path=/images/profile");
         cookie.Should().Contain("httponly");
@@ -51,16 +58,55 @@ public class AuthControllerTests
         }
     }
 
+    private void VerifyRefreshCookie(string? value, bool secure = false)
+    {
+        var cookie = SetCookie(AuthSessionCookies.RefreshCookieName);
+        cookie.Should().StartWith($"{AuthSessionCookies.RefreshCookieName}={value};");
+        cookie.Should().Contain("path=/api/auth;");
+        cookie.Should().Contain("samesite=lax");
+        cookie.Should().Contain("httponly");
+        if (secure)
+        {
+            cookie.Should().Contain("secure");
+        }
+        else
+        {
+            cookie.Should().NotContain("secure");
+        }
+
+        if (value == null)
+        {
+            cookie.Should().Contain("expires=Thu, 01 Jan 1970");
+        }
+        else
+        {
+            cookie.Should().Contain("max-age=604800");
+        }
+    }
+
+    private static DefaultHttpContext ContextWithRefreshCookie(string? refreshToken)
+    {
+        var context = new DefaultHttpContext();
+        if (refreshToken != null)
+        {
+            context.Request.Headers.Cookie = $"{AuthSessionCookies.RefreshCookieName}={refreshToken}";
+        }
+
+        return context;
+    }
+
+    private static LoginResponse Session(string accessToken, string refreshToken) => new(
+        accessToken, refreshToken, DateTime.UtcNow.AddHours(1),
+        new UserInfo("user-id", "admin", "Admin", new List<string> { "Admin" }));
+
     #region Login
 
     [Fact]
-    public async Task Login_ShouldReturnOk_WhenCredentialsAreValid()
+    public async Task Login_ShouldReturnTheAccessToken_AndPutTheRefreshTokenInAnHttpOnlyCookie()
     {
         _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
         var request = new LoginRequest("admin", "admin");
-        var expectedResponse = new LoginResponse(
-            "jwt-token", "refresh-token", DateTime.UtcNow.AddHours(1),
-            new UserInfo("user-id", "admin", "Admin", new List<string> { "Admin" }));
+        var expectedResponse = Session("jwt-token", "refresh-token");
 
         _authServiceMock.Setup(x => x.LoginAsync(request, It.IsAny<string>())).ReturnsAsync(expectedResponse);
 
@@ -68,8 +114,25 @@ public class AuthControllerTests
 
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.Value.Should().BeSameAs(expectedResponse);
+        VerifyRefreshCookie("refresh-token");
         VerifyImageCookie(issued: true);
 
+        _authServiceMock.Verify(x => x.LoginAsync(request, It.IsAny<string>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Login_ShouldMarkTheRefreshCookieSecure_WhenTheRequestIsHttps()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Scheme = "https";
+        _controller.ControllerContext = new ControllerContext { HttpContext = context };
+        var request = new LoginRequest("admin", "admin");
+        _authServiceMock.Setup(x => x.LoginAsync(request, It.IsAny<string>())).ReturnsAsync(Session("jwt-token", "refresh-token"));
+
+        await _controller.Login(request);
+
+        VerifyRefreshCookie("refresh-token", secure: true);
         _authServiceMock.Verify(x => x.LoginAsync(request, It.IsAny<string>()), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -78,17 +141,15 @@ public class AuthControllerTests
     public async Task Login_ShouldPropagateException_WhenCredentialsAreInvalid()
     {
         _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-        // Arrange
         var request = new LoginRequest("unknown", "password");
         _authServiceMock.Setup(x => x.LoginAsync(request, It.IsAny<string>()))
             .ThrowsAsync(new UnauthorizedAccessException(Constants.Errors.InvalidCredentials));
 
-        // Act
         var act = () => _controller.Login(request);
 
-        // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
             .WithMessage(Constants.Errors.InvalidCredentials);
+        _controller.HttpContext.Response.Headers.SetCookie.Should().BeEmpty();
 
         _authServiceMock.Verify(x => x.LoginAsync(request, It.IsAny<string>()), Times.Once);
         VerifyNoOtherCalls();
@@ -99,39 +160,48 @@ public class AuthControllerTests
     #region Refresh
 
     [Fact]
-    public async Task Refresh_ShouldReturnOk_WhenTokenIsValid()
+    public async Task Refresh_ShouldUseTheCookie_AndRotateIt()
     {
-        var request = new RefreshTokenRequest("valid-token");
-        var expectedResponse = new LoginResponse(
-            "new-jwt", "new-refresh", DateTime.UtcNow.AddHours(1),
-            new UserInfo("user-id", "admin", "Admin", new List<string> { "Admin" }));
-
-        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        var expectedResponse = Session("new-jwt", "new-refresh");
+        _controller.ControllerContext = new ControllerContext { HttpContext = ContextWithRefreshCookie("valid-token") };
         _authServiceMock.Setup(x => x.RefreshAsync("valid-token")).ReturnsAsync(expectedResponse);
 
-        var result = await _controller.Refresh(request);
+        var result = await _controller.Refresh();
 
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.Value.Should().BeSameAs(expectedResponse);
+        VerifyRefreshCookie("new-refresh");
         VerifyImageCookie(issued: true);
 
         _authServiceMock.Verify(x => x.RefreshAsync("valid-token"), Times.Once);
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task Refresh_ShouldPropagateException_WhenTokenIsInvalid()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task Refresh_ShouldThrow_WhenThereIsNoRefreshCookie(string? cookie)
     {
-        // Arrange
-        var request = new RefreshTokenRequest("invalid-token");
+        _controller.ControllerContext = new ControllerContext { HttpContext = ContextWithRefreshCookie(cookie) };
+
+        var act = () => _controller.Refresh();
+
+        await act.Should().ThrowAsync<AuthenticationFailedException>().WithMessage(Constants.Errors.InvalidRefreshToken);
+        _controller.HttpContext.Response.Headers.SetCookie.Should().BeEmpty();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Refresh_ShouldPropagateException_AndLeaveTheCookieAlone_WhenTokenIsInvalid()
+    {
+        _controller.ControllerContext = new ControllerContext { HttpContext = ContextWithRefreshCookie("invalid-token") };
         _authServiceMock.Setup(x => x.RefreshAsync("invalid-token"))
-            .ThrowsAsync(new UnauthorizedAccessException("Invalid or expired refresh token"));
+            .ThrowsAsync(new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken));
 
-        // Act
-        var act = () => _controller.Refresh(request);
+        var act = () => _controller.Refresh();
 
-        // Assert
-        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+        await act.Should().ThrowAsync<AuthenticationFailedException>();
+        _controller.HttpContext.Response.Headers.SetCookie.Should().BeEmpty();
 
         _authServiceMock.Verify(x => x.RefreshAsync("invalid-token"), Times.Once);
         VerifyNoOtherCalls();
@@ -142,23 +212,50 @@ public class AuthControllerTests
     #region Logout
 
     [Fact]
-    public async Task Logout_ShouldReturnNoContent_WhenAuthenticated()
+    public async Task Logout_ShouldRevokeTheCookieToken_AndClearBothCookies()
     {
-        // Arrange
-        var request = new LogoutRequest("refresh-token");
         SetupAuthenticatedUser("user-id");
+        _controller.HttpContext.Request.Headers.Cookie = $"{AuthSessionCookies.RefreshCookieName}=refresh-token";
+        _authServiceMock.Setup(x => x.LogoutAsync("user-id", "refresh-token")).Returns(Task.CompletedTask);
 
-        _authServiceMock.Setup(x => x.LogoutAsync("user-id", "refresh-token"))
-            .Returns(Task.CompletedTask);
+        var result = await _controller.Logout();
 
-        // Act
-        var result = await _controller.Logout(request);
-
-        // Assert
         result.Should().BeOfType<NoContentResult>();
+        VerifyRefreshCookie(null);
         VerifyImageCookie(issued: false);
 
         _authServiceMock.Verify(x => x.LogoutAsync("user-id", "refresh-token"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Logout_ShouldStillRevokeTheCookieToken_WhenTheAccessTokenIsGone()
+    {
+        _controller.ControllerContext = new ControllerContext { HttpContext = ContextWithRefreshCookie("refresh-token") };
+        _authServiceMock.Setup(x => x.LogoutAsync(null, "refresh-token")).Returns(Task.CompletedTask);
+
+        var result = await _controller.Logout();
+
+        result.Should().BeOfType<NoContentResult>();
+        VerifyRefreshCookie(null);
+
+        _authServiceMock.Verify(x => x.LogoutAsync(null, "refresh-token"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Logout_ShouldClearTheCookies_WhenThereIsNoRefreshCookie()
+    {
+        _controller.ControllerContext = new ControllerContext { HttpContext = ContextWithRefreshCookie(null) };
+        _authServiceMock.Setup(x => x.LogoutAsync(null, null)).Returns(Task.CompletedTask);
+
+        var result = await _controller.Logout();
+
+        result.Should().BeOfType<NoContentResult>();
+        VerifyRefreshCookie(null);
+        VerifyImageCookie(issued: false);
+
+        _authServiceMock.Verify(x => x.LogoutAsync(null, null), Times.Once);
         VerifyNoOtherCalls();
     }
 

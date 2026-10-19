@@ -32,6 +32,13 @@ describe("CreateUserModal", () => {
 		expect(buttons[1]).toHaveClass("bg-primary/60");
 	});
 
+	it("has a title without a filler subtitle", () => {
+		renderModal();
+
+		expect(screen.getByText("account.users.create.title")).toBeInTheDocument();
+		expect(screen.queryByText("account.users.create.description")).not.toBeInTheDocument();
+	});
+
 	it("closes from cancel without submitting", async () => {
 		const user = userEvent.setup();
 		const { close, onSubmit } = renderModal();

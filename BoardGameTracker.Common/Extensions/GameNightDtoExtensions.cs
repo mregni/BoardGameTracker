@@ -32,7 +32,10 @@ public static class GameNightDtoExtensions
             GamesPlayed = gameNight.Sessions.Count,
             TotalMinutes = gameNight.GetTotalPlayMinutes(),
             MostWins = gameNight.GetMostWins(),
-            WinnerIds = gameNight.GetNightWinnerIds()
+            WinnerIds = gameNight.GetNightWinnerIds(),
+            RunningGames = gameNight.RunningGames.Count,
+            AttendeeIds = gameNight.GetAttendeeIds(),
+            AttendanceRecorded = gameNight.Attendance.Count > 0
         };
     }
 
@@ -74,6 +77,19 @@ public static class GameNightDtoExtensions
             Player = rsvp.Player.ToPublicDto(),
             GameNightId = rsvp.GameNightId,
             State = rsvp.State
+        };
+    }
+
+    public static GameNightRsvpUpdateDto ToUpdateDto(this GameNightRsvp rsvp, bool hostNotified)
+    {
+        return new GameNightRsvpUpdateDto
+        {
+            Id = rsvp.Id,
+            PlayerId = rsvp.PlayerId,
+            Player = rsvp.Player.ToPublicDto(),
+            GameNightId = rsvp.GameNightId,
+            State = rsvp.State,
+            HostNotified = hostNotified
         };
     }
 

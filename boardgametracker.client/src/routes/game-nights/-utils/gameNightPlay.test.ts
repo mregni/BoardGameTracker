@@ -1,12 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { type GameNight, type GameNightDetail, GameNightRsvpState, type Session } from "@/models";
 import {
-	attendeeIds,
+	busyPlayers,
+	comingIds,
+	freePlayerIds,
 	hasPlayOpened,
+	isInsidePlayWindow,
+	isNightInProgress,
 	isNightOver,
 	isNightPast,
 	latestPlays,
 	nightGameIds,
+	nightTable,
+	playedPlayerIds,
 	splitGameNights,
 } from "./gameNightPlay";
 
@@ -64,11 +70,76 @@ describe("gameNightPlay", () => {
 			],
 		} as unknown as GameNight;
 
-		expect(attendeeIds(withMaybe)).toEqual([2, 5]);
+		expect(comingIds(withMaybe)).toEqual([2, 5]);
 	});
 
 	it("lists the players who are coming with the host first", () => {
-		expect(attendeeIds(gameNight)).toEqual([2, 5]);
+		expect(comingIds(gameNight)).toEqual([2, 5]);
+	});
+
+	it("shows the players who said yes as expected until somebody plays", () => {
+		const night = { ...gameNight, summary: { attendeeIds: [2], attendanceRecorded: false } } as unknown as GameNight;
+		const planned = { gameNight: night, sessions: [], runningGames: [] } as unknown as GameNightDetail;
+
+		expect(nightTable(planned)).toEqual({ expected: true, playerIds: [2, 5] });
+	});
+
+	it("takes the table from who played once a game started", () => {
+		const night = {
+			...gameNight,
+			summary: { attendeeIds: [2, 6, 7], attendanceRecorded: false },
+		} as unknown as GameNight;
+		const playing = {
+			gameNight: night,
+			sessions: [],
+			runningGames: [{ id: 1, gameId: 3, playerIds: [6, 7] }],
+		} as unknown as GameNightDetail;
+
+		expect(nightTable(playing)).toEqual({ expected: false, playerIds: [2, 6, 7] });
+	});
+
+	it("takes the table from the recorded attendance even before a game", () => {
+		const night = { ...gameNight, summary: { attendeeIds: [2, 8], attendanceRecorded: true } } as unknown as GameNight;
+		const marked = { gameNight: night, sessions: [], runningGames: [] } as unknown as GameNightDetail;
+
+		expect(nightTable(marked)).toEqual({ expected: false, playerIds: [2, 8] });
+	});
+
+	it("knows who played and who is busy in a running game", () => {
+		const playing = {
+			gameNight,
+			sessions: [{ playerSessions: [{ playerId: 1 }, { playerId: 2 }] }],
+			runningGames: [
+				{ id: 1, gameId: 3, playerIds: [2, 4] },
+				{ id: 2, gameId: 5, playerIds: [4, 6] },
+			],
+		} as unknown as GameNightDetail;
+
+		expect(playedPlayerIds(playing)).toEqual([1, 2, 4, 6]);
+		expect([...busyPlayers(playing.runningGames)]).toEqual([
+			[2, 3],
+			[4, 3],
+			[6, 5],
+		]);
+		expect(freePlayerIds([1, 2, 6, 9], playing.runningGames)).toEqual([1, 9]);
+	});
+
+	it("is in progress from the start until the night is over", () => {
+		const start = new Date(2026, 9, 16, 19, 30);
+
+		expect(isNightInProgress({ startDate: start }, new Date(2026, 9, 16, 19, 0))).toBe(false);
+		expect(isNightInProgress({ startDate: start }, new Date(2026, 9, 16, 21, 0))).toBe(true);
+		expect(
+			isNightInProgress({ startDate: start, endedAt: new Date(2026, 9, 16, 23, 0) }, new Date(2026, 9, 16, 23, 5)),
+		).toBe(false);
+		expect(isNightInProgress({ startDate: start }, new Date(2026, 9, 17, 8, 0))).toBe(false);
+	});
+
+	it("keeps a night inside its play window for twelve hours", () => {
+		const start = new Date(2026, 9, 16, 19, 30);
+
+		expect(isInsidePlayWindow({ startDate: start }, new Date(2026, 9, 17, 7, 29))).toBe(true);
+		expect(isInsidePlayWindow({ startDate: start }, new Date(2026, 9, 17, 7, 30))).toBe(false);
 	});
 
 	it("orders the games played, running and planned without duplicates", () => {
@@ -95,7 +166,7 @@ describe("gameNightPlay", () => {
 		);
 	});
 
-	it("keeps started nights upcoming and orders both lists", () => {
+	it("puts started nights under playing now and orders every list", () => {
 		const night = (id: number, startDate: Date, endedAt: Date | null = null) =>
 			({ id, startDate, endedAt }) as unknown as GameNight;
 		const now = new Date(2026, 9, 16, 22, 0);
@@ -105,9 +176,10 @@ describe("gameNightPlay", () => {
 		const yesterday = night(4, new Date(2026, 9, 15, 20, 0));
 		const endedTonight = night(5, new Date(2026, 9, 16, 18, 0), new Date(2026, 9, 16, 21, 0));
 
-		const { upcoming, past } = splitGameNights([nextWeek, lastWeek, started, endedTonight, yesterday], now);
+		const { live, upcoming, past } = splitGameNights([nextWeek, lastWeek, started, endedTonight, yesterday], now);
 
-		expect(upcoming.map((x) => x.id)).toEqual([1, 2]);
+		expect(live.map((x) => x.id)).toEqual([1]);
+		expect(upcoming.map((x) => x.id)).toEqual([2]);
 		expect(past.map((x) => x.id)).toEqual([5, 4, 3]);
 	});
 });

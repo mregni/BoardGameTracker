@@ -17,8 +17,8 @@ import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 
 const resetPasswordSearchSchema = z.object({
-	userId: z.string(),
-	token: z.string(),
+	userId: z.string().optional().catch(undefined),
+	token: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_bare/reset-password")({
@@ -27,9 +27,46 @@ export const Route = createFileRoute("/_bare/reset-password")({
 });
 
 function ResetPasswordPage() {
+	const { userId, token } = Route.useSearch();
+
+	if (!userId || !token) {
+		return <IncompleteResetLink />;
+	}
+
+	return <ResetPasswordForm userId={userId} token={token} />;
+}
+
+function IncompleteResetLink() {
+	const { t } = useTranslation("auth");
+	const navigate = useNavigate();
+
+	return (
+		<BgtPage>
+			<BgtPageContent centered>
+				<BgtCard className="w-full max-w-md space-y-6" data-testid="reset-link-incomplete">
+					<div className="text-center">
+						<BgtText size="6" weight="bold" color="white">
+							{t("reset-incomplete")}
+						</BgtText>
+						<BgtText size="2" color="gray">
+							{t("reset-incomplete-description")}
+						</BgtText>
+					</div>
+					<BgtButton size="3" className="w-full" onClick={() => navigate({ to: "/forgot-password" })}>
+						{t("forgot-link")}
+					</BgtButton>
+					<BgtButton variant="cancel" size="3" className="w-full" onClick={() => navigate({ to: "/login" })}>
+						{t("back-to-login")}
+					</BgtButton>
+				</BgtCard>
+			</BgtPageContent>
+		</BgtPage>
+	);
+}
+
+function ResetPasswordForm({ userId, token }: { userId: string; token: string }) {
 	const { t } = useTranslation(["auth", "settings", "common"]);
 	const navigate = useNavigate();
-	const { userId, token } = Route.useSearch();
 	const { successToast } = useToasts();
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);

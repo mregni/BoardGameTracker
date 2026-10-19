@@ -14,7 +14,7 @@ import type { RsvpAnswer } from "../-hooks/useRsvpData";
 interface Props {
 	invitedPlayers: GameNightRsvps[];
 	hostId: number;
-	initialAnswer: RsvpAnswer | null;
+	initialAnswer: Pick<RsvpAnswer, "playerId" | "state"> | null;
 	onSubmit: (rsvp: GameNightRsvps, state: GameNightRsvpState) => void;
 	isSubmitting: boolean;
 }

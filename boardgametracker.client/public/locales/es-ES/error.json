@@ -18,6 +18,8 @@
     "cannot-remove-last-admin": "No se puede quitar el rol de administrador a la última cuenta de administrador",
     "invalid-credentials": "Nombre de usuario o contraseña no válidos",
     "invalid-refresh-token": "Sesión no válida o caducada",
+    "refresh-token-superseded": "Tu sesión se renovó en otra pestaña. Inténtalo de nuevo.",
+    "missing-session-header": "Se bloqueó esta solicitud porque no procede de la aplicación.",
     "account-locked-out": "Demasiados intentos fallidos. Inténtalo de nuevo más tarde.",
     "too-many-requests": "Demasiados intentos de inicio de sesión. Espera un minuto e inténtalo de nuevo.",
     "invalid-auth-session": "Sesión de autenticación no válida o caducada",

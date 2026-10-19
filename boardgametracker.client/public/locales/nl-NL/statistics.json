@@ -31,5 +31,7 @@
   "coop-won-lost": "Co-op gewonnen · verloren",
   "coop-results": "{{won}} · {{lost}}",
   "team-win-rate": "Winstpercentage team",
-  "added": "Toegevoegd"
+  "added": "Toegevoegd",
+  "team-win-rate-count_one": "{{won}} van {{count}} co-opsessie",
+  "team-win-rate-count_other": "{{won}} van {{count}} co-opsessies"
 }

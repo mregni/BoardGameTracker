@@ -50,6 +50,7 @@ export const BgtPageHeader = (props: Props) => {
 							className="max-lg:py-2 max-lg:px-2 max-lg:text-xs"
 							onClick={action.onClick}
 						>
+							{action.icon && <action.icon className="size-4" aria-hidden="true" />}
 							{typeof action.content === "string" ? t(action.content) : action.content}
 						</BgtButton>
 					))}

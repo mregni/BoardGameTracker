@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
 	discardRunningGameCall: vi.fn(),
 	endGameNightCall: vi.fn(),
 	reopenGameNightCall: vi.fn(),
+	updateAttendanceCall: vi.fn(),
 	invalidateGameNights: vi.fn(),
 	invalidateSession: vi.fn(),
 	successToast: vi.fn(),
@@ -25,6 +26,7 @@ vi.mock("@/services/gameNightService", () => ({
 	discardRunningGameCall: (id: number) => mocks.discardRunningGameCall(id),
 	endGameNightCall: (id: number) => mocks.endGameNightCall(id),
 	reopenGameNightCall: (id: number) => mocks.reopenGameNightCall(id),
+	updateAttendanceCall: (id: number, attendance: unknown) => mocks.updateAttendanceCall(id, attendance),
 }));
 
 vi.mock("@/hooks/useQueryInvalidator", () => ({
@@ -169,6 +171,26 @@ describe("useGameNightDetail", () => {
 		expect(mocks.successToast).toHaveBeenCalledWith("game-nights:end.notifications.ended");
 		expect(mocks.successToast).toHaveBeenCalledWith("game-nights:end.notifications.reopened");
 		expect(mocks.invalidateGameNights).toHaveBeenCalledTimes(2);
+	});
+
+	it("saves who is here and refreshes the night", async () => {
+		mocks.updateAttendanceCall.mockResolvedValue(undefined);
+		const result = setup();
+
+		await act(() => result.current.saveAttendance([1, 3]));
+
+		expect(mocks.updateAttendanceCall).toHaveBeenCalledWith(4, { presentPlayerIds: [1, 3] });
+		expect(mocks.successToast).toHaveBeenCalledWith("game-nights:attendance.notifications.saved");
+		expect(mocks.invalidateGameNights).toHaveBeenCalled();
+	});
+
+	it("tells when saving who is here fails", async () => {
+		mocks.updateAttendanceCall.mockRejectedValue(new Error("nope"));
+		const result = setup();
+
+		await act(() => result.current.saveAttendance([1]).catch(() => undefined));
+
+		expect(mocks.errorToast).toHaveBeenCalledWith("game-nights:attendance.notifications.save-failed");
 	});
 
 	it("tells when ending or reopening fails", async () => {

@@ -1,4 +1,4 @@
-import { addDays } from "date-fns";
+import { addDays, addHours } from "date-fns";
 import type { FC } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type GameNight, GameNightRsvpState, type Player, type Settings } from "@/models";
@@ -121,7 +121,7 @@ describe("RsvpPage", () => {
 		} satisfies Partial<Settings>;
 		mocks.auth = { isAuthenticated: false, authStatus: { authEnabled: false } };
 		mocks.getGameNightManualsCall.mockResolvedValue([]);
-		mocks.updateGameNightRsvpByLinkCall.mockResolvedValue({});
+		mocks.updateGameNightRsvpByLinkCall.mockResolvedValue({ hostNotified: true });
 	});
 
 	it("shows a loader while the game night loads", () => {
@@ -229,5 +229,31 @@ describe("RsvpPage", () => {
 		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
 		expect(screen.queryByText("Carcassonne")).not.toBeInTheDocument();
 		expect(screen.queryByText("Bring snacks")).not.toBeInTheDocument();
+	});
+
+	it("says a night that has started is in progress and closed for answers", async () => {
+		mocks.getGameNightByLinkCall.mockResolvedValue(gameNight(addHours(new Date(), -2)));
+
+		renderPage();
+
+		expect(await screen.findByRole("heading", { level: 1, name: "in-progress-title" })).toBeInTheDocument();
+		expect(screen.getByText("in-progress-description")).toBeInTheDocument();
+		expect(screen.queryByText("past-title")).not.toBeInTheDocument();
+		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+	});
+
+	it("only says the answer is saved when no host was notified", async () => {
+		const user = userEvent.setup();
+		mocks.updateGameNightRsvpByLinkCall.mockResolvedValue({ hostNotified: false });
+		mocks.getGameNightByLinkCall.mockResolvedValue(gameNight(addDays(new Date(), 2)));
+
+		renderPage();
+		await user.selectOptions(await screen.findByRole("combobox", { name: "who-are-you" }), "7");
+		await user.click(screen.getByRole("button", { name: "maybe" }));
+		await user.click(screen.getByRole("button", { name: "send-answer" }));
+
+		const confirmation = await screen.findByRole("status");
+		expect(confirmation).toHaveTextContent("answer-saved");
+		expect(confirmation).not.toHaveTextContent("host-notified");
 	});
 });

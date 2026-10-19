@@ -76,7 +76,7 @@ export const TopPlayersCard = (props: Props) => {
 												)}
 											</span>
 										)}
-										{percent(player.winPercentage, 1)}
+										{percent(player.winPercentage)}
 									</span>
 								</Link>
 							</li>

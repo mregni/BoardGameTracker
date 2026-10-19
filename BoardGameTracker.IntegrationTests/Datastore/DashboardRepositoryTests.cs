@@ -131,20 +131,19 @@ public class DashboardRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetTopWinners_ShouldOrderByWinsThenPlays()
+    public async Task GetWinTotals_ShouldReturnThePlaysAndWinsOfEveryPlayerWhoPlayed()
     {
         await using var scope = _fixture.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
 
-        var top = await repository.GetTopWinners(2, TestContext.Current.CancellationToken);
+        var totals = await repository.GetWinTotals(TestContext.Current.CancellationToken);
 
-        top.Should().Equal(
-            (_aliceId, "Alice", (string?)null, 4, 3),
-            (_bobId, "Bob", (string?)null, 2, 1));
+        totals.Should().Contain((_aliceId, "Alice", (string?)null, 4, 3));
+        totals.Should().Contain((_bobId, "Bob", (string?)null, 2, 1));
     }
 
     [Fact]
-    public async Task GetTopWinners_ShouldCountCoopTeamWins_AndWonCoopSessionsSpecShouldFindThem()
+    public async Task GetWinTotals_ShouldCountCoopTeamWins_AndWonCoopSessionsSpecShouldFindThem()
     {
         await using var scope = _fixture.CreateScope();
         var sessions = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
@@ -162,7 +161,7 @@ public class DashboardRepositoryTests : IAsyncLifetime
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         (await sessions.AnyAsync(new WonCoopSessionsSpec(), TestContext.Current.CancellationToken)).Should().BeTrue();
-        var top = await players.GetTopWinners(3, TestContext.Current.CancellationToken);
+        var top = await players.GetWinTotals(TestContext.Current.CancellationToken);
         top.Should().Contain((_caraId, "Cara", (string?)null, 3, 1));
     }
 

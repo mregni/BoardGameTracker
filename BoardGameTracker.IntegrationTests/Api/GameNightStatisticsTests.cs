@@ -53,6 +53,7 @@ public class GameNightStatisticsTests : IAsyncLifetime
         var second = Night(db, "Second night", _today.AddDays(-14), bram, home, [anna, bram], [everdell]);
         var ended = Night(db, "Ended night", _today.AddDays(-7), cleo, home, [bram, cleo], []);
         ended.End(_today.AddDays(-7).AddHours(3));
+        ended.SetAttendance([bram.Id, cleo.Id]);
         Night(db, "Old night without sessions", _today.AddDays(-10), anna, home, [anna], []);
         Night(db, "Upcoming night", _today.AddDays(5), anna, home, [anna, bram], [brass]);
         await db.SaveChangesAsync();

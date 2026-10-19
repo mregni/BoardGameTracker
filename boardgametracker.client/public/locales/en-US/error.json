@@ -18,6 +18,8 @@
     "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
     "invalid-credentials": "Invalid username or password",
     "invalid-refresh-token": "Invalid or expired session",
+    "refresh-token-superseded": "Your session was renewed in another tab. Please try again.",
+    "missing-session-header": "This request was blocked because it did not come from the app.",
     "account-locked-out": "Too many failed attempts. Try again later.",
     "too-many-requests": "Too many sign-in attempts. Wait a minute and try again.",
     "invalid-auth-session": "Invalid or expired authentication session",

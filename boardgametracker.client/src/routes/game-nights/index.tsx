@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import Calendar from "@/assets/icons/calendar.svg?react";
+import PlusIcon from "@/assets/icons/plus.svg?react";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
@@ -28,7 +29,9 @@ import { useGameNightModals } from "./-hooks/useGameNightModals";
 import { CreateGameNightModal } from "./-modals/CreateGameNightModal";
 import { EditGameNightModal } from "./-modals/EditGameNightModal";
 import { ManageRSVPsModal } from "./-modals/ManageRSVPsModal";
+import { deleteNightDescription } from "./-utils/deleteNightDescription";
 import { splitGameNights } from "./-utils/gameNightPlay";
+import { inviteState } from "./-utils/inviteRecipients";
 
 const gameNightsSearchSchema = z.object({
 	view: z.enum(["nights", "stats"]).optional(),
@@ -56,7 +59,7 @@ export const Route = createFileRoute("/game-nights/")({
 
 function RouteComponent() {
 	const { t } = useTranslation("game-nights");
-	const { canWrite } = usePermissions();
+	const { canWrite, isAdmin } = usePermissions();
 	const navigate = useNavigate();
 	const search = Route.useSearch();
 	const view: GameNightsView = search.view ?? "nights";
@@ -86,6 +89,8 @@ function RouteComponent() {
 		[gameNights, selectedGameNightId],
 	);
 
+	const { askAdmin } = inviteState(settings, isAdmin);
+
 	const actions = useGameNightActions({
 		createGameNight,
 		deleteGameNight,
@@ -97,10 +102,11 @@ function RouteComponent() {
 		setSelectedGameNightId,
 	});
 
-	const { upcoming: upcomingGameNights, past: pastGameNights } = useMemo(
-		() => splitGameNights(gameNights),
-		[gameNights],
-	);
+	const {
+		live: liveGameNights,
+		upcoming: upcomingGameNights,
+		past: pastGameNights,
+	} = useMemo(() => splitGameNights(gameNights), [gameNights]);
 
 	const changeSearch = (next: { view?: GameNightsView; period?: GameNightStatisticsPeriod }) =>
 		navigate({
@@ -120,7 +126,6 @@ function RouteComponent() {
 				header={t("title")}
 				icon={Calendar}
 				title={t("empty.title")}
-				description={t("empty.description")}
 				action={canWrite ? { label: t("create.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<CreateGameNightModal
@@ -148,6 +153,7 @@ function RouteComponent() {
 									onClick: modals.createModal.show,
 									variant: "primary",
 									content: "game-nights:create.button",
+									icon: PlusIcon,
 								},
 							]
 						: []
@@ -178,6 +184,32 @@ function RouteComponent() {
 							/>
 						) : (
 							<>
+								{canWrite && askAdmin && (liveGameNights.length > 0 || upcomingGameNights.length > 0) && (
+									<BgtText size="2" color="gray" data-testid="invites-ask-admin">
+										{t("invites.ask-admin")}
+									</BgtText>
+								)}
+
+								{liveGameNights.length > 0 && (
+									<section className="flex flex-col gap-3" aria-labelledby="live-game-nights">
+										<NightSectionTitle id="live-game-nights">{t("live")}</NightSectionTitle>
+										{liveGameNights.map((gameNight) => (
+											<GameNightCard
+												key={gameNight.id}
+												gameNight={gameNight}
+												settings={settings}
+												players={players}
+												canWrite={canWrite}
+												highlight
+												live
+												onEdit={actions.handleEditGameNight}
+												onDelete={handleDeleteClick}
+												onManageRsvps={actions.handleManageRsvps}
+											/>
+										))}
+									</section>
+								)}
+
 								<section className="flex flex-col gap-3" aria-labelledby="upcoming-game-nights">
 									<NightSectionTitle id="upcoming-game-nights">{t("upcoming")}</NightSectionTitle>
 									{upcomingGameNights.length === 0 ? (
@@ -192,7 +224,7 @@ function RouteComponent() {
 												settings={settings}
 												players={players}
 												canWrite={canWrite}
-												highlight={index === 0}
+												highlight={index === 0 && liveGameNights.length === 0}
 												onEdit={actions.handleEditGameNight}
 												onDelete={handleDeleteClick}
 												onManageRsvps={actions.handleManageRsvps}
@@ -264,9 +296,7 @@ function RouteComponent() {
 							onDelete={actions.handleDelete}
 							title={selectedGameNight?.title ?? ""}
 							heading={t("delete.title")}
-							description={t("delete.description", {
-								title: selectedGameNight?.title,
-							})}
+							description={deleteNightDescription(t, selectedGameNight)}
 						/>
 					</>
 				)}

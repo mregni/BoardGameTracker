@@ -5,6 +5,7 @@ import Calendar from "@/assets/icons/calendar.svg?react";
 import { AvatarChip } from "@/components/GameNight/AvatarChip";
 import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
 import type { DashboardGameNight } from "@/models";
+import { isNightInProgress } from "@/routes/game-nights/-utils/gameNightPlay";
 import { relativeDay } from "@/utils/relativeDay";
 import { cardLinkClasses, dashboardLinkClasses, pillVariants } from "./dashboardStyles";
 
@@ -43,11 +44,12 @@ export const NextGameNightCard = (props: Props) => {
 	}
 
 	const start = new Date(gameNight.startDate);
+	const live = isNightInProgress({ startDate: start });
 	const morePlanned = Math.max(0, plannedGameNights - 1);
 
 	return (
 		<section
-			aria-label={t("night.label")}
+			aria-label={live ? t("night.live-label") : t("night.label")}
 			className="rounded-lg border border-primary bg-primary/15 p-4"
 			data-testid="next-game-night"
 		>
@@ -55,7 +57,7 @@ export const NextGameNightCard = (props: Props) => {
 				<GameNightDateBox date={start} uiLanguage={uiLanguage} variant="highlight" className="self-start" />
 				<div className="flex min-w-0 flex-col gap-1.5">
 					<span className="text-xs text-white/60 first-letter:uppercase">
-						{t("night.when", { when: relativeDay(start, uiLanguage) })}
+						{live ? t("night.live") : t("night.when", { when: relativeDay(start, uiLanguage) })}
 					</span>
 					<h2 className="truncate text-lg font-bold text-white" title={gameNight.title}>
 						{gameNight.title}

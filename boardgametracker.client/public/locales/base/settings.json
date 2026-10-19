@@ -145,7 +145,8 @@
 		},
 		"account": {
 			"title": "Account",
-			"description": "Profile & user management"
+			"description": "Profile & user management",
+			"description-user": "Profile & password"
 		},
 		"sso": {
 			"title": "Single sign-on",
@@ -228,10 +229,9 @@
 				"label": "Linked player",
 				"none": "Not linked"
 			},
-			"create-button": "Create user",
+			"create-button": "Add user",
 			"create": {
-				"title": "Create user",
-				"description": "Fill out the form to create a new user.",
+				"title": "Add user",
 				"username": {
 					"label": "Username"
 				},
@@ -250,14 +250,16 @@
 					"link": "Link an existing player",
 					"none": "No player"
 				},
-				"save": "Create user"
+				"save": "Add"
 			},
 			"edit": {
 				"title": "Edit user",
-				"description": "Change the role for \"{{username}}\"."
+				"description": "Change the username, email, role or linked player of “{{username}}”."
 			},
 			"reset-password": {
-				"button": "Reset password"
+				"button": "Reset password",
+				"title": "Reset password?",
+				"description": "Reset the password for {{user}}? Their current password stops working."
 			},
 			"temp-password": {
 				"title": "Temporary password",
@@ -290,7 +292,8 @@
 				"manage-role": "Let the identity provider manage the role",
 				"disabled-badge": "Disabled",
 				"sso-badge": "SSO"
-			}
+			},
+			"actions": "Actions for {{username}}"
 		},
 		"notifications": {
 			"profile-updated": "Profile updated successfully",

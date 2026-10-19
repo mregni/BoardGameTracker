@@ -36,8 +36,23 @@ public class GameNightDetailSpecTests
             "Sessions",
             "Sessions.Expansions",
             "RunningGames",
-            "RunningGames.Players");
+            "RunningGames.Players",
+            "Attendance");
         spec.AsNoTracking.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GameNightAttendanceSpec_ShouldMatchOnlyTheRequestedId_AndTrackWhoPlayedAndTheOverrides()
+    {
+        var gameNight = GameNight.Create("Night", "", Start, 1, 1);
+        gameNight.Id = 5;
+
+        var spec = new GameNightAttendanceSpec(5);
+
+        spec.IsSatisfiedBy(gameNight).Should().BeTrue();
+        new GameNightAttendanceSpec(6).IsSatisfiedBy(gameNight).Should().BeFalse();
+        spec.ShouldIncludeExactly("Sessions", "Sessions.PlayerSessions", "RunningGames", "RunningGames.Players", "Attendance");
+        spec.AsNoTracking.Should().BeFalse();
     }
 
     [Fact]

@@ -1,7 +1,6 @@
 {
   "empty": {
     "title": "Geen spellen in je collectie",
-    "description": "Je hebt nog geen spellen toegevoegd. Voeg je eerste spel toe om sessies te registreren.",
     "button": "Voeg je eerste spel toe"
   },
   "welcome": {
@@ -21,8 +20,8 @@
     "coming_other": "{{count}} komen",
     "maybe_one": "{{count}} misschien",
     "maybe_other": "{{count}} misschien",
-    "pending_one": "{{count}} zonder antwoord",
-    "pending_other": "{{count}} zonder antwoord",
+    "pending_one": "{{count}} geen antwoord",
+    "pending_other": "{{count}} geen antwoord",
     "declined_one": "{{count}} komt niet",
     "declined_other": "{{count}} komen niet",
     "suggested": "Voorgesteld:",
@@ -30,7 +29,9 @@
     "more_one": "nog {{count}} gepland",
     "more_other": "nog {{count}} gepland",
     "none": "Geen spelavond gepland",
-    "plan": "Plan er een"
+    "plan": "Plan er een",
+    "live": "Vanavond · nu bezig",
+    "live-label": "Spelavond bezig"
   },
   "tiles": {
     "games": "Spellen",
@@ -67,8 +68,8 @@
     "won": "{{percent}} gewonnen",
     "row_one": "{{name}}: {{wins}} keer gewonnen in {{total}} sessie",
     "row_other": "{{name}}: {{wins}} keer gewonnen in {{total}} sessies",
-    "hint": "Gerangschikt op overwinningen. De balk is het winstpercentage.",
-    "hint-coop": "Overwinningen, co-op inbegrepen. De balk is het winstpercentage.",
+    "hint": "Gerangschikt op overwinningen, dan winstpercentage, dan sessies. De balk is het winstpercentage.",
+    "hint-coop": "Gerangschikt op overwinningen (co-op inbegrepen), dan winstpercentage, dan sessies. De balk is het winstpercentage.",
     "empty": "Nog geen sessies gespeeld"
   },
   "most-played": {

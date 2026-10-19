@@ -1,6 +1,7 @@
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import PlusIcon from "@/assets/icons/plus.svg?react";
 import Users from "@/assets/icons/users.svg?react";
 import { SearchInputField } from "@/components/BgtForm";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
@@ -37,7 +38,6 @@ function RouteComponent() {
 				header={t("common:players")}
 				icon={Users}
 				title={t("empty.title")}
-				description={t("empty.description")}
 				action={canWrite ? { label: t("new.button"), onClick: () => navigate({ to: "/players/new" }) } : undefined}
 			/>
 		);
@@ -53,6 +53,7 @@ function RouteComponent() {
 						? [
 								{
 									content: "player:new.button",
+									icon: PlusIcon,
 									variant: "primary",
 									onClick: () => navigate({ to: "/players/new" }),
 								},

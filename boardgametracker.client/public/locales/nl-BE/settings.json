@@ -145,7 +145,8 @@
 		},
 		"account": {
 			"title": "Account",
-			"description": "Profiel en gebruikersbeheer"
+			"description": "Profiel en gebruikersbeheer",
+			"description-user": "Profiel en wachtwoord"
 		},
 		"sso": {
 			"title": "Single sign-on",
@@ -228,10 +229,9 @@
 				"label": "Gekoppelde speler",
 				"none": "Niet gekoppeld"
 			},
-			"create-button": "Gebruiker aanmaken",
+			"create-button": "Gebruiker toevoegen",
 			"create": {
-				"title": "Gebruiker aanmaken",
-				"description": "Vul het formulier in om een nieuwe gebruiker aan te maken.",
+				"title": "Gebruiker toevoegen",
 				"username": {
 					"label": "Gebruikersnaam"
 				},
@@ -250,14 +250,16 @@
 					"link": "Een bestaande speler koppelen",
 					"none": "Geen speler"
 				},
-				"save": "Gebruiker aanmaken"
+				"save": "Toevoegen"
 			},
 			"edit": {
 				"title": "Gebruiker bewerken",
-				"description": "Wijzig de rol van \"{{username}}\"."
+				"description": "Wijzig de gebruikersnaam, het e-mailadres, de rol of de gekoppelde speler van “{{username}}”."
 			},
 			"reset-password": {
-				"button": "Wachtwoord resetten"
+				"button": "Wachtwoord resetten",
+				"title": "Wachtwoord resetten?",
+				"description": "Het wachtwoord van {{user}} resetten? Het huidige wachtwoord werkt dan niet meer."
 			},
 			"temp-password": {
 				"title": "Tijdelijk wachtwoord",
@@ -290,7 +292,8 @@
 				"manage-role": "Laat de identiteitsprovider de rol beheren",
 				"disabled-badge": "Uitgeschakeld",
 				"sso-badge": "SSO"
-			}
+			},
+			"actions": "Acties voor {{username}}"
 		},
 		"notifications": {
 			"profile-updated": "Profiel bijgewerkt",

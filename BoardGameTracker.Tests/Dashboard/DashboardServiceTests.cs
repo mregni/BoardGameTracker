@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
@@ -110,7 +111,7 @@ public class DashboardServiceTests
         _gameStatisticsRepositoryMock.Verify(x => x.GetGameStateCounts(), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGames(4), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGamesSince(4, MonthStartUtc), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetTopWinners(3), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetWinTotals(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<WonCoopSessionsSpec>(), default), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetRecentlyAddedGames(3), Times.Once);
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false), Times.Once);
@@ -354,8 +355,8 @@ public class DashboardServiceTests
     public async Task GetStatistics_ShouldReturnTopThreeWinners()
     {
         _playerRepositoryMock
-            .Setup(x => x.GetTopWinners(3))
-            .ReturnsAsync(new List<(int Id, string Name, string? Image, int PlayCount, int WinCount)> { (1, "John", "john.jpg", 25, 15), (2, "Jane", null, 20, 12) });
+            .Setup(x => x.GetWinTotals())
+            .ReturnsAsync(new List<(int Id, string Name, string? Image, int PlayCount, int WinCount)> { (2, "Jane", null, 20, 12), (1, "John", "john.jpg", 25, 15) });
 
         var result = await _sut.GetStatistics(null);
 
@@ -366,6 +367,29 @@ public class DashboardServiceTests
         result.TopPlayers[0].PlayCount.Should().Be(25);
         result.TopPlayers[0].WinCount.Should().Be(15);
         result.TopPlayers[1].Image.Should().BeNull();
+        result.TopPlayers.Select(x => x.Rank).Should().Equal(1, 2);
+
+        VerifyGetStatisticsCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldRankTopPlayersByWinsThenWinRateThenSessions_SharingTheRankOnEqualStats()
+    {
+        _playerRepositoryMock
+            .Setup(x => x.GetWinTotals())
+            .ReturnsAsync(new List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>
+            {
+                (1, "Jules", null, 30, 13),
+                (2, "Bram", null, 26, 13),
+                (3, "Sofie", null, 20, 20),
+                (4, "Anna", null, 26, 13),
+                (5, "Kathleen", null, 10, 2)
+            });
+
+        var result = await _sut.GetStatistics(null);
+
+        result.TopPlayers.Select(x => x.Name).Should().Equal("Sofie", "Anna", "Bram");
+        result.TopPlayers.Select(x => x.Rank).Should().Equal(1, 2, 2);
 
         VerifyGetStatisticsCalls();
     }
@@ -537,7 +561,7 @@ public class DashboardServiceTests
         _gameStatisticsRepositoryMock.Setup(x => x.GetGameStateCounts()).ReturnsAsync([]);
         _gameStatisticsRepositoryMock.Setup(x => x.GetMostPlayedGames(4)).ReturnsAsync(new List<(int, string, string?, int)>());
         _gameStatisticsRepositoryMock.Setup(x => x.GetMostPlayedGamesSince(4, MonthStartUtc)).ReturnsAsync(new List<(int, string, string?, int)>());
-        _playerRepositoryMock.Setup(x => x.GetTopWinners(3)).ReturnsAsync(new List<(int, string, string?, int, int)>());
+        _playerRepositoryMock.Setup(x => x.GetWinTotals()).ReturnsAsync(new List<(int, string, string?, int, int)>());
         _sessionRepositoryMock.Setup(x => x.AnyAsync(It.IsAny<WonCoopSessionsSpec>(), default)).ReturnsAsync(false);
         _gameRepositoryMock.Setup(x => x.GetRecentlyAddedGames(3)).ReturnsAsync([]);
 

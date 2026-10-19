@@ -4,6 +4,7 @@ import { cx } from "class-variance-authority";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ToggleButton, ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
+import Plus from "@/assets/icons/plus.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
@@ -152,7 +153,8 @@ const NewLoanModal = (props: ModalProps) => {
 						</form.Field>
 						<div>
 							<BgtButton type="button" variant="text" size="1" onClick={() => setOpenCreatePlayerModal(true)}>
-								+ {t("player-session:new.create-player")}
+								<Plus className="size-3.5" aria-hidden="true" />
+								{t("player-session:new.create-player")}
 							</BgtButton>
 						</div>
 						<form.Field
@@ -238,19 +240,7 @@ const NewLoanModal = (props: ModalProps) => {
 							)}
 						</form.Subscribe>
 					</div>
-					<form.Subscribe selector={(state) => state.values.gameId}>
-						{(gameId) => {
-							const game = games.find((x) => x.id === Number(gameId));
-							return (
-								<BgtDialogFooter
-									onCancel={close}
-									confirmLabel={game ? t("new.lend-game", { game: game.title }) : t("new.save")}
-									confirmType="submit"
-									loading={isLoading}
-								/>
-							);
-						}}
-					</form.Subscribe>
+					<BgtDialogFooter onCancel={close} confirmLabel={t("new.save")} confirmType="submit" loading={isLoading} />
 				</form>
 			</BgtDialogContent>
 

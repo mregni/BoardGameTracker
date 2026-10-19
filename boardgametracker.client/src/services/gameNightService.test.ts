@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { GameNightStatisticsPeriod } from "@/models";
+import { GameNightRsvpState, GameNightStatisticsPeriod } from "@/models";
 
-const axiosMock = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), delete: vi.fn() }));
+const axiosMock = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() }));
 
 vi.mock("../utils/axiosInstance", () => ({ axiosInstance: axiosMock }));
 
@@ -13,6 +13,8 @@ import {
 	getGameNightStatisticsCall,
 	reopenGameNightCall,
 	startRunningGameCall,
+	updateAttendanceCall,
+	updateGameNightRsvpByLinkCall,
 } from "./gameNightService";
 
 describe("gameNightService", () => {
@@ -20,6 +22,20 @@ describe("gameNightService", () => {
 		axiosMock.get.mockReset().mockResolvedValue({ data: "night" });
 		axiosMock.post.mockReset().mockResolvedValue({ data: "created" });
 		axiosMock.delete.mockReset().mockResolvedValue({});
+		axiosMock.put.mockReset().mockResolvedValue({ data: { hostNotified: true } });
+	});
+
+	it("saves who was present at a night", async () => {
+		await updateAttendanceCall(4, { presentPlayerIds: [1, 3] });
+
+		expect(axiosMock.put).toHaveBeenCalledWith("gamenight/4/attendance", { presentPlayerIds: [1, 3] });
+	});
+
+	it("answers through the public link and hands back whether the host was notified", async () => {
+		const rsvp = { id: 1, gameNightId: 4, playerId: 2, state: GameNightRsvpState.Maybe };
+
+		await expect(updateGameNightRsvpByLinkCall("abc", rsvp)).resolves.toEqual({ hostNotified: true });
+		expect(axiosMock.put).toHaveBeenCalledWith("gamenight/link/abc/rsvp", rsvp);
 	});
 
 	it("fetches the details of a night", async () => {

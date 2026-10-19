@@ -47,6 +47,13 @@ describe("EditUserModal", () => {
 		expect(buttons[1]).toHaveClass("bg-primary/60");
 	});
 
+	it("describes everything the dialog edits", () => {
+		renderModal();
+
+		expect(screen.getByText("account.users.edit.description")).toBeInTheDocument();
+		expect(screen.getByRole("textbox", { name: "auth:username" })).toBeInTheDocument();
+	});
+
 	it("closes from cancel without submitting", async () => {
 		const user = userEvent.setup();
 		const { close, onSubmit } = renderModal();

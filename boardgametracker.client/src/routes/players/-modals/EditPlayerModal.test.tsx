@@ -36,6 +36,13 @@ describe("EditPlayerModal", () => {
 		expect(buttons[1]).toHaveClass("bg-primary/60");
 	});
 
+	it("has a title without a filler subtitle", () => {
+		renderWithTheme(<EditPlayerModal open close={vi.fn()} player={player} />);
+
+		expect(screen.getByText("update.title")).toBeInTheDocument();
+		expect(screen.queryByText("update.description")).not.toBeInTheDocument();
+	});
+
 	it("closes from cancel without saving", async () => {
 		const user = userEvent.setup();
 		const close = vi.fn();

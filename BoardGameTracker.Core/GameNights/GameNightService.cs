@@ -14,6 +14,8 @@ using BoardGameTracker.Core.Email.Interfaces;
 using BoardGameTracker.Core.GameNights.Interfaces;
 using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Players.Interfaces;
+using BoardGameTracker.Core.Players.Specifications;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -25,6 +27,7 @@ public class GameNightService : IGameNightService
     private readonly IReadRepository<GameNightRsvp> _rsvpRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGameRepository _gameRepository;
+    private readonly IPlayerRepository _playerRepository;
     private readonly IEmailService _emailService;
     private readonly IPublicUrlBuilder _publicUrlBuilder;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -41,6 +44,7 @@ public class GameNightService : IGameNightService
         IReadRepository<GameNightRsvp> rsvpRepository,
         IUnitOfWork unitOfWork,
         IGameRepository gameRepository,
+        IPlayerRepository playerRepository,
         IEmailService emailService,
         IPublicUrlBuilder publicUrlBuilder,
         IDateTimeProvider dateTimeProvider,
@@ -54,6 +58,7 @@ public class GameNightService : IGameNightService
         _rsvpRepository = rsvpRepository;
         _unitOfWork = unitOfWork;
         _gameRepository = gameRepository;
+        _playerRepository = playerRepository;
         _emailService = emailService;
         _publicUrlBuilder = publicUrlBuilder;
         _dateTimeProvider = dateTimeProvider;
@@ -128,9 +133,43 @@ public class GameNightService : IGameNightService
             return null;
         }
 
+        if (gameNight.StartDate + GameNight.PlayWindow <= _dateTimeProvider.UtcNow)
+        {
+            throw new ValidationException(Constants.Errors.GameNightOver);
+        }
+
         gameNight.Reopen();
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Game night {GameNightId} reopened", id);
+
+        return gameNight;
+    }
+
+    public async Task<GameNight?> UpdateAttendance(int id, UpdateAttendanceCommand command)
+    {
+        _logger.LogDebug("Updating attendance of game night {GameNightId}", id);
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightAttendanceSpec(id));
+        if (gameNight == null)
+        {
+            return null;
+        }
+
+        if (!gameNight.HasPlayOpened(_dateTimeProvider.UtcNow))
+        {
+            throw new ValidationException(Constants.Errors.GameNightNotStarted);
+        }
+
+        var playerIds = command.PresentPlayerIds.Distinct().ToList();
+        var known = await _playerRepository.ListAsync(new PlayerIdsSpec(playerIds));
+        var unknown = playerIds.Except(known).ToList();
+        if (unknown.Count > 0)
+        {
+            throw new EntityNotFoundException(nameof(Player), unknown[0]);
+        }
+
+        gameNight.SetAttendance(playerIds);
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Attendance of game night {GameNightId} updated", id);
 
         return gameNight;
     }
@@ -266,10 +305,11 @@ public class GameNightService : IGameNightService
     public async Task<GameNightRsvp> UpdateRsvp(UpdateRsvpCommand command)
     {
         var rsvp = await FindRsvpAsync(command);
-        return await ApplyRsvpStateAsync(rsvp, command.State);
+        await ApplyRsvpStateAsync(rsvp, command.State);
+        return rsvp;
     }
 
-    public async Task<GameNightRsvp> UpdateRsvpByLink(Guid linkId, UpdateRsvpCommand command, bool isAuthenticated)
+    public async Task<RsvpUpdateResult> UpdateRsvpByLink(Guid linkId, UpdateRsvpCommand command, bool isAuthenticated)
     {
         await GameNightLinkAccess.EnsureAllowedAsync(_configRepository, isAuthenticated);
 
@@ -284,7 +324,8 @@ public class GameNightService : IGameNightService
             throw new ValidationException(Constants.Errors.RsvpClosed);
         }
 
-        return await ApplyRsvpStateAsync(rsvp, command.State);
+        var hostNotified = await ApplyRsvpStateAsync(rsvp, command.State);
+        return new RsvpUpdateResult(rsvp, hostNotified);
     }
 
     private async Task<GameNightRsvp> FindRsvpAsync(UpdateRsvpCommand command)
@@ -307,7 +348,7 @@ public class GameNightService : IGameNightService
         return rsvp;
     }
 
-    private async Task<GameNightRsvp> ApplyRsvpStateAsync(GameNightRsvp rsvp, GameNightRsvpState state)
+    private async Task<bool> ApplyRsvpStateAsync(GameNightRsvp rsvp, GameNightRsvpState state)
     {
         if (rsvp.PlayerId == rsvp.GameNight?.HostId && state != GameNightRsvpState.Accepted)
         {
@@ -316,26 +357,25 @@ public class GameNightService : IGameNightService
 
         if (rsvp.State == state)
         {
-            return rsvp;
+            return false;
         }
 
         rsvp.UpdateState(state);
         await _unitOfWork.SaveChangesAsync();
-        await NotifyHostOfRsvpAsync(rsvp);
-        return rsvp;
+        return await NotifyHostOfRsvpAsync(rsvp);
     }
 
-    private async Task NotifyHostOfRsvpAsync(GameNightRsvp rsvp)
+    private async Task<bool> NotifyHostOfRsvpAsync(GameNightRsvp rsvp)
     {
         var gameNight = rsvp.GameNight;
         if (gameNight == null || !_emailService.IsConfigured)
         {
-            return;
+            return false;
         }
 
         if (rsvp.PlayerId == gameNight.HostId)
         {
-            return;
+            return false;
         }
 
         var hostEmail = gameNight.Host?.Email;
@@ -343,7 +383,7 @@ public class GameNightService : IGameNightService
         {
             _logger.LogInformation(
                 "Skipping RSVP notification for game night {GameNightId}: host has no email address", gameNight.Id);
-            return;
+            return false;
         }
 
         var cooldownKey = $"rsvp-notification:{rsvp.Id}";
@@ -351,7 +391,7 @@ public class GameNightService : IGameNightService
         {
             _logger.LogInformation(
                 "Skipping RSVP notification for game night {GameNightId}: the host heard about this invitee moments ago", gameNight.Id);
-            return;
+            return false;
         }
 
         _cache.Set(cooldownKey, true, RsvpNotificationCooldown);
@@ -376,11 +416,13 @@ public class GameNightService : IGameNightService
             await _emailService.SendAsync(hostEmail, subject, body);
             _logger.LogInformation(
                 "Sent RSVP notification to host of game night {GameNightId} for player {PlayerId}", gameNight.Id, rsvp.PlayerId);
+            return true;
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex,
                 "Failed to send RSVP notification to host of game night {GameNightId}", gameNight.Id);
+            return false;
         }
     }
 

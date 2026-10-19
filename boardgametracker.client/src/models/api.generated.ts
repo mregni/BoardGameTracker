@@ -63,13 +63,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["RefreshTokenRequest"];
-                    "text/json": components["schemas"]["RefreshTokenRequest"];
-                    "application/*+json": components["schemas"]["RefreshTokenRequest"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 /** @description OK */
                 200: {
@@ -80,6 +74,28 @@ export interface paths {
                         "text/plain": components["schemas"]["LoginResponse"];
                         "application/json": components["schemas"]["LoginResponse"];
                         "text/json": components["schemas"]["LoginResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -106,13 +122,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["LogoutRequest"];
-                    "text/json": components["schemas"]["LogoutRequest"];
-                    "application/*+json": components["schemas"]["LogoutRequest"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 /** @description No Content */
                 204: {
@@ -120,6 +130,17 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
                 };
             };
         };
@@ -1765,6 +1786,69 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/gamenight/{id}/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateAttendanceCommand"];
+                    "text/json": components["schemas"]["UpdateAttendanceCommand"];
+                    "application/*+json": components["schemas"]["UpdateAttendanceCommand"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/gamenight/{id}/suggestions/{gameId}": {
         parameters: {
             query?: never;
@@ -1982,9 +2066,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["GameNightRsvpDto"];
-                        "application/json": components["schemas"]["GameNightRsvpDto"];
-                        "text/json": components["schemas"]["GameNightRsvpDto"];
+                        "text/plain": components["schemas"]["GameNightRsvpUpdateDto"];
+                        "application/json": components["schemas"]["GameNightRsvpUpdateDto"];
+                        "text/json": components["schemas"]["GameNightRsvpUpdateDto"];
                     };
                 };
             };
@@ -5168,6 +5252,8 @@ export interface components {
         DashboardTopPlayerDto: {
             /** Format: int32 */
             id: number;
+            /** Format: int32 */
+            rank: number;
             name: string;
             image: string | null;
             /** Format: int32 */
@@ -5358,6 +5444,17 @@ export interface components {
         };
         /** @enum {string} */
         GameNightRsvpState: "accepted" | "declined" | "pending" | "maybe";
+        GameNightRsvpUpdateDto: {
+            /** Format: int32 */
+            id: number;
+            /** Format: int32 */
+            playerId: number;
+            player: components["schemas"]["PlayerDto"];
+            /** Format: int32 */
+            gameNightId: number;
+            state: components["schemas"]["GameNightRsvpState"];
+            hostNotified: boolean;
+        };
         GameNightStatisticsDto: {
             period: components["schemas"]["GameNightStatisticsPeriod"];
             /** Format: int32 */
@@ -5401,6 +5498,10 @@ export interface components {
             /** Format: int32 */
             mostWins: number;
             winnerIds: number[];
+            /** Format: int32 */
+            runningGames: number;
+            attendeeIds: number[];
+            attendanceRecorded: boolean;
         };
         GamePersonDto: {
             /** Format: int32 */
@@ -5601,13 +5702,9 @@ export interface components {
         };
         LoginResponse: {
             accessToken: string;
-            refreshToken: string;
             /** Format: date-time */
             expiresAt: string;
             user: components["schemas"]["UserInfo"];
-        };
-        LogoutRequest: {
-            refreshToken: string | null;
         };
         LongestSession: {
             /** Format: int32 */
@@ -5699,6 +5796,7 @@ export interface components {
             winnerStreak: number;
             coopOnly: boolean;
             sharedThroughCoop: boolean;
+            inProgress: boolean;
         };
         NightWinnerStatisticDto: {
             /** Format: int32 */
@@ -5924,9 +6022,6 @@ export interface components {
             /** Format: double */
             price: number | null;
         };
-        RefreshTokenRequest: {
-            refreshToken: string;
-        };
         RegisterRequest: {
             username: string;
             email: string;
@@ -6112,6 +6207,9 @@ export interface components {
             environmentOverrides?: {
                 [key: string]: string;
             };
+        };
+        UpdateAttendanceCommand: {
+            presentPlayerIds: number[];
         };
         UpdateGameCommand: {
             title: string;

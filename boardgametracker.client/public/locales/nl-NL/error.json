@@ -18,6 +18,8 @@
     "cannot-remove-last-admin": "De beheerdersrol kan niet worden afgenomen van het laatste beheerdersaccount",
     "invalid-credentials": "Ongeldige gebruikersnaam of wachtwoord",
     "invalid-refresh-token": "Ongeldige of verlopen sessie",
+    "refresh-token-superseded": "Je sessie is in een ander tabblad vernieuwd. Probeer het opnieuw.",
+    "missing-session-header": "Dit verzoek is geblokkeerd omdat het niet van de app kwam.",
     "account-locked-out": "Te veel mislukte pogingen. Probeer het later opnieuw.",
     "too-many-requests": "Te veel aanmeldpogingen. Wacht een minuut en probeer het opnieuw.",
     "invalid-auth-session": "Ongeldige of verlopen aanmeldsessie",

@@ -945,6 +945,24 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.ToTable("GameNightRsvp");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Helpers.GameNightAttendance", b =>
+                {
+                    b.Property<int>("GameNightId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Present")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("GameNightId", "PlayerId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("GameNightAttendance", (string)null);
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Helpers.PlayerSession", b =>
                 {
                     b.Property<int>("PlayerId")
@@ -1793,6 +1811,25 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Navigation("Player");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Helpers.GameNightAttendance", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.GameNight", "GameNight")
+                        .WithMany("Attendance")
+                        .HasForeignKey("GameNightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameNight");
+
+                    b.Navigation("Player");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Helpers.PlayerSession", b =>
                 {
                     b.HasOne("BoardGameTracker.Common.Entities.Player", "Player")
@@ -2075,6 +2112,8 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.GameNight", b =>
                 {
+                    b.Navigation("Attendance");
+
                     b.Navigation("InvitedPlayers");
 
                     b.Navigation("RunningGames");

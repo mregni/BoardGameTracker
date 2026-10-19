@@ -207,7 +207,7 @@ describe("NewLoanModal", () => {
 		await userEvent.selectOptions(screen.getByRole("combobox", { name: "player-session:new.game.label" }), "2");
 		await userEvent.selectOptions(screen.getByRole("combobox", { name: "new.player.label" }), "7");
 		await userEvent.click(preset("new.due.one-week"));
-		await userEvent.click(screen.getByRole("button", { name: "new.lend-game" }));
+		await userEvent.click(screen.getByRole("button", { name: "new.save" }));
 
 		await waitFor(() =>
 			expect(saveLoan).toHaveBeenCalledWith({
@@ -223,7 +223,7 @@ describe("NewLoanModal", () => {
 	it("selects a player created from the dialog once the player list has it", async () => {
 		const { rerender } = renderWithProviders(<NewLoanModal open close={vi.fn()} />);
 
-		await userEvent.click(screen.getByRole("button", { name: "+ player-session:new.create-player" }));
+		await userEvent.click(screen.getByRole("button", { name: "player-session:new.create-player" }));
 		act(() => fireEvent.click(screen.getByRole("button", { name: "save-new-player", hidden: true })));
 		act(() => fireEvent.click(screen.getByRole("button", { name: "close-new-player", hidden: true })));
 		expect(screen.queryByRole("button", { name: "save-new-player", hidden: true })).not.toBeInTheDocument();

@@ -44,6 +44,7 @@ public class NightHistoryDto
     public int WinnerStreak { get; set; }
     public bool CoopOnly { get; set; }
     public bool SharedThroughCoop { get; set; }
+    public bool InProgress { get; set; }
 }
 
 public class NightGameStatisticDto

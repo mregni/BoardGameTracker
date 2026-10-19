@@ -61,6 +61,8 @@ public static class Constants
         public const string InvalidCredentials = "error.auth.invalid-credentials";
         public const string AccountLockedOut = "error.auth.account-locked-out";
         public const string InvalidRefreshToken = "error.auth.invalid-refresh-token";
+        public const string RefreshTokenSuperseded = "error.auth.refresh-token-superseded";
+        public const string MissingSessionHeader = "error.auth.missing-session-header";
         public const string InvalidRedirectUri = "error.auth.invalid-redirect-uri";
         public const string InvalidAuthSession = "error.auth.invalid-auth-session";
         public const string NotAuthenticated = "error.auth.not-authenticated";

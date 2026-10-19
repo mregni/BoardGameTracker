@@ -157,7 +157,11 @@ function RouteComponent() {
 								)}
 								{hasPlays && (
 									<div className="max-lg:order-4">
-										<GameStatisticsGrid gameStats={statistics.gameStats} currency={settings.currency} />
+										<GameStatisticsGrid
+											gameStats={statistics.gameStats}
+											currency={settings.currency}
+											hasScoringResults={statistics.scoreRankChart.length > 0}
+										/>
 									</div>
 								)}
 								{hasPlays && (

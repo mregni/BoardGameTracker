@@ -12,10 +12,10 @@
       "coming_other": "{{count}} coming",
       "maybe_one": "{{count}} maybe",
       "maybe_other": "{{count}} maybe",
-      "pending_one": "{{count}} pending",
-      "pending_other": "{{count}} pending",
-      "declined_one": "{{count}} declined",
-      "declined_other": "{{count}} declined"
+      "pending_one": "{{count}} no answer",
+      "pending_other": "{{count}} no answer",
+      "declined_one": "{{count}} not coming",
+      "declined_other": "{{count}} not coming"
     },
     "player-status": "RSVP of {{name}}",
     "remove": "Remove {{name}} from this night",
@@ -24,28 +24,32 @@
     "no-players-found": "No players found",
     "invite": "Invite {{name}}",
     "invite-link": "Invite link",
-    "copy": "Copy"
+    "copy": "Copy",
+    "no-answer": "No answer",
+    "not-coming": "Not coming"
   },
   "empty": {
-    "title": "No game nights planned yet",
-    "description": "Invite players to plan a game night.",
+    "title": "No game nights yet",
     "upcoming": "No upcoming game nights"
   },
   "delete": {
     "title": "Delete game night",
-    "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
+    "description": "Delete “{{title}}”? This can't be undone.",
+    "running_one": "{{count}} running game is discarded.",
+    "running_other": "{{count}} running games are discarded.",
+    "sessions_one": "{{count}} logged session is kept but no longer linked to this night.",
+    "sessions_other": "{{count}} logged sessions are kept but no longer linked to this night.",
+    "rsvps": "RSVPs are deleted."
   },
   "title": "Game nights",
   "create": {
-    "button": "Create game night",
-    "title": "Create new game night",
-    "description": "Fill out the form to create a new game night event.",
-    "save": "Create game night"
+    "button": "Add game night",
+    "title": "Add game night",
+    "save": "Add"
   },
   "edit": {
     "title": "Edit game night",
-    "description": "Update the details of this game night event.",
-    "save": "Save changes"
+    "save": "Save"
   },
   "upcoming": "Upcoming",
   "past": "Past",
@@ -60,7 +64,8 @@
     "invites-failed": "Failed to send invites",
     "when": "{{when}} · {{time}}",
     "host": "Host: {{host}}",
-    "open": "Open night"
+    "open": "Open night",
+    "live": "Tonight · playing now"
   },
   "plan": {
     "starts": "Starts {{when}} · {{date}} · {{time}}",
@@ -77,19 +82,20 @@
     "send_one": "Send {{count}} email",
     "send_other": "Send {{count}} emails",
     "email-disabled": "Email is not set up on the server, so invitations can't be mailed.",
-    "public-url-missing": "Set the public URL under Settings > General before mailing invitations."
+    "public-url-missing": "Set the public URL under Settings > General before mailing invitations.",
+    "ask-admin": "Ask an admin to set up email invitations."
   },
   "form": {
     "title": {
       "label": "Event title",
-      "placeholder": "Enter game night title"
+      "placeholder": "Friday games"
     },
     "start": {
       "label": "Date"
     },
     "location": {
       "label": "Location",
-      "placeholder": "Location"
+      "placeholder": "Choose location"
     },
     "host": {
       "label": "Host",
@@ -125,7 +131,6 @@
   "past-night": {
     "attended-count_one": "{{count}} attended",
     "attended-count_other": "{{count}} attended",
-    "nobody": "Nobody confirmed they were coming",
     "nothing-logged": "nothing logged yet",
     "games-played_one": "{{count}} game played",
     "games-played_other": "{{count}} games played",
@@ -136,13 +141,14 @@
   },
   "play": {
     "start": {
-      "button": "▶ Start a game",
+      "button": "Start a game",
       "title": "Start a game",
       "game": "Game",
       "players": "Who plays?",
       "save": "Start",
       "coop-default": "Co-op game: you pick “We won” or “We lost” when you finish it.",
-      "coop-optional": "This game can be played co-op: you can switch it on when you finish it."
+      "coop-optional": "This game can be played co-op: you can switch it on when you finish it.",
+      "busy": "{{name}} is playing {{game}}"
     },
     "log": {
       "button": "Log session",
@@ -156,7 +162,8 @@
     "discard": {
       "button": "Discard {{game}}",
       "title": "Discard this game?",
-      "description": "The running game is removed and no session is saved."
+      "description": "The running game is removed and no session is saved.",
+      "confirm": "Discard"
     },
     "games": {
       "tonight": "Tonight & planned"
@@ -193,7 +200,9 @@
   "table": {
     "title": "At the table",
     "host": "· host",
-    "edit": "Edit who's here"
+    "edit": "Edit who's here",
+    "expected": "Expected players",
+    "nobody": "Nobody is here yet."
   },
   "planned": {
     "title": "Planned",
@@ -269,7 +278,8 @@
       "no-sessions": "No sessions logged",
       "coop-shared_one": "{{count}} shares the night",
       "coop-shared_other": "All {{count}} share the night",
-      "coop-only": "co-op only"
+      "coop-only": "co-op only",
+      "so-far": "so far"
     },
     "games": {
       "title": "Most played at game nights",
@@ -322,6 +332,19 @@
       "mostly": "mostly {{name}}",
       "finish": "{{title}} · {{game}}, {{duration}}",
       "empty": "No records yet."
+    }
+  },
+  "live": "Playing now",
+  "attendance": {
+    "title": "Who's here?",
+    "hint": "Everyone who played is here. Tap the others who came or didn't.",
+    "present": "Here",
+    "absent": "Not here",
+    "played": "Played tonight",
+    "save": "Save",
+    "notifications": {
+      "saved": "Attendance saved",
+      "save-failed": "Failed to save attendance"
     }
   }
 }

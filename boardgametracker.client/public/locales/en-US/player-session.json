@@ -12,7 +12,7 @@
       "label": "Player",
       "required": "Player is required"
     },
-    "create-player": "Create new player",
+    "create-player": "Add player",
     "players": {
       "minimum": "Add at least one player to this session"
     },

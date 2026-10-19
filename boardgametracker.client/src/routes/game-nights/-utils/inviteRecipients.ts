@@ -1,4 +1,5 @@
-import { type GameNight, GameNightRsvpState, type Player } from "@/models";
+import { type GameNight, GameNightRsvpState, type Player, type Settings } from "@/models";
+import { isPublicUrlConfigured } from "@/utils/publicUrl";
 import { byName, sortRsvps } from "@/utils/sortRsvps";
 
 export interface InviteRecipients {
@@ -24,4 +25,11 @@ export const inviteBlocker = (emailEnabled: boolean, publicUrlConfigured: boolea
 	if (!emailEnabled) return "email-disabled";
 	if (!publicUrlConfigured) return "public-url-missing";
 	return null;
+};
+
+export const inviteState = (settings: Pick<Settings, "emailEnabled" | "publicUrl"> | undefined, isAdmin: boolean) => {
+	const blocker: InviteBlocker = settings
+		? inviteBlocker(settings.emailEnabled, isPublicUrlConfigured(settings.publicUrl))
+		: "email-disabled";
+	return { blocker, askAdmin: blocker !== null && !isAdmin };
 };

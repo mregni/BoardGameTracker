@@ -1,8 +1,7 @@
 {
   "title": "Loans",
   "empty": {
-    "title": "No loans yet",
-    "description": "You haven't created any loans yet. Start by lending a game to track who has your games."
+    "title": "No loans yet"
   },
   "statistics": {
     "returned": "Returned",
@@ -36,7 +35,7 @@
   "no-active-loans": "There are no active loans at the moment.",
   "new": {
     "title": "Lend a game",
-    "save": "Create loan",
+    "save": "Lend",
     "description": "Pick a game, who borrows it and when it should come back.",
     "start": {
       "label": "Loan start",
@@ -53,8 +52,7 @@
       "required": "Player is required",
       "placeholder": "Choose borrower"
     },
-    "button": "+ Lend a game",
-    "lend-game": "Lend {{game}}",
+    "button": "Lend a game",
     "due": {
       "one-week": "1 week",
       "two-weeks": "2 weeks",
@@ -67,7 +65,7 @@
   "edit": {
     "title": "Edit loan",
     "description": "Change the dates of this loan.",
-    "save": "Save loan",
+    "save": "Save",
     "button": "Edit"
   },
   "status": {

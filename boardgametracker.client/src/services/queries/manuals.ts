@@ -16,4 +16,5 @@ export const getGameNightManuals = (linkId: string) =>
 		queryKey: [QUERY_KEYS.gameNights, QUERY_KEYS.manuals, linkId],
 		queryFn: () => getGameNightManualsCall(linkId),
 		enabled: !!linkId,
+		meta: { silent: true },
 	});

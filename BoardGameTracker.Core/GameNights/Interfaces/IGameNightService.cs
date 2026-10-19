@@ -12,13 +12,14 @@ public interface IGameNightService
     Task<GameNight?> GetDetail(int id);
     Task<GameNight?> End(int id);
     Task<GameNight?> Reopen(int id);
+    Task<GameNight?> UpdateAttendance(int id, UpdateAttendanceCommand command);
     Task<GameNight> Create(CreateGameNightCommand command);
     Task<GameNight> Update(UpdateGameNightCommand command);
     Task Delete(int id);
     Task<GameNight> AddSuggestedGame(AddSuggestedGameCommand command);
     Task RemoveSuggestedGame(RemoveSuggestedGameCommand command);
     Task<GameNightRsvp> UpdateRsvp(UpdateRsvpCommand command);
-    Task<GameNightRsvp> UpdateRsvpByLink(Guid linkId, UpdateRsvpCommand command, bool isAuthenticated);
+    Task<RsvpUpdateResult> UpdateRsvpByLink(Guid linkId, UpdateRsvpCommand command, bool isAuthenticated);
     Task<int> CountFutureGameNights(CancellationToken cancellationToken = default);
     Task<GameNight?> GetByLinkId(Guid linkId, bool isAuthenticated);
 }

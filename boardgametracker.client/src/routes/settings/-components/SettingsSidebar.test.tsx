@@ -36,6 +36,14 @@ describe("SettingsSidebar", () => {
 			expect(nav.getByText("settings:sidebar.account.title")).toBeInTheDocument();
 		});
 
+		it("should describe the account tab without user management for users who cannot manage settings", () => {
+			render(<SettingsSidebar {...defaultProps} canManageSettings={false} activeCategory="account" />);
+
+			const nav = within(screen.getByRole("navigation"));
+			expect(nav.getByText("settings:sidebar.account.description-user")).toBeInTheDocument();
+			expect(nav.queryByText("settings:sidebar.account.description")).not.toBeInTheDocument();
+		});
+
 		it("should render category descriptions", () => {
 			render(<SettingsSidebar {...defaultProps} />);
 

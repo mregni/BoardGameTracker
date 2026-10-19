@@ -21,10 +21,13 @@ interface GameStats {
 interface Props {
 	gameStats: GameStats;
 	currency: string;
+	hasScoringResults?: boolean;
 }
 
+export const MIN_COOP_SESSIONS_FOR_RATE = 3;
+
 export const GameStatisticsGrid = (props: Props) => {
-	const { gameStats, currency } = props;
+	const { gameStats, currency, hasScoringResults = false } = props;
 	const { t } = useTranslation("statistics");
 	const { data: settings } = useQuery(getSettings());
 	const shortDuration = useShortDuration();
@@ -49,13 +52,18 @@ export const GameStatisticsGrid = (props: Props) => {
 				title={t("price-per-play")}
 				textSize="4"
 			/>
-			<BgtTextStatistic content={decimalOrNull(gameStats.highScore)} title={t("high-score")} textSize="4" />
-			<BgtTextStatistic content={decimalOrNull(gameStats.averageScore)} title={t("average-score")} textSize="4" />
+			{!hasScoringResults && (
+				<>
+					<BgtTextStatistic content={decimalOrNull(gameStats.highScore)} title={t("high-score")} textSize="4" />
+					<BgtTextStatistic content={decimalOrNull(gameStats.averageScore)} title={t("average-score")} textSize="4" />
+				</>
+			)}
 			<BgtTextStatistic content={lastPlayedRelative} title={t("last-played")} textSize="4" />
-			{coopPlayCount > 0 && (
+			{coopPlayCount >= MIN_COOP_SESSIONS_FOR_RATE && (
 				<BgtTextStatistic
 					content={formatRatio(gameStats.coopWinCount, coopPlayCount, settings?.uiLanguage)}
 					title={t("team-win-rate")}
+					caption={t("team-win-rate-count", { count: coopPlayCount, won: gameStats.coopWinCount })}
 					textSize="4"
 				/>
 			)}

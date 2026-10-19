@@ -60,7 +60,7 @@ export const BgtPieChart = (props: Props) => {
 						}}
 						theme={theme}
 						tooltip={({ datum }) => {
-							const percentage = percent(total === 0 ? 0 : datum.value / total, 1);
+							const percentage = percent(total === 0 ? 0 : datum.value / total);
 							return (
 								<div className="bg-background border border-primary/30 rounded-lg p-3 shadow-lg min-w-40">
 									<BgtText color="white">{datum.label}</BgtText>

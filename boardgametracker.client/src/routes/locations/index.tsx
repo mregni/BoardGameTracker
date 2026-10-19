@@ -2,6 +2,7 @@ import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import MapPinIcon from "@/assets/icons/map-pin.svg?react";
+import PlusIcon from "@/assets/icons/plus.svg?react";
 import { SearchInputField } from "@/components/BgtForm";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -39,7 +40,6 @@ function RouteComponent() {
 				header={t("locations")}
 				icon={MapPinIcon}
 				title={t("location:empty.title")}
-				description={t("location:empty.description")}
 				action={canWrite ? { label: t("location:new.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<NewLocationModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
@@ -59,6 +59,7 @@ function RouteComponent() {
 									onClick: modals.createModal.show,
 									variant: "primary",
 									content: "location:new.button",
+									icon: PlusIcon,
 								},
 							]
 						: []

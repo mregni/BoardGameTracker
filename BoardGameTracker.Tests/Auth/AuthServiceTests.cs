@@ -326,7 +326,7 @@ public class AuthServiceTests : IDisposable
         var act = () => _authService.RefreshAsync("old-token");
 
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage(Constants.Errors.InvalidRefreshToken);
+            .WithMessage(Constants.Errors.RefreshTokenSuperseded);
 
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
         VerifyNoOtherCalls();
@@ -395,18 +395,29 @@ public class AuthServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public async Task LogoutAsync_ShouldRevokeAllTokens_WhenRefreshTokenIsNullOrEmpty(string? refreshToken)
+    [InlineData("user-id-123", null)]
+    [InlineData("user-id-123", "")]
+    [InlineData(null, null)]
+    public async Task LogoutAsync_ShouldRevokeNothing_WhenThereIsNoRefreshToken(string? userId, string? refreshToken)
     {
-        var userId = "user-id-123";
-
-        _tokenServiceMock.Setup(x => x.RevokeAllUserTokensAsync(userId, "Logged out"))
-            .Returns(Task.CompletedTask);
-
         await _authService.LogoutAsync(userId, refreshToken);
 
-        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync(userId, "Logged out"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LogoutAsync_ShouldRevokeTheCookieToken_WhenTheCallerIsAnonymous()
+    {
+        var user = new ApplicationUser("testuser", "test@test.com");
+        var token = CreateActiveRefreshTokenWithUser("user-id-123", user);
+
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("cookie-token")).ReturnsAsync(token);
+        _tokenServiceMock.Setup(x => x.RevokeRefreshTokenAsync(token, "Logged out")).Returns(Task.CompletedTask);
+
+        await _authService.LogoutAsync(null, "cookie-token");
+
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("cookie-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeRefreshTokenAsync(token, "Logged out"), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -1355,7 +1366,7 @@ public class AuthServiceTests : IDisposable
 
         var act = () => _authService.RefreshAsync("valid-refresh-token");
 
-        await act.Should().ThrowAsync<AuthenticationFailedException>().WithMessage(Constants.Errors.InvalidRefreshToken);
+        await act.Should().ThrowAsync<AuthenticationFailedException>().WithMessage(Constants.Errors.RefreshTokenSuperseded);
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("valid-refresh-token"), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
         _tokenServiceMock.Verify(x => x.RotateRefreshTokenAsync(activeToken), Times.Once);
