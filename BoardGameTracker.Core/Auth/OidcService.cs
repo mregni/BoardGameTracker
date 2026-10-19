@@ -114,11 +114,30 @@ public class OidcService : IOidcService
             ["nonce"] = nonce,
         };
 
-        var separator = authorizationEndpoint.Contains('?') ? "&" : "?";
-        var queryString = separator + string.Join("&", query.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
+        var url = AuthorizationUrl(authorizationEndpoint, query);
         _logger.LogInformation("Started OIDC {Flow} flow for provider {Provider}", flow, providerName);
 
-        return new OidcAuthorizationRequest(authorizationEndpoint + queryString, state);
+        return new OidcAuthorizationRequest(url, state);
+    }
+
+    private static string AuthorizationUrl(string authorizationEndpoint, IReadOnlyDictionary<string, string> query)
+    {
+        var endpoint = new Uri(authorizationEndpoint, UriKind.Absolute);
+        var separator = string.IsNullOrEmpty(endpoint.Query) ? "?" : "&";
+        var queryString = string.Join("&", query.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}"));
+        var target = new Uri(endpoint.GetLeftPart(UriPartial.Query) + separator + queryString, UriKind.Absolute);
+
+        if (target.Host != endpoint.Host)
+        {
+            throw new ValidationException(Constants.Errors.InsecureAuthority);
+        }
+
+        if (target.Scheme != endpoint.Scheme || target.Port != endpoint.Port || target.AbsolutePath != endpoint.AbsolutePath)
+        {
+            throw new ValidationException(Constants.Errors.InsecureAuthority);
+        }
+
+        return target.AbsoluteUri;
     }
 
     public async Task<OidcLoginResult> CompleteLoginAsync(string providerName, string code, string? state, string? browserState, string? issuer)

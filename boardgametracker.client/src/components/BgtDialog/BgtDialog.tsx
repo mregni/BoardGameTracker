@@ -114,7 +114,7 @@ export const BgtDialogContent = (props: BgtDialogContentProps) => {
 						<Cross className="size-5" />
 					</button>
 				)}
-				<div className="flex max-h-[calc(100vh-2rem)] w-full flex-col gap-3 overflow-y-auto rounded-[inherit] p-6">
+				<div className="flex max-h-[calc(100dvh-2rem)] w-full flex-col gap-3 overflow-y-auto rounded-[inherit] p-6">
 					<DialogPortalContainerContext.Provider value={container}>{children}</DialogPortalContainerContext.Provider>
 				</div>
 			</Dialog.Content>
