@@ -44,7 +44,7 @@ export const NewLocationModal = (props: Props) => {
 					</div>
 					<BgtDialogFooter
 						onCancel={close}
-						confirmLabel={t("common:save")}
+						confirmLabel={t("new.save")}
 						confirmType="submit"
 						disabled={isLoading}
 						cancelDisabled={isLoading}

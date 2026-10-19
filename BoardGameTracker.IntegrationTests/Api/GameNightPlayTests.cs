@@ -242,6 +242,66 @@ public class GameNightPlayTests
         (await reader.GetAsync($"/api/gamenight/{gameNightId}")).StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
+    [Fact]
+    public async Task TheTable_ShouldFollowWhoPlayed_PlusTheHost_AndAttendanceOverrides()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var (gameNightId, gameId, hostId, guestId) = await CreateNightAsync(user);
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        var declinedId = await CreateAsync<PlayerDto>(user, "/api/player", new CreatePlayerCommand { Name = "Bram " + suffix }, x => x.Id);
+        var watcherId = await CreateAsync<PlayerDto>(user, "/api/player", new CreatePlayerCommand { Name = "Lotte " + suffix }, x => x.Id);
+
+        (await GetDetailAsync(user, gameNightId)).GameNight.Summary.AttendeeIds.Should().Equal(hostId);
+
+        var started = await user.PostAsJsonAsync($"/api/gamenight/{gameNightId}/running-games", new StartRunningGameCommand { GameId = gameId, PlayerIds = [declinedId] });
+        started.StatusCode.Should().Be(HttpStatusCode.Created, await started.Content.ReadAsStringAsync());
+        await LogAsync(user, gameNightId, gameId, DateTime.UtcNow.AddHours(-2), 40, (guestId, true));
+
+        var playing = await GetDetailAsync(user, gameNightId);
+        playing.GameNight.Summary.AttendeeIds.Should().Equal(hostId, guestId, declinedId);
+        playing.GameNight.Summary.RunningGames.Should().Be(1);
+        playing.GameNight.Summary.AttendanceRecorded.Should().BeFalse();
+
+        var marked = await user.PutAsJsonAsync($"/api/gamenight/{gameNightId}/attendance", new UpdateAttendanceCommand { PresentPlayerIds = [guestId, declinedId, watcherId] });
+        marked.StatusCode.Should().Be(HttpStatusCode.NoContent, await marked.Content.ReadAsStringAsync());
+
+        var after = await GetDetailAsync(user, gameNightId);
+        after.GameNight.Summary.AttendeeIds.Should().BeEquivalentTo([guestId, declinedId, watcherId]);
+        after.GameNight.Summary.AttendanceRecorded.Should().BeTrue();
+        var listed = await user.GetFromJsonAsync<List<GameNightDto>>("/api/gamenight", IntegrationFixture.Json);
+        listed!.Single(x => x.Id == gameNightId).Summary.AttendeeIds.Should().BeEquivalentTo([guestId, declinedId, watcherId]);
+
+        (await user.PutAsJsonAsync($"/api/gamenight/{gameNightId}/attendance", new UpdateAttendanceCommand { PresentPlayerIds = [999999] })).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await user.PutAsJsonAsync("/api/gamenight/999999/attendance", new UpdateAttendanceCommand { PresentPlayerIds = [hostId] })).StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        using var reader = await _fixture.CreateClientAsAsync("reader");
+        (await reader.PutAsJsonAsync($"/api/gamenight/{gameNightId}/attendance", new UpdateAttendanceCommand { PresentPlayerIds = [hostId] })).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task MarkingAttendance_ShouldBeRefused_ForANightThatHasNotOpened()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var (gameNightId, _, hostId, _) = await CreateNightAsync(user, DateTime.UtcNow.AddDays(7));
+
+        var response = await user.PutAsJsonAsync($"/api/gamenight/{gameNightId}/attendance", new UpdateAttendanceCommand { PresentPlayerIds = [hostId] });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ReopeningANight_ShouldBeRefused_OnceItsPlayWindowHasPassed()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var (gameNightId, _, _, _) = await CreateNightAsync(user, DateTime.UtcNow.AddHours(-14));
+        (await user.PostAsync($"/api/gamenight/{gameNightId}/end", null)).StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var response = await user.PostAsync($"/api/gamenight/{gameNightId}/reopen", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await GetDetailAsync(user, gameNightId)).GameNight.EndedAt.Should().NotBeNull();
+    }
+
     private static async Task<GameNightDetailDto> GetDetailAsync(HttpClient user, int gameNightId)
     {
         var response = await user.GetAsync($"/api/gamenight/{gameNightId}");

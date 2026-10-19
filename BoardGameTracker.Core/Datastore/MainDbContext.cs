@@ -200,6 +200,22 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
             .HasForeignKey(x => x.PlayerId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Entity<GameNight>()
+            .HasMany(x => x.Attendance)
+            .WithOne(x => x.GameNight)
+            .HasForeignKey(x => x.GameNightId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<GameNightAttendance>()
+            .ToTable("GameNightAttendance")
+            .HasKey(x => new { x.GameNightId, x.PlayerId });
+
+        builder.Entity<GameNightAttendance>()
+            .HasOne(x => x.Player)
+            .WithMany()
+            .HasForeignKey(x => x.PlayerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.Entity<GameNightRsvp>()
             .Property(x => x.State)
             .HasConversion<string>();

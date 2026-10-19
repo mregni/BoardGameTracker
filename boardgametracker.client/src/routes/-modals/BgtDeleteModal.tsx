@@ -14,10 +14,11 @@ interface Props {
 	title: string;
 	heading?: string;
 	description: string;
+	confirmLabel?: string;
 }
 
 export const BgtDeleteModal = (props: Props) => {
-	const { open, close, onDelete, title, heading, description } = props;
+	const { open, close, onDelete, title, heading, description, confirmLabel } = props;
 	const { t } = useTranslation();
 
 	return (
@@ -27,7 +28,7 @@ export const BgtDeleteModal = (props: Props) => {
 				<BgtDialogDescription>{description}</BgtDialogDescription>
 				<BgtDialogFooter
 					onCancel={close}
-					confirmLabel={t("delete.button")}
+					confirmLabel={confirmLabel ?? t("delete.button")}
 					onConfirm={onDelete}
 					variant="destructive"
 				/>

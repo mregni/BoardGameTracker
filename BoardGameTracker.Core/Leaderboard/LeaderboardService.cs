@@ -1,5 +1,4 @@
 using BoardGameTracker.Common.DTOs;
-using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Leaderboard.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
@@ -23,12 +22,15 @@ public class LeaderboardService : ILeaderboardService
         var rows = await _playerRepository.GetLeaderboardRows(filter, cancellationToken);
         var entries = rows.Select(ToEntry).ToList();
 
-        var ranked = Order(entries.Where(x => x.PlayCount >= minimum), filter.RankBy).ToList();
-        for (var i = 0; i < ranked.Count; i++)
-        {
-            ranked[i].IsRanked = true;
-            ranked[i].Rank = i > 0 && SameStanding(ranked[i], ranked[i - 1], filter.RankBy) ? ranked[i - 1].Rank : i + 1;
-        }
+        var ranked = PlayerRanking.Rank(
+            entries.Where(x => x.PlayCount >= minimum),
+            filter.RankBy,
+            x => new PlayerStanding(x.Name, x.WinCount, x.PlayCount),
+            (x, rank) =>
+            {
+                x.IsRanked = true;
+                x.Rank = rank;
+            });
 
         var unranked = entries
             .Where(x => x.PlayCount < minimum)
@@ -75,31 +77,6 @@ public class LeaderboardService : ILeaderboardService
                 .FirstOrDefault(),
         };
     }
-
-    private static IOrderedEnumerable<LeaderboardEntryDto> Order(IEnumerable<LeaderboardEntryDto> entries, LeaderboardRankBy rankBy)
-    {
-        var ordered = rankBy switch
-        {
-            LeaderboardRankBy.WinRate => entries
-                .OrderByDescending(WinRate)
-                .ThenByDescending(x => x.WinCount)
-                .ThenByDescending(x => x.PlayCount),
-            LeaderboardRankBy.Sessions => entries
-                .OrderByDescending(x => x.PlayCount)
-                .ThenByDescending(x => x.WinCount),
-            _ => entries
-                .OrderByDescending(x => x.WinCount)
-                .ThenByDescending(WinRate)
-                .ThenByDescending(x => x.PlayCount),
-        };
-
-        return ordered.ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase);
-    }
-
-    private static bool SameStanding(LeaderboardEntryDto a, LeaderboardEntryDto b, LeaderboardRankBy rankBy) =>
-        rankBy == LeaderboardRankBy.WinRate
-            ? a.WinCount == b.WinCount && (long)a.WinCount * b.PlayCount == (long)b.WinCount * a.PlayCount
-            : a.WinCount == b.WinCount && a.PlayCount == b.PlayCount;
 
     private static double WinRate(LeaderboardEntryDto entry) =>
         entry.PlayCount == 0 ? 0 : (double)entry.WinCount / entry.PlayCount;

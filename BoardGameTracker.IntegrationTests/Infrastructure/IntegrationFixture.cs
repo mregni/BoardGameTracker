@@ -9,6 +9,7 @@ using BoardGameTracker.Core.Integrations;
 using BoardGameTracker.Core.Maintenance.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Testcontainers.PostgreSql;
@@ -37,6 +38,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
         .Build();
 
     private WebApplicationFactory<Program> _factory = null!;
+    private readonly List<WebApplicationFactory<Program>> _variants = [];
     private readonly Dictionary<string, string> _tokens = new();
     private readonly Dictionary<string, string?> _originalEnvironmentVariables = new();
 
@@ -58,6 +60,13 @@ public sealed class IntegrationFixture : IAsyncLifetime
     }
 
     public IServiceProvider Services => _factory.Services;
+
+    public HttpClient CreateClientWith(Action<IServiceCollection> configureServices)
+    {
+        var variant = _factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(configureServices));
+        _variants.Add(variant);
+        return WithClientAddress(variant.CreateClient());
+    }
 
     public async ValueTask InitializeAsync()
     {
@@ -115,6 +124,11 @@ public sealed class IntegrationFixture : IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
+        foreach (var variant in _variants)
+        {
+            await variant.DisposeAsync();
+        }
+
         await _factory.DisposeAsync();
         await _postgres.DisposeAsync();
         foreach (var kvp in _originalEnvironmentVariables)

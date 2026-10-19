@@ -10,6 +10,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
+import { isNightInProgress } from "@/routes/game-nights/-utils/gameNightPlay";
 import { toDisplay } from "@/utils/dateUtils";
 import { useSettingsData } from "../settings/-hooks/useSettingsData";
 import { RsvpEventDetails } from "./-components/RsvpEventDetails";
@@ -71,15 +72,18 @@ function RsvpPage() {
 			<BgtPageContent isLoading={isLoading} data={{ gameNight, settings }} className="mx-auto w-full max-w-2xl">
 				{({ gameNight, settings }) => {
 					if (isPast(gameNight.startDate)) {
+						const inProgress = isNightInProgress(gameNight);
 						return (
-							<BgtCard className="gap-1.5" data-testid="rsvp-past">
+							<BgtCard className="gap-1.5" data-testid={inProgress ? "rsvp-in-progress" : "rsvp-past"}>
 								<BgtHeading as="h1" size="5" className="wrap-anywhere">
-									{t("past-title", { title: gameNight.title })}
+									{inProgress
+										? t("in-progress-title", { title: gameNight.title })
+										: t("past-title", { title: gameNight.title })}
 								</BgtHeading>
 								<BgtText size="2" color="gray">
 									{toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage)}
 								</BgtText>
-								<BgtText size="2">{t("past-description")}</BgtText>
+								<BgtText size="2">{inProgress ? t("in-progress-description") : t("past-description")}</BgtText>
 							</BgtCard>
 						);
 					}
@@ -94,7 +98,7 @@ function RsvpPage() {
 								<RsvpSuccessView
 									playerName={answeredPlayer.player.name}
 									response={answer.state}
-									hostNotified={settings.emailEnabled && answeredPlayer.playerId !== gameNight.hostId}
+									hostNotified={answer.hostNotified}
 									onChangeResponse={changeResponse}
 								/>
 							) : (

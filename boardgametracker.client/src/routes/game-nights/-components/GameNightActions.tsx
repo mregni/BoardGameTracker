@@ -4,14 +4,14 @@ import { toast } from "sonner";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { useModalState } from "@/hooks/useModalState";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { GameNight, Player } from "@/models";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 import { sendInvitesCall } from "@/services/gameNightService";
 import { apiErrorMessage } from "@/utils/errorUtils";
-import { isPublicUrlConfigured } from "@/utils/publicUrl";
 import { useInviteLink } from "../-hooks/useInviteLink";
 import { SendInvitesModal } from "../-modals/SendInvitesModal";
-import { inviteBlocker, inviteRecipients } from "../-utils/inviteRecipients";
+import { inviteRecipients, inviteState } from "../-utils/inviteRecipients";
 import { DisabledActionHint } from "./DisabledActionHint";
 
 interface Props {
@@ -26,6 +26,8 @@ export const GameNightActions = (props: Props) => {
 	const { t } = useTranslation("game-nights");
 	const { copied, copy } = useInviteLink(gameNight);
 	const { settings } = useSettingsData();
+	const { isAdmin } = usePermissions();
+	const { blocker, askAdmin } = inviteState(settings, isAdmin);
 	const confirmModal = useModalState();
 
 	const sendInvitesMutation = useMutation({
@@ -39,16 +41,12 @@ export const GameNightActions = (props: Props) => {
 		},
 	});
 
-	const blocker = settings
-		? inviteBlocker(settings.emailEnabled, isPublicUrlConfigured(settings.publicUrl))
-		: "email-disabled";
-
 	return (
 		<div className="flex flex-wrap items-center gap-2 md:justify-end">
 			<BgtButton variant="cancel" size="1" onClick={copy} disabled={copied}>
 				{copied ? t("card.copied") : t("card.copy-link")}
 			</BgtButton>
-			{blocker ? (
+			{askAdmin ? null : blocker ? (
 				<DisabledActionHint label={t("card.email-invites")} hint={t(`invites.${blocker}`)} />
 			) : (
 				<BgtButton variant="cancel" size="1" onClick={confirmModal.show} disabled={sendInvitesMutation.isPending}>

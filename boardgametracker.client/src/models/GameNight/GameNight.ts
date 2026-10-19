@@ -40,6 +40,9 @@ export interface GameNightSummary {
 	totalMinutes: number;
 	mostWins: number;
 	winnerIds: number[];
+	runningGames: number;
+	attendeeIds: number[];
+	attendanceRecorded: boolean;
 }
 
 export interface RunningGame {
@@ -92,6 +95,14 @@ export interface UpdateGameNightRsvp {
 	gameNightId: number;
 	playerId: number;
 	state: GameNightRsvpState;
+}
+
+export interface GameNightRsvpUpdate extends GameNightRsvps {
+	hostNotified: boolean;
+}
+
+export interface UpdateAttendance {
+	presentPlayerIds: number[];
 }
 
 export interface SendInvitesResult {

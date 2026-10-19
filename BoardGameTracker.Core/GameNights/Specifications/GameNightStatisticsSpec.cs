@@ -1,7 +1,6 @@
 using Ardalis.Specification;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
-using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models;
 
 namespace BoardGameTracker.Core.GameNights.Specifications;
@@ -29,9 +28,11 @@ public sealed class GameNightStatisticsSpec : Specification<GameNight, GameNight
             EndedAt = x.EndedAt,
             HostId = x.HostId,
             LocationId = x.LocationId,
-            AttendeeIds = x.InvitedPlayers
-                .Where(r => r.State == GameNightRsvpState.Accepted)
-                .Select(r => r.PlayerId)
+            RunningPlayerIds = x.RunningGames
+                .SelectMany(r => r.Players.Select(p => p.PlayerId))
+                .ToList(),
+            AttendanceOverrides = x.Attendance
+                .Select(a => new AttendanceOverride(a.PlayerId, a.Present))
                 .ToList(),
             PlannedGameIds = x.SuggestedGames.Select(g => g.Id).ToList(),
             Sessions = x.Sessions

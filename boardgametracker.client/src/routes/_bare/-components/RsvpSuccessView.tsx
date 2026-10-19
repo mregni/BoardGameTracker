@@ -32,11 +32,9 @@ export const RsvpSuccessView = ({ playerName, response, hostNotified, onChangeRe
 					<BgtText size="3" weight="bold">
 						{t(messages[response], { name: playerName })}
 					</BgtText>
-					{hostNotified && (
-						<BgtText size="2" color="gray">
-							{t("host-notified")}
-						</BgtText>
-					)}
+					<BgtText size="2" color="gray">
+						{hostNotified ? t("host-notified") : t("answer-saved")}
+					</BgtText>
 				</div>
 			</div>
 			<BgtButton variant="cancel" className="self-start" onClick={onChangeResponse}>

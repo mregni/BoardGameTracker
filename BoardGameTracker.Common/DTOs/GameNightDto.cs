@@ -25,6 +25,9 @@ public class GameNightSummaryDto
     public double TotalMinutes { get; set; }
     public int MostWins { get; set; }
     public List<int> WinnerIds { get; set; } = [];
+    public int RunningGames { get; set; }
+    public List<int> AttendeeIds { get; set; } = [];
+    public bool AttendanceRecorded { get; set; }
 }
 
 public class GameNightDetailDto
@@ -50,4 +53,9 @@ public class GameNightRsvpDto
     public PlayerDto? Player { get; set; }
     public int GameNightId { get; set; }
     public GameNightRsvpState State { get; set; }
+}
+
+public class GameNightRsvpUpdateDto : GameNightRsvpDto
+{
+    public bool HostNotified { get; set; }
 }

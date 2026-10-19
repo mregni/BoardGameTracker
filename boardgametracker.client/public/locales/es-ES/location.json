@@ -1,17 +1,16 @@
 {
   "empty": {
-    "title": "Aún no hay ubicaciones",
-    "description": "Aún no has añadido ninguna ubicación. Empieza añadiendo tu primera ubicación para registrar dónde juegas."
+    "title": "Aún no hay ubicaciones"
   },
   "new": {
     "button": "Añadir ubicación",
-    "title": "Crear nueva ubicación",
+    "title": "Añadir ubicación",
     "description": "Introduce el nombre de la ubicación para crear una nueva.",
     "name": {
       "placeholder": "Nombre de la ubicación",
       "required": "El nombre de la ubicación es obligatorio"
     },
-    "save": "Crear ubicación"
+    "save": "Añadir"
   },
   "edit": {
     "title": "Editar ubicación"

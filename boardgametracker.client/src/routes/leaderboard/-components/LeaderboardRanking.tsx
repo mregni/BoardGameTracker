@@ -24,11 +24,17 @@ const columns =
 
 const desktopOnly = "hidden md:block";
 
+const tieRule: Record<LeaderboardRankBy, string> = {
+	wins: "ranking.ties-wins",
+	winRate: "ranking.ties-win-rate",
+	sessions: "ranking.ties-sessions",
+};
+
 const Row = ({ entry, rankBy }: { entry: LeaderboardEntry; rankBy: LeaderboardRankBy }) => {
 	const { t } = useTranslation("leaderboard");
 	const format = useNumberFormat();
 	const duration = useShortDuration();
-	const rate = format.percent(entry.winPercentage / 100, 1);
+	const rate = format.percent(entry.winPercentage / 100);
 	const isTop = entry.rank !== null && entry.rank <= 3;
 
 	const wins = t("values.wins", { count: entry.winCount });
@@ -157,7 +163,7 @@ export const LeaderboardRanking = ({
 				<p className="pt-1 text-xs text-white/60">
 					{[
 						coopWinCount > 0 ? t("ranking.coop", { count: coopWinCount, total: winCount }) : null,
-						ranked.length > 1 ? t("ranking.ties") : null,
+						ranked.length > 1 ? t(tieRule[rankBy]) : null,
 					]
 						.filter(Boolean)
 						.join(" ")}

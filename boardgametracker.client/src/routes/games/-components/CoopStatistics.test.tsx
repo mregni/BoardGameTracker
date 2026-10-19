@@ -35,6 +35,26 @@ describe("co-op statistics", () => {
 
 		expect(screen.getByText("team-win-rate")).toBeInTheDocument();
 		expect(screen.getByText(/^75/)).toBeInTheDocument();
+		expect(screen.getByText("team-win-rate-count")).toBeInTheDocument();
+	});
+
+	it("hides the team win rate below three co-op sessions", () => {
+		renderWithProviders(<GameStatisticsGrid gameStats={gameStats(1, 0)} currency="EUR" />);
+
+		expect(screen.queryByText("team-win-rate")).not.toBeInTheDocument();
+	});
+
+	it("leaves the high and average score to the scoring results card when it is shown", () => {
+		const scored = { ...gameStats(0, 0), highScore: 104, averageScore: 71.2 };
+		const { unmount } = renderWithProviders(<GameStatisticsGrid gameStats={scored} currency="EUR" hasScoringResults />);
+
+		expect(screen.queryByText("high-score")).not.toBeInTheDocument();
+		expect(screen.queryByText("average-score")).not.toBeInTheDocument();
+		unmount();
+
+		renderWithProviders(<GameStatisticsGrid gameStats={scored} currency="EUR" />);
+		expect(screen.getByText("high-score")).toBeInTheDocument();
+		expect(screen.getByText("average-score")).toBeInTheDocument();
 	});
 
 	it("leaves the team win rate out for a game without co-op sessions", () => {

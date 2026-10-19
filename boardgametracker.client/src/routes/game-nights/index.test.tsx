@@ -84,7 +84,15 @@ const night = (id: number, title: string, startDate: Date, endedAt: Date | null 
 		invitedPlayers: [
 			{ id: 11, playerId: 1, gameNightId: id, state: GameNightRsvpState.Accepted, player: { id: 1, name: "Mikhael" } },
 		],
-		summary: { gamesPlayed: 0, totalMinutes: 0, mostWins: 0, winnerIds: [] },
+		summary: {
+			gamesPlayed: 0,
+			totalMinutes: 0,
+			mostWins: 0,
+			winnerIds: [],
+			runningGames: 0,
+			attendeeIds: [1],
+			attendanceRecorded: false,
+		},
 	}) as unknown as GameNight;
 
 const renderPage = () => {
@@ -99,7 +107,7 @@ describe("Game nights overview", () => {
 		mocks.search = {};
 	});
 
-	it("keeps a night that is being played under upcoming and lists ended and old nights as past", () => {
+	it("lists a night that is being played under playing now, and ended and old nights as past", () => {
 		mocks.gameNights = [
 			night(1, "Last month", addDays(new Date(), -30)),
 			night(2, "Tonight", addHours(new Date(), -2)),
@@ -109,16 +117,20 @@ describe("Game nights overview", () => {
 
 		renderPage();
 
+		const live = screen.getByRole("region", { name: "live" });
 		const upcoming = screen.getByRole("region", { name: "upcoming" });
 		const past = screen.getByRole("region", { name: "past" });
+		expect(within(live).getByText("Tonight")).toBeInTheDocument();
+		expect(within(live).getByText("card.live")).toBeInTheDocument();
 		expect(
 			within(upcoming)
 				.getAllByRole("heading", { level: 3 })
 				.map((x) => x.textContent),
-		).toEqual(["Tonight", "Next week"]);
+		).toEqual(["Next week"]);
+		expect(within(upcoming).queryByText("card.live")).not.toBeInTheDocument();
 		expect(within(past).getByText("Ended early")).toBeInTheDocument();
 		expect(within(past).getByText("Last month")).toBeInTheDocument();
-		expect(within(upcoming).getAllByRole("button", { name: "card.open" })).toHaveLength(2);
+		expect(within(upcoming).getAllByRole("button", { name: "card.open" })).toHaveLength(1);
 	});
 
 	it("says there is nothing upcoming when every night is past", () => {

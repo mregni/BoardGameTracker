@@ -2,7 +2,7 @@ import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import { AvatarChipButton } from "@/components/GameNight/AvatarChip";
 import type { Game, GameNightDetail, Player, RunningGame, Settings } from "@/models";
-import { attendeeIds, hasPlayOpened, isNightOver, latestPlays } from "../-utils/gameNightPlay";
+import { freePlayerIds, hasPlayOpened, isNightOver, latestPlays, nightTable } from "../-utils/gameNightPlay";
 import { GameNightDetailHeader } from "./GameNightDetailHeader";
 import { NightPlanPanel } from "./NightPlanPanel";
 import { NightSectionTitle } from "./NightSectionTitle";
@@ -22,6 +22,7 @@ interface Props {
 	onEnd: () => void;
 	onReopen: () => void;
 	onEditAttendees: () => void;
+	onManageRsvps: () => void;
 	onStart: (gameId: number | null, playerIds: number[]) => void;
 	onLog: () => void;
 	onFinish: (runningGame: RunningGame) => void;
@@ -40,6 +41,7 @@ export const GameNightDetailView = (props: Props) => {
 		onEnd,
 		onReopen,
 		onEditAttendees,
+		onManageRsvps,
 		onStart,
 		onLog,
 		onFinish,
@@ -53,11 +55,12 @@ export const GameNightDetailView = (props: Props) => {
 	const canPlay = canWrite && gameNight.endedAt === null && !isPlanned;
 	const isOverByTime = isOver && gameNight.endedAt === null;
 	const gameOf = (gameId: number) => games.find((game) => game.id === gameId) ?? null;
-	const attendees = attendeeIds(gameNight)
+	const table = nightTable(detail);
+	const attendees = table.playerIds
 		.map((id) => players.find((player) => player.id === id))
 		.filter((player): player is Player => player !== undefined);
 	const playAgain = latestPlays(sessions);
-	const startWithAttendees = () => onStart(null, attendeeIds(gameNight));
+	const startWithAttendees = () => onStart(null, freePlayerIds(table.playerIds, runningGames));
 
 	return (
 		<div className={cx("flex flex-col gap-3 xl:gap-6", canPlay && "pb-16 md:pb-0")}>
@@ -76,7 +79,7 @@ export const GameNightDetailView = (props: Props) => {
 				onLog={onLog}
 			/>
 
-			{isPlanned && <NightPlanPanel gameNight={gameNight} canWrite={canWrite} onManageRsvps={onEditAttendees} />}
+			{isPlanned && <NightPlanPanel gameNight={gameNight} canWrite={canWrite} onManageRsvps={onManageRsvps} />}
 
 			{runningGames.map((runningGame) => (
 				<RunningGameCard
@@ -105,7 +108,10 @@ export const GameNightDetailView = (props: Props) => {
 								onClick={() =>
 									onStart(
 										session.gameId,
-										session.playerSessions.map((x) => x.playerId),
+										freePlayerIds(
+											session.playerSessions.map((x) => x.playerId),
+											runningGames,
+										),
 									)
 								}
 							/>
@@ -134,6 +140,7 @@ export const GameNightDetailView = (props: Props) => {
 					<NightSidePanel
 						gameNight={gameNight}
 						attendees={attendees}
+						expected={table.expected}
 						playedGameIds={sessions.map((x) => x.gameId)}
 						canWrite={canWrite}
 						onEditAttendees={onEditAttendees}

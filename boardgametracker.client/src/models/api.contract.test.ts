@@ -20,6 +20,7 @@ import type {
 	GameNightRecord,
 	GameNightRecords,
 	GameNightReference,
+	GameNightRsvpUpdate,
 	GameNightStatistics,
 	GameNightStatisticsPeriod,
 	GameNightStreaks,
@@ -46,6 +47,7 @@ import type {
 	ShameGameNight,
 	ShameStatistics,
 	StartRunningGame,
+	UpdateAttendance,
 } from "@/models";
 import type { LoginRequest, LoginResponse, OidcProvider, ProfileResponse, User } from "@/models/Auth/Auth";
 import type { ExternalLogin, OidcDiscoveryResult, OidcProviderConfig, OidcSetup } from "@/models/Auth/Oidc";
@@ -104,6 +106,7 @@ describe("API contract", () => {
 		sameKeys<GameNightRecords, Schemas["GameNightRecordsDto"]>(true);
 		sameKeys<GameNightRecord, Schemas["GameNightRecordDto"]>(true);
 		sameKeys<RunningGame, Schemas["RunningGameDto"]>(true);
+		sameKeys<GameNightRsvpUpdate, Schemas["GameNightRsvpUpdateDto"]>(true);
 		sameKeys<Badge, Schemas["BadgeDto"]>(true);
 		sameKeys<DashboardStatistics, Schemas["DashboardStatisticsDto"]>(true);
 		sameKeys<DashboardStatistics["nextGameNight"] & object, Schemas["DashboardGameNightDto"]>(true);
@@ -141,6 +144,7 @@ describe("API contract", () => {
 		sameKeys<CreateLocation, Schemas["CreateLocationCommand"]>(true);
 		sameKeys<CreateSession, Schemas["CreateSessionCommand"]>(true);
 		sameKeys<StartRunningGame, Schemas["StartRunningGameCommand"]>(true);
+		sameKeys<UpdateAttendance, Schemas["UpdateAttendanceCommand"]>(true);
 		sameKeys<FinishRunningGame, Schemas["FinishRunningGameCommand"]>(true);
 		sameKeys<LoginRequest, Schemas["LoginRequest"]>(true);
 	});

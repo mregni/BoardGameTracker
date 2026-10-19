@@ -10,9 +10,18 @@ public class GameNightStatisticsNight
     public DateTime? EndedAt { get; set; }
     public int HostId { get; set; }
     public int LocationId { get; set; }
-    public List<int> AttendeeIds { get; set; } = [];
+    public List<int> RunningPlayerIds { get; set; } = [];
+    public List<AttendanceOverride> AttendanceOverrides { get; set; } = [];
     public List<int> PlannedGameIds { get; set; } = [];
     public List<GameNightStatisticsSession> Sessions { get; set; } = [];
+
+    public List<int> GetAttendeeIds()
+    {
+        return NightAttendanceRule.Derive(
+            HostId,
+            Sessions.SelectMany(x => x.Results.Select(r => r.PlayerId)).Concat(RunningPlayerIds),
+            AttendanceOverrides);
+    }
 }
 
 public class GameNightStatisticsSession

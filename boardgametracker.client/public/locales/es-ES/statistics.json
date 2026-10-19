@@ -31,5 +31,7 @@
   "coop-won-lost": "Cooperativo ganado · perdido",
   "coop-results": "{{won}} · {{lost}}",
   "team-win-rate": "Porcentaje de victorias del equipo",
-  "added": "Añadido"
+  "added": "Añadido",
+  "team-win-rate-count_one": "{{won}} de {{count}} partida cooperativa",
+  "team-win-rate-count_other": "{{won}} de {{count}} partidas cooperativas"
 }

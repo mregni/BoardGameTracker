@@ -62,11 +62,21 @@ const buildDetail = (startDate: Date, sessions: Session[], running = true, ended
 				{ id: 12, playerId: 2, gameNightId: 4, state: GameNightRsvpState.Accepted, player: players[1] },
 				{ id: 13, playerId: 3, gameNightId: 4, state: GameNightRsvpState.Declined, player: players[2] },
 			],
-			summary: { gamesPlayed: sessions.length, totalMinutes: sessions.length * 30, mostWins: 1, winnerIds: [2] },
+			summary: {
+				gamesPlayed: sessions.length,
+				totalMinutes: sessions.length * 30,
+				mostWins: 1,
+				winnerIds: [2],
+				runningGames: running ? 1 : 0,
+				attendeeIds: [
+					...new Set([1, ...sessions.flatMap((x) => x.playerSessions.map((p) => p.playerId)), ...(running ? [1] : [])]),
+				],
+				attendanceRecorded: false,
+			},
 		},
 		sessions,
 		runningGames: running
-			? [{ id: 12, gameNightId: 4, gameId: 7, start: addMinutes(new Date(), -12), playerIds: [1, 2] }]
+			? [{ id: 12, gameNightId: 4, gameId: 7, start: addMinutes(new Date(), -12), playerIds: [1] }]
 			: [],
 	}) as unknown as GameNightDetail;
 
@@ -74,6 +84,7 @@ const handlers = () => ({
 	onEdit: vi.fn(),
 	onDelete: vi.fn(),
 	onEditAttendees: vi.fn(),
+	onManageRsvps: vi.fn(),
 	onStart: vi.fn(),
 	onLog: vi.fn(),
 	onFinish: vi.fn(),
@@ -123,7 +134,7 @@ describe("GameNightDetailView", () => {
 		expect(props.onDiscard).toHaveBeenCalledWith(expect.objectContaining({ id: 12 }));
 	});
 
-	it("starts a game with the attendees, logs one and plays a game of tonight again", async () => {
+	it("starts a game with the attendees who are free, logs one and plays a game of tonight again", async () => {
 		const user = userEvent.setup();
 		const props = renderView(buildDetail(tonight(), played()));
 
@@ -131,9 +142,46 @@ describe("GameNightDetailView", () => {
 		await user.click(screen.getByRole("button", { name: "play.log.button" }));
 		await user.click(screen.getAllByRole("button", { name: "play.again-game" })[0]);
 
-		expect(props.onStart).toHaveBeenNthCalledWith(1, null, [1, 2]);
+		expect(props.onStart).toHaveBeenNthCalledWith(1, null, [2]);
 		expect(props.onLog).toHaveBeenCalled();
-		expect(props.onStart).toHaveBeenNthCalledWith(2, 7, [2, 1]);
+		expect(props.onStart).toHaveBeenNthCalledWith(2, 7, [2]);
+	});
+
+	it("starts with everyone who is coming when nothing runs yet", async () => {
+		const user = userEvent.setup();
+		const props = renderView(buildDetail(tonight(), [], false));
+
+		await user.click(screen.getByRole("button", { name: "play.start.button" }));
+
+		expect(props.onStart).toHaveBeenCalledWith(null, [1, 2]);
+	});
+
+	it("puts whoever played at the table, whatever their answer", () => {
+		const declinedButPlayed = [
+			session(3, 7, addMinutes(new Date(), -40), [
+				[3, 60, true],
+				[1, 40, false],
+			]),
+		];
+		renderView(buildDetail(tonight(), declinedButPlayed, false));
+
+		const table = screen.getByRole("region", { name: "table.title" });
+		expect(within(table).getByText("Reggi")).toBeInTheDocument();
+		expect(within(table).queryByText("Kathleen")).not.toBeInTheDocument();
+	});
+
+	it("shows the players who said yes as expected before any game", () => {
+		renderView(buildDetail(tonight(), [], false));
+
+		expect(screen.getByText("table.expected")).toBeInTheDocument();
+		expect(screen.getByText("Kathleen")).toBeInTheDocument();
+		expect(screen.queryByText("Reggi")).not.toBeInTheDocument();
+	});
+
+	it("says it is playing now in the header of a night in progress", () => {
+		renderView(buildDetail(tonight(), [], false));
+
+		expect(screen.getByText("card.live")).toBeInTheDocument();
 	});
 
 	it("lists what was played newest first with winner, scores and a link to the session", () => {
@@ -210,7 +258,7 @@ describe("GameNightDetailView", () => {
 
 	it("opens the players and planned games", async () => {
 		const user = userEvent.setup();
-		renderView(buildDetail(tonight(), []));
+		renderView(buildDetail(tonight(), [], false));
 
 		await user.click(screen.getByText("Kathleen"));
 		await user.click(screen.getByText("Age of Inventors"));
@@ -236,6 +284,13 @@ describe("GameNightDetailView", () => {
 		await user.click(screen.getByRole("button", { name: "end.button" }));
 
 		expect(props.onEnd).toHaveBeenCalled();
+	});
+
+	it("does not offer to reopen a night once its play window has passed", () => {
+		renderView(buildDetail(addHours(new Date(), -30), played(), false, addHours(new Date(), -26)));
+
+		expect(screen.queryByRole("button", { name: "end.reopen" })).not.toBeInTheDocument();
+		expect(screen.queryByTestId("night-actions")).not.toBeInTheDocument();
 	});
 
 	it("shows an ended night with its winner and offers to reopen it", async () => {
@@ -293,7 +348,8 @@ describe("GameNightDetailView", () => {
 		expect(screen.queryByText("table.title")).not.toBeInTheDocument();
 
 		await user.click(screen.getByRole("button", { name: "card.manage-rsvps" }));
-		expect(props.onEditAttendees).toHaveBeenCalledTimes(1);
+		expect(props.onManageRsvps).toHaveBeenCalledTimes(1);
+		expect(props.onEditAttendees).not.toHaveBeenCalled();
 	});
 
 	it("says when no games are planned and hides managing RSVPs from readers", () => {

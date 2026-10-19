@@ -8,6 +8,7 @@ using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Core.GameNights;
 using BoardGameTracker.Core.GameNights.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
@@ -232,6 +233,32 @@ public class GameNightControllerTests
     }
 
     [Fact]
+    public async Task UpdateAttendance_ShouldReturnNoContent_WhenTheNightExists()
+    {
+        var command = new UpdateAttendanceCommand { PresentPlayerIds = [1, 2] };
+        _gameNightServiceMock.Setup(x => x.UpdateAttendance(4, command)).ReturnsAsync(GameNight.Create("Night", "", DateTime.UtcNow, 1, 1));
+
+        var result = await _controller.UpdateAttendance(4, command);
+
+        result.Should().BeOfType<NoContentResult>();
+        _gameNightServiceMock.Verify(x => x.UpdateAttendance(4, command), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateAttendance_ShouldReturnNotFound_WhenTheNightDoesNotExist()
+    {
+        var command = new UpdateAttendanceCommand { PresentPlayerIds = [1] };
+        _gameNightServiceMock.Setup(x => x.UpdateAttendance(4, command)).ReturnsAsync((GameNight?)null);
+
+        var result = await _controller.UpdateAttendance(4, command);
+
+        result.Should().BeOfType<NotFoundResult>();
+        _gameNightServiceMock.Verify(x => x.UpdateAttendance(4, command), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task Reopen_ShouldReturnNotFound_WhenTheNightDoesNotExist()
     {
         _gameNightServiceMock.Setup(x => x.Reopen(4)).ReturnsAsync((GameNight?)null);
@@ -381,12 +408,14 @@ public class GameNightControllerTests
 
         _gameNightServiceMock
             .Setup(x => x.UpdateRsvpByLink(linkId, command, false))
-            .ReturnsAsync(rsvp);
+            .ReturnsAsync(new RsvpUpdateResult(rsvp, false));
 
         var result = await _controller.UpdateRsvpByLink(linkId, command);
 
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().BeAssignableTo<GameNightRsvpDto>().Which.State.Should().Be(command.State);
+        var dto = okResult.Value.Should().BeOfType<GameNightRsvpUpdateDto>().Subject;
+        dto.State.Should().Be(command.State);
+        dto.HostNotified.Should().BeFalse();
 
         _gameNightServiceMock.Verify(x => x.UpdateRsvpByLink(linkId, command, false), Times.Once);
         VerifyNoOtherCalls();
@@ -401,11 +430,13 @@ public class GameNightControllerTests
 
         _gameNightServiceMock
             .Setup(x => x.UpdateRsvpByLink(linkId, command, true))
-            .ReturnsAsync(GameNightRsvp.Create(3, command.State));
+            .ReturnsAsync(new RsvpUpdateResult(GameNightRsvp.Create(3, command.State), true));
 
         var result = await _controller.UpdateRsvpByLink(linkId, command);
 
-        result.Should().BeOfType<OkObjectResult>();
+        result.Should().BeOfType<OkObjectResult>()
+            .Which.Value.Should().BeOfType<GameNightRsvpUpdateDto>()
+            .Which.HostNotified.Should().BeTrue();
 
         _gameNightServiceMock.Verify(x => x.UpdateRsvpByLink(linkId, command, true), Times.Once);
         VerifyNoOtherCalls();

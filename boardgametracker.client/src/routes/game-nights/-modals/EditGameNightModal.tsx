@@ -1,11 +1,5 @@
 import { useTranslation } from "react-i18next";
-import {
-	BgtDialog,
-	BgtDialogContent,
-	BgtDialogDescription,
-	BgtDialogFooter,
-	BgtDialogTitle,
-} from "@/components/BgtDialog";
+import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import type { Game, GameNight, Location, ModalProps, Player, UpdateGameNight } from "@/models";
 import { GameNightForm, type GameNightFormValues } from "../-components/GameNightForm";
 import { toUpdateGameNight } from "../-utils/toUpdateGameNight";
@@ -31,7 +25,7 @@ export const EditGameNightModal = (props: Props) => {
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent size="wide">
+			<BgtDialogContent size="wide" aria-describedby={undefined}>
 				<GameNightForm
 					defaultValues={toUpdateGameNight(gameNight)}
 					players={players}
@@ -42,7 +36,6 @@ export const EditGameNightModal = (props: Props) => {
 					onClose={close}
 				>
 					<BgtDialogTitle>{t("edit.title")}</BgtDialogTitle>
-					<BgtDialogDescription>{t("edit.description")}</BgtDialogDescription>
 				</GameNightForm>
 				<BgtDialogFooter
 					onCancel={close}

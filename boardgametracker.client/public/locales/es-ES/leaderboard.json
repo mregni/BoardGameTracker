@@ -51,9 +51,11 @@
     "not-ranked-rank": "Sin clasificar",
     "not-ranked_one": "Menos de {{count}} partida · sin clasificar",
     "not-ranked_other": "Menos de {{count}} partidas · sin clasificar",
-    "ties": "Los empates comparten puesto.",
     "coop_one": "Las victorias y derrotas cooperativas cuentan: una victoria del equipo es una victoria para todos en la mesa y una derrota del equipo, una derrota ({{count}} de las {{total}} victorias).",
-    "coop_other": "Las victorias y derrotas cooperativas cuentan: una victoria del equipo es una victoria para todos en la mesa y una derrota del equipo, una derrota ({{count}} de las {{total}} victorias)."
+    "coop_other": "Las victorias y derrotas cooperativas cuentan: una victoria del equipo es una victoria para todos en la mesa y una derrota del equipo, una derrota ({{count}} de las {{total}} victorias).",
+    "ties-wins": "Con las mismas victorias va primero el mayor porcentaje de victorias y luego más partidas. Las estadísticas idénticas comparten puesto.",
+    "ties-win-rate": "Con el mismo porcentaje va primero quien tiene más victorias y luego más partidas. Las estadísticas idénticas comparten puesto.",
+    "ties-sessions": "Con las mismas partidas va primero quien tiene más victorias. Las estadísticas idénticas comparten puesto."
   },
   "no-podium": {
     "all_one": "Sin podio: solo {{count}} jugador está clasificado. Un podio necesita al menos {{minimum}}; si no, todos estarían en él.",

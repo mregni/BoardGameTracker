@@ -1,13 +1,12 @@
 {
   "title": "Pagina niet gevonden",
-  "subtitle": "Deze pagina gooide blijkbaar een kritieke misser.",
-  "description": "De pagina die je zoekt bestaat niet of is verplaatst.",
+  "subtitle": "Deze pagina bestaat niet.",
   "go-back": "Ga terug",
   "quick-nav": "Snel naar",
   "nav": {
     "dashboard-description": "Bekijk je spelstatistieken",
     "games-description": "Blader door je collectie",
     "players-description": "Bekijk spelersprofielen",
-    "game-nights-description": "Plan je volgende sessie"
+    "game-nights-description": "Plan je volgende spelavond"
   }
 }

@@ -57,3 +57,9 @@ public class RemoveSuggestedGameCommand
     [Range(1, int.MaxValue)]
     public int GameId { get; set; }
 }
+
+public class UpdateAttendanceCommand
+{
+    [MaxLength(200)]
+    public List<int> PresentPlayerIds { get; set; } = [];
+}

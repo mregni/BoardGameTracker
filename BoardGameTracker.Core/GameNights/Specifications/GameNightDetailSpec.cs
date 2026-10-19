@@ -20,6 +20,7 @@ public sealed class GameNightDetailSpec : SingleResultSpecification<GameNight>
                 .ThenInclude(x => x.Expansions)
             .Include(x => x.RunningGames)
                 .ThenInclude(x => x.Players)
+            .Include(x => x.Attendance)
             .AsNoTracking();
     }
 }

@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import LeftRightArrowIcon from "@/assets/icons/left-right-arrow.svg?react";
+import PlusIcon from "@/assets/icons/plus.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -76,7 +77,6 @@ function RouteComponent() {
 				header={t("common:loans")}
 				icon={LeftRightArrowIcon}
 				title={t("empty.title")}
-				description={t("empty.description")}
 				action={canWrite ? { label: t("new.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<NewLoanModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
@@ -96,6 +96,7 @@ function RouteComponent() {
 									onClick: modals.createModal.show,
 									variant: "primary",
 									content: "loans:new.button",
+									icon: PlusIcon,
 								},
 							]
 						: []

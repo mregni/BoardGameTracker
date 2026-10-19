@@ -33,6 +33,6 @@ public class GameNightsOverviewSpecTests
         var spec = new GameNightsOverviewSpec();
 
         spec.AsNoTracking.Should().BeTrue();
-        spec.ShouldIncludeExactly("Host", "Location", "SuggestedGames", "InvitedPlayers", "InvitedPlayers.Player", "Sessions", "Sessions.PlayerSessions");
+        spec.ShouldIncludeExactly("Host", "Location", "SuggestedGames", "InvitedPlayers", "InvitedPlayers.Player", "Sessions", "Sessions.PlayerSessions", "RunningGames", "RunningGames.Players", "Attendance");
     }
 }

@@ -3,23 +3,23 @@
   "hosted-by": "Georganiseerd door",
   "whos-coming": "Wie komt er?",
   "group": {
-    "coming": "Komen ({{count}})",
+    "coming": "Komt ({{count}})",
     "maybe": "Misschien ({{count}})",
-    "pending": "Nog geen antwoord ({{count}})",
-    "declined": "Kunnen niet ({{count}})"
+    "pending": "Geen antwoord ({{count}})",
+    "declined": "Komt niet ({{count}})"
   },
   "host": "gastheer",
   "can-you-make-it": "Kan je erbij zijn?",
   "who-are-you": "Wie ben je?",
   "select-your-name": "Kies je naam…",
-  "coming": "Ik kom",
+  "coming": "Komt",
   "maybe": "Misschien",
-  "cant-come": "Ik kan niet",
+  "cant-come": "Komt niet",
   "send-answer": "Antwoord versturen",
   "answered-accepted": "Je komt, {{name}}",
   "answered-maybe": "Je komt misschien, {{name}}",
   "answered-pending": "Je hebt nog niet geantwoord, {{name}}",
-  "answered-declined": "Je kan niet komen, {{name}}",
+  "answered-declined": "Je komt niet, {{name}}",
   "host-notified": "De gastheer heeft een melding gekregen.",
   "change-response": "Antwoord wijzigen",
   "suggested-games": "Spellen die we misschien spelen",
@@ -29,5 +29,8 @@
   "past-description": "Je kan niet meer antwoorden.",
   "not-found": "Deze uitnodigingslink werkt niet",
   "not-found-description": "Misschien is de link verlopen of niet volledig gekopieerd. Vraag de gastheer om een nieuwe link.",
-  "rsvp-failed": "Je antwoord versturen is mislukt"
+  "rsvp-failed": "Je antwoord versturen is mislukt",
+  "answer-saved": "Je antwoord is opgeslagen.",
+  "in-progress-title": "{{title}} is bezig",
+  "in-progress-description": "Antwoorden kan niet meer."
 }

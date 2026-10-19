@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Ardalis.Specification;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
@@ -90,7 +91,7 @@ public class GameNightStatisticsServiceTests
             StartDate = start,
             HostId = hostId,
             LocationId = 7,
-            AttendeeIds = attendees.ToList(),
+            AttendanceOverrides = attendees.Select(x => new AttendanceOverride(x, true)).ToList(),
             Sessions = sessions.ToList()
         };
     }
@@ -210,15 +211,15 @@ public class GameNightStatisticsServiceTests
     }
 
     [Fact]
-    public async Task GetStatistics_ShouldCountAWonNightAsAttended_WhenTheWinnerWasNotMarkedComing()
+    public async Task GetStatistics_ShouldCountEveryoneWhoPlayedAsAttended_WhateverTheirRsvp()
     {
         SetupEnabled();
-        SetupNights(Night(1, January, 1, [1], Played(10, January, 30, (1, false), (2, true))));
+        SetupNights(Night(1, January, 1, [], Played(10, January, 30, (1, false), (2, true))));
 
         var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
 
         result.Winners.Should().ContainSingle(x => x.PlayerId == 2 && x.NightsWon == 1 && x.NightsAttended == 1);
-        result.Attendance.Select(x => x.PlayerId).Should().Equal(1);
+        result.Attendance.Select(x => x.PlayerId).Should().Equal(1, 2);
         VerifyLoaded();
         VerifyNoOtherCalls();
     }
@@ -414,8 +415,58 @@ public class GameNightStatisticsServiceTests
         var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
 
         result.Records.MostGames!.GameId.Should().BeNull();
-        result.Records.BiggestTable.Should().BeNull();
-        result.AverageTable.Should().Be(0);
+        result.Records.BiggestTable!.Value.Should().Be(1);
+        result.AverageTable.Should().Be(1);
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldDeriveTheTableFromWhoPlayed_RunningGamesTheHostAndOverrides()
+    {
+        SetupEnabled();
+        var night = Night(1, January, 1, [],
+            Played(10, January, 60, (2, true), (3, false), (4, false)),
+            Played(11, January.AddHours(1), 60, (2, true), (5, false)));
+        night.RunningPlayerIds = [6];
+        night.AttendanceOverrides = [new AttendanceOverride(7, true), new AttendanceOverride(1, false)];
+        night.EndedAt = January.AddHours(4);
+        SetupNights(night);
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+
+        result.Attendance.Select(x => x.PlayerId).Should().BeEquivalentTo([2, 3, 4, 5, 6, 7]);
+        result.Records.BiggestTable!.Value.Should().Be(6);
+        result.AverageTable.Should().Be(6);
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldMarkANightInProgressAsSoFar_AndKeepItOutOfTheStandingsAndStreaks()
+    {
+        SetupEnabled();
+        var tonight = Now.AddHours(-3);
+        SetupNights(
+            Night(1, January, 1, [], Played(10, January, 30, (2, true), (1, false))),
+            Night(2, February, 1, [], Played(10, February, 30, (2, true), (1, false))),
+            Night(3, tonight, 1, [], Played(10, tonight, 30, (2, true), (1, false)), Played(11, tonight.AddHours(1), 30, (1, true), (2, false), (3, false))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+
+        result.History.Select(x => (x.GameNightId, x.InProgress)).Should().Equal((3, true), (2, false), (1, false));
+        result.History[0].WinnerIds.Should().Equal(1, 2);
+        result.History[0].WinnerStreak.Should().Be(0);
+        result.History[1].WinnerStreak.Should().Be(2);
+        result.TiedNights.Should().Be(0);
+        result.Winners.Should().ContainSingle();
+        result.Winners[0].Should().Match<NightWinnerStatisticDto>(x => x.PlayerId == 2 && x.NightsWon == 2 && x.NightsAttended == 2);
+        result.Streaks.CurrentWinner!.PlayerId.Should().Be(2);
+        result.Streaks.CurrentWinner.Length.Should().Be(2);
+        result.Streaks.CurrentWinner.To.Should().Be(February);
+        result.Streaks.CurrentAttendance!.Length.Should().Be(2);
+        result.NightsWithSessions.Should().Be(3);
+        result.GamesPlayed.Should().Be(4);
         VerifyLoaded();
         VerifyNoOtherCalls();
     }

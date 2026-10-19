@@ -108,13 +108,10 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
         return result.Select(x => (x.Id, x.Name, x.Image, x.PlayCount, x.WinCount)).ToList();
     }
 
-    public async Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopWinners(int count, CancellationToken cancellationToken = default)
+    public async Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetWinTotals(CancellationToken cancellationToken = default)
     {
         var result = await PlayerTotals()
-            .OrderByDescending(x => x.WinCount)
-            .ThenByDescending(x => x.PlayCount)
-            .ThenBy(x => x.Id)
-            .Take(count)
+            .OrderBy(x => x.Id)
             .ToListAsync(cancellationToken);
 
         return result.Select(x => (x.Id, x.Name, x.Image, x.PlayCount, x.WinCount)).ToList();

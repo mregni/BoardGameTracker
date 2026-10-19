@@ -52,11 +52,17 @@ public class GameNightStatisticsService : IGameNightStatisticsService
             .Where(x => x.Sessions.Count > 0 || x.EndedAt.HasValue)
             .OrderBy(x => x.StartDate)
             .ThenBy(x => x.Id)
-            .Select(x => new NightOutcome(x, NightWinnerRule.Decide(x.Sessions.SelectMany(s => s.Results))))
+            .Select(x => new NightOutcome(
+                x,
+                NightWinnerRule.Decide(x.Sessions.SelectMany(s => s.Results)),
+                x.GetAttendeeIds(),
+                GameNight.IsOverAt(x.StartDate, x.EndedAt, now)))
             .ToList();
         var played = outcomes.Where(x => x.Night.Sessions.Count > 0).ToList();
-        var recent = outcomes.TakeLast(RecentNightCount).Select(x => x.Night).ToList();
-        var winnerStreaks = GameNightStreaks.Find(played.Select(x => new StreakStep(x.Night.StartDate, x.Winners.WinnerIds)).ToList());
+        var settled = outcomes.Where(x => x.IsOver).ToList();
+        var decided = played.Where(x => x.IsOver).ToList();
+        var recent = outcomes.TakeLast(RecentNightCount).ToList();
+        var winnerStreaks = GameNightStreaks.Find(decided.Select(x => new StreakStep(x.Night.StartDate, x.Winners.WinnerIds)).ToList());
 
         return new GameNightStatisticsDto
         {
@@ -66,17 +72,17 @@ public class GameNightStatisticsService : IGameNightStatisticsService
             Nights = outcomes.Count,
             GamesPlayed = outcomes.Sum(x => x.Night.Sessions.Count),
             TotalMinutes = outcomes.Sum(x => x.Night.Sessions.Sum(s => (s.End - s.Start).TotalMinutes)),
-            AverageTable = outcomes.Count == 0 ? 0 : outcomes.Average(x => x.Night.AttendeeIds.Count),
+            AverageTable = outcomes.Count == 0 ? 0 : outcomes.Average(x => x.AttendeeIds.Count),
             AverageDaysBetweenNights = outcomes.Count < 2
                 ? null
                 : (outcomes[^1].Night.StartDate - outcomes[0].Night.StartDate).TotalDays / (outcomes.Count - 1),
-            TiedNights = played.Count(x => x.Winners.WinnerIds.Count > 1),
-            Winners = BuildWinners(outcomes),
-            History = BuildHistory(outcomes, played, winnerStreaks),
+            TiedNights = decided.Count(x => x.Winners.WinnerIds.Count > 1),
+            Winners = BuildWinners(settled),
+            History = BuildHistory(outcomes, decided, winnerStreaks),
             Games = BuildGames(outcomes),
             PlannedNeverPlayed = BuildPlannedNeverPlayed(outcomes),
-            Streaks = BuildStreaks(outcomes, played, winnerStreaks),
-            RecentNights = recent.Select(ToReference).ToList(),
+            Streaks = BuildStreaks(settled, decided, winnerStreaks),
+            RecentNights = recent.Select(x => ToReference(x.Night)).ToList(),
             Attendance = BuildAttendance(outcomes, recent),
             Records = BuildRecords(played)
         };
@@ -100,7 +106,7 @@ public class GameNightStatisticsService : IGameNightStatisticsService
 
     private static bool WasThere(NightOutcome outcome, int playerId)
     {
-        return outcome.Night.AttendeeIds.Contains(playerId) || outcome.Winners.WinnerIds.Contains(playerId);
+        return outcome.AttendeeIds.Contains(playerId) || outcome.Winners.WinnerIds.Contains(playerId);
     }
 
     private static List<NightWinnerStatisticDto> BuildWinners(List<NightOutcome> outcomes)
@@ -129,9 +135,9 @@ public class GameNightStatisticsService : IGameNightStatisticsService
         return winners;
     }
 
-    private static List<NightHistoryDto> BuildHistory(List<NightOutcome> outcomes, List<NightOutcome> played, StreakResult winnerStreaks)
+    private static List<NightHistoryDto> BuildHistory(List<NightOutcome> outcomes, List<NightOutcome> decided, StreakResult winnerStreaks)
     {
-        var streakPerNight = played
+        var streakPerNight = decided
             .Select((x, index) => (x.Night.Id, Length: winnerStreaks.LengthPerStep[index]))
             .ToDictionary(x => x.Id, x => x.Length);
 
@@ -151,7 +157,8 @@ public class GameNightStatisticsService : IGameNightStatisticsService
                 CoopOnly = x.Night.Sessions.Count > 0 && x.Night.Sessions.All(s => s.IsCoop),
                 SharedThroughCoop = x.Winners.WinnerIds.Count > 0 && x.Night.Sessions
                     .Where(s => s.Results.Any(r => r.Won))
-                    .All(s => s.IsCoop)
+                    .All(s => s.IsCoop),
+                InProgress = !x.IsOver
             })
             .ToList();
     }
@@ -187,10 +194,10 @@ public class GameNightStatisticsService : IGameNightStatisticsService
             .ToList();
     }
 
-    private static GameNightStreaksDto BuildStreaks(List<NightOutcome> outcomes, List<NightOutcome> played, StreakResult winnerStreaks)
+    private static GameNightStreaksDto BuildStreaks(List<NightOutcome> settled, List<NightOutcome> decided, StreakResult winnerStreaks)
     {
-        var attendance = GameNightStreaks.Find(outcomes.Select(x => new StreakStep(x.Night.StartDate, x.Night.AttendeeIds)).ToList());
-        var games = GameNightStreaks.Find(played.Select(x => new StreakStep(x.Night.StartDate, x.Night.Sessions.Select(s => s.GameId).ToList())).ToList());
+        var attendance = GameNightStreaks.Find(settled.Select(x => new StreakStep(x.Night.StartDate, x.AttendeeIds)).ToList());
+        var games = GameNightStreaks.Find(decided.Select(x => new StreakStep(x.Night.StartDate, x.Night.Sessions.Select(s => s.GameId).ToList())).ToList());
 
         return new GameNightStreaksDto
         {
@@ -220,15 +227,15 @@ public class GameNightStatisticsService : IGameNightStatisticsService
             : new PlayerStreakDto { PlayerId = run.Key, Length = run.Length, From = run.From, To = run.To };
     }
 
-    private static List<NightAttendanceDto> BuildAttendance(List<NightOutcome> outcomes, List<GameNightStatisticsNight> recent)
+    private static List<NightAttendanceDto> BuildAttendance(List<NightOutcome> outcomes, List<NightOutcome> recent)
     {
         return outcomes
-            .SelectMany(x => x.Night.AttendeeIds)
+            .SelectMany(x => x.AttendeeIds)
             .Distinct()
             .Select(playerId => new NightAttendanceDto
             {
                 PlayerId = playerId,
-                NightsAttended = outcomes.Count(x => x.Night.AttendeeIds.Contains(playerId)),
+                NightsAttended = outcomes.Count(x => x.AttendeeIds.Contains(playerId)),
                 NightsHosted = outcomes.Count(x => x.Night.HostId == playerId),
                 RecentNights = recent.Select(x => x.AttendeeIds.Contains(playerId)).ToList()
             })
@@ -250,8 +257,8 @@ public class GameNightStatisticsService : IGameNightStatisticsService
             .ThenBy(x => x.Night.StartDate)
             .FirstOrDefault();
         var biggestTable = played
-            .Where(x => x.Night.AttendeeIds.Count > 0)
-            .OrderByDescending(x => x.Night.AttendeeIds.Count)
+            .Where(x => x.AttendeeIds.Count > 0)
+            .OrderByDescending(x => x.AttendeeIds.Count)
             .ThenBy(x => x.Night.StartDate)
             .FirstOrDefault();
         var latest = played
@@ -264,7 +271,7 @@ public class GameNightStatisticsService : IGameNightStatisticsService
         {
             LongestNight = longest.Outcome == null ? null : ToRecord(longest.Outcome, longest.Minutes),
             MostGames = mostGames == null ? null : ToRecord(mostGames, mostGames.Night.Sessions.Count, TopGame(mostGames.Night)),
-            BiggestTable = biggestTable == null ? null : ToRecord(biggestTable, biggestTable.Night.AttendeeIds.Count),
+            BiggestTable = biggestTable == null ? null : ToRecord(biggestTable, biggestTable.AttendeeIds.Count),
             LatestFinish = latest.Outcome == null
                 ? null
                 : ToRecord(latest.Outcome, (latest.Session.End - latest.Session.Start).TotalMinutes, latest.Session.GameId, latest.Session.End)
@@ -305,5 +312,5 @@ public class GameNightStatisticsService : IGameNightStatisticsService
         return new GameNightReferenceDto { GameNightId = night.Id, Title = night.Title, StartDate = night.StartDate };
     }
 
-    private sealed record NightOutcome(GameNightStatisticsNight Night, NightWinners Winners);
+    private sealed record NightOutcome(GameNightStatisticsNight Night, NightWinners Winners, List<int> AttendeeIds, bool IsOver);
 }

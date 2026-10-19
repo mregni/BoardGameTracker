@@ -59,7 +59,6 @@ function RouteComponent() {
 			<BgtPageHeader backAction={goBack} backText={t("common:back")} header={t("new.title")} />
 			<BgtPageContent className="items-center">
 				<BgtCard className="w-full max-w-xl">
-					<p className="text-cancel mb-4">{t("new.description")}</p>
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-row gap-3 mb-6">
 							<div className="flex-none">

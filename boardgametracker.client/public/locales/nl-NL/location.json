@@ -1,17 +1,16 @@
 {
   "empty": {
-    "title": "Nog geen locaties toegevoegd",
-    "description": "Je hebt nog geen locaties toegevoegd. Voeg je eerste locatie toe om bij te houden waar je je spellen speelt."
+    "title": "Nog geen locaties"
   },
   "new": {
     "button": "Locatie toevoegen",
-    "title": "Nieuwe locatie aanmaken",
+    "title": "Locatie toevoegen",
     "description": "Voer de naam van de locatie in om een nieuwe aan te maken.",
     "name": {
       "placeholder": "Naam van de locatie",
       "required": "Naam van de locatie is verplicht"
     },
-    "save": "Locatie aanmaken"
+    "save": "Toevoegen"
   },
   "edit": {
     "title": "Locatie bewerken"

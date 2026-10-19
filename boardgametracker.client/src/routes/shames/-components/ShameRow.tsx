@@ -5,7 +5,7 @@ import CaretRight from "@/assets/icons/caret-right.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { Shame, ShameGameNight } from "@/models";
-import { monthsSince, toDisplay, toMonthYear } from "@/utils/dateUtils";
+import { toDisplay, toMonthYear, toRelative } from "@/utils/dateUtils";
 import { EMPTY_PRICE } from "@/utils/numberUtils";
 import { formatRange } from "@/utils/rangeUtils";
 import { lastPlayedTone } from "../-utils/shameFilters";
@@ -54,10 +54,7 @@ export const ShameRow = ({
 	const { t, i18n } = useTranslation("shames");
 	const format = useNumberFormat();
 	const tone = lastPlayedTone(shame, now);
-	const lastPlayed =
-		tone === "bad"
-			? t("row.never-played")
-			: t("row.months-ago", { count: monthsSince(shame.lastSessionDate, now) ?? 0 });
+	const lastPlayed = tone === "bad" ? t("row.never-played") : toRelative(shame.lastSessionDate, i18n.language, { now });
 
 	const details: string[] = [];
 	if (shame.additionDate) {

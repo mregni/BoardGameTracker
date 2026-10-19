@@ -36,6 +36,14 @@ const renderCard = (overrides: Partial<Parameters<typeof NextGameNightCard>[0]> 
 	);
 
 describe("NextGameNightCard", () => {
+	it("says a night that has started is playing now instead of next", () => {
+		renderCard({ gameNight: { ...night, startDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() } });
+
+		expect(screen.getByText("night.live")).toBeInTheDocument();
+		expect(screen.queryByText("night.when")).not.toBeInTheDocument();
+		expect(screen.getByRole("region", { name: "night.live-label" })).toBeInTheDocument();
+	});
+
 	it("shows the night with its date, details and RSVP pills", () => {
 		renderCard();
 

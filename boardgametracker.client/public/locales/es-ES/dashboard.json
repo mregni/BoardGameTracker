@@ -1,7 +1,6 @@
 {
   "empty": {
     "title": "No hay juegos en tu colección",
-    "description": "Aún no has añadido ningún juego. Añade tu primer juego para registrar partidas.",
     "button": "Añade tu primer juego"
   },
   "welcome": {
@@ -30,7 +29,9 @@
     "more_one": "{{count}} más planificada",
     "more_other": "{{count}} más planificadas",
     "none": "No hay ninguna noche de juego planificada",
-    "plan": "Planifica una"
+    "plan": "Planifica una",
+    "live": "Esta noche · jugando ahora",
+    "live-label": "Noche de juego en curso"
   },
   "tiles": {
     "games": "Juegos",
@@ -67,8 +68,8 @@
     "won": "{{percent}} ganadas",
     "row_one": "{{name}}: {{wins}} victorias en {{total}} partida",
     "row_other": "{{name}}: {{wins}} victorias en {{total}} partidas",
-    "hint": "Ordenado por victorias. La barra es el porcentaje de victorias.",
-    "hint-coop": "Victorias, cooperativas incluidas. La barra es el porcentaje de victorias.",
+    "hint": "Ordenado por victorias, luego porcentaje de victorias y luego partidas. La barra es el porcentaje de victorias.",
+    "hint-coop": "Ordenado por victorias (cooperativas incluidas), luego porcentaje de victorias y luego partidas. La barra es el porcentaje de victorias.",
     "empty": "Aún no se han jugado partidas"
   },
   "most-played": {

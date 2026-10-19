@@ -9,6 +9,16 @@ vi.mock("@/assets/icons/arrow-left.svg?react", () => ({
 }));
 
 describe("BgtPageHeader", () => {
+	describe("Actions", () => {
+		it("shows the icon of an action before its label", () => {
+			const Plus = (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="plus-icon" {...props} />;
+			renderWithTheme(<BgtPageHeader actions={[{ content: "Add player", onClick: vi.fn(), icon: Plus }]} />);
+
+			const button = screen.getByRole("button", { name: "Add player" });
+			expect(button.firstChild).toBe(screen.getByTestId("plus-icon"));
+		});
+	});
+
 	describe("Rendering", () => {
 		it("should render header text when provided", () => {
 			renderWithTheme(<BgtPageHeader header="Page Title" />);

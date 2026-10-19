@@ -102,6 +102,14 @@ describe("NightWinnerHistoryCard", () => {
 		expect(within(items[1]).getByText("stats.history.games · Thuis")).toBeInTheDocument();
 	});
 
+	it("marks the winner of a night that is still going as so far, without a streak", () => {
+		const [first] = statistics.history;
+		render(<NightWinnerHistoryCard history={[{ ...first, inProgress: true }]} lookup={lookup} />);
+
+		expect(screen.getByText("stats.history.so-far")).toBeInTheDocument();
+		expect(screen.queryByText("stats.history.streak")).not.toBeInTheDocument();
+	});
+
 	it("shows every night on demand and folds them back", async () => {
 		render(<NightWinnerHistoryCard history={statistics.history} lookup={lookup} />);
 

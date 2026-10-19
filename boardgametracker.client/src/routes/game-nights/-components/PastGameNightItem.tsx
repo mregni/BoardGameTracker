@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
-import { type GameNight, GameNightRsvpState, type Player, type Settings } from "@/models";
+import type { GameNight, Player, Settings } from "@/models";
 
 interface Props {
 	gameNight: GameNight;
@@ -15,8 +15,8 @@ export const PastGameNightItem = (props: Props) => {
 	const { gameNight, settings, players } = props;
 	const { t } = useTranslation("game-nights");
 
-	const attended = gameNight.invitedPlayers.filter((rsvp) => rsvp.state === GameNightRsvpState.Accepted).length;
-	const { gamesPlayed, winnerIds } = gameNight.summary;
+	const { gamesPlayed, winnerIds, attendeeIds, attendanceRecorded } = gameNight.summary;
+	const showAttended = gamesPlayed > 0 || attendanceRecorded;
 	const winners = winnerIds
 		.map((id) => players.find((player) => player.id === id)?.name)
 		.filter((name): name is string => name !== undefined)
@@ -24,7 +24,7 @@ export const PastGameNightItem = (props: Props) => {
 
 	const summary = [
 		gameNight.location.name,
-		t("past-night.attended-count", { count: attended }),
+		showAttended && t("past-night.attended-count", { count: attendeeIds.length }),
 		gamesPlayed === 0 ? t("past-night.nothing-logged") : t("past-night.games-played", { count: gamesPlayed }),
 		winners && t("past-night.winner", { names: winners }),
 	]
