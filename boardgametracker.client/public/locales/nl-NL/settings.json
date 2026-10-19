@@ -107,8 +107,8 @@
 					"keyword": "FABRIEKSRESET",
 					"input-label": "Typ FABRIEKSRESET om te bevestigen",
 					"button": "Alles terugzetten naar fabrieksinstellingen",
-					"admin-password": "Het account admin komt terug met het wachtwoord van de eerste keer inloggen.",
-					"admin-password-link": "Hoe wordt dat ingesteld?"
+					"admin-account": "Het account admin komt terug met het wachtwoord van de eerste keer inloggen.",
+					"admin-account-link": "Hoe wordt dat ingesteld?"
 				}
 			},
 			"notifications": {

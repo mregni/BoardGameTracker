@@ -107,8 +107,8 @@
 					"keyword": "RESTABLECER DE FÁBRICA",
 					"input-label": "Escribe RESTABLECER DE FÁBRICA para confirmar",
 					"button": "Restablecer todo de fábrica",
-					"admin-password": "La cuenta admin vuelve con la contraseña del primer inicio de sesión.",
-					"admin-password-link": "¿Cómo se configura?"
+					"admin-account": "La cuenta admin vuelve con la contraseña del primer inicio de sesión.",
+					"admin-account-link": "¿Cómo se configura?"
 				}
 			},
 			"notifications": {

@@ -7,7 +7,7 @@ import { useDangerZone } from "../-hooks/useDangerZone";
 import { ResetConfirmModal } from "../-modals/ResetConfirmModal";
 import { SettingsSection } from "./SettingsSection";
 
-const ADMIN_PASSWORD_DOCS = "https://mregni.github.io/BoardGameTracker/getting-started/authentication/#first-login";
+const ADMIN_ACCOUNT_DOCS = "https://mregni.github.io/BoardGameTracker/getting-started/authentication/#first-login";
 
 export const DangerZoneSection = () => {
 	const { t } = useTranslation(["settings", "common"]);
@@ -60,9 +60,9 @@ export const DangerZoneSection = () => {
 					inputLabel={t("advanced.danger.factory-reset.confirm.input-label")}
 					confirmLabel={t("advanced.danger.factory-reset.confirm.button")}
 					note={{
-						text: t("advanced.danger.factory-reset.confirm.admin-password"),
-						linkLabel: t("advanced.danger.factory-reset.confirm.admin-password-link"),
-						href: ADMIN_PASSWORD_DOCS,
+						text: t("advanced.danger.factory-reset.confirm.admin-account"),
+						linkLabel: t("advanced.danger.factory-reset.confirm.admin-account-link"),
+						href: ADMIN_ACCOUNT_DOCS,
 					}}
 					onConfirm={async () => {
 						await factoryReset();

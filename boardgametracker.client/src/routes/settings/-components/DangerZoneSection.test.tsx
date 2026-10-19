@@ -53,9 +53,9 @@ describe("DangerZoneSection", () => {
 
 		await user.click(screen.getByRole("button", { name: "advanced.danger.factory-reset.button" }));
 
-		expect(screen.getByText(/confirm\.admin-password\s*$/)).toBeInTheDocument();
+		expect(screen.getByText(/confirm\.admin-account\s*$/)).toBeInTheDocument();
 		expect(
-			screen.getByRole("link", { name: "advanced.danger.factory-reset.confirm.admin-password-link" }),
+			screen.getByRole("link", { name: "advanced.danger.factory-reset.confirm.admin-account-link" }),
 		).toHaveAttribute("href", expect.stringContaining("/getting-started/authentication/"));
 	});
 

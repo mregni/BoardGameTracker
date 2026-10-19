@@ -107,8 +107,8 @@
 					"keyword": "FACTORY RESET",
 					"input-label": "Type FACTORY RESET to confirm",
 					"button": "Factory reset everything",
-					"admin-password": "The admin account comes back with its first-login password.",
-					"admin-password-link": "How is it set?"
+					"admin-account": "The admin account comes back with its first-login password.",
+					"admin-account-link": "How is it set?"
 				}
 			},
 			"notifications": {
