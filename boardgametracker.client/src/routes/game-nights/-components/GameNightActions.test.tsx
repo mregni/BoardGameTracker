@@ -69,7 +69,9 @@ describe("GameNightActions", () => {
 
 	it("leaves the email invites button out for a non-admin while mailing is not set up", () => {
 		permissions.isAdmin = false;
-		renderWithProviders(<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
+		renderWithProviders(
+			<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />,
+		);
 
 		expect(screen.queryByRole("button", { name: "card.email-invites" })).not.toBeInTheDocument();
 		expect(screen.queryByText("invites.email-disabled")).not.toBeInTheDocument();
@@ -80,7 +82,9 @@ describe("GameNightActions", () => {
 		const user = userEvent.setup();
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		setClipboard({ writeText });
-		renderWithProviders(<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
+		renderWithProviders(
+			<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />,
+		);
 
 		await user.click(screen.getByRole("button", { name: "card.copy-link" }));
 
@@ -92,7 +96,9 @@ describe("GameNightActions", () => {
 	it("reports a failed copy instead of claiming success when the clipboard is unavailable", async () => {
 		const user = userEvent.setup();
 		setClipboard(undefined);
-		renderWithProviders(<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />);
+		renderWithProviders(
+			<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />,
+		);
 
 		await user.click(screen.getByRole("button", { name: "card.copy-link" }));
 
@@ -121,13 +127,7 @@ describe("GameNightActions", () => {
 	it("offers no invite actions once the night has started", () => {
 		settingsMock.current = { publicUrl: "https://games.example.com", emailEnabled: true };
 		renderWithProviders(
-			<GameNightActions
-				invitable={false}
-				gameNight={gameNight}
-				players={[]}
-				onEdit={vi.fn()}
-				onDelete={vi.fn()}
-			/>,
+			<GameNightActions invitable={false} gameNight={gameNight} players={[]} onEdit={vi.fn()} onDelete={vi.fn()} />,
 		);
 
 		expect(screen.queryByRole("button", { name: "card.copy-link" })).not.toBeInTheDocument();
@@ -210,7 +210,9 @@ describe("GameNightActions", () => {
 		const user = userEvent.setup();
 		const onEdit = vi.fn();
 		const onDelete = vi.fn();
-		renderWithProviders(<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={onEdit} onDelete={onDelete} />);
+		renderWithProviders(
+			<GameNightActions invitable gameNight={gameNight} players={[]} onEdit={onEdit} onDelete={onDelete} />,
+		);
 
 		await user.click(screen.getByRole("button", { name: "edit" }));
 		await user.click(screen.getByRole("button", { name: "delete.button" }));

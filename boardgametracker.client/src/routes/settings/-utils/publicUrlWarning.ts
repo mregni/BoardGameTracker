@@ -19,10 +19,11 @@ export const getPublicUrlWarning = (
 };
 
 const isLoopbackHost = (hostname: string): boolean => {
-	const name = hostname.toLowerCase().replace(/\.$/, "").replace(/^\[(.*)\]$/, "$1");
-	return (
-		name === "localhost" || name.endsWith(".localhost") || name === "::1" || /^127(\.\d{1,3}){3}$/.test(name)
-	);
+	const name = hostname
+		.toLowerCase()
+		.replace(/\.$/, "")
+		.replace(/^\[(.*)\]$/, "$1");
+	return name === "localhost" || name.endsWith(".localhost") || name === "::1" || /^127(\.\d{1,3}){3}$/.test(name);
 };
 
 export const breaksSingleSignOn = (url: string): boolean => {

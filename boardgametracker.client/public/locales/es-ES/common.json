@@ -142,5 +142,13 @@
   "coop": {
     "won": "Cooperativo · ganado",
     "lost": "Cooperativo · perdido"
+  },
+  "period": {
+    "label": "Periodo",
+    "all-time": "Siempre",
+    "this-year": "Este año",
+    "last-12-months": "Últimos 12 meses",
+    "this-month": "Este mes",
+    "custom": "Personalizado"
   }
 }

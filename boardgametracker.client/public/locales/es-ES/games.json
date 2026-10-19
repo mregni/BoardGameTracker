@@ -30,8 +30,8 @@
   },
   "title": "Juegos",
   "new": "Añadir juego",
-  "count_other": "{{count}} juegos encontrados",
-  "count_one": "{{count}} juego encontrado",
+  "count_other": "{{count}} juegos",
+  "count_one": "{{count}} juego",
   "cards": {
     "games": "Juegos"
   },

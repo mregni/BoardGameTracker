@@ -23,7 +23,7 @@ describe("useNumberFormat", () => {
 		expect(result.current.integer(12345)).toBe("12.345");
 		expect(result.current.percent(0.5)).toBe("50%");
 		expect(result.current.ratio(1, 4)).toBe("25%");
-		expect(result.current.price(12.5, "€")).toBe("€12,50");
+		expect(result.current.price(12.5, "€").replace(/\s/g, " ")).toBe("€ 12,50");
 		expect(result.current.fileSize(1536)).toBe("1,5 KB");
 		expect(result.current.input(1234.5)).toBe("1234,5");
 		expect(result.current.number(0.12345, { maximumFractionDigits: 2 })).toBe("0,12");

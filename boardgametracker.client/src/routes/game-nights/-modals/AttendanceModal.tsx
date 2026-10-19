@@ -79,8 +79,8 @@ export const AttendanceModal = (props: Props) => {
 												: hasPlayed
 													? t("attendance.playing")
 													: isPresent
-													? t("attendance.present")
-													: t("attendance.absent")}
+														? t("attendance.present")
+														: t("attendance.absent")}
 										</span>
 									</span>
 									{isPresent && <CheckIcon className="size-4 shrink-0 text-green-300" aria-hidden="true" />}

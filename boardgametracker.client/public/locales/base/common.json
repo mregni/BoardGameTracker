@@ -142,5 +142,13 @@
   "coop": {
     "won": "Co-op · won",
     "lost": "Co-op · lost"
+  },
+  "period": {
+    "label": "Period",
+    "all-time": "All time",
+    "this-year": "This year",
+    "last-12-months": "Last 12 months",
+    "this-month": "This month",
+    "custom": "Custom"
   }
 }

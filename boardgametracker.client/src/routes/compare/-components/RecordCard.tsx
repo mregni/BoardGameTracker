@@ -90,7 +90,7 @@ export const RecordCard = ({ compare, playerOne, playerTwo }: Props) => {
 			/>
 			<BgtProgressLegend
 				items={segments
-					.filter((segment) => segment.value > 0)
+					.filter((segment) => segment.value > 0 && segment.key !== "playerOne" && segment.key !== "playerTwo")
 					.map((segment) => ({
 						key: segment.key,
 						label: segment.label,

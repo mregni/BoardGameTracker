@@ -164,12 +164,6 @@
 			"read-only": "De API-sleutel is alleen-lezen.",
 			"read-only-description": "De API-sleutel wordt beheerd via de omgevingsvariabele BGG_API_KEY en kan hier niet worden gewijzigd.",
 			"help-description": "Vraag een sleutel aan op de <requestPage>aanvraagpagina</requestPage> van BoardGameGeek."
-		},
-		"notifications": {
-			"saved": "BGG-API-sleutel opgeslagen",
-			"save-failed": "BGG-API-sleutel opslaan mislukt",
-			"cleared": "BGG-API-sleutel verwijderd",
-			"clear-failed": "BGG-API-sleutel verwijderen mislukt"
 		}
 	},
 	"account": {
@@ -301,8 +295,6 @@
 			"user-create-failed": "Gebruiker aanmaken mislukt",
 			"user-deleted": "Gebruiker verwijderd",
 			"user-delete-failed": "Gebruiker verwijderen mislukt",
-			"role-updated": "Rol gewijzigd",
-			"role-update-failed": "Gebruikersrol bijwerken mislukt",
 			"user-updated": "Gebruiker opgeslagen",
 			"user-update-failed": "Gebruiker bijwerken mislukt",
 			"password-reset-failed": "Wachtwoord resetten mislukt",

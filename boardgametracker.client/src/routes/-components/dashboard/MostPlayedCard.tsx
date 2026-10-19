@@ -45,7 +45,7 @@ export const MostPlayedCard = (props: Props) => {
 							className={periodButton(period === "month")}
 							onClick={() => setPeriod("month")}
 						>
-							{t("most-played.this-month")}
+							{t("common:period.this-month")}
 						</button>
 						<button
 							type="button"
@@ -53,7 +53,7 @@ export const MostPlayedCard = (props: Props) => {
 							className={periodButton(period === "all")}
 							onClick={() => setPeriod("all")}
 						>
-							{t("most-played.all-time")}
+							{t("common:period.all-time")}
 						</button>
 					</fieldset>
 				</div>

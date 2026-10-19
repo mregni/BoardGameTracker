@@ -64,6 +64,28 @@ export const formatPercent = (fraction: NumberValue, locale?: string | null, max
 export const formatRatio = (value: number, total: number, locale?: string | null, maximumFractionDigits = 0): string =>
 	formatPercent(total === 0 ? 0 : value / total, locale, maximumFractionDigits);
 
+const SYMBOL_CURRENCIES: Record<string, string> = {
+	"€": "EUR",
+	$: "USD",
+	"£": "GBP",
+	"¥": "JPY",
+	"₹": "INR",
+	"₩": "KRW",
+	"₺": "TRY",
+	"₽": "RUB",
+	R$: "BRL",
+	zł: "PLN",
+};
+
+export const toIsoCurrency = (currency: string | null | undefined): string | null => {
+	const value = currency?.trim() ?? "";
+	const mapped = SYMBOL_CURRENCIES[value];
+	if (mapped) {
+		return mapped;
+	}
+	return /^[A-Za-z]{3}$/.test(value) ? value.toUpperCase() : null;
+};
+
 export const formatPrice = (
 	amount: NumberValue,
 	currency: string | null | undefined,
@@ -74,11 +96,19 @@ export const formatPrice = (
 	}
 
 	const fractionDigits = Number.isInteger(Math.round(amount * 100) / 100) ? 0 : 2;
-	const formatted = formatNumber(amount, locale, {
-		minimumFractionDigits: fractionDigits,
-		maximumFractionDigits: fractionDigits,
-	});
+	const digits = { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits };
 
+	const isoCode = toIsoCurrency(currency);
+	if (isoCode) {
+		return formatNumber(amount, locale, {
+			...digits,
+			style: "currency",
+			currency: isoCode,
+			currencyDisplay: "narrowSymbol",
+		});
+	}
+
+	const formatted = formatNumber(amount, locale, digits);
 	const prefix = currency?.trim() ?? "";
 	if (prefix.length === 0) {
 		return formatted;

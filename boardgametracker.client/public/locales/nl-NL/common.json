@@ -142,5 +142,13 @@
   "coop": {
     "won": "Co-op · gewonnen",
     "lost": "Co-op · verloren"
+  },
+  "period": {
+    "label": "Periode",
+    "all-time": "Altijd",
+    "this-year": "Dit jaar",
+    "last-12-months": "Laatste 12 maanden",
+    "this-month": "Deze maand",
+    "custom": "Aangepast"
   }
 }

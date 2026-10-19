@@ -4,8 +4,8 @@
     "button": "Speler toevoegen"
   },
   "back": "Terug naar spelers",
-  "count_other": "{{count}} spelers gevonden",
-  "count_one": "{{count}} speler gevonden",
+  "count_other": "{{count}} spelers",
+  "count_one": "{{count}} speler",
   "notifications": {
     "created": "Speler toegevoegd",
     "create-failed": "Speler aanmaken mislukt",

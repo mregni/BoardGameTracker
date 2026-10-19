@@ -62,11 +62,15 @@ function RouteComponent() {
 						content={statistics.totalGames}
 						textSize="7"
 						link="/games"
-						caption={t("tiles.games-detail", {
-							owned: integer(statistics.ownedGames),
-							expansions: integer(statistics.expansionsOwned),
-							count: statistics.expansionsOwned,
-						})}
+						caption={
+							statistics.expansionsOwned > 0
+								? t("tiles.games-detail", {
+										owned: integer(statistics.ownedGames),
+										expansions: integer(statistics.expansionsOwned),
+										count: statistics.expansionsOwned,
+									})
+								: t("tiles.games-owned", { owned: integer(statistics.ownedGames) })
+						}
 					/>
 					<BgtTextStatistic
 						title={t("tiles.players")}

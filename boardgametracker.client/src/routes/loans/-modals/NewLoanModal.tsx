@@ -6,12 +6,7 @@ import { ToggleButton, ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import Plus from "@/assets/icons/plus.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import {
-	BgtDialog,
-	BgtDialogContent,
-	BgtDialogFooter,
-	BgtDialogTitle,
-} from "@/components/BgtDialog";
+import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtDatePicker, BgtSelect } from "@/components/BgtForm";
 import { BgtFieldLabel } from "@/components/BgtForm/BgtFieldLabel";
 import { useAppForm } from "@/hooks/form";

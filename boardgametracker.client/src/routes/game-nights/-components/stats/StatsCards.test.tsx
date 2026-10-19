@@ -43,7 +43,9 @@ describe("NightStatsTiles", () => {
 	});
 
 	it("waits for four nights before it names a rhythm", () => {
-		const { rerender } = render(<NightStatsTiles statistics={{ ...statistics, nights: 3, averageDaysBetweenNights: 3 }} />);
+		const { rerender } = render(
+			<NightStatsTiles statistics={{ ...statistics, nights: 3, averageDaysBetweenNights: 3 }} />,
+		);
 		expect(screen.queryByText(/stats.tiles.every/)).not.toBeInTheDocument();
 
 		rerender(<NightStatsTiles statistics={{ ...statistics, nights: 4, averageDaysBetweenNights: 3 }} />);

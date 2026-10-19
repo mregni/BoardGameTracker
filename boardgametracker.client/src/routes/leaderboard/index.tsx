@@ -2,18 +2,15 @@ import { noop, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import InfoIcon from "@/assets/icons/info.svg?react";
 import TrophyIcon from "@/assets/icons/trophy.svg?react";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtEmptyState } from "@/components/BgtLayout/BgtEmptyState";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
-import type { Leaderboard } from "@/models";
 import { getGames } from "@/services/queries/games";
 import { getLeaderboard } from "@/services/queries/leaderboard";
 import { LeaderboardFilters } from "./-components/LeaderboardFilters";
-import { LeaderboardPodium } from "./-components/LeaderboardPodium";
 import { LeaderboardRanking } from "./-components/LeaderboardRanking";
 import { LeaderboardTiles } from "./-components/LeaderboardTiles";
 import {
@@ -32,38 +29,6 @@ export const Route = createFileRoute("/leaderboard/")({
 		queryClient.query(getGames()).catch(noop);
 	},
 });
-
-const NoPodium = ({ leaderboard, gameTitle }: { leaderboard: Leaderboard; gameTitle?: string }) => {
-	const { t } = useTranslation("leaderboard");
-	const unranked = leaderboard.players.filter((entry) => !entry.isRanked);
-	const reason =
-		leaderboard.rankedCount === 0
-			? t(gameTitle ? "no-podium.none-game" : "no-podium.none", { game: gameTitle })
-			: t(gameTitle ? "no-podium.game" : "no-podium.all", {
-					count: leaderboard.rankedCount,
-					minimum: leaderboard.minimumPlayersForPodium,
-					game: gameTitle,
-				});
-	const hint =
-		unranked.length === 1
-			? t("no-podium.include-one", { name: unranked[0].name })
-			: unranked.length > 1
-				? t("no-podium.include-more")
-				: null;
-
-	return (
-		<p
-			role="note"
-			className="grid grid-cols-[1.375rem_minmax(0,1fr)] items-start gap-2 rounded-[10px] border border-card-border bg-card-light px-3 py-2.5 text-sm"
-		>
-			<InfoIcon aria-hidden="true" className="mt-0.5 size-4 text-primary-text" />
-			<span>
-				{reason}
-				{hint && ` ${hint}`}
-			</span>
-		</p>
-	);
-};
 
 function RouteComponent() {
 	const { t } = useTranslation("leaderboard");
@@ -98,7 +63,7 @@ function RouteComponent() {
 		<BgtPage>
 			<BgtPageHeader header={t("title")} icon={TrophyIcon} />
 			<BgtPageContent>
-				<LeaderboardFilters search={search} games={games} today={today} onChange={updateSearch} />
+				<LeaderboardFilters search={search} games={games} onChange={updateSearch} />
 				<BgtPageContent isLoading={isLoading} data={{ leaderboard }}>
 					{({ leaderboard }) =>
 						leaderboard.players.length === 0 ? (
@@ -110,14 +75,6 @@ function RouteComponent() {
 						) : (
 							<>
 								<LeaderboardTiles leaderboard={leaderboard} />
-								{leaderboard.showPodium ? (
-									<LeaderboardPodium
-										players={leaderboard.players.filter((entry) => entry.isRanked)}
-										rankBy={leaderboard.rankBy}
-									/>
-								) : (
-									<NoPodium leaderboard={leaderboard} gameTitle={gameTitle} />
-								)}
 								<LeaderboardRanking
 									players={leaderboard.players}
 									rankBy={leaderboard.rankBy}

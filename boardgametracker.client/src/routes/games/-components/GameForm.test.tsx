@@ -88,7 +88,9 @@ describe("GameForm", () => {
 	});
 
 	it("assumes a game added by hand is one you own", () => {
-		renderWithProviders(<GameForm title="New game" buttonText="Save" backTo="/games" onClick={vi.fn()} disabled={false} />);
+		renderWithProviders(
+			<GameForm title="New game" buttonText="Save" backTo="/games" onClick={vi.fn()} disabled={false} />,
+		);
 
 		expect(screen.getByRole("combobox", { name: "state.label" })).toHaveTextContent(/state.owned/);
 	});

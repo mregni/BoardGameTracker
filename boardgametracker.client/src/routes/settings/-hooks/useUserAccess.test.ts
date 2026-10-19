@@ -73,16 +73,19 @@ describe("useUserAccess", () => {
 		["disable", disableUserCall],
 		["enable", enableUserCall],
 		["manageRoleByIdentityProvider", manageRoleByIdentityProviderCall],
-	] as const)("%s calls the API and refreshes the users without a toast, as the dialog shows the change", async (action, call) => {
-		vi.mocked(call).mockResolvedValue({} as never);
-		const { result, invalidate } = await renderUseUserAccess();
+	] as const)(
+		"%s calls the API and refreshes the users without a toast, as the dialog shows the change",
+		async (action, call) => {
+			vi.mocked(call).mockResolvedValue({} as never);
+			const { result, invalidate } = await renderUseUserAccess();
 
-		act(() => result.current[action]());
+			act(() => result.current[action]());
 
-		await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ["users"] }));
-		expect(call).toHaveBeenCalledWith("user-2");
-		expect(successToast).not.toHaveBeenCalled();
-	});
+			await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ["users"] }));
+			expect(call).toHaveBeenCalledWith("user-2");
+			expect(successToast).not.toHaveBeenCalled();
+		},
+	);
 
 	it("unlinks one identity of the user", async () => {
 		vi.mocked(unlinkUserExternalLoginCall).mockResolvedValue(undefined);

@@ -76,7 +76,15 @@ describe("PerGameCard", () => {
 	it("shows the scores of a single session without calling them an average", () => {
 		render(
 			<PerGameCard
-				games={[gameRow({ gameId: 10, sessionCount: 1, playerOneWins: 1, playerOneAverageScore: 6, playerTwoAverageScore: 10 })]}
+				games={[
+					gameRow({
+						gameId: 10,
+						sessionCount: 1,
+						playerOneWins: 1,
+						playerOneAverageScore: 6,
+						playerTwoAverageScore: 10,
+					}),
+				]}
 				playerOne={playerOne}
 				playerTwo={playerTwo}
 				dateFormat="dd-MM-yyyy"

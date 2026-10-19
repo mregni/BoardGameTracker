@@ -1,7 +1,7 @@
 import type { FC, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Leaderboard, LeaderboardEntry, LeaderboardParams } from "@/models";
-import { renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
+import { renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
 import type { LeaderboardSearch } from "./-utils/leaderboardSearch";
 
 const mocks = vi.hoisted(() => ({
@@ -113,12 +113,13 @@ describe("Leaderboard page", () => {
 		mocks.search = {};
 	});
 
-	it("should ask for the default filters and show the podium with four ranked players", async () => {
+	it("should ask for the default filters and show the tiles and the table without separate podium cards", async () => {
 		mocks.getLeaderboardCall.mockResolvedValue(leaderboard(byWins));
 
 		renderPage();
 
-		expect(await screen.findByRole("region", { name: "ranking.podium" })).toBeInTheDocument();
+		expect(await rankingNames()).toHaveLength(4);
+		expect(screen.queryByRole("region", { name: "ranking.podium" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("note")).not.toBeInTheDocument();
 		expect(mocks.getLeaderboardCall).toHaveBeenCalledWith({ minSessions: 5, rankBy: "wins" });
 		expect(await rankingNames()).toEqual(["Mikhaël", "Kathleen", "reggi", "Anna"]);
@@ -144,7 +145,7 @@ describe("Leaderboard page", () => {
 		expect(mocks.getLeaderboardCall).toHaveBeenCalledWith({ minSessions: 5, rankBy: rank });
 	});
 
-	it("should explain why there is no podium with fewer than four ranked players for a game", async () => {
+	it("should list unranked players under their own heading for a game", async () => {
 		mocks.search = { game: 12, range: "custom", from: "2026-01-01", to: "2026-06-30", min: 3 };
 		mocks.getLeaderboardCall.mockResolvedValue(
 			leaderboard([
@@ -155,10 +156,7 @@ describe("Leaderboard page", () => {
 
 		renderPage();
 
-		await waitFor(() => expect(screen.getByRole("note")).toHaveTextContent("no-podium.game"));
-		expect(screen.getByRole("note")).toHaveTextContent("no-podium.include-one");
-		expect(screen.queryByRole("region", { name: "ranking.podium" })).not.toBeInTheDocument();
-		expect(screen.getByRole("heading", { name: "ranking.not-ranked" })).toBeInTheDocument();
+		expect(await screen.findByRole("heading", { name: "ranking.not-ranked" })).toBeInTheDocument();
 		expect(mocks.getLeaderboardCall).toHaveBeenCalledWith({
 			from: "2026-01-01",
 			to: "2026-06-30",
@@ -168,41 +166,15 @@ describe("Leaderboard page", () => {
 		});
 	});
 
-	it("should suggest a lower minimum for several unranked players on all games", async () => {
-		mocks.getLeaderboardCall.mockResolvedValue(
-			leaderboard([
-				byWins[0],
-				entry(8, "Lou", { rank: null, isRanked: false }),
-				entry(9, "Bram", { rank: null, isRanked: false }),
-			]),
-		);
-
-		renderPage();
-
-		const note = await screen.findByRole("note");
-		expect(note).toHaveTextContent("no-podium.all");
-		expect(note).toHaveTextContent("no-podium.include-more");
-	});
-
-	it("should say nobody is ranked yet when everyone is below the minimum", async () => {
-		mocks.getLeaderboardCall.mockResolvedValue(leaderboard([entry(9, "Bram", { rank: null, isRanked: false })]));
-
-		renderPage();
-
-		const note = await screen.findByRole("note");
-		expect(note).toHaveTextContent("no-podium.none");
-		expect(note).toHaveTextContent("no-podium.include-one");
-	});
-
-	it("should link the podium, the tiles and every row to the player", async () => {
+	it("should link the tiles and every row to the player", async () => {
 		mocks.getLeaderboardCall.mockResolvedValue(leaderboard(byWins));
 
 		renderPage();
 
-		await screen.findByRole("region", { name: "ranking.podium" });
+		await rankingNames();
 		const hrefs = screen.getAllByRole("link").map((link) => link.getAttribute("href"));
 		expect(hrefs.every((href) => href?.startsWith("/players/"))).toBe(true);
-		expect(hrefs).toHaveLength(4 + 3 + 4);
+		expect(hrefs).toHaveLength(4 + 4);
 	});
 
 	it("should update the search when a filter changes", async () => {
@@ -210,7 +182,7 @@ describe("Leaderboard page", () => {
 
 		renderPage();
 
-		await userEvent.click(await screen.findByRole("button", { name: "filters.last-12-months" }));
+		await userEvent.click(await screen.findByRole("button", { name: "common:period.last-12-months" }));
 
 		expect(mocks.navigate).toHaveBeenCalledWith({ search: expect.any(Function), replace: true });
 		const [{ search }] = mocks.navigate.mock.calls[0];
@@ -223,7 +195,7 @@ describe("Leaderboard page", () => {
 		renderPage();
 
 		expect(await screen.findByText("empty.title")).toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "filters.all-time" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "common:period.all-time" })).not.toBeInTheDocument();
 	});
 
 	it("should keep the filters when nothing matches them", async () => {
@@ -233,6 +205,6 @@ describe("Leaderboard page", () => {
 		renderPage();
 
 		expect(await screen.findByText("empty.filtered-title")).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "filters.all-time" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "common:period.all-time" })).toBeInTheDocument();
 	});
 });

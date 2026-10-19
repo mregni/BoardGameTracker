@@ -44,7 +44,8 @@
     "sessions-detail_one": "{{value}} this month",
     "sessions-detail_other": "{{value}} this month",
     "play-time": "Play time",
-    "play-time-detail": "avg {{duration}} a session"
+    "play-time-detail": "avg {{duration}} a session",
+    "games-owned": "{{owned}} owned"
   },
   "last-sessions": {
     "title": "Last sessions",
@@ -54,8 +55,8 @@
     "empty": "No sessions logged yet"
   },
   "shame": {
-    "title_one": "{{value}} game on the shelf of shame",
-    "title_other": "{{value}} games on the shelf of shame",
+    "title_one": "{{value}} game on the Shelf of Shame",
+    "title_other": "{{value}} games on the Shelf of Shame",
     "never-played_one": "{{value}} never played",
     "never-played_other": "{{value}} never played",
     "paid": "{{value}} paid"
@@ -75,8 +76,6 @@
   "most-played": {
     "title": "Most played",
     "period": "Period",
-    "this-month": "This month",
-    "all-time": "All time",
     "times": "{{value}}×",
     "empty": "No sessions played yet",
     "empty-month": "Nothing played this month yet"

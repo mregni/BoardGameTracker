@@ -164,12 +164,6 @@
 			"read-only": "La clave API es de solo lectura.",
 			"read-only-description": "La clave API se gestiona mediante la variable de entorno BGG_API_KEY y no se puede cambiar aquí.",
 			"help-description": "Consigue una clave en la <requestPage>página de solicitud</requestPage> de BoardGameGeek."
-		},
-		"notifications": {
-			"saved": "Clave API de BGG guardada",
-			"save-failed": "No se pudo guardar la clave API de BGG",
-			"cleared": "Clave API de BGG eliminada",
-			"clear-failed": "No se pudo eliminar la clave API de BGG"
 		}
 	},
 	"account": {
@@ -301,8 +295,6 @@
 			"user-create-failed": "No se pudo crear el usuario",
 			"user-deleted": "Usuario eliminado",
 			"user-delete-failed": "No se pudo eliminar el usuario",
-			"role-updated": "Rol cambiado",
-			"role-update-failed": "No se pudo actualizar el rol del usuario",
 			"user-updated": "Usuario guardado",
 			"user-update-failed": "No se pudo actualizar el usuario",
 			"password-reset-failed": "No se pudo restablecer la contraseña",

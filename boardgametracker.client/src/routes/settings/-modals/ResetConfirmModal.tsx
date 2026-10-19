@@ -23,8 +23,18 @@ interface Props {
 }
 
 export const ResetConfirmModal = (props: Props) => {
-	const { open, close, onConfirm, isLoading = false, title, description, keyword, inputLabel, confirmLabel, note } =
-		props;
+	const {
+		open,
+		close,
+		onConfirm,
+		isLoading = false,
+		title,
+		description,
+		keyword,
+		inputLabel,
+		confirmLabel,
+		note,
+	} = props;
 	const [value, setValue] = useState("");
 	const fieldRef = useRef<HTMLDivElement>(null);
 

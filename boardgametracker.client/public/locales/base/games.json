@@ -30,8 +30,8 @@
   },
   "title": "Games",
   "new": "Add game",
-  "count_other": "{{count}} games found",
-  "count_one": "{{count}} game found",
+  "count_other": "{{count}} games",
+  "count_one": "{{count}} game",
   "cards": {
     "games": "Games"
   },

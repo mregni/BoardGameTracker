@@ -72,7 +72,7 @@ describe("TopPlayersCard", () => {
 
 		expect(screen.getByText("Kathleen").closest("li")).toHaveAttribute(
 			"title",
-			"common:sessions • 20 statistics:average-abreviation",
+			"common:sessions · 20 statistics:average-abreviation",
 		);
 	});
 

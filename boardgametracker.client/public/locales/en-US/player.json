@@ -4,8 +4,8 @@
     "button": "Add player"
   },
   "back": "Back to players",
-  "count_other": "{{count}} players found",
-  "count_one": "{{count}} player found",
+  "count_other": "{{count}} players",
+  "count_one": "{{count}} player",
   "notifications": {
     "created": "Player added",
     "create-failed": "Failed creating player",

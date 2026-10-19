@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useAuth } from "@/hooks/useAuth";
 import { useAppForm } from "@/hooks/form";
+import { useAuth } from "@/hooks/useAuth";
 import { renderWithProviders, screen, userEvent } from "@/test/test-utils";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
 import { GeneralSettings } from "./GeneralSettings";

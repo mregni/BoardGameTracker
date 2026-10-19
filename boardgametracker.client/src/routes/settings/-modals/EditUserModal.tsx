@@ -1,11 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	BgtDialog,
-	BgtDialogContent,
-	BgtDialogFooter,
-	BgtDialogTitle,
-} from "@/components/BgtDialog";
+import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { useAppForm } from "@/hooks/form";
 import { type BgtSelectItem, isApiError, type Player, type UserDto } from "@/models";

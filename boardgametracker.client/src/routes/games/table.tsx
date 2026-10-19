@@ -15,6 +15,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
+import { useDurationRange } from "@/hooks/useDurationRange";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTimeouts } from "@/hooks/useTimeouts";
 import { type Game, GameState, QUERY_KEYS } from "@/models";
@@ -26,7 +27,6 @@ import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
 import { EMPTY_PRICE, formatDecimal, formatPrice } from "@/utils/numberUtils";
 import { formatRange as formatValueRange } from "@/utils/rangeUtils";
-import { useDurationRange } from "@/hooks/useDurationRange";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./-components/EditableNumberCell";
 import { EditableSelectCell } from "./-components/EditableSelectCell";
@@ -340,6 +340,7 @@ function RouteComponent() {
 			uiLanguage,
 			dateFormat,
 			formatRange,
+			formatDuration,
 			updateGame,
 			stateEditItems,
 			languageEditItems,

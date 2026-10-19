@@ -164,12 +164,6 @@
 			"read-only": "The API key is read only.",
 			"read-only-description": "The API key is managed via the BGG_API_KEY environment variable and cannot be changed here.",
 			"help-description": "Get a key from the BoardGameGeek <requestPage>request page</requestPage>."
-		},
-		"notifications": {
-			"saved": "BGG API key saved",
-			"save-failed": "Failed to save BGG API key",
-			"cleared": "BGG API key removed",
-			"clear-failed": "Failed to remove BGG API key"
 		}
 	},
 	"account": {
@@ -301,8 +295,6 @@
 			"user-create-failed": "Failed to create user",
 			"user-deleted": "User deleted",
 			"user-delete-failed": "Failed to delete user",
-			"role-updated": "Role changed",
-			"role-update-failed": "Failed to update user role",
 			"user-updated": "User saved",
 			"user-update-failed": "Failed to update user",
 			"password-reset-failed": "Failed to reset password",

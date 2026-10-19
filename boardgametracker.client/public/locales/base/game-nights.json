@@ -229,12 +229,6 @@
     "stats": "Statistics"
   },
   "stats": {
-    "period": {
-      "label": "Period",
-      "allTime": "All time",
-      "thisYear": "This year",
-      "last12Months": "Last 12 months"
-    },
     "logged_one": "{{count}} of {{total}} nights has sessions logged",
     "logged_other": "{{count}} of {{total}} nights have sessions logged",
     "empty": {

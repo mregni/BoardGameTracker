@@ -12,11 +12,11 @@ import Package from "@/assets/icons/package.svg?react";
 import Target from "@/assets/icons/target.svg?react";
 import User from "@/assets/icons/user.svg?react";
 import Users from "@/assets/icons/users.svg?react";
+import { useDurationRange } from "@/hooks/useDurationRange";
 import { type Game, type GamePrice, GameState } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { formatDecimal, formatPrice } from "@/utils/numberUtils";
 import { formatRange } from "@/utils/rangeUtils";
-import { useDurationRange } from "@/hooks/useDurationRange";
 import { LivePrice } from "./LivePrice";
 import { PriceRefreshButton } from "./PriceRefreshButton";
 

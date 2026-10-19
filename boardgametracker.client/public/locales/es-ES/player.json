@@ -4,8 +4,8 @@
     "button": "Añadir jugador"
   },
   "back": "Volver a jugadores",
-  "count_other": "{{count}} jugadores encontrados",
-  "count_one": "{{count}} jugador encontrado",
+  "count_other": "{{count}} jugadores",
+  "count_one": "{{count}} jugador",
   "notifications": {
     "created": "Jugador añadido",
     "create-failed": "Error al crear el jugador",

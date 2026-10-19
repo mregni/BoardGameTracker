@@ -137,7 +137,7 @@
     "winner": "ganador {{names}}"
   },
   "detail": {
-    "back": "Noches de juegos"
+    "back": "Noches de juego"
   },
   "play": {
     "start": {
@@ -212,15 +212,15 @@
   },
   "end": {
     "button": "Cerrar la noche",
-    "title": "¿Cerrar esta noche de juegos?",
+    "title": "¿Cerrar esta noche de juego?",
     "description": "No se puede empezar ni registrar nada en esta noche hasta que se vuelva a abrir.",
     "running-hint": "Termina o descarta primero los juegos en curso",
     "reopen": "Reabrir la noche",
     "notifications": {
-      "ended": "Noche de juegos cerrada",
-      "end-failed": "No se pudo cerrar la noche de juegos",
-      "reopened": "Noche de juegos reabierta",
-      "reopen-failed": "No se pudo reabrir la noche de juegos"
+      "ended": "Noche de juego cerrada",
+      "end-failed": "No se pudo cerrar la noche de juego",
+      "reopened": "Noche de juego reabierta",
+      "reopen-failed": "No se pudo reabrir la noche de juego"
     }
   },
   "view": {
@@ -229,20 +229,14 @@
     "stats": "Estadísticas"
   },
   "stats": {
-    "period": {
-      "label": "Periodo",
-      "allTime": "Siempre",
-      "thisYear": "Este año",
-      "last12Months": "Últimos 12 meses"
-    },
     "logged_one": "{{count}} de {{total}} noches tiene partidas registradas",
     "logged_other": "{{count}} de {{total}} noches tienen partidas registradas",
     "empty": {
-      "title": "Aún no hay noches de juegos que contar",
+      "title": "Aún no hay noches de juego que contar",
       "description": "Las estadísticas cuentan las noches con partidas registradas o que se cerraron. Registra juegos desde la página de una noche para verlas aquí."
     },
     "tiles": {
-      "nights": "Noches de juegos",
+      "nights": "Noches de juego",
       "every-week_one": "más o menos una por semana",
       "every-week_other": "más o menos una cada {{count}} semanas",
       "every-day_one": "más o menos una por día",
@@ -291,7 +285,7 @@
       "times": "{{count}}×",
       "bar": "{{name}}: jugado {{count}} veces",
       "never-played": "Planificado pero nunca jugado:",
-      "empty": "Aún no se ha jugado nada en las noches de juegos."
+      "empty": "Aún no se ha jugado nada en las noches de juego."
     },
     "streaks": {
       "title": "Rachas",

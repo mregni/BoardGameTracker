@@ -19,8 +19,12 @@ interface Props {
 	coopWinCount: number;
 }
 
-const columns =
-	"grid items-center gap-x-3 gap-y-1 grid-cols-[1.375rem_1.75rem_minmax(0,1fr)_auto_0.875rem] md:grid-cols-[1.625rem_1.875rem_minmax(0,1.3fr)_3.5rem_4.25rem_minmax(8rem,1.3fr)_5rem_4.25rem_1rem]";
+const baseColumns = "grid items-center gap-x-3 gap-y-1 grid-cols-[1.375rem_1.75rem_minmax(0,1fr)_auto_0.875rem]";
+const withPodiums =
+	"md:grid-cols-[1.625rem_1.875rem_minmax(0,1.3fr)_3.5rem_4.25rem_minmax(8rem,1.3fr)_5rem_4.25rem_1rem]";
+const withoutPodiums =
+	"md:grid-cols-[1.625rem_1.875rem_minmax(0,1.3fr)_3.5rem_4.25rem_minmax(8rem,1.3fr)_4.25rem_1rem]";
+const columnsFor = (showPodiums: boolean) => cx(baseColumns, showPodiums ? withPodiums : withoutPodiums);
 
 const desktopOnly = "hidden md:block";
 
@@ -30,7 +34,13 @@ const tieRule: Record<LeaderboardRankBy, string> = {
 	sessions: "ranking.ties-sessions",
 };
 
-const Row = ({ entry, rankBy }: { entry: LeaderboardEntry; rankBy: LeaderboardRankBy }) => {
+interface RowProps {
+	entry: LeaderboardEntry;
+	rankBy: LeaderboardRankBy;
+	showPodiums: boolean;
+}
+
+const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 	const { t } = useTranslation("leaderboard");
 	const format = useNumberFormat();
 	const duration = useShortDuration();
@@ -40,13 +50,14 @@ const Row = ({ entry, rankBy }: { entry: LeaderboardEntry; rankBy: LeaderboardRa
 	const wins = t("values.wins", { count: entry.winCount });
 	const sessions = t("values.sessions", { count: entry.playCount });
 	const mobileValue = rankBy === "wins" ? wins : rankBy === "sessions" ? sessions : rate;
-	const details = [
-		rankBy === "wins" ? rate : wins,
-		rankBy === "sessions" ? rate : sessions,
-		entry.isRanked
+	const standing = entry.isRanked
+		? showPodiums
 			? t("values.podiums", { count: entry.podiumCount })
-			: t("values.to-rank", { count: entry.sessionsToRank }),
-	].join(" · ");
+			: null
+		: t("values.to-rank", { count: entry.sessionsToRank });
+	const details = [rankBy === "wins" ? rate : wins, rankBy === "sessions" ? rate : sessions, standing]
+		.filter(Boolean)
+		.join(" · ");
 
 	return (
 		<li>
@@ -55,7 +66,7 @@ const Row = ({ entry, rankBy }: { entry: LeaderboardEntry; rankBy: LeaderboardRa
 				params={{ playerId: entry.playerId }}
 				data-testid="leaderboard-row"
 				className={cx(
-					columns,
+					columnsFor(showPodiums),
 					"rounded-[10px] border px-2.5 py-2 tabular-nums transition-colors hover:border-primary/60 md:px-3",
 					entry.isRanked ? "border-card-border bg-card" : "border-dashed border-card-border bg-transparent",
 				)}
@@ -71,7 +82,7 @@ const Row = ({ entry, rankBy }: { entry: LeaderboardEntry; rankBy: LeaderboardRa
 				<BgtAvatar image={entry.image} title={entry.name} size="medium" shape="round" />
 				<span className="min-w-0">
 					<strong className="block truncate">{entry.name}</strong>
-					<small className="block truncate text-[11px] text-white/60 md:hidden">{details}</small>
+					<small className="line-clamp-2 text-[11px] text-white/60 md:hidden">{details}</small>
 				</span>
 				<span className={cx(desktopOnly, "text-right font-bold")}>{format.integer(entry.winCount)}</span>
 				<span className={cx(desktopOnly, "text-right")}>{format.integer(entry.playCount)}</span>
@@ -95,7 +106,7 @@ const Row = ({ entry, rankBy }: { entry: LeaderboardEntry; rankBy: LeaderboardRa
 						{mobileValue}
 					</b>
 				</span>
-				<span className={cx(desktopOnly, "text-right")}>{format.integer(entry.podiumCount)}</span>
+				{showPodiums && <span className={cx(desktopOnly, "text-right")}>{format.integer(entry.podiumCount)}</span>}
 				<span className={cx(desktopOnly, "text-right text-sm text-white/60")}>{duration(entry.minutesPlayed)}</span>
 				<CaretRight aria-hidden="true" className="size-3.5 text-white/60 md:size-4" />
 			</Link>
@@ -115,13 +126,14 @@ export const LeaderboardRanking = ({
 	const { t } = useTranslation("leaderboard");
 	const ranked = players.filter((entry) => entry.isRanked);
 	const unranked = players.filter((entry) => !entry.isRanked);
+	const showPodiums = players.some((entry) => entry.podiumCount > 0);
 
 	return (
 		<section aria-label={label} className="flex flex-col gap-1.5">
 			<div
 				aria-hidden="true"
 				className={cx(
-					columns,
+					columnsFor(showPodiums),
 					"hidden px-3 text-[11px] uppercase tracking-[0.08em] text-white/60 md:grid [&>span]:whitespace-nowrap",
 				)}
 			>
@@ -131,19 +143,21 @@ export const LeaderboardRanking = ({
 				<span className="text-right">{t("columns.wins")}</span>
 				<span className="text-right">{t("columns.sessions")}</span>
 				<span>{t("columns.win-rate")}</span>
-				<span className="text-right">
-					<HeaderWithHint
-						label={t("columns.podiums")}
-						hint={t("columns.podiums-hint", { count: minimumPlayersForPodium })}
-					/>
-				</span>
+				{showPodiums && (
+					<span className="text-right">
+						<HeaderWithHint
+							label={t("columns.podiums")}
+							hint={t("columns.podiums-hint", { count: minimumPlayersForPodium })}
+						/>
+					</span>
+				)}
 				<span className="text-right">{t("columns.time")}</span>
 				<span />
 			</div>
 			{ranked.length > 0 && (
 				<ol className="flex flex-col gap-1.5">
 					{ranked.map((entry) => (
-						<Row key={entry.playerId} entry={entry} rankBy={rankBy} />
+						<Row key={entry.playerId} entry={entry} rankBy={rankBy} showPodiums={showPodiums} />
 					))}
 				</ol>
 			)}
@@ -154,7 +168,7 @@ export const LeaderboardRanking = ({
 					</h3>
 					<ul className="flex flex-col gap-1.5">
 						{unranked.map((entry) => (
-							<Row key={entry.playerId} entry={entry} rankBy={rankBy} />
+							<Row key={entry.playerId} entry={entry} rankBy={rankBy} showPodiums={showPodiums} />
 						))}
 					</ul>
 				</>

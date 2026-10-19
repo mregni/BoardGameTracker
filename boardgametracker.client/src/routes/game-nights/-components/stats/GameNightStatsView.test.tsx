@@ -64,12 +64,12 @@ describe("GameNightStatsView", () => {
 
 		renderView(onPeriodChange);
 
-		const periods = screen.getByRole("group", { name: "stats.period.label" });
-		expect(within(periods).getByRole("button", { name: "stats.period.allTime" })).toHaveAttribute(
+		const periods = screen.getByRole("group", { name: "common:period.label" });
+		expect(within(periods).getByRole("button", { name: "common:period.all-time" })).toHaveAttribute(
 			"aria-pressed",
 			"true",
 		);
-		await userEvent.click(within(periods).getByRole("button", { name: "stats.period.last12Months" }));
+		await userEvent.click(within(periods).getByRole("button", { name: "common:period.last-12-months" }));
 
 		expect(onPeriodChange).toHaveBeenCalledWith(GameNightStatisticsPeriod.Last12Months);
 	});

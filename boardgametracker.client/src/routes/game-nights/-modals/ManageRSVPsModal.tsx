@@ -115,7 +115,10 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 					</BgtDialogDescription>
 				</div>
 
-				<div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-6" data-testid="rsvp-columns">
+				<div
+					className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-6"
+					data-testid="rsvp-columns"
+				>
 					<div className="flex min-w-0 flex-col gap-3">
 						<RsvpProgress rsvps={gameNight.invitedPlayers} />
 

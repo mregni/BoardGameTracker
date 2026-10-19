@@ -16,11 +16,9 @@ const games = [
 	{ id: 1, title: "Azul", image: null },
 ] as unknown as Game[];
 
-const today = new Date(2026, 9, 16);
-
 const renderFilters = (search: LeaderboardSearch = {}) => {
 	const onChange = vi.fn();
-	renderWithProviders(<LeaderboardFilters search={search} games={games} today={today} onChange={onChange} />);
+	renderWithProviders(<LeaderboardFilters search={search} games={games} onChange={onChange} />);
 	return onChange;
 };
 
@@ -36,29 +34,29 @@ describe("LeaderboardFilters", () => {
 		vi.clearAllMocks();
 	});
 
-	it("should mark all time as the default period and label this year with its number", () => {
+	it("should mark all time as the default period and use the shared period names", () => {
 		renderFilters();
 
-		expect(screen.getByRole("group", { name: "filters.period" })).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "filters.all-time" })).toHaveAttribute("aria-pressed", "true");
-		expect(screen.getByRole("button", { name: "2026" })).toHaveAttribute("aria-pressed", "false");
+		expect(screen.getByRole("group", { name: "common:period.label" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "common:period.all-time" })).toHaveAttribute("aria-pressed", "true");
+		expect(screen.getByRole("button", { name: "common:period.this-year" })).toHaveAttribute("aria-pressed", "false");
 		expect(screen.queryByText("filters.from")).not.toBeInTheDocument();
 	});
 
 	it("should switch the period and clear custom dates", async () => {
 		const onChange = renderFilters({ range: "custom", from: "2026-01-01", to: "2026-02-01" });
 
-		await userEvent.click(screen.getByRole("button", { name: "filters.last-12-months" }));
+		await userEvent.click(screen.getByRole("button", { name: "common:period.last-12-months" }));
 		expect(onChange).toHaveBeenLastCalledWith({ range: "12m", from: undefined, to: undefined });
 
-		await userEvent.click(screen.getByRole("button", { name: "filters.all-time" }));
+		await userEvent.click(screen.getByRole("button", { name: "common:period.all-time" }));
 		expect(onChange).toHaveBeenLastCalledWith({ range: undefined, from: undefined, to: undefined });
 	});
 
 	it("should keep the custom dates when choosing custom again", async () => {
 		const onChange = renderFilters({ from: "2026-01-01", to: "2026-02-01" });
 
-		await userEvent.click(screen.getByRole("button", { name: "filters.custom" }));
+		await userEvent.click(screen.getByRole("button", { name: "common:period.custom" }));
 
 		expect(onChange).toHaveBeenCalledWith({ range: "custom", from: "2026-01-01", to: "2026-02-01" });
 	});

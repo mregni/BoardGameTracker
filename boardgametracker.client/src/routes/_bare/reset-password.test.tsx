@@ -5,6 +5,7 @@ import { renderWithProviders, screen, userEvent } from "@/test/test-utils";
 const mocks = vi.hoisted(() => ({
 	navigate: vi.fn(),
 	search: {} as { userId?: string; token?: string },
+	emailEnabled: true,
 	captured: {} as { Page: FC; validateSearch: { parse: (value: unknown) => unknown } },
 }));
 
@@ -21,6 +22,13 @@ vi.mock("@/services/authService", () => ({
 	confirmResetPasswordCall: vi.fn(),
 }));
 
+vi.mock("@/services/queries/settings", () => ({
+	getSettings: () => ({
+		queryKey: ["settings"],
+		queryFn: () => Promise.resolve({ emailEnabled: mocks.emailEnabled }),
+	}),
+}));
+
 vi.mock("@/routes/-hooks/useToasts", () => ({
 	useToasts: () => ({ successToast: vi.fn(), errorToast: vi.fn() }),
 }));
@@ -32,6 +40,7 @@ const renderPage = () => renderWithProviders(<mocks.captured.Page />);
 describe("ResetPasswordPage", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mocks.emailEnabled = true;
 	});
 
 	it("explains an incomplete link and points to Forgot password instead of crashing", async () => {
@@ -41,10 +50,20 @@ describe("ResetPasswordPage", () => {
 
 		expect(screen.getByTestId("reset-link-incomplete")).toBeInTheDocument();
 		expect(screen.getByText("reset-incomplete")).toBeInTheDocument();
-		await user.click(screen.getByRole("button", { name: "forgot-link" }));
+		await user.click(await screen.findByRole("button", { name: "forgot-link" }));
 		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/forgot-password" });
 		await user.click(screen.getByRole("button", { name: "back-to-login" }));
 		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/login" });
+	});
+
+	it("asks to contact an admin instead of offering a reset email when email is off", async () => {
+		mocks.emailEnabled = false;
+		mocks.search = {};
+		renderPage();
+
+		expect(await screen.findByText("ask-admin-reset")).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "forgot-link" })).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "back-to-login" })).toBeInTheDocument();
 	});
 
 	it("treats a link with only a user as incomplete", () => {

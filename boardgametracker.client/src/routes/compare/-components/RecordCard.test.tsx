@@ -70,7 +70,7 @@ describe("RecordCard", () => {
 		const segments = screen.getAllByTestId("progress-segment");
 		expect(segments.map((segment) => segment.dataset.tone)).toEqual(["playerOne", "muted", "subtle", "playerTwo"]);
 		const legend = screen.getAllByRole("listitem").map((item) => item.textContent);
-		expect(legend).toEqual(["Mikhaël won23", "someone else won6", "Kathleen won17"]);
+		expect(legend).toEqual(["someone else won6"]);
 	});
 
 	it("counts a game both won for both players without breaking the bar", () => {
@@ -107,13 +107,8 @@ describe("RecordCard", () => {
 		expect(team).toHaveAttribute("data-pattern", "hatch");
 		expect(team).toHaveAttribute("data-visible", "true");
 		const legend = screen.getAllByRole("listitem");
-		expect(legend.map((item) => item.textContent)).toEqual([
-			"Mikhaël won23",
-			"someone else won6",
-			"same co-op team3 (won 2, lost 1)",
-			"Kathleen won17",
-		]);
-		expect(within(legend[2]).getByTestId("progress-legend-swatch")).toHaveAttribute("data-pattern", "hatch");
+		expect(legend.map((item) => item.textContent)).toEqual(["someone else won6", "same co-op team3 (won 2, lost 1)"]);
+		expect(within(legend[1]).getByTestId("progress-legend-swatch")).toHaveAttribute("data-pattern", "hatch");
 	});
 
 	it("shows the last games and the streak", () => {

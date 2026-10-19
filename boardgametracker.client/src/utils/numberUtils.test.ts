@@ -11,6 +11,7 @@ import {
 	formatRatio,
 	getIntegerTicks,
 	parseDecimal,
+	toIsoCurrency,
 } from "./numberUtils";
 
 const NBSP = " ";
@@ -114,21 +115,38 @@ describe("numberUtils", () => {
 	});
 
 	describe("formatPrice", () => {
+		const nbsp = (value: string) => value.replace(/\s/g, "\u00a0");
+
 		it("formats with two decimals and a symbol prefix", () => {
 			expect(formatPrice(12.5, "€", "en-US")).toBe("€12.50");
 		});
 
 		it.each([
-			["nl-BE", "€1.234,50"],
-			["nl-NL", "€1.234,50"],
-			["es-ES", "€1234,50"],
+			["nl-BE", "€ 1.234,50"],
+			["nl-NL", "€ 1.234,50"],
+			["es-ES", "1234,50 €"],
 			["en-US", "€1,234.50"],
-		])("uses the %s number format", (locale, expected) => {
-			expect(formatPrice(1234.5, "€", locale)).toBe(expected);
+		])("places the euro sign the way %s does", (locale, expected) => {
+			expect(nbsp(formatPrice(1234.5, "€", locale))).toBe(nbsp(expected));
 		});
 
-		it("separates multi-character currency codes with a space", () => {
-			expect(formatPrice(12.5, "EUR", "en-US")).toBe("EUR 12.50");
+		it("shows an ISO code setting with its symbol in the culture's place", () => {
+			expect(formatPrice(12.5, "EUR", "en-US")).toBe("€12.50");
+			expect(nbsp(formatPrice(169, "eur", "es-ES"))).toBe(nbsp("169 €"));
+			expect(formatPrice(12.5, "USD", "en-US")).toBe("$12.50");
+		});
+
+		it("keeps an unknown symbol as a prefix", () => {
+			expect(formatPrice(12.5, "kr", "en-US")).toBe("kr 12.50");
+			expect(formatPrice(12.5, "#", "en-US")).toBe("#12.50");
+		});
+
+		it("maps known symbols and three-letter codes to ISO currencies", () => {
+			expect(toIsoCurrency("€")).toBe("EUR");
+			expect(toIsoCurrency(" £ ")).toBe("GBP");
+			expect(toIsoCurrency("chf")).toBe("CHF");
+			expect(toIsoCurrency("kr")).toBeNull();
+			expect(toIsoCurrency(null)).toBeNull();
 		});
 
 		it("omits the prefix when no currency is known", () => {
@@ -138,13 +156,13 @@ describe("numberUtils", () => {
 
 		it("omits decimals for whole amounts", () => {
 			expect(formatPrice(140, "€", "en-US")).toBe("€140");
-			expect(formatPrice(1400, "€", "nl-BE")).toBe("€1.400");
-			expect(formatPrice(0, "€", "nl-BE")).toBe("€0");
+			expect(nbsp(formatPrice(1400, "€", "nl-BE"))).toBe(nbsp("€ 1.400"));
+			expect(nbsp(formatPrice(0, "€", "nl-BE"))).toBe(nbsp("€ 0"));
 		});
 
 		it("keeps two decimals when the amount is not whole", () => {
-			expect(formatPrice(63.333, "€", "nl-BE")).toBe("€63,33");
-			expect(formatPrice(-4.5, "$", "en-US")).toBe("$-4.50");
+			expect(nbsp(formatPrice(63.333, "€", "nl-BE"))).toBe(nbsp("€ 63,33"));
+			expect(formatPrice(-4.5, "$", "en-US")).toBe("-$4.50");
 		});
 
 		it("renders a dash when there is no amount", () => {

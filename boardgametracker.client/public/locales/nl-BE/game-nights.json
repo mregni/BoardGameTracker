@@ -229,12 +229,6 @@
     "stats": "Statistieken"
   },
   "stats": {
-    "period": {
-      "label": "Periode",
-      "allTime": "Altijd",
-      "thisYear": "Dit jaar",
-      "last12Months": "Laatste 12 maanden"
-    },
     "logged_one": "{{count}} van {{total}} avonden heeft gelogde sessies",
     "logged_other": "{{count}} van {{total}} avonden hebben gelogde sessies",
     "empty": {

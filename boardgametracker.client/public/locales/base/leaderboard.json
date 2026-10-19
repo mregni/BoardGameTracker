@@ -1,10 +1,6 @@
 {
   "title": "Leaderboard",
   "filters": {
-    "period": "Period",
-    "all-time": "All time",
-    "last-12-months": "12 months",
-    "custom": "Custom",
     "from": "From",
     "to": "To",
     "game": "Game",
@@ -26,7 +22,6 @@
     "min-sessions": "min. {{count}}"
   },
   "columns": {
-    "rank": "Rank",
     "player": "Player",
     "wins": "Wins",
     "sessions": "Sessions",
@@ -47,7 +42,6 @@
   },
   "ranking": {
     "label": "Ranking",
-    "podium": "Podium",
     "not-ranked-rank": "Not ranked",
     "not-ranked_one": "Fewer than {{count}} session · not ranked",
     "not-ranked_other": "Fewer than {{count}} sessions · not ranked",
@@ -56,16 +50,6 @@
     "ties-wins": "Equal wins: the higher win rate goes first, then more sessions. Identical stats share the rank.",
     "ties-win-rate": "Equal win rate: more wins go first, then more sessions. Identical stats share the rank.",
     "ties-sessions": "Equal sessions: more wins go first. Identical stats share the rank."
-  },
-  "no-podium": {
-    "all_one": "No podium: only {{count}} player is ranked. A podium needs at least {{minimum}}, otherwise everyone is on it.",
-    "all_other": "No podium: only {{count}} players are ranked. A podium needs at least {{minimum}}, otherwise everyone is on it.",
-    "game_one": "No podium: only {{count}} player is ranked for {{game}}. A podium needs at least {{minimum}}, otherwise everyone is on it.",
-    "game_other": "No podium: only {{count}} players are ranked for {{game}}. A podium needs at least {{minimum}}, otherwise everyone is on it.",
-    "none": "No podium: nobody is ranked yet.",
-    "none-game": "No podium: nobody is ranked for {{game}} yet.",
-    "include-one": "Lower the minimum to include {{name}}.",
-    "include-more": "Lower the minimum to include more players."
   },
   "empty": {
     "title": "No plays recorded yet",
