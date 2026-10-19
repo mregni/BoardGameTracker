@@ -13,6 +13,11 @@ public sealed class DataProtectionKeyMaterial
 
     public DataProtectionKeyMaterial(string secret)
     {
+        if (StartupSecrets.IsPlaceholder(secret))
+        {
+            throw new ArgumentException(StartupSecrets.PlaceholderMessage("DATA_PROTECTION_KEY"), nameof(secret));
+        }
+
         if (secret.Length < MinimumSecretLength)
         {
             throw new ArgumentException(

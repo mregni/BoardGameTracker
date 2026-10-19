@@ -27,8 +27,8 @@ services:
       - DB_USER=${DB_USER:-dev}
       - DB_PASSWORD=${DB_PASSWORD:-CHANGEME}
       - DB_NAME=${DB_NAME:-boardgametracker}
-      - JWT_SECRET=${JWT_SECRET:-CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS}
-      # Encrypts the stored data protection keys; generate with `openssl rand -base64 48` and keep it safe
+      # Set JWT_SECRET (required) and DATA_PROTECTION_KEY in .env, each from `openssl rand -base64 48`; keep DATA_PROTECTION_KEY safe
+      - JWT_SECRET=${JWT_SECRET:-}
       - DATA_PROTECTION_KEY=${DATA_PROTECTION_KEY:-}
       - TZ=${TZ:-UTC}
       - RAG_ENABLED=${RAG_ENABLED:-false}

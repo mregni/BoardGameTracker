@@ -105,6 +105,24 @@ public class DataProtectionKeyEncryptionTests
         act.Should().Throw<ArgumentException>().WithMessage("*at least 32*");
     }
 
+    [Theory]
+    [InlineData("CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS")]
+    [InlineData("changeme_generate_at_least_32_characters")]
+    public void KeyMaterial_ShouldRejectThePlaceholder(string secret)
+    {
+        var act = () => new DataProtectionKeyMaterial(secret);
+
+        act.Should().Throw<ArgumentException>().WithMessage("DATA_PROTECTION_KEY still holds the CHANGEME placeholder*");
+    }
+
+    [Fact]
+    public void ProtectKeysWithSecret_ShouldFail_WhenTheSecretIsThePlaceholder()
+    {
+        var act = () => new ServiceCollection().AddDataProtection().ProtectKeysWithSecret("CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS");
+
+        act.Should().Throw<ArgumentException>().WithMessage("*DATA_PROTECTION_KEY*CHANGEME*");
+    }
+
     [Fact]
     public void KeyMaterial_ShouldDeriveTheSameKey_FromTheSameSecret()
     {

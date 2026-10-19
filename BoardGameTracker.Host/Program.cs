@@ -115,22 +115,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 builder.Services.AddHttpContextAccessor();
 
 var authEnabled = environmentProvider.AuthEnabled;
-var jwtSecret = environmentProvider.JwtSecret ?? builder.Configuration["Jwt:Secret"];
-if (string.IsNullOrWhiteSpace(jwtSecret))
-{
-    if (authEnabled)
-    {
-        throw new InvalidOperationException(
-            "JWT_SECRET is not set. Set it to at least 32 random characters (for example the output of `openssl rand -base64 48`), or set AUTH_ENABLED=false to run without accounts. See https://mregni.github.io/BoardGameTracker/getting-started/environment-variables/");
-    }
-
-    jwtSecret = "auth-disabled-placeholder-key-not-used";
-}
-else if (authEnabled && jwtSecret.Length < 32)
-{
-    throw new InvalidOperationException(
-        $"JWT_SECRET must be at least 32 characters long, but was {jwtSecret.Length}. Generate one with `openssl rand -base64 48`.");
-}
+var jwtSecret = StartupSecrets.ResolveJwtSecret(environmentProvider.JwtSecret ?? builder.Configuration["Jwt:Secret"], authEnabled);
 
 builder.Services.AddOptions<JwtOptions>()
     .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
