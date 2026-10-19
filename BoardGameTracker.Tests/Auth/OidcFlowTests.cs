@@ -142,6 +142,37 @@ public class OidcFlowTests : IDisposable
         result.RedirectPath.Should().Be("/");
     }
 
+    [Theory]
+    [InlineData("https://evil.example.com@games.example.com")]
+    [InlineData("https://games.example.com#@evil.example.com")]
+    [InlineData("https://games.example.com/?next=https://evil.example.com")]
+    [InlineData("https://evil.example.com")]
+    public async Task StartLoginAsync_ShouldOnlyEverRedirectToTheProvidersAuthorizationEndpoint(string publicBaseUrl)
+    {
+        var request = await _service.StartLoginAsync("idp", publicBaseUrl, "//evil.example.com");
+
+        var uri = new Uri(request.Url);
+        uri.GetLeftPart(UriPartial.Path).Should().Be($"{Authority}/authorize");
+        uri.Fragment.Should().BeEmpty();
+        HttpUtility.ParseQueryString(uri.Query)["redirect_uri"].Should().Be($"{publicBaseUrl}/api/auth/oidc/idp/callback");
+    }
+
+    [Fact]
+    public async Task StartLoginAsync_ShouldKeepTheQueryOfTheAuthorizationEndpoint_AndDropItsFragment()
+    {
+        _idp.AuthorizationEndpoint = $"{Authority}/authorize?tenant=games#ignored";
+
+        var request = await _service.StartLoginAsync("idp", PublicBase, null);
+
+        var uri = new Uri(request.Url);
+        uri.GetLeftPart(UriPartial.Path).Should().Be($"{Authority}/authorize");
+        uri.Fragment.Should().BeEmpty();
+        var query = HttpUtility.ParseQueryString(uri.Query);
+        query["tenant"].Should().Be("games");
+        query["client_id"].Should().Be("bgt-client");
+        query["state"].Should().Be(request.State);
+    }
+
     [Fact]
     public async Task StartLoginAsync_ShouldRejectAnInsecureAuthorizationEndpoint()
     {

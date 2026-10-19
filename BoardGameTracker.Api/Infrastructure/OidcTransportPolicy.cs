@@ -1,4 +1,5 @@
 using System.Net;
+using BoardGameTracker.Core.Email.Interfaces;
 using Microsoft.AspNetCore.Http;
 
 namespace BoardGameTracker.Api.Infrastructure;
@@ -8,6 +9,11 @@ public static class OidcTransportPolicy
     public static bool IsAllowed(HttpRequest request)
     {
         return request.IsHttps || IsLoopbackHost(request.Host.Host);
+    }
+
+    public static async Task<bool> IsAllowedAsync(HttpRequest request, IPublicUrlBuilder publicUrlBuilder)
+    {
+        return IsAllowed(request) && IsAllowed((await PublicBaseUrl.ResolveAsync(publicUrlBuilder, request)).BaseUrl);
     }
 
     public static bool IsAllowed(string baseUrl)
