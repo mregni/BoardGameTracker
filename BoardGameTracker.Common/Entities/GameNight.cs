@@ -25,6 +25,7 @@ public class GameNight: HasId
     public ICollection<GameNightRsvp> InvitedPlayers { get; private set; } = [];
     public ICollection<Session> Sessions { get; private set; } = [];
     public ICollection<RunningGame> RunningGames { get; private set; } = [];
+    public ICollection<GameNightAttendance> Attendance { get; private set; } = [];
 
     public static GameNight Create(string title, string notes, DateTime startDate, int hostId, int locationId)
     {
@@ -121,6 +122,16 @@ public class GameNight: HasId
         return true;
     }
 
+    public static bool IsOverAt(DateTime startDate, DateTime? endedAt, DateTime utcNow)
+    {
+        return endedAt.HasValue || startDate + PlayWindow <= utcNow;
+    }
+
+    public bool IsOver(DateTime utcNow)
+    {
+        return IsOverAt(StartDate, EndedAt, utcNow);
+    }
+
     public bool HasPlayOpened(DateTime utcNow)
     {
         return utcNow >= StartDate.ToUniversalTime() - PlayOpensBefore;
@@ -134,6 +145,46 @@ public class GameNight: HasId
     public void Reopen()
     {
         EndedAt = null;
+    }
+
+    public List<int> GetPlayedPlayerIds()
+    {
+        return Sessions
+            .SelectMany(x => x.PlayerSessions.Select(p => p.PlayerId))
+            .Concat(RunningGames.SelectMany(x => x.GetPlayerIds()))
+            .Distinct()
+            .ToList();
+    }
+
+    public List<int> GetAttendeeIds()
+    {
+        return NightAttendanceRule.Derive(
+            HostId,
+            GetPlayedPlayerIds(),
+            Attendance.Select(x => new AttendanceOverride(x.PlayerId, x.Present)));
+    }
+
+    public void SetAttendance(IEnumerable<int> presentPlayerIds)
+    {
+        var desired = NightAttendanceRule.OverridesFor(HostId, GetPlayedPlayerIds(), presentPlayerIds);
+
+        foreach (var stale in Attendance.Where(x => desired.All(d => d.PlayerId != x.PlayerId)).ToList())
+        {
+            Attendance.Remove(stale);
+        }
+
+        foreach (var entry in desired)
+        {
+            var existing = Attendance.FirstOrDefault(x => x.PlayerId == entry.PlayerId);
+            if (existing == null)
+            {
+                Attendance.Add(GameNightAttendance.Create(entry.PlayerId, entry.Present));
+            }
+            else
+            {
+                existing.UpdatePresent(entry.Present);
+            }
+        }
     }
 
     public double GetTotalPlayMinutes()

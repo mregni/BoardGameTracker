@@ -23,6 +23,7 @@ export interface NightHistory {
 	winnerStreak: number;
 	coopOnly: boolean;
 	sharedThroughCoop: boolean;
+	inProgress: boolean;
 }
 
 export interface NightGameStatistic {

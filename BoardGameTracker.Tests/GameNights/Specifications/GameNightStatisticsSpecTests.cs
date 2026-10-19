@@ -34,6 +34,8 @@ public class GameNightStatisticsSpecTests
         coop.AddPlayerSession(1, null, false, false);
         coop.MarkAsCoop(true, null);
         gameNight.Sessions.Add(coop);
+        gameNight.RunningGames.Add(RunningGame.Create(9, 12, Start.AddHours(2), [6, 7]));
+        gameNight.SetAttendance([1, 3, 5, 6, 7]);
 
         var result = new GameNightStatisticsSpec(null, Start.AddDays(1)).Evaluate([gameNight]).Single();
 
@@ -43,7 +45,9 @@ public class GameNightStatisticsSpecTests
         result.EndedAt.Should().Be(Start.AddHours(4));
         result.HostId.Should().Be(1);
         result.LocationId.Should().Be(4);
-        result.AttendeeIds.Should().Equal(1, 5);
+        result.RunningPlayerIds.Should().Equal(6, 7);
+        result.AttendanceOverrides.Should().Equal(new AttendanceOverride(3, true));
+        result.GetAttendeeIds().Should().Equal(1, 3, 5, 6, 7);
         result.PlannedGameIds.Should().Equal(12);
         result.Sessions.Should().HaveCount(2);
         result.Sessions[0].IsCoop.Should().BeFalse();

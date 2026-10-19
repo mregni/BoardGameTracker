@@ -11,6 +11,7 @@ using BoardGameTracker.Core.Dashboard.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Leaderboard;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using BoardGameTracker.Core.Sessions.Specifications;
@@ -81,7 +82,7 @@ public class DashboardService : IDashboardService
         var gameStates = await _gameStatisticsRepository.GetGameStateCounts(cancellationToken);
         var mostPlayedGames = await _gameStatisticsRepository.GetMostPlayedGames(MostPlayedCount, cancellationToken);
         var mostPlayedThisMonth = await _gameStatisticsRepository.GetMostPlayedGamesSince(MostPlayedCount, monthStart, cancellationToken);
-        var topPlayers = await _playerRepository.GetTopWinners(TopPlayerCount, cancellationToken);
+        var winTotals = await _playerRepository.GetWinTotals(cancellationToken);
         var hasCoopWins = await _sessionRepository.AnyAsync(new WonCoopSessionsSpec(), cancellationToken);
         var recentlyAddedGames = await _gameRepository.GetRecentlyAddedGames(RecentlyAddedCount, cancellationToken);
 
@@ -110,10 +111,21 @@ public class DashboardService : IDashboardService
             Collection = gameStates,
             MostPlayedGames = mostPlayedGames.ToListDto(),
             MostPlayedGamesThisMonth = mostPlayedThisMonth.ToListDto(),
-            TopPlayers = topPlayers.ToListDto(),
+            TopPlayers = RankTopPlayers(winTotals),
             TopPlayersIncludeCoopWins = hasCoopWins,
             RecentAddedGames = recentlyAddedGames.ToRecentAddedGameListDto()
         };
+    }
+
+    private static List<DashboardTopPlayerDto> RankTopPlayers(IEnumerable<(int Id, string Name, string? Image, int PlayCount, int WinCount)> totals)
+    {
+        return PlayerRanking.Rank(
+                totals.ToListDto(),
+                LeaderboardRankBy.Wins,
+                x => new PlayerStanding(x.Name, x.WinCount, x.PlayCount),
+                (x, rank) => x.Rank = rank)
+            .Take(TopPlayerCount)
+            .ToList();
     }
 
     private async Task<DashboardLinkedPlayerDto?> GetLinkedPlayer(string? userId, DateTime monthStart, CancellationToken cancellationToken)

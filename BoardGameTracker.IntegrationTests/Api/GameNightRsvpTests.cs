@@ -5,6 +5,7 @@ using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Core.Email.Interfaces;
 using BoardGameTracker.IntegrationTests.Infrastructure;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -104,6 +105,31 @@ public class GameNightRsvpTests
         }
     }
 
+    [Fact]
+    public async Task Rsvp_ShouldSayTheHostWasNotified_OnlyWhenAnEmailWentOut()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var email = new RecordingEmailService();
+        using var mailing = _fixture.CreateClientWith(services => services.AddSingleton<IEmailService>(email));
+        using var silent = _fixture.CreateClient();
+        var withEmail = await CreateGameNightAsync(user, hostEmail: $"host-{Guid.NewGuid():N}@example.com");
+        var withoutEmail = await CreateGameNightAsync(user);
+        var notified = withEmail.InvitedPlayers.Single(x => x.State == GameNightRsvpState.Pending);
+        var unnotified = withoutEmail.InvitedPlayers.Single(x => x.State == GameNightRsvpState.Pending);
+
+        var sent = await mailing.PutAsJsonAsync($"/api/gamenight/link/{withEmail.LinkId}/rsvp", new UpdateRsvpCommand { Id = notified.Id, State = GameNightRsvpState.Accepted });
+        var noHostEmail = await mailing.PutAsJsonAsync($"/api/gamenight/link/{withoutEmail.LinkId}/rsvp", new UpdateRsvpCommand { Id = unnotified.Id, State = GameNightRsvpState.Maybe });
+        var noSmtp = await silent.PutAsJsonAsync($"/api/gamenight/link/{withEmail.LinkId}/rsvp", new UpdateRsvpCommand { Id = notified.Id, State = GameNightRsvpState.Declined });
+
+        sent.StatusCode.Should().Be(HttpStatusCode.OK, await sent.Content.ReadAsStringAsync());
+        (await sent.Content.ReadFromJsonAsync<GameNightRsvpUpdateDto>(IntegrationFixture.Json))!.HostNotified.Should().BeTrue();
+        (await noHostEmail.Content.ReadFromJsonAsync<GameNightRsvpUpdateDto>(IntegrationFixture.Json))!.HostNotified.Should().BeFalse();
+        var declined = (await noSmtp.Content.ReadFromJsonAsync<GameNightRsvpUpdateDto>(IntegrationFixture.Json))!;
+        declined.HostNotified.Should().BeFalse();
+        declined.State.Should().Be(GameNightRsvpState.Declined);
+        email.Recipients.Should().ContainSingle().Which.Should().StartWith("host-");
+    }
+
     private async Task SetRsvpAuthenticationAsync(bool enabled)
     {
         await using var scope = _fixture.CreateScope();
@@ -113,9 +139,9 @@ public class GameNightRsvpTests
             .ExecuteUpdateAsync(s => s.SetProperty(c => c.Value, enabled ? "true" : "false"));
     }
 
-    private static async Task<GameNightDto> CreateGameNightAsync(HttpClient user, int? suggestedGameId = null)
+    private static async Task<GameNightDto> CreateGameNightAsync(HttpClient user, int? suggestedGameId = null, string? hostEmail = null)
     {
-        var host = await user.PostAsJsonAsync("/api/player", new CreatePlayerCommand { Name = "Host " + Guid.NewGuid().ToString("N")[..6] });
+        var host = await user.PostAsJsonAsync("/api/player", new CreatePlayerCommand { Name = "Host " + Guid.NewGuid().ToString("N")[..6], Email = hostEmail });
         host.StatusCode.Should().Be(HttpStatusCode.Created, await host.Content.ReadAsStringAsync());
         var hostId = (await host.Content.ReadFromJsonAsync<PlayerDto>(IntegrationFixture.Json))!.Id;
 

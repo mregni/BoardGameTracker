@@ -3,12 +3,14 @@ import type {
 	FinishRunningGame,
 	GameNight,
 	GameNightDetail,
+	GameNightRsvpUpdate,
 	GameNightStatistics,
 	GameNightStatisticsPeriod,
 	RunningGame,
 	SendInvitesResult,
 	Session,
 	StartRunningGame,
+	UpdateAttendance,
 	UpdateGameNight,
 	UpdateGameNightRsvp,
 } from "@/models";
@@ -58,8 +60,8 @@ export const updateGameNightRsvpCall = (rsvp: UpdateGameNightRsvp): Promise<Game
 	});
 };
 
-export const updateGameNightRsvpByLinkCall = (linkId: string, rsvp: UpdateGameNightRsvp): Promise<GameNight> => {
-	return axiosInstance.put<GameNight>(`${domain}/link/${linkId}/rsvp`, { ...rsvp }).then((response) => {
+export const updateGameNightRsvpByLinkCall = (linkId: string, rsvp: UpdateGameNightRsvp): Promise<GameNightRsvpUpdate> => {
+	return axiosInstance.put<GameNightRsvpUpdate>(`${domain}/link/${linkId}/rsvp`, { ...rsvp }).then((response) => {
 		return response.data;
 	});
 };
@@ -90,6 +92,10 @@ export const endGameNightCall = (id: number): Promise<void> => {
 
 export const reopenGameNightCall = (id: number): Promise<void> => {
 	return axiosInstance.post(`${domain}/${id}/reopen`);
+};
+
+export const updateAttendanceCall = (id: number, attendance: UpdateAttendance): Promise<void> => {
+	return axiosInstance.put(`${domain}/${id}/attendance`, attendance);
 };
 
 export const discardRunningGameCall = (id: number): Promise<void> => {

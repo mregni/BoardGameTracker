@@ -99,6 +99,7 @@ public class MostPlayedGameDto
 public class DashboardTopPlayerDto
 {
     public int Id { get; set; }
+    public int Rank { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Image { get; set; }
     public int PlayCount { get; set; }

@@ -6,9 +6,9 @@ import { TopPlayersCard } from "./TopPlayersCard";
 vi.mock("@tanstack/react-router", () => ({ Link: RouterLinkMock }));
 
 const players = [
-	{ id: 1, name: "Mikhaël", image: null, playCount: 142, winCount: 54 },
-	{ id: 2, name: "Kathleen", image: null, playCount: 118, winCount: 48 },
-	{ id: 3, name: "reggi", image: null, playCount: 0, winCount: 0 },
+	{ id: 1, rank: 1, name: "Mikhaël", image: null, playCount: 142, winCount: 54 },
+	{ id: 2, rank: 2, name: "Kathleen", image: null, playCount: 118, winCount: 48 },
+	{ id: 3, rank: 3, name: "reggi", image: null, playCount: 0, winCount: 0 },
 ];
 
 describe("TopPlayersCard", () => {

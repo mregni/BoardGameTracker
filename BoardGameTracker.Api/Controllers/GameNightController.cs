@@ -69,6 +69,18 @@ public class GameNightController : ControllerBase
         return gameNight == null ? NotFound() : NoContent();
     }
 
+    [HttpPut]
+    [Route("{id:int}/attendance")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateAttendance(int id, [FromBody] UpdateAttendanceCommand command)
+    {
+        var gameNight = await _gameNightService.UpdateAttendance(id, command);
+        return gameNight == null ? NotFound() : NoContent();
+    }
+
     [HttpPost]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     [ProducesResponseType<GameNightDto>(StatusCodes.Status201Created)]
@@ -153,13 +165,13 @@ public class GameNightController : ControllerBase
     [Route("link/{linkId:guid}/rsvp")]
     [AllowAnonymous]
     [EnableRateLimiting("gamenight-link")]
-    [ProducesResponseType<GameNightRsvpDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<GameNightRsvpUpdateDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateRsvpByLink(Guid linkId, [FromBody] UpdateRsvpCommand command)
     {
         GuardRsvpLookup(command);
 
-        var rsvp = await _gameNightService.UpdateRsvpByLink(linkId, command, User?.Identity?.IsAuthenticated == true);
-        return Ok(rsvp.ToDto());
+        var result = await _gameNightService.UpdateRsvpByLink(linkId, command, User?.Identity?.IsAuthenticated == true);
+        return Ok(result.Rsvp.ToUpdateDto(result.HostNotified));
     }
 
     private static void GuardRsvpLookup(UpdateRsvpCommand command)

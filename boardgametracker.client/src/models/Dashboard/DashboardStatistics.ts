@@ -93,6 +93,7 @@ export interface RecentActivity {
 
 export interface DashboardTopPlayer {
 	id: number;
+	rank: number;
 	name: string;
 	image: string | null;
 	playCount: number;
