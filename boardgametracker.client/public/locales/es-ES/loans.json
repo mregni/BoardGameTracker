@@ -36,7 +36,6 @@
   "new": {
     "title": "Prestar un juego",
     "save": "Prestar",
-    "description": "Elige un juego, quién se lo lleva y cuándo debe volver.",
     "start": {
       "label": "Inicio del préstamo",
       "required": "La fecha de inicio del préstamo es obligatoria",

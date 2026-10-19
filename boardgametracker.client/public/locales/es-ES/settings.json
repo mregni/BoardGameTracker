@@ -89,12 +89,11 @@
 		"translate": "Ayúdanos a traducir la aplicación",
 		"danger": {
 			"title": "Zona de peligro",
-			"description": "Acciones irreversibles. Procede con precaución.",
 			"reset": {
 				"button": "Restablecer datos",
 				"confirm": {
 					"title": "Restablecer datos",
-					"description": "Esto elimina de forma permanente todos los juegos, partidas, jugadores, personas, ubicaciones, préstamos, noches de juego, insignias obtenidas e imágenes subidas. Se conservan tus ajustes, las cuentas de usuario y el inicio de sesión. Esta acción no se puede deshacer.",
+					"description": "Elimina todos los juegos, partidas, jugadores, ubicaciones, préstamos, noches de juego, insignias, imágenes y manuales subidos. Los ajustes y las cuentas de usuario se mantienen. No se puede deshacer.",
 					"keyword": "RESTABLECER",
 					"input-label": "Escribe RESTABLECER para confirmar",
 					"button": "Restablecer datos"
@@ -104,10 +103,12 @@
 				"button": "Restablecer de fábrica",
 				"confirm": {
 					"title": "Restablecer de fábrica",
-					"description": "Esto elimina de forma permanente TODO —todos los datos, todos los ajustes y todas las cuentas de usuario— y devuelve la aplicación a su estado inicial. Se vuelve a crear la cuenta admin con la contraseña de ADMIN_PASSWORD, o con admin si no está definida, y se cerrará tu sesión. Cambia esa contraseña de inmediato. Esta acción no se puede deshacer.",
+					"description": "Elimina todos los datos, ajustes y cuentas de usuario, y cierra tu sesión. No se puede deshacer.",
 					"keyword": "RESTABLECER DE FÁBRICA",
 					"input-label": "Escribe RESTABLECER DE FÁBRICA para confirmar",
-					"button": "Restablecer todo de fábrica"
+					"button": "Restablecer todo de fábrica",
+					"admin-password": "La cuenta admin vuelve con la contraseña del primer inicio de sesión.",
+					"admin-password-link": "¿Cómo se configura?"
 				}
 			},
 			"notifications": {
@@ -174,7 +175,6 @@
 	"account": {
 		"profile": {
 			"title": "Mi cuenta",
-			"description": "Gestiona tu perfil y tu contraseña.",
 			"display-name": {
 				"label": "Nombre visible"
 			},
@@ -248,13 +248,12 @@
 				"save": "Añadir"
 			},
 			"edit": {
-				"title": "Editar usuario",
-				"description": "Cambia el nombre de usuario, el correo, el rol o el jugador vinculado de “{{username}}”."
+				"title": "Editar usuario"
 			},
 			"reset-password": {
 				"button": "Restablecer contraseña",
-				"title": "¿Restablecer la contraseña?",
-				"description": "¿Restablecer la contraseña de {{user}}? Su contraseña actual dejará de funcionar."
+				"title": "¿Restablecer la contraseña de {{user}}?",
+				"description": "Su contraseña actual dejará de funcionar."
 			},
 			"temp-password": {
 				"title": "Contraseña temporal",
@@ -271,7 +270,6 @@
 			"access": {
 				"button": "Acceso",
 				"title": "Acceso de inicio de sesión",
-				"description": "Ajustes de inicio de sesión e inicio de sesión único de \"{{username}}\".",
 				"enabled": "Puede iniciar sesión",
 				"disabled": "Desactivado",
 				"enable": "Activar",
@@ -281,12 +279,16 @@
 				"sso-none": "No hay ninguna cuenta del proveedor de identidad vinculada.",
 				"sso-linked": "sujeto {{subject}} · vinculado el {{date}}",
 				"unlink": "Desvincular",
-				"unlink-confirm": "Esta cuenta del proveedor de identidad ya no podrá iniciar sesión como \"{{username}}\" hasta que se vuelva a vincular.",
+				"unlink-confirm": "Esta cuenta del proveedor de identidad ya no podrá iniciar sesión como “{{username}}” hasta que se vuelva a vincular.",
 				"role-managed": "El rol sigue los grupos del proveedor de identidad en cada inicio de sesión.",
 				"role-local": "El rol se definió aquí y el proveedor de identidad no lo cambia.",
 				"manage-role": "Dejar que el proveedor de identidad gestione el rol",
 				"disabled-badge": "Desactivado",
-				"sso-badge": "SSO"
+				"sso-badge": "SSO",
+				"disable-confirm": {
+					"title": "¿Desactivar a {{username}}?",
+					"description": "Se cerrará su sesión en todos los dispositivos y no podrá iniciar sesión hasta que vuelvas a activarlo."
+				}
 			},
 			"actions": "Acciones para {{username}}"
 		},
@@ -304,13 +306,9 @@
 			"user-updated": "Usuario guardado",
 			"user-update-failed": "No se pudo actualizar el usuario",
 			"password-reset-failed": "No se pudo restablecer la contraseña",
-			"user-disabled": "Usuario desactivado",
 			"user-disable-failed": "No se pudo desactivar el usuario",
-			"user-enabled": "Usuario activado",
 			"user-enable-failed": "No se pudo activar el usuario",
-			"external-login-unlinked": "Cuenta del proveedor de identidad desvinculada",
 			"external-login-unlink-failed": "No se pudo desvincular la cuenta del proveedor de identidad",
-			"role-managed": "El proveedor de identidad gestiona ahora este rol",
 			"role-manage-failed": "No se pudo ceder el rol al proveedor de identidad"
 		},
 		"external-logins": {

@@ -2,13 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import {
-	BgtDialog,
-	BgtDialogContent,
-	BgtDialogDescription,
-	BgtDialogFooter,
-	BgtDialogTitle,
-} from "@/components/BgtDialog";
+import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { UserDto } from "@/models";
 import type { ExternalLogin } from "@/models/Auth/Oidc";
@@ -29,38 +23,38 @@ export const UserAccessModal = ({ open, close, user, isCurrentUser }: Props) => 
 	const { logins, isLoading, disable, enable, unlink, manageRoleByIdentityProvider, isBusy } = useUserAccess(user.id);
 	const { data: settings } = useQuery(getSettings());
 	const [pendingUnlink, setPendingUnlink] = useState<ExternalLogin | null>(null);
+	const [confirmDisable, setConfirmDisable] = useState(false);
+	const canDisable = !user.isDisabled && !isCurrentUser;
 	const dateFormat = settings?.dateFormat ?? "yyyy-MM-dd";
 	const timeFormat = settings?.timeFormat ?? "HH:mm";
 	const uiLanguage = settings?.uiLanguage ?? "en-US";
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent>
+			<BgtDialogContent aria-describedby={undefined}>
 				<BgtDialogTitle>{t("account.users.access.title")}</BgtDialogTitle>
-				<BgtDialogDescription>
-					{t("account.users.access.description", { username: user.username })}
-				</BgtDialogDescription>
 				<div className="flex flex-col gap-4 my-3">
 					<section className="flex flex-col gap-2">
 						<div className="flex items-center justify-between gap-3">
 							<BgtText color={user.isDisabled ? "red" : "green"} className="font-semibold">
 								{user.isDisabled ? t("account.users.access.disabled") : t("account.users.access.enabled")}
 							</BgtText>
-							{user.isDisabled ? (
+							{user.isDisabled && (
 								<BgtButton size="1" variant="cancel" disabled={isBusy} onClick={() => enable()}>
 									{t("account.users.access.enable")}
 								</BgtButton>
-							) : (
-								!isCurrentUser && (
-									<BgtButton size="1" variant="error" disabled={isBusy} onClick={() => disable()}>
-										{t("account.users.access.disable")}
-									</BgtButton>
-								)
+							)}
+							{canDisable && (
+								<BgtButton size="1" variant="error" disabled={isBusy} onClick={() => setConfirmDisable(true)}>
+									{t("account.users.access.disable")}
+								</BgtButton>
 							)}
 						</div>
-						<BgtText size="1" color="gray">
-							{t("account.users.access.disable-hint")}
-						</BgtText>
+						{canDisable && (
+							<BgtText size="1" color="gray">
+								{t("account.users.access.disable-hint")}
+							</BgtText>
+						)}
 					</section>
 					<section className="flex flex-col gap-2">
 						<BgtText color="white" className="font-semibold">
@@ -122,6 +116,20 @@ export const UserAccessModal = ({ open, close, user, isCurrentUser }: Props) => 
 					</section>
 				</div>
 				<BgtDialogFooter onCancel={close} cancelLabel={t("common:close")} />
+				{confirmDisable && (
+					<BgtDeleteModal
+						open
+						close={() => setConfirmDisable(false)}
+						title={user.username}
+						heading={t("account.users.access.disable-confirm.title", { username: user.username })}
+						description={t("account.users.access.disable-confirm.description")}
+						confirmLabel={t("account.users.access.disable")}
+						onDelete={() => {
+							disable();
+							setConfirmDisable(false);
+						}}
+					/>
+				)}
 				{pendingUnlink && (
 					<BgtDeleteModal
 						open

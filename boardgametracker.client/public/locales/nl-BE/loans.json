@@ -36,7 +36,6 @@
   "new": {
     "title": "Spel uitlenen",
     "save": "Uitlenen",
-    "description": "Kies een spel, wie het leent en wanneer het terug moet zijn.",
     "start": {
       "label": "Uitleendatum",
       "required": "Uitleendatum is verplicht",

@@ -123,6 +123,15 @@ describe("AccountSettings user management", () => {
 		expect(within(admin).queryByText("account.users.access.sso-badge")).not.toBeInTheDocument();
 	});
 
+	it("shows each role in the table in the interface language", () => {
+		renderWithProviders(<AccountSettings />);
+
+		const admin = within(screen.getByRole("table"))
+			.getByText("admin", { selector: "span" })
+			.closest("tr") as HTMLElement;
+		expect(within(admin).getByText("account.users.roles.admin")).toBeInTheDocument();
+	});
+
 	it("opens the access dialog for the chosen user and closes it again", async () => {
 		const pointer = userEvent.setup();
 		renderWithProviders(<AccountSettings />);
@@ -148,6 +157,7 @@ describe("AccountSettings user management", () => {
 
 		expect(mocks.resetPassword).not.toHaveBeenCalled();
 		const confirm = await screen.findByRole("dialog");
+		expect(confirm).toHaveTextContent("account.users.reset-password.title");
 		expect(confirm).toHaveTextContent("account.users.reset-password.description");
 		const confirmButton = within(confirm).getByRole("button", { name: "account.users.reset-password.button" });
 		expect(confirmButton.className).toContain("bg-error-strong");
@@ -190,7 +200,7 @@ describe("AccountSettings user management", () => {
 		const cards = screen.getAllByTestId("user-card");
 		expect(cards).toHaveLength(2);
 		expect(cards[1]).toHaveTextContent("jane");
-		expect(cards[1]).toHaveTextContent("User");
+		expect(cards[1]).toHaveTextContent("account.users.roles.user");
 		expect(cards[1]).toHaveTextContent("account.users.never-logged-in");
 
 		await pointer.click(within(cards[1]).getByRole("button", { name: "account.users.actions" }));

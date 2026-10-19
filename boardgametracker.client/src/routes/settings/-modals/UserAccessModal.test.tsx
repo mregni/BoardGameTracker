@@ -87,30 +87,57 @@ describe("UserAccessModal", () => {
 		expect(screen.queryByRole("button", { name: "account.users.access.manage-role" })).not.toBeInTheDocument();
 	});
 
-	it("disables an enabled user", async () => {
+	it("has no subtitle repeating the title", () => {
+		renderModal();
+
+		expect(screen.queryByText("account.users.access.description")).not.toBeInTheDocument();
+	});
+
+	it("asks before disabling an enabled user and explains what happens", async () => {
 		const pointer = userEvent.setup();
 		renderModal();
 
 		expect(screen.getByText("account.users.access.enabled")).toBeInTheDocument();
+		expect(screen.getByText("account.users.access.disable-hint")).toBeInTheDocument();
 		await pointer.click(screen.getByRole("button", { name: "account.users.access.disable" }));
+
+		expect(mocks.state.disable).not.toHaveBeenCalled();
+		expect(screen.getByText("account.users.access.disable-confirm.title")).toBeInTheDocument();
+		expect(screen.getByText("account.users.access.disable-confirm.description")).toBeInTheDocument();
+		const confirm = screen.getAllByRole("dialog").at(-1) as HTMLElement;
+		await pointer.click(within(confirm).getByRole("button", { name: "account.users.access.disable" }));
 
 		expect(mocks.state.disable).toHaveBeenCalledTimes(1);
 	});
 
-	it("enables a disabled user", async () => {
+	it("keeps the user enabled when the confirmation is cancelled", async () => {
+		const pointer = userEvent.setup();
+		renderModal();
+
+		await pointer.click(screen.getByRole("button", { name: "account.users.access.disable" }));
+		const confirm = screen.getAllByRole("dialog").at(-1) as HTMLElement;
+		await pointer.click(within(confirm).getByRole("button", { name: "common:cancel" }));
+
+		expect(mocks.state.disable).not.toHaveBeenCalled();
+		expect(screen.queryByText("account.users.access.disable-confirm.title")).not.toBeInTheDocument();
+	});
+
+	it("enables a disabled user straight away and drops the disable hint", async () => {
 		const pointer = userEvent.setup();
 		renderModal({ user: { ...user, isDisabled: true } });
 
 		expect(screen.getByText("account.users.access.disabled")).toBeInTheDocument();
+		expect(screen.queryByText("account.users.access.disable-hint")).not.toBeInTheDocument();
 		await pointer.click(screen.getByRole("button", { name: "account.users.access.enable" }));
 
 		expect(mocks.state.enable).toHaveBeenCalledTimes(1);
 	});
 
-	it("never offers to disable the signed-in admin", () => {
+	it("never offers to disable the signed-in admin, nor explains it", () => {
 		renderModal({ isCurrentUser: true });
 
 		expect(screen.queryByRole("button", { name: "account.users.access.disable" })).not.toBeInTheDocument();
+		expect(screen.queryByText("account.users.access.disable-hint")).not.toBeInTheDocument();
 	});
 
 	it("hands a locally set role back to the identity provider", async () => {

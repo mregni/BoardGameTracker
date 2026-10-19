@@ -9,7 +9,6 @@ import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
 	BgtDialogContent,
-	BgtDialogDescription,
 	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
@@ -121,10 +120,9 @@ const NewLoanModal = (props: ModalProps) => {
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent>
+			<BgtDialogContent aria-describedby={undefined}>
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
 					<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
-					<BgtDialogDescription>{t("new.description")}</BgtDialogDescription>
 					<div className="mt-3 mb-3 flex w-full flex-col gap-3">
 						<form.Field name="gameId" validators={zodValidator(CreateLoanSchema, "gameId")}>
 							{(field: AnyFieldApi) => (

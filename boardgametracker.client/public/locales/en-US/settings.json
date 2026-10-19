@@ -89,12 +89,11 @@
 		"translate": "Help us translate the app",
 		"danger": {
 			"title": "Danger zone",
-			"description": "Irreversible actions. Proceed with caution.",
 			"reset": {
 				"button": "Reset data",
 				"confirm": {
 					"title": "Reset data",
-					"description": "This permanently deletes all games, sessions, players, people, locations, loans, game nights, badge awards, and uploaded images. Your settings, user accounts, and login are kept. This cannot be undone.",
+					"description": "Deletes all games, sessions, players, locations, loans, game nights, badges, images and uploaded manuals. Settings and user accounts stay. This cannot be undone.",
 					"keyword": "RESET",
 					"input-label": "Type RESET to confirm",
 					"button": "Reset data"
@@ -104,10 +103,12 @@
 				"button": "Factory reset",
 				"confirm": {
 					"title": "Factory reset",
-					"description": "This permanently deletes EVERYTHING — all data, all settings, and all user accounts — and resets the app to its initial state. The admin account is recreated with the password from ADMIN_PASSWORD, or admin when that is not set, and you will be logged out. Change that password immediately. This cannot be undone.",
+					"description": "Deletes all data, settings and user accounts, and signs you out. This cannot be undone.",
 					"keyword": "FACTORY RESET",
 					"input-label": "Type FACTORY RESET to confirm",
-					"button": "Factory reset everything"
+					"button": "Factory reset everything",
+					"admin-password": "The admin account comes back with its first-login password.",
+					"admin-password-link": "How is it set?"
 				}
 			},
 			"notifications": {
@@ -174,7 +175,6 @@
 	"account": {
 		"profile": {
 			"title": "My account",
-			"description": "Manage your profile and password.",
 			"display-name": {
 				"label": "Display name"
 			},
@@ -248,13 +248,12 @@
 				"save": "Add"
 			},
 			"edit": {
-				"title": "Edit user",
-				"description": "Change the username, email, role or linked player of “{{username}}”."
+				"title": "Edit user"
 			},
 			"reset-password": {
 				"button": "Reset password",
-				"title": "Reset password?",
-				"description": "Reset the password for {{user}}? Their current password stops working."
+				"title": "Reset {{user}}'s password?",
+				"description": "Their current password stops working."
 			},
 			"temp-password": {
 				"title": "Temporary password",
@@ -271,7 +270,6 @@
 			"access": {
 				"button": "Access",
 				"title": "Sign-in access",
-				"description": "Sign-in and single sign-on settings for \"{{username}}\".",
 				"enabled": "Can sign in",
 				"disabled": "Disabled",
 				"enable": "Enable",
@@ -281,12 +279,16 @@
 				"sso-none": "No identity provider account is linked.",
 				"sso-linked": "subject {{subject}} · linked on {{date}}",
 				"unlink": "Unlink",
-				"unlink-confirm": "This identity provider account can no longer sign in as \"{{username}}\" until it is linked again.",
+				"unlink-confirm": "This identity provider account can no longer sign in as “{{username}}” until it is linked again.",
 				"role-managed": "The role follows the identity provider's groups on every sign-in.",
 				"role-local": "The role was set here and the identity provider does not change it.",
 				"manage-role": "Let the identity provider manage the role",
 				"disabled-badge": "Disabled",
-				"sso-badge": "SSO"
+				"sso-badge": "SSO",
+				"disable-confirm": {
+					"title": "Disable {{username}}?",
+					"description": "They are signed out on every device and can't sign in until you enable them."
+				}
 			},
 			"actions": "Actions for {{username}}"
 		},
@@ -304,13 +306,9 @@
 			"user-updated": "User saved",
 			"user-update-failed": "Failed to update user",
 			"password-reset-failed": "Failed to reset password",
-			"user-disabled": "User disabled",
 			"user-disable-failed": "Failed to disable the user",
-			"user-enabled": "User enabled",
 			"user-enable-failed": "Failed to enable the user",
-			"external-login-unlinked": "Identity provider account unlinked",
 			"external-login-unlink-failed": "Failed to unlink the identity provider account",
-			"role-managed": "The identity provider now manages this role",
 			"role-manage-failed": "Failed to hand the role to the identity provider"
 		},
 		"external-logins": {

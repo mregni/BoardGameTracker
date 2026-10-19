@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import {
 	BgtDialog,
 	BgtDialogContent,
-	BgtDialogDescription,
 	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
@@ -78,12 +77,9 @@ export const EditUserModal = ({ open, close, user, players, users, onSubmit, isL
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent>
+			<BgtDialogContent aria-describedby={undefined}>
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
 					<BgtDialogTitle>{t("account.users.edit.title")}</BgtDialogTitle>
-					<BgtDialogDescription>
-						{t("account.users.edit.description", { username: user.username })}
-					</BgtDialogDescription>
 					<div className="flex flex-col gap-2 mb-3 mt-3">
 						<form.Field name="username">
 							{(field) => <BgtInputField field={field} type="text" label={t("auth:username")} disabled={isLoading} />}

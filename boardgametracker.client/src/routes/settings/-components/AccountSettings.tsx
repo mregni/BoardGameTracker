@@ -149,10 +149,8 @@ export const AccountSettings = () => {
 			{resetTarget && (
 				<BgtDialog open onClose={() => setResetTarget(null)}>
 					<BgtDialogContent>
-						<BgtDialogTitle>{t("account.users.reset-password.title")}</BgtDialogTitle>
-						<BgtDialogDescription>
-							{t("account.users.reset-password.description", { user: resetTarget.username })}
-						</BgtDialogDescription>
+						<BgtDialogTitle>{t("account.users.reset-password.title", { user: resetTarget.username })}</BgtDialogTitle>
+						<BgtDialogDescription>{t("account.users.reset-password.description")}</BgtDialogDescription>
 						<BgtDialogFooter
 							onCancel={() => setResetTarget(null)}
 							confirmLabel={t("account.users.reset-password.button")}
@@ -246,7 +244,7 @@ const ProfileSection = ({
 	});
 
 	return (
-		<SettingsSection title={t("account.profile.title")} description={t("account.profile.description")}>
+		<SettingsSection title={t("account.profile.title")}>
 			<form onSubmit={handleFormSubmit(form)} className="space-y-3">
 				<div>
 					<BgtFieldLabel>{t("account.profile.username.label")}</BgtFieldLabel>
@@ -346,6 +344,11 @@ const UserManagementSection = ({
 		[t, dateFormat, timeFormat, uiLanguage],
 	);
 
+	const roleNames = useCallback(
+		(user: UserDto) => user.roles.map((role) => t(`account.users.roles.${role.toLowerCase()}`)).join(", "),
+		[t],
+	);
+
 	const badges = useCallback(
 		(user: UserDto) => (
 			<>
@@ -379,7 +382,7 @@ const UserManagementSection = ({
 			{
 				accessorKey: "roles",
 				header: t("account.users.role"),
-				cell: ({ row }) => <div className="text-white/70">{row.original.roles.join(", ")}</div>,
+				cell: ({ row }) => <div className="text-white/70">{roleNames(row.original)}</div>,
 			},
 			{
 				accessorKey: "lastLoginAt",
@@ -409,7 +412,7 @@ const UserManagementSection = ({
 				),
 			},
 		],
-		[t, currentUserId, onEditUser, onManageAccess, onResetPassword, onDeleteUser, lastLogin, badges],
+		[t, currentUserId, onEditUser, onManageAccess, onResetPassword, onDeleteUser, lastLogin, badges, roleNames],
 	);
 
 	return (
@@ -433,7 +436,7 @@ const UserManagementSection = ({
 								<span className="truncate font-semibold text-white">{user.username}</span>
 								{badges(user)}
 							</div>
-							<span className="text-sm text-white/70">{user.roles.join(", ")}</span>
+							<span className="text-sm text-white/70">{roleNames(user)}</span>
 							<span className="text-xs text-white/50">
 								{t("account.users.last-login")}: {lastLogin(user)}
 							</span>

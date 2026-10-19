@@ -7,6 +7,8 @@ import { useDangerZone } from "../-hooks/useDangerZone";
 import { ResetConfirmModal } from "../-modals/ResetConfirmModal";
 import { SettingsSection } from "./SettingsSection";
 
+const ADMIN_PASSWORD_DOCS = "https://mregni.github.io/BoardGameTracker/getting-started/authentication/#first-login";
+
 export const DangerZoneSection = () => {
 	const { t } = useTranslation(["settings", "common"]);
 	const { isAdmin } = usePermissions();
@@ -20,7 +22,7 @@ export const DangerZoneSection = () => {
 	}
 
 	return (
-		<SettingsSection title={t("advanced.danger.title")} description={t("advanced.danger.description")}>
+		<SettingsSection title={t("advanced.danger.title")}>
 			<div className="flex flex-col gap-3 md:flex-row">
 				<BgtButton variant="error" onClick={resetModal.show}>
 					{t("advanced.danger.reset.button")}
@@ -57,6 +59,11 @@ export const DangerZoneSection = () => {
 					keyword={t("advanced.danger.factory-reset.confirm.keyword")}
 					inputLabel={t("advanced.danger.factory-reset.confirm.input-label")}
 					confirmLabel={t("advanced.danger.factory-reset.confirm.button")}
+					note={{
+						text: t("advanced.danger.factory-reset.confirm.admin-password"),
+						linkLabel: t("advanced.danger.factory-reset.confirm.admin-password-link"),
+						href: ADMIN_PASSWORD_DOCS,
+					}}
 					onConfirm={async () => {
 						await factoryReset();
 						factoryModal.hide();

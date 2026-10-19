@@ -36,7 +36,6 @@
   "new": {
     "title": "Lend a game",
     "save": "Lend",
-    "description": "Pick a game, who borrows it and when it should come back.",
     "start": {
       "label": "Loan start",
       "required": "Start loan date is required",

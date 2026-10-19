@@ -89,12 +89,11 @@
 		"translate": "Help de app te vertalen",
 		"danger": {
 			"title": "Gevarenzone",
-			"description": "Onomkeerbare acties. Ga voorzichtig te werk.",
 			"reset": {
 				"button": "Gegevens resetten",
 				"confirm": {
 					"title": "Gegevens resetten",
-					"description": "Dit verwijdert definitief alle spellen, sessies, spelers, personen, locaties, uitleningen, spelavonden, toegekende badges en geüploade afbeeldingen. Je instellingen, gebruikersaccounts en aanmeldgegevens blijven behouden. Dit kan niet ongedaan worden gemaakt.",
+					"description": "Verwijdert alle spellen, sessies, spelers, locaties, uitleningen, spelavonden, badges, afbeeldingen en geüploade handleidingen. Instellingen en gebruikersaccounts blijven. Dit kan niet ongedaan worden gemaakt.",
 					"keyword": "RESET",
 					"input-label": "Typ RESET om te bevestigen",
 					"button": "Gegevens resetten"
@@ -104,10 +103,12 @@
 				"button": "Fabrieksreset",
 				"confirm": {
 					"title": "Fabrieksreset",
-					"description": "Dit verwijdert definitief ALLES — alle gegevens, alle instellingen en alle gebruikersaccounts — en zet de app terug naar de begintoestand. Het account admin wordt opnieuw aangemaakt met het wachtwoord uit ADMIN_PASSWORD, of met admin als dat niet ingesteld is, en je wordt afgemeld. Wijzig dat wachtwoord meteen. Dit kan niet ongedaan worden gemaakt.",
+					"description": "Verwijdert alle gegevens, instellingen en gebruikersaccounts en meldt je af. Dit kan niet ongedaan worden gemaakt.",
 					"keyword": "FABRIEKSRESET",
 					"input-label": "Typ FABRIEKSRESET om te bevestigen",
-					"button": "Alles terugzetten naar fabrieksinstellingen"
+					"button": "Alles terugzetten naar fabrieksinstellingen",
+					"admin-password": "Het account admin komt terug met het wachtwoord van de eerste aanmelding.",
+					"admin-password-link": "Hoe wordt dat ingesteld?"
 				}
 			},
 			"notifications": {
@@ -174,7 +175,6 @@
 	"account": {
 		"profile": {
 			"title": "Mijn account",
-			"description": "Beheer je profiel en wachtwoord.",
 			"display-name": {
 				"label": "Weergavenaam"
 			},
@@ -248,13 +248,12 @@
 				"save": "Toevoegen"
 			},
 			"edit": {
-				"title": "Gebruiker bewerken",
-				"description": "Wijzig de gebruikersnaam, het e-mailadres, de rol of de gekoppelde speler van “{{username}}”."
+				"title": "Gebruiker bewerken"
 			},
 			"reset-password": {
 				"button": "Wachtwoord resetten",
-				"title": "Wachtwoord resetten?",
-				"description": "Het wachtwoord van {{user}} resetten? Het huidige wachtwoord werkt dan niet meer."
+				"title": "Wachtwoord van {{user}} resetten?",
+				"description": "Het huidige wachtwoord werkt dan niet meer."
 			},
 			"temp-password": {
 				"title": "Tijdelijk wachtwoord",
@@ -271,7 +270,6 @@
 			"access": {
 				"button": "Toegang",
 				"title": "Toegang tot aanmelden",
-				"description": "Instellingen voor aanmelden en single sign-on van \"{{username}}\".",
 				"enabled": "Kan zich aanmelden",
 				"disabled": "Uitgeschakeld",
 				"enable": "Inschakelen",
@@ -281,12 +279,16 @@
 				"sso-none": "Er is geen account van de identiteitsprovider gekoppeld.",
 				"sso-linked": "subject {{subject}} · gekoppeld op {{date}}",
 				"unlink": "Ontkoppelen",
-				"unlink-confirm": "Dit account van de identiteitsprovider kan zich niet meer als \"{{username}}\" aanmelden tot het opnieuw gekoppeld wordt.",
+				"unlink-confirm": "Dit account van de identiteitsprovider kan zich niet meer als “{{username}}” aanmelden tot het opnieuw gekoppeld wordt.",
 				"role-managed": "De rol volgt bij elke aanmelding de groepen van de identiteitsprovider.",
 				"role-local": "De rol is hier ingesteld en de identiteitsprovider wijzigt die niet.",
 				"manage-role": "Laat de identiteitsprovider de rol beheren",
 				"disabled-badge": "Uitgeschakeld",
-				"sso-badge": "SSO"
+				"sso-badge": "SSO",
+				"disable-confirm": {
+					"title": "{{username}} uitschakelen?",
+					"description": "Die persoon wordt op elk toestel afgemeld en kan zich pas weer aanmelden als je het account opnieuw inschakelt."
+				}
 			},
 			"actions": "Acties voor {{username}}"
 		},
@@ -304,13 +306,9 @@
 			"user-updated": "Gebruiker opgeslagen",
 			"user-update-failed": "Gebruiker bijwerken mislukt",
 			"password-reset-failed": "Wachtwoord resetten mislukt",
-			"user-disabled": "Gebruiker uitgeschakeld",
 			"user-disable-failed": "Gebruiker uitschakelen is mislukt",
-			"user-enabled": "Gebruiker ingeschakeld",
 			"user-enable-failed": "Gebruiker inschakelen is mislukt",
-			"external-login-unlinked": "Account van de identiteitsprovider ontkoppeld",
 			"external-login-unlink-failed": "Account van de identiteitsprovider ontkoppelen is mislukt",
-			"role-managed": "De identiteitsprovider beheert deze rol nu",
 			"role-manage-failed": "De rol aan de identiteitsprovider overdragen is mislukt"
 		},
 		"external-logins": {
