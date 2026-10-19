@@ -1,7 +1,6 @@
 {
   "empty": {
     "title": "No hay juegos en tu colección",
-    "description": "Aún no has añadido ningún juego. Añade tu primer juego para registrar partidas.",
     "button": "Añade tu primer juego"
   },
   "welcome": {

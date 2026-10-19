@@ -1,12 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	BgtDialog,
-	BgtDialogContent,
-	BgtDialogDescription,
-	BgtDialogFooter,
-	BgtDialogTitle,
-} from "@/components/BgtDialog";
+import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtImageSelector, BgtInputField } from "@/components/BgtForm";
 import { useAppForm } from "@/hooks/form";
 import { CreatePlayerSchema, type ModalProps, type Player } from "@/models";
@@ -53,9 +47,8 @@ export const EditPlayerModal = (props: Props) => {
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent>
+			<BgtDialogContent aria-describedby={undefined}>
 				<BgtDialogTitle>{t("update.title")}</BgtDialogTitle>
-				<BgtDialogDescription>{t("update.description")}</BgtDialogDescription>
 				<form onSubmit={handleFormSubmit(form)}>
 					<div className="flex flex-row gap-3 mt-3 mb-6">
 						<div className="flex-none">

@@ -1,8 +1,7 @@
 {
   "empty": {
     "title": "Aún no hay jugadores",
-    "description": "Aún no has añadido ningún jugador. Empieza añadiendo tu primer jugador para registrar sus partidas y estadísticas.",
-    "button": "Añade tu primer jugador"
+    "button": "Añadir jugador"
   },
   "back": "Volver a jugadores",
   "count_other": "{{count}} jugadores encontrados",
@@ -26,18 +25,16 @@
     "invalid": "Introduce una dirección de correo electrónico válida"
   },
   "new": {
-    "button": "Añadir nuevo jugador",
-    "description": "Rellena el formulario para crear un nuevo jugador.",
-    "save": "Crear jugador",
-    "title": "Crear jugador",
+    "button": "Añadir jugador",
+    "save": "Añadir",
+    "title": "Añadir jugador",
     "players": {
       "none": "Todavía no hay jugadores en esta partida"
     }
   },
   "update": {
-    "save": "Actualizar jugador",
-    "title": "Actualizar jugador",
-    "description": "Cambia el nombre o la imagen para actualizar el jugador."
+    "save": "Guardar",
+    "title": "Editar jugador"
   },
   "delete": {
     "successfull": "Jugador eliminado correctamente.",

@@ -78,12 +78,12 @@ describe("Games table filters", () => {
 });
 
 describe("Games table empty collection", () => {
-	it("shows the collection empty state with Add game instead of blaming the filters", () => {
+	it("shows the collection empty state with Add your first game instead of blaming the filters", () => {
 		mocks.games = [];
 		renderTable();
 
 		expect(screen.getByText("dashboard:empty.title")).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "games:new" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "dashboard:empty.button" })).toBeInTheDocument();
 		expect(screen.queryByText("games:table.empty")).not.toBeInTheDocument();
 		expect(screen.queryAllByRole("combobox")).toHaveLength(0);
 	});

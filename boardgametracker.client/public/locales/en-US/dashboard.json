@@ -1,7 +1,6 @@
 {
   "empty": {
     "title": "No games in your collection",
-    "description": "You haven't added any games yet. Add your first game to start logging sessions.",
     "button": "Add your first game"
   },
   "welcome": {

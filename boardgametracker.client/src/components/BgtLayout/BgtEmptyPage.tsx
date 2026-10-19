@@ -9,7 +9,7 @@ interface Props extends PropsWithChildren {
 	icon?: ComponentType<SVGProps<SVGSVGElement>>;
 	emptyIcon?: ComponentType<SVGProps<SVGSVGElement>>;
 	title: string;
-	description: string;
+	description?: string;
 	action?: {
 		label: string;
 		onClick: () => void;

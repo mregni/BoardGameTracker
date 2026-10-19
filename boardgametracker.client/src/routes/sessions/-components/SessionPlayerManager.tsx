@@ -1,6 +1,7 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import Plus from "@/assets/icons/plus.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtSelect } from "@/components/BgtForm";
 import { BgtText } from "@/components/BgtText/BgtText";
@@ -82,7 +83,8 @@ export const SessionPlayerManager = withForm({
 									disabled={disabled}
 									onClick={() => setIsCreateOpen(true)}
 								>
-									+ {t("new.create-player")}
+									<Plus className="size-3.5" aria-hidden="true" />
+									{t("new.create-player")}
 								</BgtButton>
 							</div>
 							{players.length === 0 && errors.length === 0 && (

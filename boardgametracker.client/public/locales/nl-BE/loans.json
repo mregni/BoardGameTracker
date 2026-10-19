@@ -1,8 +1,7 @@
 {
   "title": "Uitleningen",
   "empty": {
-    "title": "Nog geen uitleningen",
-    "description": "Je hebt nog geen uitleningen aangemaakt. Leen een spel uit om bij te houden wie je spellen heeft."
+    "title": "Nog geen uitleningen"
   },
   "statistics": {
     "returned": "Teruggebracht",
@@ -36,7 +35,7 @@
   "no-active-loans": "Er zijn momenteel geen lopende uitleningen.",
   "new": {
     "title": "Spel uitlenen",
-    "save": "Uitlening aanmaken",
+    "save": "Uitlenen",
     "description": "Kies een spel, wie het leent en wanneer het terug moet zijn.",
     "start": {
       "label": "Uitleendatum",
@@ -53,8 +52,7 @@
       "required": "Speler is verplicht",
       "placeholder": "Kies een lener"
     },
-    "button": "+ Spel uitlenen",
-    "lend-game": "{{game}} uitlenen",
+    "button": "Spel uitlenen",
     "due": {
       "one-week": "1 week",
       "two-weeks": "2 weken",
@@ -67,7 +65,7 @@
   "edit": {
     "title": "Uitlening bewerken",
     "description": "Pas de data van deze uitlening aan.",
-    "save": "Uitlening opslaan",
+    "save": "Opslaan",
     "button": "Bewerken"
   },
   "status": {

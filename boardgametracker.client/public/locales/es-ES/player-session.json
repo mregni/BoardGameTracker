@@ -12,7 +12,7 @@
       "label": "Jugador",
       "required": "El jugador es obligatorio"
     },
-    "create-player": "Crear nuevo jugador",
+    "create-player": "Añadir jugador",
     "players": {
       "minimum": "Añade al menos un jugador a esta partida"
     },

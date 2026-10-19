@@ -1,8 +1,7 @@
 {
   "empty": {
-    "title": "No players added yet",
-    "description": "You haven't added any players yet. Start by adding your first player to track their game sessions and statistics.",
-    "button": "Add Your First Player"
+    "title": "No players yet",
+    "button": "Add player"
   },
   "back": "Back to players",
   "count_other": "{{count}} players found",
@@ -26,18 +25,16 @@
     "invalid": "Enter a valid email address"
   },
   "new": {
-    "button": "Add new player",
-    "description": "Fill out the form to create a new player.",
-    "save": "Create player",
-    "title": "Create player",
+    "button": "Add player",
+    "save": "Add",
+    "title": "Add player",
     "players": {
       "none": "No players in this session yet"
     }
   },
   "update": {
-    "save": "Update player",
-    "title": "Update player",
-    "description": "Change the name or image to update the player."
+    "save": "Save",
+    "title": "Edit player"
   },
   "delete": {
     "successfull": "Player is successfully deleted.",

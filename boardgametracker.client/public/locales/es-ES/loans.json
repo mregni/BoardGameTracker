@@ -1,8 +1,7 @@
 {
   "title": "Préstamos",
   "empty": {
-    "title": "Aún no hay préstamos",
-    "description": "Aún no has creado ningún préstamo. Empieza prestando un juego para saber quién tiene tus juegos."
+    "title": "Aún no hay préstamos"
   },
   "statistics": {
     "returned": "Devueltos",
@@ -36,7 +35,7 @@
   "no-active-loans": "No hay préstamos activos en este momento.",
   "new": {
     "title": "Prestar un juego",
-    "save": "Crear préstamo",
+    "save": "Prestar",
     "description": "Elige un juego, quién se lo lleva y cuándo debe volver.",
     "start": {
       "label": "Inicio del préstamo",
@@ -53,8 +52,7 @@
       "required": "El jugador es obligatorio",
       "placeholder": "Elige quién lo pide prestado"
     },
-    "button": "+ Prestar un juego",
-    "lend-game": "Prestar {{game}}",
+    "button": "Prestar un juego",
     "due": {
       "one-week": "1 semana",
       "two-weeks": "2 semanas",
@@ -67,7 +65,7 @@
   "edit": {
     "title": "Editar préstamo",
     "description": "Cambia las fechas de este préstamo.",
-    "save": "Guardar préstamo",
+    "save": "Guardar",
     "button": "Editar"
   },
   "status": {

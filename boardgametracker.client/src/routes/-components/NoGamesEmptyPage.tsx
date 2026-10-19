@@ -21,7 +21,6 @@ export const NoGamesEmptyPage = ({ header, icon }: Props) => {
 			icon={icon}
 			emptyIcon={Game}
 			title={t("empty.title")}
-			description={t("empty.description")}
 			action={canWrite ? { label: t("empty.button"), onClick: () => navigate({ to: "/games/add" }) } : undefined}
 		/>
 	);

@@ -3,8 +3,13 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CheckIcon from "@/assets/icons/check.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
-import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
-import { BgtText } from "@/components/BgtText/BgtText";
+import {
+	BgtDialog,
+	BgtDialogContent,
+	BgtDialogDescription,
+	BgtDialogFooter,
+	BgtDialogTitle,
+} from "@/components/BgtDialog";
 import type { GameNightDetail, Player } from "@/models";
 import { nightTable, playedPlayerIds } from "../-utils/gameNightPlay";
 
@@ -44,9 +49,7 @@ export const AttendanceModal = (props: Props) => {
 		<BgtDialog open onClose={close}>
 			<BgtDialogContent size="sheet">
 				<BgtDialogTitle>{t("attendance.title")}</BgtDialogTitle>
-				<BgtText size="2" color="gray">
-					{t("attendance.hint")}
-				</BgtText>
+				<BgtDialogDescription>{t("attendance.hint")}</BgtDialogDescription>
 				<ul className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
 					{ordered.map((player) => {
 						const isPresent = present.has(player.id);

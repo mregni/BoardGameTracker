@@ -48,7 +48,7 @@ describe("NewLocationModal", () => {
 
 		it("should render save button", () => {
 			renderWithTheme(<NewLocationModal {...defaultProps} />);
-			expect(screen.getByRole("button", { name: "common:save" })).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "new.save" })).toBeInTheDocument();
 		});
 
 		it("puts cancel on the left and the save submit on the right of the footer", () => {
@@ -56,7 +56,7 @@ describe("NewLocationModal", () => {
 
 			const footer = document.querySelector("[data-slot='dialog-footer']") as HTMLElement;
 			const buttons = within(footer).getAllByRole("button");
-			expect(buttons.map((button) => button.textContent)).toEqual(["common:cancel", "common:save"]);
+			expect(buttons.map((button) => button.textContent)).toEqual(["common:cancel", "new.save"]);
 			expect(buttons[0]).toHaveAttribute("type", "button");
 			expect(buttons[1]).toHaveAttribute("type", "submit");
 			expect(buttons[1]).toHaveClass("bg-primary/60");
@@ -97,7 +97,7 @@ describe("NewLocationModal", () => {
 			const input = screen.getByRole("textbox");
 			await user.type(input, "Living Room");
 
-			await user.click(screen.getByRole("button", { name: "common:save" }));
+			await user.click(screen.getByRole("button", { name: "new.save" }));
 
 			await waitFor(() => {
 				expect(mockSaveLocation).toHaveBeenCalledWith({ name: "Living Room" });
@@ -120,7 +120,7 @@ describe("NewLocationModal", () => {
 			renderWithTheme(<NewLocationModal {...defaultProps} />);
 
 			// Submit without entering any data
-			await user.click(screen.getByRole("button", { name: "common:save" }));
+			await user.click(screen.getByRole("button", { name: "new.save" }));
 
 			// saveLocation should not be called when validation fails
 			await waitFor(() => {

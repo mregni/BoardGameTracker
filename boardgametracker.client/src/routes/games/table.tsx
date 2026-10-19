@@ -356,8 +356,9 @@ function RouteComponent() {
 				header={t("games:title")}
 				icon={GameIcon}
 				title={t("dashboard:empty.title")}
-				description={t("dashboard:empty.description")}
-				action={canWrite ? { onClick: () => navigate({ to: "/games/add" }), label: t("games:new") } : undefined}
+				action={
+					canWrite ? { onClick: () => navigate({ to: "/games/add" }), label: t("dashboard:empty.button") } : undefined
+				}
 			/>
 		);
 	}

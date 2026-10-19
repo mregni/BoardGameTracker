@@ -45,6 +45,13 @@ describe("CreateGameNightModal", () => {
 		expect(document.getElementById("game-night-form")).toBeInTheDocument();
 	});
 
+	it("has a title without a filler subtitle", () => {
+		renderModal();
+
+		expect(screen.getByRole("dialog", { name: "create.title" })).not.toHaveAttribute("aria-describedby");
+		expect(screen.queryByText("create.description")).not.toBeInTheDocument();
+	});
+
 	it("closes when cancel is clicked", async () => {
 		const user = userEvent.setup();
 		const { close } = renderModal();

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import Calendar from "@/assets/icons/calendar.svg?react";
+import PlusIcon from "@/assets/icons/plus.svg?react";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
@@ -125,7 +126,6 @@ function RouteComponent() {
 				header={t("title")}
 				icon={Calendar}
 				title={t("empty.title")}
-				description={t("empty.description")}
 				action={canWrite ? { label: t("create.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<CreateGameNightModal
@@ -153,6 +153,7 @@ function RouteComponent() {
 									onClick: modals.createModal.show,
 									variant: "primary",
 									content: "game-nights:create.button",
+									icon: PlusIcon,
 								},
 							]
 						: []
