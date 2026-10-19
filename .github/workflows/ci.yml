@@ -114,9 +114,11 @@ jobs:
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.AppHost/**/*.cs,**/scripts/**,**/src/test/**,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
             /d:sonar.cpd.exclusions="**/Migrations/**/*.cs" \
             /d:sonar.typescript.tsconfigPaths="$GITHUB_WORKSPACE/boardgametracker.client/tsconfig.json" \
-            /d:sonar.issue.ignore.multicriteria=e1 \
+            /d:sonar.issue.ignore.multicriteria=e1,e2 \
             /d:sonar.issue.ignore.multicriteria.e1.ruleKey=githubactions:S7637 \
-            /d:sonar.issue.ignore.multicriteria.e1.resourceKey="**/.github/**"
+            /d:sonar.issue.ignore.multicriteria.e1.resourceKey="**/.github/**" \
+            /d:sonar.issue.ignore.multicriteria.e2.ruleKey=docker:S8431 \
+            /d:sonar.issue.ignore.multicriteria.e2.resourceKey="**/Dockerfile*"
         if: env.SONAR_TOKEN != ''
 
       - name: Build .NET
