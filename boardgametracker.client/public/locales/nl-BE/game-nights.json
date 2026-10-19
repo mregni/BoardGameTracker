@@ -116,11 +116,11 @@
   "notifications": {
     "created": "Spelavond aangemaakt",
     "create-failed": "Spelavond aanmaken mislukt",
-    "updated": "Spelavond bijgewerkt",
+    "updated": "Spelavond opgeslagen",
     "update-failed": "Spelavond bijwerken mislukt",
     "deleted": "Spelavond verwijderd",
     "delete-failed": "Spelavond verwijderen mislukt",
-    "rsvp-updated": "RSVP bijgewerkt",
+    "rsvp-updated": "Antwoord opgeslagen",
     "rsvp-update-failed": "RSVP bijwerken mislukt"
   },
   "validation": {

@@ -16,18 +16,19 @@
 	"save": {
 		"button": "Instellingen opslaan",
 		"failed": "Instellingen opslaan mislukt",
-		"successfull": "Instellingen zijn opgeslagen"
+		"successfull": "Instellingen opgeslagen"
 	},
 	"general": {
 		"public-url": {
 			"title": "Publiek adres",
-			"description": "Het adres waarop mensen BoardGameTracker bereiken, bijvoorbeeld https://games.example.com. Uitnodigingen en e-mails om je wachtwoord te herstellen linken ernaar, en SSO gebruikt het voor de redirect-URI's. E-mails met links worden pas verstuurd als het ingesteld is.",
+			"description": "Het adres waarop mensen BoardGameTracker bereiken; links in e-mails en single sign-on verwijzen ernaar.",
 			"label": "Publieke URL",
-			"placeholder": "https://myboardgametracker.app",
+			"placeholder": "https://games.example.com",
 			"invalid": "Geef een geldige http(s)-URL op",
-			"not-set": "Niet ingesteld. Uitnodigingen en e-mails om je wachtwoord te herstellen worden niet verstuurd, en SSO gebruikt het adres waarop je de app opent.",
-			"insecure-warning": "De publieke URL gebruikt http terwijl BoardGameTracker via https geopend is. Links in e-mails, RSVP-uitnodigingen en SSO-redirects gebruiken het onveilige adres.",
-			"host-mismatch-warning": "De publieke URL verwijst naar een andere host dan {{host}}. Links in e-mails, RSVP-uitnodigingen en SSO-redirects gebruiken die host."
+			"not-set": "Niet ingesteld. Uitnodigingen en e-mails om je wachtwoord te herstellen worden niet verstuurd, en single sign-on gebruikt het adres waarop je de app opent.",
+			"insecure-warning": "De publieke URL gebruikt http terwijl BoardGameTracker via https geopend is. Links in e-mails, RSVP-uitnodigingen en single sign-on-redirects gebruiken het onveilige adres.",
+			"host-mismatch-warning": "De publieke URL verwijst naar een andere host dan {{host}}. Links in e-mails, RSVP-uitnodigingen en single sign-on-redirects gebruiken die host.",
+			"sso-warning": "Single sign-on werkt niet meer met een http-adres."
 		},
 		"ui-language": {
 			"label": "Taal",
@@ -35,18 +36,12 @@
 		},
 		"title": "Algemene instellingen",
 		"description": "Wijzig de algemene instellingen van de applicatie.",
-		"date-time": {
-			"title": "Datum en tijd",
+		"regional": {
+			"title": "Taal en notaties",
+			"language": "Taal",
+			"currency": "Valuta",
 			"date-format": "Datumnotatie",
 			"time-format": "Tijdnotatie"
-		},
-		"currency": {
-			"title": "Valuta",
-			"label": "Valuta"
-		},
-		"language": {
-			"title": "Taal",
-			"label": "Taal"
 		}
 	},
 	"shame": {
@@ -116,7 +111,7 @@
 				}
 			},
 			"notifications": {
-				"reset-success": "Gegevens zijn gereset",
+				"reset-success": "Gegevens gereset",
 				"reset-failed": "Gegevens resetten mislukt",
 				"factory-reset-failed": "Fabrieksreset mislukt"
 			}
@@ -150,7 +145,7 @@
 		},
 		"sso": {
 			"title": "Single sign-on",
-			"description": "OpenID Connect-provider"
+			"description": "Identiteitsprovider"
 		}
 	},
 	"bgg": {
@@ -282,7 +277,7 @@
 				"enable": "Inschakelen",
 				"disable": "Uitschakelen",
 				"disable-hint": "Uitschakelen beëindigt elke sessie en blokkeert inloggen met een wachtwoord en via single sign-on. Iemand verwijderen bij de identiteitsprovider doet dit niet voor jou.",
-				"sso-title": "Single sign-on-identiteiten",
+				"sso-title": "Single sign-on",
 				"sso-none": "Er is geen account van de identiteitsprovider gekoppeld.",
 				"sso-linked": "subject {{subject}} · gekoppeld op {{date}}",
 				"unlink": "Ontkoppelen",
@@ -296,7 +291,7 @@
 			"actions": "Acties voor {{username}}"
 		},
 		"notifications": {
-			"profile-updated": "Profiel bijgewerkt",
+			"profile-updated": "Profiel opgeslagen",
 			"profile-update-failed": "Profiel bijwerken mislukt",
 			"password-changed": "Wachtwoord gewijzigd",
 			"password-change-failed": "Wachtwoord wijzigen mislukt. Controleer je huidige wachtwoord.",
@@ -304,9 +299,9 @@
 			"user-create-failed": "Gebruiker aanmaken mislukt",
 			"user-deleted": "Gebruiker verwijderd",
 			"user-delete-failed": "Gebruiker verwijderen mislukt",
-			"role-updated": "Gebruikersrol bijgewerkt",
+			"role-updated": "Rol gewijzigd",
 			"role-update-failed": "Gebruikersrol bijwerken mislukt",
-			"user-updated": "Gebruiker bijgewerkt",
+			"user-updated": "Gebruiker opgeslagen",
 			"user-update-failed": "Gebruiker bijwerken mislukt",
 			"password-reset-failed": "Wachtwoord resetten mislukt",
 			"user-disabled": "Gebruiker uitgeschakeld",
@@ -319,15 +314,15 @@
 			"role-manage-failed": "De rol aan de identiteitsprovider overdragen is mislukt"
 		},
 		"external-logins": {
-			"title": "Externe logins",
+			"title": "Single sign-on",
 			"description": "Log in via je identiteitsprovider in plaats van met een wachtwoord.",
-			"none": "Nog geen externe login gekoppeld.",
+			"none": "Nog geen account van de identiteitsprovider gekoppeld.",
 			"linked-on": "gekoppeld op {{date}}",
 			"link": "{{provider}} koppelen",
 			"unlink": "Ontkoppelen",
 			"notifications": {
-				"unlinked": "Externe login verwijderd.",
-				"unlink-failed": "De externe login kon niet worden verwijderd.",
+				"unlinked": "Account van de identiteitsprovider ontkoppeld",
+				"unlink-failed": "Het account van de identiteitsprovider kon niet worden ontkoppeld.",
 				"link-failed": "Het koppelen kon niet worden gestart."
 			},
 			"unlink-confirm": "Je kunt dan niet meer inloggen met deze provider tot je hem opnieuw koppelt."
@@ -335,10 +330,11 @@
 	},
 	"env-override": "Ingesteld via de omgevingsvariabele {{variable}}. Pas die daar aan om deze instelling te wijzigen.",
 	"sso": {
-		"title": "OpenID Connect-provider",
+		"title": "Identiteitsprovider",
 		"description": {
 			"empty": "Laat mensen inloggen via je identiteitsprovider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Registreer daar eerst een publieke client en vul daarna de gegevens hieronder in.",
-			"configured": "Inloggen via {{name}} is geconfigureerd. Wijzigingen gelden vanaf de volgende keer dat iemand inlogt."
+			"configured": "Provider {{name}} is ingesteld. Wijzigingen gelden vanaf de volgende keer dat iemand inlogt.",
+			"inactive": "Provider {{name}} is ingesteld maar niet actief: er is een https-adres als publieke URL nodig."
 		},
 		"https-required": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL.",
 		"fields": {
@@ -389,8 +385,7 @@
 			},
 			"enabled": {
 				"label": "Ingeschakeld",
-				"description": "Toon de inlogknop op de inlogpagina.",
-				"https-required": "Single sign-on kan alleen via HTTPS worden ingeschakeld."
+				"description": "Toon de inlogknop op de inlogpagina."
 			},
 			"default-role": {
 				"label": "Standaardrol"
@@ -416,7 +411,8 @@
 			"redirect-uri": "Redirect-URI voor inloggen",
 			"link-redirect-uri": "Redirect-URI voor accountkoppeling",
 			"copy": "Kopiëren",
-			"post-logout-redirect-uri": "Redirect-URI na uitloggen"
+			"post-logout-redirect-uri": "Redirect-URI na uitloggen",
+			"https-pending": "Beschikbaar zodra de publieke URL https gebruikt."
 		},
 		"validation": {
 			"name": "Gebruik kleine letters, cijfers en streepjes (1–100 tekens)",
@@ -428,13 +424,14 @@
 		"create": "Provider aanmaken",
 		"save": "Provider opslaan",
 		"delete": "Provider verwijderen",
-		"delete-description": "Als je de provider verwijdert, worden ook alle gekoppelde externe accounts verwijderd. Mensen behouden hun lokale wachtwoord als ze er een hebben.",
+		"delete-description": "Als je de provider verwijdert, worden ook alle accounts van de identiteitsprovider ontkoppeld. Mensen behouden hun lokale wachtwoord als ze er een hebben.",
 		"notifications": {
 			"saved": "Provider opgeslagen.",
 			"save-failed": "De provider kon niet worden opgeslagen.",
 			"deleted": "Provider verwijderd.",
 			"delete-failed": "De provider kon niet worden verwijderd."
-		}
+		},
+		"https-required-locked": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL. Tot dan kan de ingeschakelde provider niet worden gewijzigd."
 	},
 	"changedetection": {
 		"title": "changedetection.io",

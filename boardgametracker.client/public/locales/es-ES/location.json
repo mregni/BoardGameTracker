@@ -16,12 +16,12 @@
     "title": "Editar ubicación"
   },
   "notifications": {
-    "created": "Ubicación creada correctamente",
+    "created": "Ubicación añadida",
     "create-failed": "Error al crear la ubicación",
     "failed": "Error al crear la ubicación",
-    "update": "Ubicación actualizada correctamente",
+    "update": "Ubicación guardada",
     "update-failed": "Error al actualizar la ubicación",
-    "deleted": "Ubicación eliminada correctamente",
+    "deleted": "Ubicación eliminada",
     "delete-failed": "Error al eliminar la ubicación"
   },
   "delete": {

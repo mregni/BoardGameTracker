@@ -16,12 +16,12 @@
     "title": "Edit location"
   },
   "notifications": {
-    "created": "Location is successfully created",
+    "created": "Location added",
     "create-failed": "Failed creating location",
     "failed": "Failed creating location",
-    "update": "Location is successfully updated",
+    "update": "Location saved",
     "update-failed": "Failed updating location",
-    "deleted": "Location is successfully deleted",
+    "deleted": "Location deleted",
     "delete-failed": "Failed deleting location"
   },
   "delete": {

@@ -3,7 +3,7 @@
   "title-of": "Partidas de {{name}}",
   "title": "Partidas",
   "notifications": {
-    "deleted": "Partida eliminada correctamente",
+    "deleted": "Partida eliminada",
     "delete-failed": "Error al eliminar la partida"
   },
   "delete": {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { StringToHsl, StringToRgb } from "./stringUtils";
+import { AvatarRgb, ContrastWithWhite, StringToHsl, StringToRgb } from "./stringUtils";
 
 describe("stringUtils", () => {
 	describe("StringToHsl", () => {
@@ -22,7 +22,7 @@ describe("stringUtils", () => {
 
 		it("should return valid HSL format", () => {
 			const result = StringToHsl("test");
-			expect(result).toMatch(/^hsl\(\d+, 85%, 35%\)$/);
+			expect(result).toMatch(/^hsl\(\d+, 85%, \d+%\)$/);
 		});
 
 		it("should handle empty string", () => {
@@ -32,18 +32,42 @@ describe("stringUtils", () => {
 
 		it("should handle special characters", () => {
 			const result = StringToHsl("test@#$%");
-			expect(result).toMatch(/^hsl\(\d+, 85%, 35%\)$/);
+			expect(result).toMatch(/^hsl\(\d+, 85%, \d+%\)$/);
 		});
 
 		it("should handle unicode characters", () => {
 			const result = StringToHsl("测试");
-			expect(result).toMatch(/^hsl\(\d+, 85%, 35%\)$/);
+			expect(result).toMatch(/^hsl\(\d+, 85%, \d+%\)$/);
 		});
 
 		it("should handle very long strings", () => {
 			const longString = "a".repeat(1000);
 			const result = StringToHsl(longString);
-			expect(result).toMatch(/^hsl\(\d+, 85%, 35%\)$/);
+			expect(result).toMatch(/^hsl\(\d+, 85%, \d+%\)$/);
+		});
+	});
+
+	describe("AvatarRgb", () => {
+		it("keeps white initials at 4.5:1 or more on every hue", () => {
+			for (let hue = 0; hue < 360; hue += 1) {
+				expect(ContrastWithWhite(AvatarRgb(hue)), `hue ${hue}`).toBeGreaterThanOrEqual(4.5);
+			}
+		});
+
+		it("darkens the greens and teals that used to fail", () => {
+			expect(ContrastWithWhite([132, 165, 13])).toBeLessThan(4.5);
+			expect(ContrastWithWhite(AvatarRgb(73))).toBeGreaterThanOrEqual(4.5);
+			expect(ContrastWithWhite(AvatarRgb(108))).toBeGreaterThanOrEqual(4.5);
+		});
+
+		it("keeps the original colour where it already passed", () => {
+			expect(AvatarRgb(0)).toEqual([165, 13, 13]);
+			expect(StringToHsl(undefined)).toBe("hsl(0, 85%, 35%)");
+		});
+
+		it("gives the avatar and the fallback image the same colour", () => {
+			const [r, g, b] = AvatarRgb(Number(StringToHsl("Pandemic").match(/^hsl\((\d+)/)?.[1]));
+			expect(StringToRgb("Pandemic")).toBe(`rgb(${r}, ${g}, ${b})`);
 		});
 	});
 

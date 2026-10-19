@@ -1,7 +1,7 @@
 {
   "label": "Expansiones",
   "delete": {
-    "successfull": "Expansión eliminada correctamente.",
+    "successfull": "Expansión eliminada",
     "failed": "Error al eliminar la expansión, revisa los registros para más detalles."
   },
   "manual": {

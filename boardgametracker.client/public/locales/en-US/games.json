@@ -3,7 +3,7 @@
   "import": {
     "loading": "Loading BGG data...",
     "importing": "Importing games from BoardGameGeek ({{done}}/{{total}})...",
-    "success": "Games are successfully imported from BoardGameGeek",
+    "success": "Games imported from BoardGameGeek",
     "start": {
       "bgg-username": {
         "label": "BGG username",

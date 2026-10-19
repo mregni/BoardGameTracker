@@ -114,13 +114,13 @@
     }
   },
   "notifications": {
-    "created": "Noche de juego creada correctamente",
+    "created": "Noche de juego creada",
     "create-failed": "No se pudo crear la noche de juego",
-    "updated": "Noche de juego actualizada correctamente",
+    "updated": "Noche de juego guardada",
     "update-failed": "No se pudo actualizar la noche de juego",
-    "deleted": "Noche de juego eliminada correctamente",
+    "deleted": "Noche de juego eliminada",
     "delete-failed": "No se pudo eliminar la noche de juego",
-    "rsvp-updated": "RSVP actualizado correctamente",
+    "rsvp-updated": "Respuesta guardada",
     "rsvp-update-failed": "No se pudo actualizar el RSVP"
   },
   "validation": {

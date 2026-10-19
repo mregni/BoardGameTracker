@@ -2,11 +2,5 @@
   "title": "Página no encontrada",
   "subtitle": "Esta página no existe.",
   "go-back": "Volver",
-  "quick-nav": "Navegación rápida",
-  "nav": {
-    "dashboard-description": "Consulta tus estadísticas de juego",
-    "games-description": "Explora tu colección",
-    "players-description": "Consulta los perfiles de los jugadores",
-    "game-nights-description": "Planifica tu próxima noche de juego"
-  }
+  "quick-nav": "Navegación rápida"
 }

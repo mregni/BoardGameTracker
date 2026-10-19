@@ -1,6 +1,6 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -21,6 +21,8 @@ import { handleFormSubmit } from "@/utils/formUtils";
 import { safeRedirectPath } from "@/utils/redirectUtils";
 import { loginErrorKey } from "./-utils/loginError";
 
+const HTTPS_REQUIRED_ERROR = "error.auth.oidc-https-required";
+
 const loginSearchSchema = z.object({
 	redirect: z.string().optional(),
 	error: z.string().optional(),
@@ -36,10 +38,16 @@ function LoginPage() {
 	const navigate = useNavigate();
 	const login = useAuth((s) => s.login);
 	const isLoading = useAuth((s) => s.isLoading);
+	const isAuthenticated = useAuth((s) => s.isAuthenticated);
+	const authEnabled = useAuth((s) => s.authStatus?.authEnabled);
 	const { redirect, error: searchError } = Route.useSearch();
-	const [error, setError] = useState<string | null>(() =>
-		searchError ? translateApiError(searchError, "error:auth.oidc-failed") : null,
-	);
+	const httpsError = searchError === HTTPS_REQUIRED_ERROR;
+	const [error, setError] = useState<string | null>(() => {
+		if (!searchError) {
+			return null;
+		}
+		return httpsError ? t("sso-https-error") : translateApiError(searchError, "error:auth.oidc-failed");
+	});
 
 	const { data: oidcProvider } = useQuery<OidcProvider | null>({
 		queryKey: ["oidcProvider"],
@@ -70,6 +78,10 @@ function LoginPage() {
 		const target = safeRedirectPath(redirect);
 		globalThis.location.href = `${apiUrl}auth/oidc/${encodeURIComponent(provider.name)}/login?redirect=${encodeURIComponent(target)}`;
 	};
+
+	if (isAuthenticated || authEnabled === false) {
+		return <Navigate to={safeRedirectPath(redirect)} replace />;
+	}
 
 	return (
 		<BgtPage>
@@ -131,7 +143,7 @@ function LoginPage() {
 						)}
 					</form>
 
-					{oidcProvider && !oidcProvider.httpsRequired && (
+					{oidcProvider && (
 						<>
 							<div className="relative">
 								<div className="absolute inset-0 flex items-center">
@@ -147,12 +159,18 @@ function LoginPage() {
 									variant="cancel"
 									size="3"
 									className="w-full"
+									disabled={oidcProvider.httpsRequired}
 									onClick={() => handleOidcLogin(oidcProvider)}
 									style={oidcProvider.buttonColor ? { borderColor: oidcProvider.buttonColor } : undefined}
 								>
 									{oidcProvider.iconUrl && <img src={oidcProvider.iconUrl} alt="" className="w-5 h-5" />}
 									{oidcProvider.displayName}
 								</BgtButton>
+								{oidcProvider.httpsRequired && !httpsError && (
+									<BgtText size="2" color="gray" className="text-center">
+										{t("sso-https-hint")}
+									</BgtText>
+								)}
 							</div>
 						</>
 					)}

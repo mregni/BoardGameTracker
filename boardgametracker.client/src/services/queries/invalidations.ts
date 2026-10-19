@@ -195,6 +195,8 @@ export class QueryInvalidator {
 			this.queryClient.invalidateQueries({
 				predicate: (query) => query.queryKey[0] === QUERY_KEYS.game && query.queryKey[2] === QUERY_KEYS.price,
 			}),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.oidcSetup] }),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.oidcProvider] }),
 		]);
 	}
 

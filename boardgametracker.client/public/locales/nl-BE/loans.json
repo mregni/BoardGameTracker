@@ -10,20 +10,20 @@
     "due-this-week": "Terug deze week"
   },
   "notifications": {
-    "created": "Uitlening is aangemaakt",
+    "created": "Spel uitgeleend",
     "create-failed": "Uitlening aanmaken mislukt",
-    "updated": "Uitlening is bijgewerkt",
+    "updated": "Uitlening opgeslagen",
     "update-failed": "Uitlening bijwerken mislukt"
   },
   "delete": {
     "button": "Verwijderen",
     "title": "Uitlening van {{game}} verwijderen",
     "description": "Weet je zeker dat je deze uitlening wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
-    "successfull": "Uitlening is verwijderd.",
+    "successfull": "Uitlening verwijderd",
     "failed": "Uitlening verwijderen mislukt, bekijk de logs voor meer details."
   },
   "return": {
-    "successfull": "Spel is gemarkeerd als teruggebracht.",
+    "successfull": "Gemarkeerd als teruggebracht",
     "failed": "Spel markeren als teruggebracht mislukt, bekijk de logs voor meer details.",
     "title": "{{game}} terugbrengen",
     "description": "Wanneer werd het spel teruggebracht?",

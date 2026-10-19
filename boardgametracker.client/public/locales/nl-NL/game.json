@@ -6,12 +6,12 @@
     "description": "Registreer een sessie van dit spel om de statistieken te zien."
   },
   "notifications": {
-    "created": "Spel is aangemaakt",
+    "created": "Spel toegevoegd",
     "create-failed": "Spel aanmaken mislukt",
     "not-found": "Spel niet gevonden",
     "duplicate": "Spel bestaat al",
-    "deleted": "Spel is verwijderd",
-    "updated": "Spel is bijgewerkt",
+    "deleted": "Spel verwijderd",
+    "updated": "Spel opgeslagen",
     "update-failed": "Spel bijwerken mislukt"
   },
   "added-date": {
@@ -61,9 +61,9 @@
     "description": "Upload, download of verwijder handleidingen voor dit spel.",
     "none": "Nog geen handleidingen geüpload voor dit spel.",
     "add": "Uploaden",
-    "upload-success": "Handleiding(en) geüpload.",
+    "upload-success": "Handleidingen geüpload",
     "upload-failed": "Handleiding uploaden mislukt, bekijk de logs voor meer details.",
-    "delete-success": "Handleiding verwijderd.",
+    "delete-success": "Handleiding verwijderd",
     "delete-failed": "Handleiding verwijderen mislukt, bekijk de logs voor meer details.",
     "download-failed": "Handleiding downloaden mislukt, bekijk de logs voor meer details.",
     "status": {
@@ -149,7 +149,7 @@
     "title": "Details van {{title}}"
   },
   "delete": {
-    "successfull": "Spel is verwijderd.",
+    "successfull": "Spel verwijderd",
     "failed": "Spel verwijderen mislukt, bekijk de logs voor meer details."
   },
   "scoring": {

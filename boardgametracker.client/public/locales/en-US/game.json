@@ -6,12 +6,12 @@
     "description": "Log a session of this game to see its statistics."
   },
   "notifications": {
-    "created": "Game is successfully created",
+    "created": "Game added",
     "create-failed": "Game creation failed",
     "not-found": "Could not find game",
     "duplicate": "Game already exists",
-    "deleted": "Game is successfully deleted",
-    "updated": "Game is successfully updated",
+    "deleted": "Game deleted",
+    "updated": "Game saved",
     "update-failed": "Failed updating game"
   },
   "added-date": {
@@ -61,9 +61,9 @@
     "description": "Upload, download or delete manuals for this game.",
     "none": "No manuals uploaded for this game.",
     "add": "Upload",
-    "upload-success": "Manual(s) uploaded successfully.",
+    "upload-success": "Manuals uploaded",
     "upload-failed": "Manual upload failed, check logs for more details.",
-    "delete-success": "Manual deleted successfully.",
+    "delete-success": "Manual deleted",
     "delete-failed": "Manual deletion failed, check logs for more details.",
     "download-failed": "Manual download failed, check logs for more details.",
     "status": {
@@ -149,7 +149,7 @@
     "title": "{{title}} details"
   },
   "delete": {
-    "successfull": "Game is successfully deleted.",
+    "successfull": "Game deleted",
     "failed": "Game deletion failed, check logs for more details."
   },
   "scoring": {

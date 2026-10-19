@@ -16,12 +16,12 @@
     "title": "Locatie bewerken"
   },
   "notifications": {
-    "created": "Locatie is aangemaakt",
+    "created": "Locatie toegevoegd",
     "create-failed": "Locatie aanmaken mislukt",
     "failed": "Locatie aanmaken mislukt",
-    "update": "Locatie is bijgewerkt",
+    "update": "Locatie opgeslagen",
     "update-failed": "Locatie bijwerken mislukt",
-    "deleted": "Locatie is verwijderd",
+    "deleted": "Locatie verwijderd",
     "delete-failed": "Locatie verwijderen mislukt"
   },
   "delete": {

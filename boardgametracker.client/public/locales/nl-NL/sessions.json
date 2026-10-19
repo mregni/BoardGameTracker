@@ -3,7 +3,7 @@
   "title-of": "Sessies van {{name}}",
   "title": "Sessies",
   "notifications": {
-    "deleted": "Sessie is verwijderd",
+    "deleted": "Sessie verwijderd",
     "delete-failed": "Sessie verwijderen mislukt"
   },
   "delete": {

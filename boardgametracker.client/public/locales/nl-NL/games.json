@@ -3,7 +3,7 @@
   "import": {
     "loading": "BGG-gegevens laden...",
     "importing": "Spellen importeren van BoardGameGeek ({{done}}/{{total}})...",
-    "success": "Spellen zijn geïmporteerd van BoardGameGeek",
+    "success": "Spellen geïmporteerd van BoardGameGeek",
     "start": {
       "bgg-username": {
         "label": "BGG-gebruikersnaam",

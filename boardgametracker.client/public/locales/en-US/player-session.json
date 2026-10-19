@@ -5,7 +5,7 @@
   "title-update": "Update session",
   "new": {
     "notifications": {
-      "created": "Session successfully created",
+      "created": "Session logged",
       "create-failed": "Failed creating session"
     },
     "player": {
@@ -45,7 +45,7 @@
   },
   "update": {
     "notifications": {
-      "updated": "Session successfully updated",
+      "updated": "Session saved",
       "update-failed": "Failed updating session"
     }
   },
@@ -53,7 +53,7 @@
     "required": "Score is required"
   },
   "delete": {
-    "successfull": "Session successfully deleted.",
+    "successfull": "Session deleted",
     "failed": "Session deletion failed, check logs for more details."
   },
   "form": {

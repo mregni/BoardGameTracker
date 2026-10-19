@@ -107,6 +107,8 @@ describe("QueryInvalidator", () => {
 				[QUERY_KEYS.shames],
 				[QUERY_KEYS.gameNights],
 				[QUERY_KEYS.dashboard, QUERY_KEYS.statistics],
+				[QUERY_KEYS.oidcSetup],
+				[QUERY_KEYS.oidcProvider],
 			]),
 		);
 		const predicate = spy.mock.calls.map(([filters]) => filters?.predicate).find(Boolean);

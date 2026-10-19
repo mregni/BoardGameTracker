@@ -1,4 +1,6 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
+import { cx } from "class-variance-authority";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
@@ -29,7 +31,7 @@ const toForm = (provider: OidcProviderConfig | null, httpsRequired: boolean): Oi
 	clientId: provider?.clientId ?? "",
 	clientSecret: "",
 	scopes: provider?.scopes ?? "openid profile email",
-	enabled: !httpsRequired && (provider?.enabled ?? true),
+	enabled: provider ? provider.enabled : !httpsRequired,
 	autoProvisionUsers: provider?.autoProvisionUsers ?? true,
 	defaultRole: provider?.defaultRole ?? "User",
 	usernameClaimType: provider?.usernameClaimType ?? "",
@@ -39,7 +41,7 @@ const toForm = (provider: OidcProviderConfig | null, httpsRequired: boolean): Oi
 	adminGroupValue: provider?.adminGroupValue ?? "",
 });
 
-const CopyValue = ({ label, value }: { label: string; value: string }) => {
+const CopyValue = ({ label, value, disabled = false }: { label: string; value: string; disabled?: boolean }) => {
 	const { t } = useTranslation("settings");
 	return (
 		<div className="flex flex-col gap-1">
@@ -50,7 +52,7 @@ const CopyValue = ({ label, value }: { label: string; value: string }) => {
 				<code className="flex-1 min-w-0 truncate rounded-lg bg-background border border-white/10 px-3 py-2 text-[12px]">
 					{value}
 				</code>
-				<BgtButton variant="text" size="1" onClick={() => navigator.clipboard.writeText(value)}>
+				<BgtButton variant="text" size="1" disabled={disabled} onClick={() => navigator.clipboard.writeText(value)}>
 					{t("sso.setup.copy")}
 				</BgtButton>
 			</div>
@@ -61,24 +63,45 @@ const CopyValue = ({ label, value }: { label: string; value: string }) => {
 const SetupPanel = ({ setup, name }: { setup: OidcSetup; name: string }) => {
 	const { t } = useTranslation("settings");
 	const providerName = name.trim() || "provider";
+	const pending = setup.httpsRequired;
 	return (
-		<SettingsSection title={t("sso.setup.title")} description={t("sso.setup.description")}>
-			{!setup.publicUrlConfigured && (
+		<SettingsSection
+			title={t("sso.setup.title")}
+			description={pending ? t("sso.setup.https-pending") : t("sso.setup.description")}
+		>
+			{!pending && !setup.publicUrlConfigured && (
 				<BgtText size="2" color="amber">
 					{t("sso.setup.public-url-warning", { url: setup.publicBaseUrl })}
 				</BgtText>
 			)}
-			<CopyValue
-				label={t("sso.setup.redirect-uri")}
-				value={setup.callbackUriTemplate.replace("{name}", providerName)}
-			/>
-			<CopyValue
-				label={t("sso.setup.link-redirect-uri")}
-				value={setup.linkCallbackUriTemplate.replace("{name}", providerName)}
-			/>
-			<CopyValue label={t("sso.setup.post-logout-redirect-uri")} value={setup.postLogoutRedirectUri} />
+			<div className={cx("flex flex-col gap-3", pending && "opacity-50")} data-testid="sso-redirect-uris">
+				<CopyValue
+					label={t("sso.setup.redirect-uri")}
+					value={setup.callbackUriTemplate.replace("{name}", providerName)}
+					disabled={pending}
+				/>
+				<CopyValue
+					label={t("sso.setup.link-redirect-uri")}
+					value={setup.linkCallbackUriTemplate.replace("{name}", providerName)}
+					disabled={pending}
+				/>
+				<CopyValue
+					label={t("sso.setup.post-logout-redirect-uri")}
+					value={setup.postLogoutRedirectUri}
+					disabled={pending}
+				/>
+			</div>
 		</SettingsSection>
 	);
+};
+
+const statusLine = (provider: OidcProviderConfig | null, httpsRequired: boolean, t: TFunction<"settings">) => {
+	if (!provider) {
+		return t("sso.description.empty");
+	}
+	return httpsRequired && provider.enabled
+		? t("sso.description.inactive", { name: provider.name })
+		: t("sso.description.configured", { name: provider.name });
 };
 
 const normalizeAuthority = (authority: string) => authority.trim().replace(/\/+$/, "").toLowerCase();
@@ -106,11 +129,12 @@ export const SsoSettings = () => {
 
 	const schema = provider === null ? OidcProviderSchema : OidcProviderUpdateSchema;
 	const httpsRequired = setup?.httpsRequired ?? false;
+	const lockedByHttps = httpsRequired && provider?.enabled === true;
 
 	const form = useAppForm({
 		defaultValues: toForm(provider, httpsRequired),
 		onSubmit: async ({ value }) => {
-			await save(schema.parse({ ...value, enabled: value.enabled && !httpsRequired }));
+			await save(schema.parse(value));
 		},
 	});
 
@@ -122,16 +146,11 @@ export const SsoSettings = () => {
 
 	return (
 		<>
-			<SettingsSection
-				title={t("sso.title")}
-				description={
-					provider ? t("sso.description.configured", { name: provider.displayName }) : t("sso.description.empty")
-				}
-			>
+			<SettingsSection title={t("sso.title")} description={statusLine(provider, httpsRequired, t)}>
 				{httpsRequired && (
 					<div role="alert" className="p-3 bg-error/10 border border-error/20 rounded-md">
 						<BgtText size="2" color="amber">
-							{t("sso.https-required")}
+							{lockedByHttps ? t("sso.https-required-locked") : t("sso.https-required")}
 						</BgtText>
 					</div>
 				)}
@@ -338,16 +357,14 @@ export const SsoSettings = () => {
 								<SettingsToggle
 									field={field}
 									label={t("sso.fields.enabled.label")}
-									description={
-										httpsRequired ? t("sso.fields.enabled.https-required") : t("sso.fields.enabled.description")
-									}
+									description={t("sso.fields.enabled.description")}
 									disabled={busy || httpsRequired}
 								/>
 							)}
 						</form.Field>
 					)}
 					<div className="flex flex-wrap gap-3 pt-2">
-						<BgtButton type="submit" disabled={busy}>
+						<BgtButton type="submit" disabled={busy || lockedByHttps}>
 							{provider ? t("sso.save") : t("sso.create")}
 						</BgtButton>
 						{provider && (

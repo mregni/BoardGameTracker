@@ -14,7 +14,6 @@ interface NavCard {
 	to: string;
 	icon: ComponentType<SVGProps<SVGSVGElement>>;
 	titleKey: string;
-	descriptionKey: string;
 }
 
 const navCards: NavCard[] = [
@@ -22,25 +21,21 @@ const navCards: NavCard[] = [
 		to: "/",
 		icon: HomeIcon,
 		titleKey: "common:dashboard",
-		descriptionKey: "not-found:nav.dashboard-description",
 	},
 	{
 		to: "/games",
 		icon: Game,
 		titleKey: "common:games",
-		descriptionKey: "not-found:nav.games-description",
 	},
 	{
 		to: "/players",
 		icon: UsersIcon,
 		titleKey: "common:players",
-		descriptionKey: "not-found:nav.players-description",
 	},
 	{
 		to: "/game-nights",
 		icon: CalendarIcon,
 		titleKey: "common:game-nights",
-		descriptionKey: "not-found:nav.game-nights-description",
 	},
 ];
 
@@ -82,14 +77,9 @@ export const NotFound = () => {
 							<div className="bg-primary/20 rounded-lg p-2">
 								<card.icon className="size-5 text-primary" />
 							</div>
-							<div>
-								<BgtText size="2" weight="bold" color="white">
-									{t(card.titleKey)}
-								</BgtText>
-								<BgtText size="1" color="white" opacity={50}>
-									{t(card.descriptionKey)}
-								</BgtText>
-							</div>
+							<BgtText size="2" weight="bold" color="white">
+								{t(card.titleKey)}
+							</BgtText>
 						</Link>
 					))}
 				</div>

@@ -114,13 +114,13 @@
     }
   },
   "notifications": {
-    "created": "Game night created successfully",
+    "created": "Game night created",
     "create-failed": "Failed to create game night",
-    "updated": "Game night updated successfully",
+    "updated": "Game night saved",
     "update-failed": "Failed to update game night",
-    "deleted": "Game night deleted successfully",
+    "deleted": "Game night deleted",
     "delete-failed": "Failed to delete game night",
-    "rsvp-updated": "RSVP updated successfully",
+    "rsvp-updated": "Answer saved",
     "rsvp-update-failed": "Failed to update RSVP"
   },
   "validation": {

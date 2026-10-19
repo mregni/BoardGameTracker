@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getPublicUrlWarning } from "./publicUrlWarning";
+import { breaksSingleSignOn, getPublicUrlWarning } from "./publicUrlWarning";
 
 const https = { protocol: "https:", host: "games.example.com" };
 
@@ -16,5 +16,24 @@ describe("getPublicUrlWarning", () => {
 		expect(getPublicUrlWarning("https://games.example.com/", https)).toBeNull();
 		expect(getPublicUrlWarning("", https)).toBeNull();
 		expect(getPublicUrlWarning("not a url", https)).toBeNull();
+	});
+});
+
+describe("breaksSingleSignOn", () => {
+	it("flags an http address on a real host", () => {
+		expect(breaksSingleSignOn("http://192.168.1.20:8080")).toBe(true);
+		expect(breaksSingleSignOn("http://games.example.com")).toBe(true);
+	});
+
+	it("allows https and loopback addresses, like the server does", () => {
+		expect(breaksSingleSignOn("https://games.example.com")).toBe(false);
+		expect(breaksSingleSignOn("http://localhost:5443")).toBe(false);
+		expect(breaksSingleSignOn("http://app.localhost")).toBe(false);
+		expect(breaksSingleSignOn("http://127.0.0.1:8080")).toBe(false);
+		expect(breaksSingleSignOn("http://[::1]:8080")).toBe(false);
+	});
+
+	it("ignores a value that is not a URL yet", () => {
+		expect(breaksSingleSignOn("games")).toBe(false);
 	});
 });

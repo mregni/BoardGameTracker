@@ -7,12 +7,12 @@
   "count_other": "{{count}} spelers gevonden",
   "count_one": "{{count}} speler gevonden",
   "notifications": {
-    "created": "Speler is aangemaakt",
+    "created": "Speler toegevoegd",
     "create-failed": "Speler aanmaken mislukt",
     "not-found": "Speler niet gevonden",
-    "deleted": "Speler is verwijderd",
+    "deleted": "Speler verwijderd",
     "delete-failed": "Speler verwijderen mislukt",
-    "updated": "Speler is bijgewerkt",
+    "updated": "Speler opgeslagen",
     "update-failed": "Speler bijwerken mislukt"
   },
   "name": {
@@ -37,7 +37,7 @@
     "title": "Speler bewerken"
   },
   "delete": {
-    "successfull": "Speler is verwijderd.",
+    "successfull": "Speler verwijderd",
     "failed": "Speler verwijderen mislukt, bekijk de logs voor meer details.",
     "description": "Weet je zeker dat je speler {{name}} wilt verwijderen? Dit kan niet ongedaan worden gemaakt en verwijdert ook alle spelsessies van deze speler."
   },
