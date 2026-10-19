@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { useShortDuration } from "@/hooks/useShortDuration";
@@ -26,6 +27,15 @@ interface Props {
 
 export const MIN_COOP_SESSIONS_FOR_RATE = 3;
 
+export const statisticsGridColumns = (count: number) => {
+	if (count <= 2) return "md:grid-cols-2";
+	if (count === 3) return "md:grid-cols-3";
+	if (count === 4) return "md:grid-cols-2 xl:grid-cols-4";
+	if (count === 5) return "md:grid-cols-3 xl:grid-cols-5";
+	if (count === 6) return "md:grid-cols-3 2xl:grid-cols-6";
+	return "md:grid-cols-4";
+};
+
 export const GameStatisticsGrid = (props: Props) => {
 	const { gameStats, currency, hasScoringResults = false } = props;
 	const { t } = useTranslation("statistics");
@@ -40,9 +50,23 @@ export const GameStatisticsGrid = (props: Props) => {
 	const totalPlayedTime = shortDuration(gameStats.totalPlayedTime);
 
 	const coopPlayCount = gameStats.coopWinCount + gameStats.coopLossCount;
+	const showCoopRate = coopPlayCount >= MIN_COOP_SESSIONS_FOR_RATE;
+
+	const tileCount =
+		2 +
+		[
+			gameStats.pricePerPlay != null,
+			!hasScoringResults && gameStats.highScore != null,
+			!hasScoringResults && gameStats.averageScore != null,
+			lastPlayedRelative !== null,
+			showCoopRate,
+		].filter(Boolean).length;
 
 	return (
-		<div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-6 gap-3 xl:gap-6">
+		<div
+			className={cx("grid grid-cols-2 gap-3 xl:gap-6", statisticsGridColumns(tileCount))}
+			data-testid="game-statistics-grid"
+		>
 			<BgtTextStatistic content={gameStats.playCount} title={t("play-count")} textSize="4" />
 			<BgtTextStatistic content={totalPlayedTime} title={t("total-play-time")} textSize="4" />
 			<BgtTextStatistic
@@ -59,7 +83,7 @@ export const GameStatisticsGrid = (props: Props) => {
 				</>
 			)}
 			<BgtTextStatistic content={lastPlayedRelative} title={t("last-played")} textSize="4" />
-			{coopPlayCount >= MIN_COOP_SESSIONS_FOR_RATE && (
+			{showCoopRate && (
 				<BgtTextStatistic
 					content={formatRatio(gameStats.coopWinCount, coopPlayCount, settings?.uiLanguage)}
 					title={t("team-win-rate")}

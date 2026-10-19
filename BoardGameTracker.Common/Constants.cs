@@ -17,6 +17,7 @@ public static class Constants
         public const int ChartHistoryDays = 200;
         public const int TopPlayersCount = 5;
         public const int TrendWindowSize = 5;
+        public const int MinScoredSessionsForRanks = 3;
     }
 
     public static class SessionForm

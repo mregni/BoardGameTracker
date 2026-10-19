@@ -70,6 +70,12 @@ describe("TogetherTiles", () => {
 		expect(screen.getByText("Azul · someone else won")).toBeInTheDocument();
 	});
 
+	it("gives no average for a single session together", () => {
+		renderTiles({ totalSessionsTogether: 1, minutesPlayed: 52 });
+
+		expect(screen.queryByText(/avg/)).toBeNull();
+	});
+
 	it("leaves out the tiles it has no data for", () => {
 		renderTiles({ preferredGame: null, closestGame: null, firstGameTogether: null });
 

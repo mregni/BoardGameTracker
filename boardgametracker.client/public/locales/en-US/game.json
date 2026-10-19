@@ -30,13 +30,13 @@
   },
   "language-independent": "Language-independent",
   "update": {
-    "save": "Update game",
-    "title": "Update game",
+    "save": "Save",
+    "title": "Edit game",
     "rating": {
-      "label": "Rating (0-10)"
+      "label": "Rating (0–10)"
     },
     "weight": {
-      "label": "Weight (0-5)"
+      "label": "Weight (0–5)"
     },
     "sold-price": {
       "label": "Sold price"

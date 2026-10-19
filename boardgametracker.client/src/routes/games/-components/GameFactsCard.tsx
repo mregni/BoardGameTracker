@@ -16,6 +16,7 @@ import { type Game, type GamePrice, GameState } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { formatDecimal, formatPrice } from "@/utils/numberUtils";
 import { formatRange } from "@/utils/rangeUtils";
+import { useDurationRange } from "@/hooks/useDurationRange";
 import { LivePrice } from "./LivePrice";
 import { PriceRefreshButton } from "./PriceRefreshButton";
 
@@ -87,7 +88,8 @@ export const GameFactsCard = (props: Props) => {
 	const { t } = useTranslation(["common", "statistics", "game"]);
 
 	const players = formatRange(game.minPlayers, game.maxPlayers);
-	const duration = formatRange(game.minPlayTime, game.maxPlayTime);
+	const durationRange = useDurationRange();
+	const duration = durationRange(game.minPlayTime, game.maxPlayTime);
 
 	return (
 		<div className="rounded-lg border border-primary/20 bg-primary/10 px-4 py-1">
@@ -103,7 +105,7 @@ export const GameFactsCard = (props: Props) => {
 			)}
 			{duration !== null && (
 				<FactRow icon={Clock} label={t("duration")}>
-					{duration} {t("minutes-abbreviation")}
+					{duration}
 				</FactRow>
 			)}
 			{game.minAge != null && game.minAge > 0 && (

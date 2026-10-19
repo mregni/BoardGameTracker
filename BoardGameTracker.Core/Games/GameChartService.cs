@@ -125,6 +125,12 @@ public class GameChartService : IGameChartService
             return list;
         }
 
+        var scoredSessions = await _sessionRepository.CountAsync(new ScoredSessionsByGameSpec(id), cancellationToken);
+        if (scoredSessions < Constants.Game.MinScoredSessionsForRanks)
+        {
+            return list;
+        }
+
         var highestScoring = await _gameStatisticsRepository.GetHighestScoringPlayer(id, cancellationToken);
         list.AddIfNotNull(ScoreRank.MakeHighestScoreRank(highestScoring));
 

@@ -30,13 +30,13 @@
   },
   "language-independent": "Independiente del idioma",
   "update": {
-    "save": "Actualizar juego",
-    "title": "Actualizar juego",
+    "save": "Guardar",
+    "title": "Editar juego",
     "rating": {
-      "label": "Valoración (0-10)"
+      "label": "Valoración (0–10)"
     },
     "weight": {
-      "label": "Complejidad (0-5)"
+      "label": "Complejidad (0–5)"
     },
     "sold-price": {
       "label": "Precio de venta"

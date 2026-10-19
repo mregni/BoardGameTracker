@@ -26,6 +26,7 @@ import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
 import { EMPTY_PRICE, formatDecimal, formatPrice } from "@/utils/numberUtils";
 import { formatRange as formatValueRange } from "@/utils/rangeUtils";
+import { useDurationRange } from "@/hooks/useDurationRange";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./-components/EditableNumberCell";
 import { EditableSelectCell } from "./-components/EditableSelectCell";
@@ -112,11 +113,14 @@ function RouteComponent() {
 		},
 	});
 
-	const formatRange = useCallback((min: number | null, max: number | null, suffix = ""): string => {
-		const range = formatValueRange(min, max);
-		if (range === null) return "-";
-		return suffix ? `${range} ${suffix}` : range;
+	const durationRange = useDurationRange();
+	const formatRange = useCallback((min: number | null, max: number | null): string => {
+		return formatValueRange(min, max) ?? "-";
 	}, []);
+	const formatDuration = useCallback(
+		(min: number | null, max: number | null): string => durationRange(min, max) ?? "-",
+		[durationRange],
+	);
 
 	const filtered = useMemo(
 		() =>
@@ -194,7 +198,7 @@ function RouteComponent() {
 				id: "play-time",
 				accessorFn: (game) => game.minPlayTime ?? game.maxPlayTime ?? 0,
 				header: t("games:columns.play-time"),
-				cell: ({ row }) => formatRange(row.original.minPlayTime, row.original.maxPlayTime, "min"),
+				cell: ({ row }) => formatDuration(row.original.minPlayTime, row.original.maxPlayTime),
 				meta: { hideOnMobile: true },
 			},
 			{
@@ -448,6 +452,7 @@ function RouteComponent() {
 						stateItems={stateEditItems}
 						languageItems={languageEditItems}
 						formatRange={formatRange}
+						formatDuration={formatDuration}
 						isEditing={isEditing}
 						startEdit={startEdit}
 						stopEdit={stopEdit}

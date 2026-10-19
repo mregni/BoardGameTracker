@@ -79,17 +79,18 @@ describe("GameFactsCard", () => {
 	});
 
 	describe("Duration", () => {
-		it("should render a range with the minutes unit", () => {
+		it("should render the range in the short duration format", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} />);
 
 			expect(screen.getByText("duration")).toBeInTheDocument();
-			expect(screen.getByText(/30–60/)).toHaveTextContent("30–60 minutes-abbreviation");
+			expect(screen.getByText("short-duration.minutes–short-duration.hours")).toBeInTheDocument();
+			expect(screen.queryByText(/minutes-abbreviation/)).not.toBeInTheDocument();
 		});
 
 		it("should collapse an equal duration range to one value", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} game={createGame({ minPlayTime: 45, maxPlayTime: 45 })} />);
 
-			expect(screen.getByText(/^45/)).toHaveTextContent("45 minutes-abbreviation");
+			expect(screen.getByText("short-duration.minutes")).toBeInTheDocument();
 		});
 
 		it("should hide the row when min and max play time are null", () => {

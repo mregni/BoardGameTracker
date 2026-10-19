@@ -12,7 +12,7 @@
       "label": "Speler",
       "required": "Speler is verplicht"
     },
-    "create-player": "Speler toevoegen",
+    "create-player": "Nieuwe speler",
     "players": {
       "minimum": "Voeg minstens één speler toe aan deze sessie"
     },

@@ -56,7 +56,6 @@
     "plays_other": "{{count}} partidas",
     "players_one": "{{range}} jugador",
     "players_other": "{{range}} jugadores",
-    "minutes": "{{range}} min",
     "never-played": "Nunca jugado",
     "no-price": "Sin precio",
     "planned": "Planificado · {{date}}",

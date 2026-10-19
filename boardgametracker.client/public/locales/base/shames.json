@@ -56,7 +56,6 @@
     "plays_other": "{{count}} plays",
     "players_one": "{{range}} player",
     "players_other": "{{range}} players",
-    "minutes": "{{range}} min",
     "never-played": "Never played",
     "no-price": "No price",
     "planned": "Planned · {{date}}",

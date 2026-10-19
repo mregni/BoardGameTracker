@@ -86,6 +86,12 @@ describe("GameForm", () => {
 
 		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/3", replace: true });
 	});
+
+	it("assumes a game added by hand is one you own", () => {
+		renderWithProviders(<GameForm title="New game" buttonText="Save" backTo="/games" onClick={vi.fn()} disabled={false} />);
+
+		expect(screen.getByRole("combobox", { name: "state.label" })).toHaveTextContent(/state.owned/);
+	});
 });
 
 describe("GameForm culture decimals", () => {

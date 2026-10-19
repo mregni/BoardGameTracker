@@ -3,6 +3,7 @@ import { cva, cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
+import { useDurationRange } from "@/hooks/useDurationRange";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { Shame, ShameGameNight } from "@/models";
 import { toDisplay, toMonthYear, toRelative } from "@/utils/dateUtils";
@@ -53,6 +54,7 @@ export const ShameRow = ({
 }: Props) => {
 	const { t, i18n } = useTranslation("shames");
 	const format = useNumberFormat();
+	const durationRange = useDurationRange();
 	const tone = lastPlayedTone(shame, now);
 	const lastPlayed = tone === "bad" ? t("row.never-played") : toRelative(shame.lastSessionDate, i18n.language, { now });
 
@@ -64,9 +66,9 @@ export const ShameRow = ({
 		details.push(t("row.plays", { count: shame.playCount }));
 	} else {
 		const players = formatRange(shame.minPlayers, shame.maxPlayers);
-		const minutes = formatRange(shame.minPlayTime, shame.maxPlayTime);
+		const duration = durationRange(shame.minPlayTime, shame.maxPlayTime);
 		if (players) details.push(t("row.players", { count: shame.maxPlayers ?? shame.minPlayers ?? 0, range: players }));
-		if (minutes) details.push(t("row.minutes", { range: minutes }));
+		if (duration) details.push(duration);
 	}
 	const detailText = details.join(" · ");
 

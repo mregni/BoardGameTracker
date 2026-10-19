@@ -74,7 +74,7 @@ describe("ShameRow", () => {
 		renderRow();
 
 		expect(screen.getByRole("link", { name: /Root/ })).toHaveAttribute("href", "/games/7");
-		expect(screen.getByText("row.owned-since · row.players · row.minutes")).toBeInTheDocument();
+		expect(screen.getByText("row.owned-since · row.players · short-duration.hours-minutes")).toBeInTheDocument();
 		expect(screen.getByText("row.never-played")).toHaveClass("text-bad");
 	});
 

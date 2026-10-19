@@ -30,13 +30,13 @@
   },
   "language-independent": "Taalonafhankelijk",
   "update": {
-    "save": "Spel bijwerken",
-    "title": "Spel bijwerken",
+    "save": "Opslaan",
+    "title": "Spel bewerken",
     "rating": {
-      "label": "Beoordeling (0-10)"
+      "label": "Beoordeling (0–10)"
     },
     "weight": {
-      "label": "Complexiteit (0-5)"
+      "label": "Complexiteit (0–5)"
     },
     "sold-price": {
       "label": "Verkoopprijs"
