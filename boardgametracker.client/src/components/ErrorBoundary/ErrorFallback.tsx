@@ -9,7 +9,7 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
 	const { t } = useTranslation(["error", "common"]);
 
 	return (
-		<div className="min-h-screen bg-background flex items-center justify-center p-4">
+		<div className="min-h-dvh bg-background flex items-center justify-center p-4">
 			<BgtCard className="max-w-2xl w-full">
 				<div className="flex flex-col items-center text-center gap-6">
 					<div className="bg-error/20 rounded-full p-6">

@@ -105,6 +105,15 @@ body {
 	color: white;
 }
 
+@media (pointer: coarse), (max-width: 47.999rem) {
+	input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"], [type="button"], [type="submit"], [type="reset"], [type="image"], [type="hidden"]),
+	select,
+	textarea,
+	[contenteditable]:not([contenteditable="false"]) {
+		font-size: max(1rem, 1em);
+	}
+}
+
 .mobile-menu {
 	transform: translateY(0);
 	transition: transform 0.3s ease-in-out;
