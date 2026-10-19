@@ -320,6 +320,7 @@ jobs:
             VERSION=${{ needs.version.outputs.version }}
             ASPNETCORE_ENVIRONMENT=production
             BUILDKIT_INLINE_CACHE=1
+            APK_CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
             VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
           secrets: |
             sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -356,6 +357,7 @@ jobs:
           cache-from: type=gha
           build-args: |
             VERSION=${{ needs.version.outputs.version }}
+            APK_CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0

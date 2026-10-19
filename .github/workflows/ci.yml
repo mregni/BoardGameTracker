@@ -327,3 +327,5 @@ jobs:
           platforms: linux/amd64
           push: false
           cache-from: type=gha
+          build-args: |
+            APK_CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}

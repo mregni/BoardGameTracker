@@ -61,6 +61,7 @@ jobs:
           cache-from: type=gha
           build-args: |
             VERSION=0.0.0-security
+            APK_CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Generate ephemeral secrets
         id: secrets
@@ -277,6 +278,7 @@ jobs:
           cache-from: type=gha
           build-args: |
             VERSION=0.0.0-security
+            APK_CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Docker Scout CVE scan
         uses: docker/scout-action@bacf462e8d090c09660de30a6ccc718035f961e3 # v1
