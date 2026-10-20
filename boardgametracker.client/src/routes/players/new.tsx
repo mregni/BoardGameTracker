@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
-import { BgtImageSelector, BgtInputField } from "@/components/BgtForm";
+import { BgtFormActionBar, BgtImageSelector, BgtInputField } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -89,15 +89,17 @@ function RouteComponent() {
 								</form.Field>
 							</div>
 						</div>
-						<div className="flex flex-row gap-2">
-							<BgtButton variant="cancel" type="button" onClick={goBack} disabled={isLoading}>
-								{t("common:cancel")}
-							</BgtButton>
-							<BgtButton type="submit" variant="primary" disabled={isLoading} className="flex-1">
-								{isLoading && <Bars className="size-4" />}
-								{t("new.save")}
-							</BgtButton>
-						</div>
+						<BgtFormActionBar>
+							<div className="flex flex-row gap-2">
+								<BgtButton variant="cancel" type="button" onClick={goBack} disabled={isLoading}>
+									{t("common:cancel")}
+								</BgtButton>
+								<BgtButton type="submit" variant="primary" disabled={isLoading} className="flex-1">
+									{isLoading && <Bars className="size-4" />}
+									{t("new.save")}
+								</BgtButton>
+							</div>
+						</BgtFormActionBar>
 					</form>
 				</BgtCard>
 			</BgtPageContent>

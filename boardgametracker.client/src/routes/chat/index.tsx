@@ -194,7 +194,7 @@ function RouteComponent() {
 	};
 
 	return (
-		<div className="flex min-h-[calc(100dvh-5rem)] flex-col gap-3 p-3 md:h-full md:min-h-0 md:overflow-hidden xl:px-6">
+		<div className="flex min-h-[calc(100dvh-var(--bottom-nav-h))] flex-col gap-3 p-3 md:h-full md:min-h-0 md:overflow-hidden xl:px-6">
 			<div className="flex shrink-0 flex-col gap-3">
 				<BgtPageHeader header={t("title")} icon={ChatIcon} />
 				<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -222,7 +222,7 @@ function RouteComponent() {
 				<div className={`flex min-w-0 flex-1 flex-col ${showPanel ? "lg:max-w-3xl" : ""}`}>
 					<div className="min-h-0 flex-1 overflow-y-auto">{renderBody()}</div>
 
-					<footer className="sticky bottom-20 z-10 shrink-0 bg-background md:static">
+					<footer className="sticky bottom-(--bottom-nav-h) z-10 shrink-0 bg-background md:static">
 						<ChatComposer
 							disabled={!canAsk}
 							pending={isPending}

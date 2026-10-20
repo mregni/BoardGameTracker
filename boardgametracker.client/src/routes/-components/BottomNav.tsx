@@ -9,6 +9,7 @@ import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtMenuItem } from "@/components/BgtMenu/BgtMenuItem";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsBottomNavHidden } from "@/hooks/useHideBottomNav";
 import { useLogout } from "@/hooks/useLogout";
 import { useMenuInfo } from "../-hooks/useMenuInfo";
 
@@ -22,6 +23,7 @@ export const BottomNav = () => {
 	const isAuthenticated = useAuth((s) => s.isAuthenticated);
 	const authStatus = useAuth((s) => s.authStatus);
 	const handleLogout = useLogout();
+	const hidden = useIsBottomNavHidden();
 
 	const handleMoreClick = () => {
 		setShowMoreMenu(!showMoreMenu);
@@ -37,6 +39,10 @@ export const BottomNav = () => {
 		mobileVisible: true,
 	});
 
+	if (hidden) {
+		return null;
+	}
+
 	const showAuth = authStatus?.authEnabled;
 	return (
 		<>
@@ -49,7 +55,7 @@ export const BottomNav = () => {
 			)}
 
 			{showMoreMenu && (
-				<div className="fixed bottom-20 w-full z-40 md:hidden border border-white/10 rounded-t-2xl overflow-hidden shadow-2xl bg-background/95">
+				<div className="fixed bottom-(--bottom-nav-h) w-full z-40 md:hidden border border-white/10 rounded-t-2xl overflow-hidden shadow-2xl bg-background/95">
 					<div className="px-4 py-3 border-b border-white/10 bg-background font-mono flex justify-between">
 						<BgtText color="white" opacity={40}>
 							{t("version")}
@@ -92,12 +98,12 @@ export const BottomNav = () => {
 				</div>
 			)}
 
-			<nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-white/10 z-40">
-				<div className="flex items-center justify-between">
+			<nav className="md:hidden fixed bottom-0 left-0 right-0 h-(--bottom-nav-h) pb-[env(safe-area-inset-bottom)] bg-background/95 backdrop-blur-lg border-t border-white/10 z-40">
+				<div className="flex h-full items-center justify-between">
 					{mobileMenuItems.map((item) => {
 						const isActive = item.path === "more" ? isMoreMenuActive || showMoreMenu : currentPath === item.path;
 						const itemClassName =
-							"relative flex flex-col items-center justify-center gap-1 py-2 flex-1 h-20 transition-all active:scale-95";
+							"relative flex flex-col items-center justify-center gap-1 py-2 flex-1 h-full transition-all active:scale-95";
 
 						const content = (
 							<>

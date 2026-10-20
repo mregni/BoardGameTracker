@@ -1,7 +1,8 @@
 import { QueryClient } from "@tanstack/react-query";
 import type { FC, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@/test/test-utils";
+import { useBottomNavStore } from "@/hooks/useHideBottomNav";
+import { act, render, screen, waitFor } from "@/test/test-utils";
 
 const mocks = vi.hoisted(() => ({
 	navigate: vi.fn(),
@@ -117,6 +118,29 @@ describe("RootComponent", () => {
 			await waitFor(() => {
 				expect(screen.getByTestId("sidebar")).toBeInTheDocument();
 			});
+		});
+	});
+
+	describe("Bottom nav space", () => {
+		it("reserves the nav height below the content while the nav is shown", async () => {
+			useBottomNavStore.setState({ hideRequests: 0 });
+			render(<mocks.captured.Root />);
+
+			const main = await screen.findByRole("main");
+			expect(main).toHaveClass("pb-(--bottom-nav-h)", "md:pb-0");
+			expect(main.parentElement).toHaveAttribute("data-bottom-nav", "visible");
+		});
+
+		it("drops the nav space while a form hides the nav", async () => {
+			useBottomNavStore.setState({ hideRequests: 0 });
+			render(<mocks.captured.Root />);
+			const main = await screen.findByRole("main");
+
+			act(() => useBottomNavStore.getState().requestHide());
+			expect(main.parentElement).toHaveAttribute("data-bottom-nav", "hidden");
+
+			act(() => useBottomNavStore.getState().releaseHide());
+			expect(main.parentElement).toHaveAttribute("data-bottom-nav", "visible");
 		});
 	});
 
