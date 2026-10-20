@@ -19,10 +19,10 @@ public sealed class AuthSessionCookies
         _refreshLifetime = TimeSpan.FromDays(options.Value.RefreshTokenExpiryDays);
     }
 
-    public void Issue(HttpContext context, string refreshToken)
+    public void Issue(HttpContext context, string refreshToken, string userId)
     {
         context.Response.Cookies.Append(RefreshCookieName, refreshToken, RefreshOptions(context, _refreshLifetime));
-        ProfileImageCookie.Issue(context, _imageTickets.Issue(), _imageTickets.Lifetime);
+        ProfileImageCookie.Issue(context, _imageTickets.Issue(userId), _imageTickets.Lifetime);
     }
 
     public static void Clear(HttpContext context)

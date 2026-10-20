@@ -72,6 +72,18 @@ builder.Services.AddScoped<AuthDisabledFilter>();
 builder.Services.AddSingleton<AuthSessionCookies>();
 builder.Services.AddProblemDetails();
 var environmentProvider = new EnvironmentProvider();
+var startupProblem = StartupSecrets.FindProblem(
+    environmentProvider.JwtSecret ?? builder.Configuration["Jwt:Secret"],
+    environmentProvider.DataProtectionKey,
+    environmentProvider.AuthEnabled);
+if (startupProblem != null)
+{
+    Log.Fatal("BoardGameTracker cannot start: {Problem}", startupProblem);
+    await Log.CloseAndFlushAsync();
+    Environment.ExitCode = 1;
+    return;
+}
+
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<MainDbContext>()
     .SetApplicationName("boardgametracker")
@@ -143,20 +155,25 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             ClockSkew = TimeSpan.FromSeconds(30),
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Value.Secret))
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var accessCheck = context.HttpContext.RequestServices.GetRequiredService<IUserAccessCheck>();
+                if (!await ActiveUserTokenCheck.IsActiveAsync(context.Principal, accessCheck, context.HttpContext.RequestAborted))
+                {
+                    context.Fail(ActiveUserTokenCheck.FailureMessage);
+                }
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
-        ClientAddressKey.From(context.Connection.RemoteIpAddress),
-        _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 10,
-            Window = TimeSpan.FromMinutes(1),
-            QueueLimit = 0
-        }));
+    options.AddPolicy(RateLimitPolicies.Auth, RateLimitPolicies.AuthPartition);
+    options.AddPolicy(RateLimitPolicies.Oidc, RateLimitPolicies.OidcPartition);
     options.AddPolicy("refresh", context => RateLimitPartition.GetFixedWindowLimiter(
         ClientAddressKey.From(context.Connection.RemoteIpAddress),
         _ => new FixedWindowRateLimiterOptions

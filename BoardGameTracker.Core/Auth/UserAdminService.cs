@@ -15,17 +15,20 @@ public class UserAdminService : IUserAdminService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
+    private readonly IUserAccessCheck _accessCheck;
     private readonly MainDbContext _context;
     private readonly ILogger<UserAdminService> _logger;
 
     public UserAdminService(
         UserManager<ApplicationUser> userManager,
         ITokenService tokenService,
+        IUserAccessCheck accessCheck,
         MainDbContext context,
         ILogger<UserAdminService> logger)
     {
         _userManager = userManager;
         _tokenService = tokenService;
+        _accessCheck = accessCheck;
         _context = context;
         _logger = logger;
     }
@@ -73,6 +76,7 @@ public class UserAdminService : IUserAdminService
         }
 
         await _userManager.DeleteAsync(user);
+        _accessCheck.Forget(userId);
 
         _logger.LogInformation("Admin {AdminId} deleted user {UserId} ({Username})",
             currentUserId, userId, user.UserName);
@@ -191,6 +195,7 @@ public class UserAdminService : IUserAdminService
 
             await _userManager.SetLockoutEnabledAsync(user, true);
             await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+            _accessCheck.Forget(userId);
         }
         finally
         {
@@ -215,6 +220,7 @@ public class UserAdminService : IUserAdminService
             ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
 
         await _userManager.SetLockoutEndDateAsync(user, null);
+        _accessCheck.Forget(userId);
 
         _logger.LogInformation("Admin {AdminId} enabled user {UserId} ({Username})", currentUserId, userId, user.UserName);
         return await ToDtoAsync(user);

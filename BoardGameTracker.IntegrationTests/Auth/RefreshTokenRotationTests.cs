@@ -74,7 +74,7 @@ public class RefreshTokenRotationTests
     }
 
     [Fact]
-    public async Task Refresh_ShouldRotate_AndRevokeTheWholeFamilyWhenAnOldTokenIsReplayed()
+    public async Task Refresh_ShouldContinueAfterALostResponse_ButRevokeTheWholeFamilyOnceALaterTokenWasUsed()
     {
         using (var admin = await _fixture.CreateAdminClientAsync())
         {
@@ -84,36 +84,34 @@ public class RefreshTokenRotationTests
 
         using var client = _fixture.CreateClient();
         var login = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest(Username, IntegrationFixture.UserPassword), TestContext.Current.CancellationToken);
-        var userId = (await login.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json, TestContext.Current.CancellationToken))!.User.Id;
         var first = CookieValue(RefreshSetCookie(login));
 
         var refreshed = await RefreshWithAsync(first);
         refreshed.StatusCode.Should().Be(HttpStatusCode.OK);
-        var second = CookieValue(RefreshSetCookie(refreshed));
-        second.Should().NotBe(first);
+        var lost = CookieValue(RefreshSetCookie(refreshed));
+        lost.Should().NotBe(first);
 
-        var graceReplay = await RefreshWithAsync(first);
-        graceReplay.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        (await graceReplay.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Should().Contain(Constants.Errors.RefreshTokenSuperseded);
-        var third = await RefreshWithAsync(second);
-        third.StatusCode.Should().Be(HttpStatusCode.OK, "a replay within the grace period is a concurrent refresh, not a theft");
-        var latest = CookieValue(RefreshSetCookie(third));
+        var replay = await RefreshWithAsync(first);
+        replay.StatusCode.Should().Be(HttpStatusCode.OK, "the successor was never used, so the first response was lost");
+        var continued = CookieValue(RefreshSetCookie(replay));
+        continued.Should().NotBe(lost);
+        var lateCopy = await RefreshWithAsync(lost);
+        lateCopy.StatusCode.Should().Be(HttpStatusCode.OK, "a late copy of the lost response still continues the session");
+        var tip = CookieValue(RefreshSetCookie(lateCopy));
 
-        await using (var scope = _fixture.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<MainDbContext>();
-            await context.Database.ExecuteSqlInterpolatedAsync($"""
-                UPDATE auth."RefreshTokens" SET "RevokedAt" = "RevokedAt" - interval '5 minutes'
-                WHERE "UserId" = {userId} AND "ReplacedByToken" IS NOT NULL
-                """, TestContext.Current.CancellationToken);
-        }
+        var used = await RefreshWithAsync(tip);
+        used.StatusCode.Should().Be(HttpStatusCode.OK);
+        var latest = CookieValue(RefreshSetCookie(used));
 
-        (await RefreshWithAsync(first)).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        (await RefreshWithAsync(latest)).StatusCode.Should().Be(HttpStatusCode.Unauthorized, "replaying a rotated token is treated as theft and ends every session");
+        var theft = await RefreshWithAsync(first);
+        theft.StatusCode.Should().Be(HttpStatusCode.Unauthorized, "a later token of this session was used, so the old token is stolen");
+        (await theft.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Should().Contain(Constants.Errors.InvalidRefreshToken);
+        (await RefreshWithAsync(latest)).StatusCode.Should().Be(HttpStatusCode.Unauthorized, "replaying a used token ends every session");
+        (await RefreshWithAsync(continued)).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
-    public async Task Refresh_ShouldSendARapidlyReloadedBrowserToSignIn_WithoutEndingItsOtherSessions()
+    public async Task Refresh_ShouldKeepTheBrowserSignedIn_WhenAReloadThrewAwayTheRefreshResponse()
     {
         const string username = "refresh-reload";
         var userId = await RegisterAsync(username);
@@ -128,22 +126,50 @@ public class RefreshTokenRotationTests
 
         var aborted = await RefreshWithAsync(stale);
         aborted.StatusCode.Should().Be(HttpStatusCode.OK, "the server rotated the token, but the reload threw this response away");
-        var lost = CookieValue(RefreshSetCookie(aborted));
 
         var reload = await RefreshAsync(browser);
-        reload.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        (await reload.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Should().Contain(Constants.Errors.RefreshTokenSuperseded);
-        RefreshSetCookie(reload).Should().StartWith("bgt_refresh=;").And.Contain("expires=Thu, 01 Jan 1970").And.Contain("path=/api/auth;");
-
-        var next = await RefreshAsync(browser);
-        next.StatusCode.Should().Be(HttpStatusCode.Unauthorized, "the browser dropped the dead cookie, so the sign-in page has nothing to replay");
-        (await next.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Should().Contain(Constants.Errors.InvalidRefreshToken);
+        reload.StatusCode.Should().Be(HttpStatusCode.OK, await reload.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        CookieValue(RefreshSetCookie(reload)).Should().NotBe(stale);
+        (await RefreshAsync(browser)).StatusCode.Should().Be(HttpStatusCode.OK, "the browser now holds a working cookie");
 
         await AgeRotationsAsync(userId);
 
-        (await RefreshWithAsync(stale)).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        (await RefreshWithAsync(lost)).StatusCode.Should().Be(HttpStatusCode.Unauthorized, "the stale replay ends the session it belonged to");
-        (await RefreshWithAsync(otherSession)).StatusCode.Should().Be(HttpStatusCode.OK, "a stale cookie whose successor was never used is not theft, so other devices stay signed in");
+        (await RefreshWithAsync(otherSession)).StatusCode.Should().Be(HttpStatusCode.OK, "a lost response never touches other devices");
+        (await RefreshAsync(browser)).StatusCode.Should().Be(HttpStatusCode.OK, "the age of a rotation does not matter");
+    }
+
+    [Fact]
+    public async Task Refresh_ShouldKeepBothTabsSignedIn_WhenTheyRefreshAtTheSameMoment()
+    {
+        const string username = "refresh-two-tabs";
+        await RegisterAsync(username);
+
+        using var browser = _fixture.CreateBrowserClient();
+        var login = await browser.PostAsJsonAsync("/api/auth/login", new LoginRequest(username, IntegrationFixture.UserPassword), TestContext.Current.CancellationToken);
+        login.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        for (var round = 0; round < 5; round++)
+        {
+            var tabs = await Task.WhenAll(RefreshLikeTheAppAsync(browser), RefreshLikeTheAppAsync(browser));
+
+            tabs.Should().AllSatisfy(r => r.StatusCode.Should().Be(HttpStatusCode.OK));
+            (await RefreshAsync(browser)).StatusCode.Should().Be(HttpStatusCode.OK, "the cookie jar holds a working token after both tabs refreshed");
+        }
+    }
+
+    private static async Task<HttpResponseMessage> RefreshLikeTheAppAsync(HttpClient browser)
+    {
+        var first = await RefreshAsync(browser);
+        if (first.StatusCode != HttpStatusCode.Unauthorized)
+        {
+            return first;
+        }
+
+        var body = await first.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        body.Should().Contain(Constants.Errors.RefreshTokenSuperseded);
+        first.Headers.Contains("Set-Cookie").Should().BeFalse("losing the race must not delete the cookie the winner just set");
+        await Task.Delay(300, TestContext.Current.CancellationToken);
+        return await RefreshAsync(browser);
     }
 
     [Fact]
@@ -243,7 +269,7 @@ public class RefreshTokenRotationTests
     }
 
     [Fact]
-    public async Task Refresh_ShouldHandOutOneSuccessor_WhenTheSameTokenIsUsedTwiceAtOnce()
+    public async Task Refresh_ShouldNeverEndTheSession_WhenTheSameTokenIsUsedTwiceAtOnce()
     {
         using var client = _fixture.CreateClient();
         var login = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("user", IntegrationFixture.UserPassword), TestContext.Current.CancellationToken);
@@ -251,9 +277,16 @@ public class RefreshTokenRotationTests
 
         var results = await Task.WhenAll(RefreshWithAsync(token), RefreshWithAsync(token));
 
-        results.Select(r => r.StatusCode).Should().BeEquivalentTo([HttpStatusCode.OK, HttpStatusCode.Unauthorized]);
-        var loser = results.Single(r => r.StatusCode == HttpStatusCode.Unauthorized);
-        (await loser.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Should().Contain(Constants.Errors.RefreshTokenSuperseded, "the losing tab is told to retry with the cookie the winner just set");
+        results.Should().Contain(r => r.StatusCode == HttpStatusCode.OK);
+        foreach (var loser in results.Where(r => r.StatusCode != HttpStatusCode.OK))
+        {
+            loser.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            (await loser.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Should().Contain(Constants.Errors.RefreshTokenSuperseded, "the losing tab is told to retry");
+            loser.Headers.Contains("Set-Cookie").Should().BeFalse();
+        }
+
+        var latest = CookieValue(RefreshSetCookie(results.Last(r => r.StatusCode == HttpStatusCode.OK)));
+        (await RefreshWithAsync(latest)).StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     private static string RefreshSetCookie(HttpResponseMessage response) =>

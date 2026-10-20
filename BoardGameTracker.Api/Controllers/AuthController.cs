@@ -34,13 +34,13 @@ public class AuthController : ControllerBase
 
     [HttpPost("login")]
     [AllowAnonymous]
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         _logger.LogDebug("Login attempt received");
         var response = await _authService.LoginAsync(request, ClientAddressKey.From(HttpContext.Connection.RemoteIpAddress));
-        _sessionCookies.Issue(HttpContext, response.RefreshToken);
+        _sessionCookies.Issue(HttpContext, response.RefreshToken, response.User.Id);
         return Ok(response);
     }
 
@@ -58,10 +58,10 @@ public class AuthController : ControllerBase
             var refreshToken = AuthSessionCookies.ReadRefreshToken(Request)
                 ?? throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
             var response = await _authService.RefreshAsync(refreshToken);
-            _sessionCookies.Issue(HttpContext, response.RefreshToken);
+            _sessionCookies.Issue(HttpContext, response.RefreshToken, response.User.Id);
             return Ok(response);
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex) when (ex.Message != Constants.Errors.RefreshTokenSuperseded)
         {
             var context = HttpContext;
             context.Response.OnStarting(() =>
@@ -121,7 +121,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("change-password")]
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
@@ -141,7 +141,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("forgot-password")]
     [AllowAnonymous]
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
@@ -151,7 +151,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("reset-password")]
     [AllowAnonymous]
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> ResetPasswordWithToken([FromBody] ResetPasswordConfirmRequest request)
     {

@@ -42,7 +42,7 @@ Only do this on a network you trust or behind a proxy that authenticates for you
 
 ## Tokens and sessions
 
-Logins use short-lived access tokens (60 minutes) and refresh tokens (7 days) signed with `JWT_SECRET`. The access token is kept only in the browser's memory. The refresh token is an `HttpOnly` cookie named `bgt_refresh`, scoped to `/api/auth`, `SameSite=Lax` and marked `Secure` on HTTPS requests; the server stores it hashed. Presenting a refresh token again more than 30 seconds after it was rotated revokes every session of that user; within 30 seconds it counts as a concurrent refresh from another tab. Changing `JWT_SECRET` signs everyone out.
+Logins use short-lived access tokens (15 minutes) and refresh tokens (7 days) signed with `JWT_SECRET`. The access token is kept only in the browser's memory. The refresh token is an `HttpOnly` cookie named `bgt_refresh`, scoped to `/api/auth`, `SameSite=Lax` and marked `Secure` on HTTPS requests; the server stores it hashed. If a replaced refresh token comes back while its successor was never used (a refresh response lost to a reload or a flaky connection, or two tabs refreshing at once), the session continues with a fresh token. If a later token of that session was already used, the old token counts as stolen and every session of that user is revoked. Changing `JWT_SECRET` signs everyone out.
 
 Player photos under `/images/profile` are only served to signed-in browsers: logging in sets an `HttpOnly` cookie scoped to that path (it lives as long as the refresh token and is cleared on logout), and API clients can pass their bearer token instead. Game covers stay public. The public RSVP page therefore shows initials instead of photos.
 
@@ -107,7 +107,7 @@ The backend exchanges the code itself and validates the returned id_token before
 
 ### Disabling users and the break-glass account
 
-An admin opens **Settings → Account → Access** next to a user to see the identity provider accounts linked to them, unlink one, or disable the user. A disabled user cannot sign in with a password or through the provider, their refresh tokens are revoked and their provider session is forgotten; an access token that was already issued stays valid until it expires (60 minutes by default). You cannot disable yourself or the last active admin.
+An admin opens **Settings → Account → Access** next to a user to see the identity provider accounts linked to them, unlink one, or disable the user. A disabled user cannot sign in with a password or through the provider, their refresh tokens are revoked, their provider session is forgotten and access tokens that were already issued stop working right away. You cannot disable yourself or the last active admin.
 
 ### What to expect
 

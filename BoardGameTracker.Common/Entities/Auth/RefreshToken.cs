@@ -6,6 +6,9 @@ namespace BoardGameTracker.Common.Entities.Auth;
 
 public class RefreshToken
 {
+    public const string RotatedReason = "Replaced by new token";
+    public const string SupersededReason = "Superseded after a lost refresh response";
+
     public int Id { get; private set; }
     public string Token { get; private set; } = string.Empty;
     public string UserId { get; private set; } = string.Empty;
@@ -23,8 +26,8 @@ public class RefreshToken
     public bool IsRevoked => RevokedAt != null;
     public bool IsActive => !IsRevoked && !IsExpired;
 
-    public bool WasRotatedWithin(TimeSpan window) =>
-        ReplacedByToken != null && RevokedAt != null && DateTime.UtcNow - RevokedAt.Value < window;
+    public bool WasUsed => ReplacedByToken != null && RevokedReason == RotatedReason;
+    public bool IsSuperseded => ReplacedByToken != null && RevokedReason == SupersededReason;
 
     private RefreshToken() { }
 

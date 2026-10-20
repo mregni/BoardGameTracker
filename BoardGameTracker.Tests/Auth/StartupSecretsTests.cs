@@ -88,4 +88,30 @@ public class StartupSecretsTests
     {
         StartupSecrets.ResolveJwtSecret(secret, authEnabled: false).Should().Be(secret);
     }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void FindProblem_ShouldAcceptAValidJwtSecret_WithOrWithoutADataProtectionKey(string? dataProtectionKey)
+    {
+        StartupSecrets.FindProblem(LongValue, dataProtectionKey, authEnabled: true).Should().BeNull();
+        StartupSecrets.FindProblem(LongValue, LongValue, authEnabled: true).Should().BeNull();
+    }
+
+    [Fact]
+    public void FindProblem_ShouldReportAJwtSecretProblem()
+    {
+        StartupSecrets.FindProblem("CHANGEME", LongValue, authEnabled: true)
+            .Should().StartWith("JWT_SECRET still holds the CHANGEME placeholder");
+        StartupSecrets.FindProblem(null, null, authEnabled: true).Should().StartWith("JWT_SECRET is not set");
+    }
+
+    [Fact]
+    public void FindProblem_ShouldReportADataProtectionKeyProblem_EvenWhenAuthIsDisabled()
+    {
+        StartupSecrets.FindProblem(null, "CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS", authEnabled: false)
+            .Should().StartWith("DATA_PROTECTION_KEY still holds the CHANGEME placeholder");
+        StartupSecrets.FindProblem(LongValue, "short", authEnabled: true)
+            .Should().Be("DATA_PROTECTION_KEY must be at least 32 characters long, but was 5.");
+    }
 }

@@ -69,6 +69,18 @@ public sealed class IntegrationFixture : IAsyncLifetime
         return WithClientAddress(variant.CreateClient());
     }
 
+    public HttpClient CreateBrowserClientWith(Action<IServiceCollection> configureServices, Uri baseAddress)
+    {
+        var variant = _factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(configureServices));
+        _variants.Add(variant);
+        return WithClientAddress(variant.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false,
+            HandleCookies = true,
+            BaseAddress = baseAddress,
+        }));
+    }
+
     public async ValueTask InitializeAsync()
     {
         await _postgres.StartAsync();

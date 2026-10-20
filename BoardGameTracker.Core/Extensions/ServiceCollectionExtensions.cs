@@ -144,6 +144,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IBackgroundEmailSender, BackgroundEmailSender>();
         serviceCollection.AddScoped<IOidcProviderService, OidcProviderService>();
         serviceCollection.AddScoped<IUserAdminService, UserAdminService>();
+        serviceCollection.AddScoped<IUserAccessCheck, UserAccessCheck>();
         serviceCollection.AddSingleton<IHostedService, RefreshTokenCleanupService>();
 
         serviceCollection.AddScoped<IGameStatisticsService, GameStatisticsService>();

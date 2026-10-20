@@ -9,7 +9,8 @@ namespace BoardGameTracker.Core.Auth;
 
 public class ProfileImageTicketService : IProfileImageTicketService
 {
-    private const string Purpose = "BoardGameTracker.ProfileImages.v1";
+    private const string Purpose = "BoardGameTracker.ProfileImages.v2";
+    private const char Separator = '|';
 
     private readonly IDataProtector _protector;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -23,28 +24,38 @@ public class ProfileImageTicketService : IProfileImageTicketService
 
     public TimeSpan Lifetime { get; }
 
-    public string Issue()
+    public string Issue(string userId)
     {
         var expires = _dateTimeProvider.UtcNow.Add(Lifetime);
-        return _protector.Protect(expires.Ticks.ToString(CultureInfo.InvariantCulture));
+        return _protector.Protect($"{expires.Ticks.ToString(CultureInfo.InvariantCulture)}{Separator}{userId}");
     }
 
-    public bool IsValid(string? ticket)
+    public string? ReadUserId(string? ticket)
     {
         if (string.IsNullOrEmpty(ticket))
         {
-            return false;
+            return null;
         }
 
+        string payload;
         try
         {
-            var payload = _protector.Unprotect(ticket);
-            return long.TryParse(payload, NumberStyles.None, CultureInfo.InvariantCulture, out var ticks)
-                   && new DateTime(ticks, DateTimeKind.Utc) > _dateTimeProvider.UtcNow;
+            payload = _protector.Unprotect(ticket);
         }
         catch (CryptographicException)
         {
-            return false;
+            return null;
         }
+
+        var parts = payload.Split(Separator, 2);
+        if (parts.Length != 2
+            || string.IsNullOrEmpty(parts[1])
+            || !long.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out var ticks)
+            || new DateTime(ticks, DateTimeKind.Utc) <= _dateTimeProvider.UtcNow)
+        {
+            return null;
+        }
+
+        return parts[1];
     }
 }

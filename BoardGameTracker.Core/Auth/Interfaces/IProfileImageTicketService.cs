@@ -3,6 +3,6 @@ namespace BoardGameTracker.Core.Auth.Interfaces;
 public interface IProfileImageTicketService
 {
     TimeSpan Lifetime { get; }
-    string Issue();
-    bool IsValid(string? ticket);
+    string Issue(string userId);
+    string? ReadUserId(string? ticket);
 }
