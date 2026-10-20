@@ -28,7 +28,12 @@
 			"not-set": "Sin configurar. No se envían invitaciones ni correos para restablecer la contraseña, y el inicio de sesión único usa la dirección con la que abres la aplicación.",
 			"insecure-warning": "La URL pública usa http mientras BoardGameTracker se abre por https. Los enlaces de los correos, las invitaciones RSVP y las redirecciones del inicio de sesión único usarán la dirección insegura.",
 			"host-mismatch-warning": "La URL pública apunta a un host distinto de {{host}}. Los enlaces de los correos, las invitaciones RSVP y las redirecciones del inicio de sesión único usarán ese host.",
-			"sso-warning": "El inicio de sesión único deja de funcionar con una dirección http."
+			"sso-warning": "El inicio de sesión único deja de funcionar con una dirección http.",
+			"sso-confirm": {
+				"title": "¿Detener el inicio de sesión único?",
+				"description": "Con esta URL pública el inicio de sesión único deja de funcionar para todos, también por https, hasta que la URL pública vuelva a usar https.",
+				"confirm": "Guardar y detener el inicio de sesión único"
+			}
 		},
 		"ui-language": {
 			"label": "Idioma",
@@ -315,14 +320,15 @@
 				"unlink-failed": "No se pudo desvincular la cuenta del proveedor de identidad.",
 				"link-failed": "No se pudo iniciar la vinculación."
 			},
-			"unlink-confirm": "Ya no podrás iniciar sesión con este proveedor hasta que lo vuelvas a vincular."
+			"unlink-confirm": "Ya no podrás iniciar sesión con este proveedor hasta que lo vuelvas a vincular.",
+			"unlink-title": "¿Desvincular {{provider}}?"
 		}
 	},
 	"env-override": "Definido por la variable de entorno {{variable}}. Cámbiala allí para actualizar este ajuste.",
 	"sso": {
 		"title": "Proveedor de identidad",
 		"description": {
-			"empty": "Permite que la gente inicie sesión mediante tu proveedor de identidad (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Primero registra allí un cliente público y después rellena los datos de abajo.",
+			"empty": "Permite que la gente inicie sesión mediante tu proveedor de identidad (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Primero registra allí un cliente (público, o confidencial con un secreto de cliente) y después rellena los datos de abajo.",
 			"configured": "El proveedor {{name}} está configurado. Los cambios se aplican en el siguiente inicio de sesión.",
 			"inactive": "El proveedor {{name}} está configurado pero inactivo: necesita una URL pública https."
 		},
@@ -421,7 +427,7 @@
 			"deleted": "Proveedor eliminado.",
 			"delete-failed": "No se pudo eliminar el proveedor."
 		},
-		"https-required-locked": "El inicio de sesión único requiere HTTPS. Pon BoardGameTracker detrás de un proxy inverso con TLS y configura una URL pública https. Hasta entonces no se puede cambiar el proveedor activado."
+		"https-required-locked": "El inicio de sesión único requiere HTTPS. Pon BoardGameTracker detrás de un proxy inverso con TLS y configura una URL pública https. Hasta entonces solo puedes desactivar el proveedor."
 	},
 	"changedetection": {
 		"title": "changedetection.io",

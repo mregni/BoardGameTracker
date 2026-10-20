@@ -53,6 +53,7 @@ const translations: Record<string, string> = {
 vi.mock("@/utils/i18n", () => ({
 	default: {
 		t: (key: string, options?: { defaultValue?: string }) => translations[key] ?? options?.defaultValue ?? key,
+		exists: (key: string) => key in translations,
 	},
 }));
 
@@ -105,6 +106,22 @@ describe("LoginPage", () => {
 		renderWithProviders(<mocks.captured.Page />);
 
 		expect(await screen.findByText("error:auth.oidc-failed")).toBeInTheDocument();
+	});
+
+	it("never shows text from the address as the error", async () => {
+		mocks.search = { error: "Your account is locked, call 0800 123 456" };
+		renderWithProviders(<mocks.captured.Page />);
+
+		expect(await screen.findByText("error:auth.oidc-failed")).toBeInTheDocument();
+		expect(screen.queryByText(/call 0800/)).not.toBeInTheDocument();
+	});
+
+	it("translates a known error key from the address", async () => {
+		translations["error:auth.account-disabled"] = "This account is disabled.";
+		mocks.search = { error: "error.auth.account-disabled" };
+		renderWithProviders(<mocks.captured.Page />);
+
+		expect(await screen.findByText("This account is disabled.")).toBeInTheDocument();
 	});
 
 	it("sends someone who is already signed in to where they were going", () => {

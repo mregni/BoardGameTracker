@@ -135,7 +135,9 @@ export const UserAccessModal = ({ open, close, user, isCurrentUser }: Props) => 
 						open
 						close={() => setPendingUnlink(null)}
 						title={pendingUnlink.provider}
+						heading={t("account.external-logins.unlink-title", { provider: pendingUnlink.provider })}
 						description={t("account.users.access.unlink-confirm", { username: user.username })}
+						confirmLabel={t("account.users.access.unlink")}
 						onDelete={() => {
 							unlink(pendingUnlink.id);
 							setPendingUnlink(null);

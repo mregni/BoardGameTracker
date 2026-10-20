@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { LoginResponse } from "@/models/Auth/Auth";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { adoptOidcLoginCall } from "@/services/authService";
-import { translateApiError } from "@/utils/errorUtils";
+import { translateApiError, translateUrlError } from "@/utils/errorUtils";
 import { safeRedirectPath } from "@/utils/redirectUtils";
 import { announceSessionChange } from "@/utils/sessionSync";
 
@@ -41,7 +41,7 @@ function AuthCallbackPage() {
 
 	useEffect(() => {
 		if (error) {
-			setFailure(translateApiError(error, "error:auth.oidc-failed"));
+			setFailure(translateUrlError(error));
 			return;
 		}
 

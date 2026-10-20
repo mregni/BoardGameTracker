@@ -16,7 +16,7 @@ import type { OidcProvider } from "@/models/Auth/Auth";
 import { getOidcProviderCall } from "@/services/authService";
 import { getSettings } from "@/services/queries/settings";
 import { apiUrl } from "@/utils/apiUrl";
-import { translateApiError } from "@/utils/errorUtils";
+import { translateUrlError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { safeRedirectPath } from "@/utils/redirectUtils";
 import { loginErrorKey } from "./-utils/loginError";
@@ -46,7 +46,7 @@ function LoginPage() {
 		if (!searchError) {
 			return null;
 		}
-		return httpsError ? t("sso-https-error") : translateApiError(searchError, "error:auth.oidc-failed");
+		return httpsError ? t("sso-https-error") : translateUrlError(searchError);
 	});
 
 	const { data: oidcProvider } = useQuery<OidcProvider | null>({

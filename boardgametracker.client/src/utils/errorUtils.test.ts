@@ -1,16 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ApiError } from "@/models";
-import { apiErrorMessage, translateApiError } from "./errorUtils";
+import { apiErrorMessage, translateApiError, translateUrlError } from "./errorUtils";
 
 const translations: Record<string, string> = {
 	"error:auth.username-already-exists": "Username already exists",
 	"error:something-went-wrong": "Something went wrong",
 	"settings:save.failed": "Saving failed",
+	"error:auth.oidc-failed": "Signing in failed",
 };
 
 vi.mock("@/utils/i18n", () => ({
 	default: {
 		t: (key: string, options?: { defaultValue?: string }) => translations[key] ?? options?.defaultValue ?? key,
+		exists: (key: string) => key in translations,
 	},
 }));
 
@@ -53,5 +55,26 @@ describe("apiErrorMessage", () => {
 
 	it("uses the fallback for non-api errors", () => {
 		expect(apiErrorMessage(new Error("boom"), "settings:save.failed")).toBe("Saving failed");
+	});
+});
+
+describe("translateUrlError", () => {
+	it("translates a known error key", () => {
+		expect(translateUrlError("error.auth.username-already-exists")).toBe("Username already exists");
+	});
+
+	it.each([
+		undefined,
+		"",
+		"error.auth.unknown-code",
+		"Your account is locked, call 0800 123 456",
+		"<script>alert(1)</script>",
+		"auth.username-already-exists",
+	])("shows the generic sign-in failure for %s", (value) => {
+		expect(translateUrlError(value)).toBe("Signing in failed");
+	});
+
+	it("uses the provided fallback key", () => {
+		expect(translateUrlError("plain text", "settings:save.failed")).toBe("Saving failed");
 	});
 });

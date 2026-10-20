@@ -1,15 +1,12 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { withForm } from "@/hooks/form";
-import { useAuth } from "@/hooks/useAuth";
-import { usePermissions } from "@/hooks/usePermissions";
 import { SettingsSchema } from "@/models";
-import { getOidcProviders } from "@/services/queries/oidc";
 import { effectivePublicUrl, isPublicUrlConfigured } from "@/utils/publicUrl";
 import { zodValidator } from "@/utils/zodValidator";
+import { useSingleSignOnEnabled } from "../-hooks/useSingleSignOnEnabled";
 import { breaksSingleSignOn, getPublicUrlWarning } from "../-utils/publicUrlWarning";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
 import { EnvOverrideHint } from "./EnvOverrideHint";
@@ -24,10 +21,7 @@ export const GeneralSettings = withForm({
 	},
 	render: function Render({ form, languages, disabled, overrides }) {
 		const { t } = useTranslation(["settings", "language"]);
-		const { canManageSettings } = usePermissions();
-		const authEnabled = useAuth((s) => s.authStatus?.authEnabled === true);
-		const { data: providers } = useQuery({ ...getOidcProviders(), enabled: authEnabled && canManageSettings });
-		const ssoEnabled = providers?.some((provider) => provider.enabled) ?? false;
+		const ssoEnabled = useSingleSignOnEnabled();
 
 		return (
 			<>

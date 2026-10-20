@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ExternalLogin, OidcProvider } from "@/models";
-import { renderWithProviders, screen, userEvent } from "@/test/test-utils";
+import { renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
 
 const mocks = vi.hoisted(() => ({
 	state: {} as {
@@ -101,7 +101,9 @@ describe("ExternalLoginsSection", () => {
 		expect(mocks.state.unlink).not.toHaveBeenCalled();
 		expect(screen.getByText("account.external-logins.unlink-confirm")).toBeInTheDocument();
 
-		await user.click(screen.getByRole("button", { name: "delete.button" }));
+		const confirm = screen.getByRole("dialog", { name: "account.external-logins.unlink-title" });
+		expect(within(confirm).queryByRole("button", { name: "delete.button" })).not.toBeInTheDocument();
+		await user.click(within(confirm).getByRole("button", { name: "account.external-logins.unlink" }));
 
 		expect(mocks.state.unlink).toHaveBeenCalledWith(9);
 	});
