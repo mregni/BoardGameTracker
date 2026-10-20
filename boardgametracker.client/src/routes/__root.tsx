@@ -12,6 +12,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ErrorBoundary/ErrorFallback";
 import { NotFound } from "@/components/NotFound/NotFound";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsBottomNavHidden } from "@/hooks/useHideBottomNav";
 import type { MenuItem } from "@/models";
 import { getSettings } from "@/services/queries/settings";
 import { initSentry } from "@/utils/sentry";
@@ -44,6 +45,7 @@ function RootComponent() {
 	const authStatus = useAuth((s) => s.authStatus);
 	const fetchAuthStatus = useAuth((s) => s.fetchAuthStatus);
 	const [authChecked, setAuthChecked] = useState(false);
+	const bottomNavHidden = useIsBottomNavHidden();
 
 	useEffect(() => startSessionSync(), []);
 
@@ -102,10 +104,13 @@ function RootComponent() {
 	}
 
 	return (
-		<div className="flex w-full text-white bg-background md:h-dvh md:overflow-hidden">
+		<div
+			data-bottom-nav={bottomNavHidden ? "hidden" : "visible"}
+			className="flex w-full text-white bg-background md:h-dvh md:overflow-hidden"
+		>
 			<Sidebar />
 
-			<main className="flex-1 min-w-0 pb-20 md:pb-0 min-h-dvh md:min-h-0 md:h-dvh md:overflow-auto md:[scrollbar-gutter:stable] bg-background">
+			<main className="flex-1 min-w-0 pb-(--bottom-nav-h) md:pb-0 min-h-dvh md:min-h-0 md:h-dvh md:overflow-auto md:[scrollbar-gutter:stable] bg-background">
 				<ErrorBoundary FallbackComponent={ErrorFallback}>
 					<Outlet />
 				</ErrorBoundary>
