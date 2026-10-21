@@ -18,6 +18,8 @@ export const useAccountData = () => {
 	const queryClient = useQueryClient();
 	const { successToast, errorToast } = useToasts();
 	const isAdmin = useAuth((s) => s.hasRole("Admin"));
+	const currentUserId = useAuth((s) => s.user?.id);
+	const updateCurrentUser = useAuth((s) => s.updateUser);
 
 	const profileQuery = useQuery(getProfile());
 	const usersQuery = useQuery({ ...getUsers(), enabled: isAdmin });
@@ -26,7 +28,8 @@ export const useAccountData = () => {
 
 	const updateProfileMutation = useMutation({
 		mutationFn: updateProfileCall,
-		onSuccess: () => {
+		onSuccess: (profile) => {
+			updateCurrentUser({ displayName: profile.displayName });
 			successToast("settings:account.notifications.profile-updated");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
@@ -80,7 +83,10 @@ export const useAccountData = () => {
 			role: string;
 			playerId: number | null;
 		}) => updateUserCall(userId, request),
-		onSuccess: () => {
+		onSuccess: (user) => {
+			if (user.id === currentUserId) {
+				updateCurrentUser({ username: user.username, roles: user.roles });
+			}
 			successToast("settings:account.notifications.user-updated");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
