@@ -141,7 +141,8 @@
   },
   "coop": {
     "won": "Co-op · won",
-    "lost": "Co-op · lost"
+    "lost": "Co-op · lost",
+    "label": "co-op"
   },
   "period": {
     "label": "Period",
