@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -42,6 +43,34 @@ public sealed class TestIdTokens : IDisposable
                 },
             });
         }
+    }
+
+    public X509Certificate2 Certificate(DateTimeOffset notBefore, DateTimeOffset notAfter)
+    {
+        var request = new CertificateRequest("CN=authentik Self-signed Certificate", _rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        using var withKey = request.CreateSelfSigned(notBefore, notAfter);
+        return X509CertificateLoader.LoadCertificate(withKey.RawData);
+    }
+
+    public string JwksJsonWithCertificate(X509Certificate2 certificate, string? alg = "RS256", string? use = "sig", string? x5c = null)
+    {
+        var parameters = _rsa.ExportParameters(false);
+        return JsonSerializer.Serialize(new
+        {
+            keys = new[]
+            {
+                new
+                {
+                    kty = "RSA",
+                    use,
+                    alg,
+                    kid = KeyId,
+                    n = Base64UrlEncoder.Encode(parameters.Modulus),
+                    e = Base64UrlEncoder.Encode(parameters.Exponent),
+                    x5c = new[] { x5c ?? Convert.ToBase64String(certificate.RawData) },
+                },
+            },
+        });
     }
 
     public static Dictionary<string, object> Claims(string issuer, string audience, string subject, string nonce)

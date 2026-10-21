@@ -46,6 +46,9 @@ export interface OidcDiscoveryResult {
 	userInfoEndpoint: string | null;
 	endSessionEndpoint: string | null;
 	issuerMatchesAuthority: boolean;
+	signingAlgorithms: string[];
+	signingSupported: boolean;
+	signingCertificateExpiredOn: string | null;
 }
 
 export interface ExternalLogin {

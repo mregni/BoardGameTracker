@@ -406,7 +406,10 @@
 			"token": "Token",
 			"userinfo": "User info",
 			"end-session": "Sign-out",
-			"none": "not offered"
+			"none": "not offered",
+			"signing": "Signing algorithms",
+			"signing-unsupported": "The provider only signs tokens with {{algorithms}}, which BoardGameTracker doesn't accept. Configure an RS256 or ES256 signing key for this client at your identity provider.",
+			"certificate-expired": "The provider's signing certificate expired on {{date}}. Sign-in still works, but renew the signing certificate at your identity provider."
 		},
 		"setup": {
 			"title": "Register at the provider",

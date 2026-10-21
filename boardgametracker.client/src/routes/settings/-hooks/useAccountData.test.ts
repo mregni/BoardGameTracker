@@ -38,10 +38,89 @@ vi.mock("@/services/authService", () => ({
 	uploadProfileImageCall: vi.fn(),
 }));
 
-import { removeProfileImageCall, uploadProfileImageCall } from "@/services/authService";
+import {
+	removeProfileImageCall,
+	updateProfileCall,
+	updateUserCall,
+	uploadProfileImageCall,
+} from "@/services/authService";
 import { useAccountData } from "./useAccountData";
 
 const signedIn = { id: "u1", username: "admin", displayName: "Administrator", roles: ["Admin"], profileImage: null };
+
+const userDto = (overrides: { id?: string; username?: string; roles?: string[] }) => ({
+	id: "u1",
+	username: "admin",
+	email: null,
+	roles: ["Admin"],
+	createdAt: new Date(),
+	lastLoginAt: null,
+	playerId: null,
+	isDisabled: false,
+	roleManagedByIdentityProvider: false,
+	externalLoginCount: 0,
+	profileImage: null,
+	...overrides,
+});
+
+const createWrapper = () => {
+	const queryClient = new QueryClient({
+		defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+	});
+	return ({ children }: { children: React.ReactNode }) =>
+		React.createElement(QueryClientProvider, { client: queryClient }, children);
+};
+
+describe("useAccountData", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		useAuth.getState().setSession("access", signedIn);
+	});
+
+	it("shows a new display name in the signed-in user right after saving the profile", async () => {
+		vi.mocked(updateProfileCall).mockResolvedValue({
+			id: "u1",
+			username: "admin",
+			email: null,
+			displayName: "Reggi",
+			roles: ["Admin"],
+			createdAt: new Date(),
+			lastLoginAt: null,
+			playerId: null,
+			profileImage: null,
+		});
+		const { result } = renderHook(() => useAccountData(), { wrapper: createWrapper() });
+
+		await act(() =>
+			result.current.updateProfile({ displayName: "Reggi", email: null, playerId: null, currentPassword: null }),
+		);
+
+		expect(useAuth.getState().user?.displayName).toBe("Reggi");
+		expect(successToast).toHaveBeenCalledWith("settings:account.notifications.profile-updated");
+	});
+
+	it("updates the signed-in user when an admin edits their own account", async () => {
+		vi.mocked(updateUserCall).mockResolvedValue(userDto({ username: "reggi" }));
+		const { result } = renderHook(() => useAccountData(), { wrapper: createWrapper() });
+
+		await act(() =>
+			result.current.updateUser({ userId: "u1", username: "reggi", email: null, role: "Admin", playerId: null }),
+		);
+
+		expect(useAuth.getState().user).toEqual({ ...signedIn, username: "reggi" });
+	});
+
+	it("leaves the signed-in user alone when an admin edits someone else", async () => {
+		vi.mocked(updateUserCall).mockResolvedValue(userDto({ id: "u2", username: "lotte", roles: ["User"] }));
+		const { result } = renderHook(() => useAccountData(), { wrapper: createWrapper() });
+
+		await act(() =>
+			result.current.updateUser({ userId: "u2", username: "lotte", email: null, role: "User", playerId: null }),
+		);
+
+		expect(useAuth.getState().user).toEqual(signedIn);
+	});
+});
 
 const profile = (profileImage: string | null) => ({
 	id: "u1",
@@ -54,14 +133,6 @@ const profile = (profileImage: string | null) => ({
 	playerId: null,
 	profileImage,
 });
-
-const createWrapper = () => {
-	const queryClient = new QueryClient({
-		defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
-	});
-	return ({ children }: { children: React.ReactNode }) =>
-		React.createElement(QueryClientProvider, { client: queryClient }, children);
-};
 
 describe("useAccountData profile picture", () => {
 	beforeEach(() => {

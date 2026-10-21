@@ -406,7 +406,10 @@
 			"token": "Token",
 			"userinfo": "Gebruikersinfo",
 			"end-session": "Uitloggen",
-			"none": "niet aangeboden"
+			"none": "niet aangeboden",
+			"signing": "Ondertekeningsalgoritmen",
+			"signing-unsupported": "De provider ondertekent tokens alleen met {{algorithms}}, wat BoardGameTracker niet accepteert. Stel bij je identiteitsprovider een RS256- of ES256-ondertekeningssleutel in voor deze client.",
+			"certificate-expired": "Het ondertekeningscertificaat van de provider is verlopen op {{date}}. Inloggen werkt nog, maar vernieuw het ondertekeningscertificaat bij je identiteitsprovider."
 		},
 		"setup": {
 			"title": "Registreren bij de provider",

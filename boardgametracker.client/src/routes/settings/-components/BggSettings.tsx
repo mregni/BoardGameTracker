@@ -12,6 +12,8 @@ import { settingsFormOpts } from "../-utils/settingsFormOpts";
 import { IntegrationStatusRow } from "./IntegrationStatusRow";
 import { SettingsSection } from "./SettingsSection";
 
+const REMOVE_BUTTON_CLASS = "h-11 shrink-0 self-start @sm:self-auto md:h-10";
+
 export const BggSettings = withForm({
 	...settingsFormOpts,
 	props: {
@@ -34,32 +36,21 @@ export const BggSettings = withForm({
 
 		return (
 			<div className="space-y-6">
-				<SettingsSection title={t("bgg.title")} description={t("bgg.description")}>
-					<IntegrationStatusRow
-						integration="bgg"
-						status={statusFor("bgg")}
-						isChecking={isChecking}
-						isTesting={testingIntegration === "bgg"}
-						canTest={bggStatus.isConfigured}
-						timeFormat={timeFormat}
-						onTest={testIntegration}
-					/>
-					{!bggStatus.isReadOnly && bggStatus.isConfigured && (
-						<div className="flex flex-row gap-4 items-center">
-							<BgtButton variant="error" type="button" onClick={() => form.setFieldValue("bggApiKey", null)}>
-								{t("bgg.api-key.clear")}
-							</BgtButton>
-							<form.Subscribe selector={(state) => state.values.bggApiKey}>
-								{(bggApiKey) =>
-									bggApiKey === null ? (
-										<BgtText size="1" color="white" opacity={50}>
-											{t("bgg.api-key.clear-hint")}
-										</BgtText>
-									) : null
-								}
-							</form.Subscribe>
-						</div>
-					)}
+				<SettingsSection
+					title={t("bgg.title")}
+					description={t("bgg.description")}
+					aside={
+						<IntegrationStatusRow
+							integration="bgg"
+							status={statusFor("bgg")}
+							isChecking={isChecking}
+							isTesting={testingIntegration === "bgg"}
+							canTest={bggStatus.isConfigured}
+							timeFormat={timeFormat}
+							onTest={testIntegration}
+						/>
+					}
+				>
 					{bggStatus.isReadOnly ? (
 						<BgtStatus
 							variant="info"
@@ -68,17 +59,40 @@ export const BggSettings = withForm({
 						/>
 					) : (
 						<div className="flex flex-1 flex-col gap-1">
-							<form.Field name="bggApiKey">
-								{(field: AnyFieldApi) => (
-									<BgtInputField
-										field={field}
-										disabled={disabled}
-										type="password"
-										label={t("bgg.api-key.label")}
-										placeholder={t("bgg.api-key.placeholder")}
-									/>
+							<div className="flex flex-col gap-2 @sm:flex-row @sm:items-end">
+								<div className="min-w-0 flex-1">
+									<form.Field name="bggApiKey">
+										{(field: AnyFieldApi) => (
+											<BgtInputField
+												field={field}
+												disabled={disabled}
+												type="password"
+												label={t("bgg.api-key.label")}
+												placeholder={t("bgg.api-key.placeholder")}
+											/>
+										)}
+									</form.Field>
+								</div>
+								{bggStatus.isConfigured && (
+									<BgtButton
+										variant="error"
+										type="button"
+										className={REMOVE_BUTTON_CLASS}
+										onClick={() => form.setFieldValue("bggApiKey", null)}
+									>
+										{t("bgg.api-key.clear")}
+									</BgtButton>
 								)}
-							</form.Field>
+							</div>
+							<form.Subscribe selector={(state) => state.values.bggApiKey}>
+								{(bggApiKey) =>
+									bggStatus.isConfigured && bggApiKey === null ? (
+										<BgtText size="1" color="white" opacity={50}>
+											{t("bgg.api-key.clear-hint")}
+										</BgtText>
+									) : null
+								}
+							</form.Subscribe>
 							<BgtText size="1" color="white" opacity={50}>
 								<Trans
 									i18nKey="bgg.api-key.help-description"
@@ -100,17 +114,21 @@ export const BggSettings = withForm({
 					)}
 				</SettingsSection>
 
-				<SettingsSection title={t("changedetection.title")} description={t("changedetection.description")}>
-					<IntegrationStatusRow
-						integration="changeDetection"
-						status={statusFor("changeDetection")}
-						isChecking={isChecking}
-						isTesting={testingIntegration === "changeDetection"}
-						canTest={changeDetectionStatus.isConfigured}
-						timeFormat={timeFormat}
-						onTest={testIntegration}
-					/>
-
+				<SettingsSection
+					title={t("changedetection.title")}
+					description={t("changedetection.description")}
+					aside={
+						<IntegrationStatusRow
+							integration="changeDetection"
+							status={statusFor("changeDetection")}
+							isChecking={isChecking}
+							isTesting={testingIntegration === "changeDetection"}
+							canTest={changeDetectionStatus.isConfigured}
+							timeFormat={timeFormat}
+							onTest={testIntegration}
+						/>
+					}
+				>
 					<div className="flex-1">
 						<form.Field
 							name="changeDetectionBaseUrl"
@@ -128,39 +146,41 @@ export const BggSettings = withForm({
 						</form.Field>
 					</div>
 
-					{changeDetectionStatus.isConfigured && (
-						<div className="flex flex-row gap-4 items-center">
-							<BgtButton
-								variant="error"
-								type="button"
-								onClick={() => form.setFieldValue("changeDetectionApiKey", null)}
-							>
-								{t("changedetection.api-key.clear")}
-							</BgtButton>
-							<form.Subscribe selector={(state) => state.values.changeDetectionApiKey}>
-								{(changeDetectionApiKey) =>
-									changeDetectionApiKey === null ? (
-										<BgtText size="1" color="white" opacity={50}>
-											{t("changedetection.api-key.clear-hint")}
-										</BgtText>
-									) : null
-								}
-							</form.Subscribe>
-						</div>
-					)}
-
 					<div className="flex flex-1 flex-col gap-1">
-						<form.Field name="changeDetectionApiKey">
-							{(field: AnyFieldApi) => (
-								<BgtInputField
-									field={field}
-									disabled={disabled}
-									type="password"
-									label={t("changedetection.api-key.label")}
-									placeholder={t("changedetection.api-key.placeholder")}
-								/>
+						<div className="flex flex-col gap-2 @sm:flex-row @sm:items-end">
+							<div className="min-w-0 flex-1">
+								<form.Field name="changeDetectionApiKey">
+									{(field: AnyFieldApi) => (
+										<BgtInputField
+											field={field}
+											disabled={disabled}
+											type="password"
+											label={t("changedetection.api-key.label")}
+											placeholder={t("changedetection.api-key.placeholder")}
+										/>
+									)}
+								</form.Field>
+							</div>
+							{changeDetectionStatus.isConfigured && (
+								<BgtButton
+									variant="error"
+									type="button"
+									className={REMOVE_BUTTON_CLASS}
+									onClick={() => form.setFieldValue("changeDetectionApiKey", null)}
+								>
+									{t("changedetection.api-key.clear")}
+								</BgtButton>
 							)}
-						</form.Field>
+						</div>
+						<form.Subscribe selector={(state) => state.values.changeDetectionApiKey}>
+							{(changeDetectionApiKey) =>
+								changeDetectionStatus.isConfigured && changeDetectionApiKey === null ? (
+									<BgtText size="1" color="white" opacity={50}>
+										{t("changedetection.api-key.clear-hint")}
+									</BgtText>
+								) : null
+							}
+						</form.Subscribe>
 						<BgtText size="1" color="white" opacity={50}>
 							{t("changedetection.help-description")}
 						</BgtText>

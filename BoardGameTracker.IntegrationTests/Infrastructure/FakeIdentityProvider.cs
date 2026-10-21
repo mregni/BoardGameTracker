@@ -37,6 +37,8 @@ public sealed class FakeIdentityProvider : IAsyncDisposable
 
     public bool TamperIdToken { get; set; }
 
+    public string[] SigningAlgorithms { get; set; } = ["RS256"];
+
     public string? IssuerParameterOverride { get; set; }
 
     public string? LastIdToken { get; private set; }
@@ -69,7 +71,7 @@ public sealed class FakeIdentityProvider : IAsyncDisposable
             ["userinfo_endpoint"] = $"{provider.Authority}/userinfo",
             ["end_session_endpoint"] = $"{provider.Authority}/logout",
             ["jwks_uri"] = $"{provider.Authority}/certs",
-            ["id_token_signing_alg_values_supported"] = new[] { "RS256" },
+            ["id_token_signing_alg_values_supported"] = provider.SigningAlgorithms,
             ["authorization_response_iss_parameter_supported"] = true,
         }));
 

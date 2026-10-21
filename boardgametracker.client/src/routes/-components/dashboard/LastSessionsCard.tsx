@@ -60,7 +60,7 @@ export const LastSessionsCard = (props: Props) => {
 									)}
 									{!session.isCoop &&
 										session.winners.map((winner) => (
-											<AvatarChip key={winner.id} title={winner.name} image={winner.image} tone="winner">
+											<AvatarChip key={winner.id} title={winner.name} image={winner.image} tone="winner" size="compact">
 												<Crown className="size-3.5 text-yellow-400" role="img" aria-label={t("common:won")} />
 											</AvatarChip>
 										))}
