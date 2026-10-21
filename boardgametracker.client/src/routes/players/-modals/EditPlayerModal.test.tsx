@@ -116,6 +116,7 @@ describe("EditPlayerModal", () => {
 		expect(options[0]).toHaveTextContent("account.none");
 		expect(options[1]).toHaveTextContent("jane (Jane Doe)");
 		expect(options[2]).toHaveTextContent("bob");
+		expect(options[0].textContent?.trim()).toBe("account.none");
 	});
 
 	it("warns that choosing an account linked elsewhere moves the link and saves it", async () => {
