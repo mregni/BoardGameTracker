@@ -395,8 +395,8 @@
 			"end-session": "Sign-out",
 			"none": "not offered",
 			"signing": "Signing algorithms",
-			"signing-unsupported": "The provider only signs tokens with {{algorithms}}, which BoardGameTracker doesn't accept. Set a signing key at the provider (in Authentik: Provider → Signing Key).",
-			"certificate-expired": "The provider's signing certificate expired on {{date}}. Sign-in still works, but rotate it at the provider (in Authentik: System → Certificates)."
+			"signing-unsupported": "The provider only signs tokens with {{algorithms}}, which BoardGameTracker doesn't accept. Configure an RS256 or ES256 signing key for this client at your identity provider.",
+			"certificate-expired": "The provider's signing certificate expired on {{date}}. Sign-in still works, but renew the signing certificate at your identity provider."
 		},
 		"setup": {
 			"title": "Register at the provider",

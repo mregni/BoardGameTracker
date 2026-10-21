@@ -395,8 +395,8 @@
 			"end-session": "Afmelden",
 			"none": "niet aangeboden",
 			"signing": "Ondertekeningsalgoritmen",
-			"signing-unsupported": "De provider ondertekent tokens alleen met {{algorithms}}, wat BoardGameTracker niet aanvaardt. Stel een ondertekeningssleutel in bij de provider (in Authentik: Provider → Signing Key).",
-			"certificate-expired": "Het ondertekeningscertificaat van de provider is verlopen op {{date}}. Aanmelden werkt nog, maar vervang het bij de provider (in Authentik: System → Certificates)."
+			"signing-unsupported": "De provider ondertekent tokens alleen met {{algorithms}}, wat BoardGameTracker niet aanvaardt. Stel bij je identiteitsprovider een RS256- of ES256-ondertekeningssleutel in voor deze client.",
+			"certificate-expired": "Het ondertekeningscertificaat van de provider is verlopen op {{date}}. Aanmelden werkt nog, maar vernieuw het ondertekeningscertificaat bij je identiteitsprovider."
 		},
 		"setup": {
 			"title": "Registreren bij de provider",
