@@ -4,20 +4,22 @@ import { renderWithTheme, screen, waitFor } from "@/test/test-utils";
 
 const mocks = vi.hoisted(() => ({
 	navigate: vi.fn(),
-	search: {} as { error?: string; redirect?: string; linked?: string },
+	search: {} as { error?: string; redirect?: string; linked?: string | boolean },
 	adoptOidcLoginCall: vi.fn(),
 	setSession: vi.fn(),
 	isAuthenticated: false,
 	successToast: vi.fn(),
 	announceSessionChange: vi.fn(),
-	captured: {} as { Page: FC },
+	captured: {} as { Page: FC; validateSearch: { safeParse: (value: unknown) => { success: boolean } } },
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-	createFileRoute: () => (config: { component: FC }) => {
-		mocks.captured.Page = config.component;
-		return { ...config, useSearch: () => mocks.search };
-	},
+	createFileRoute:
+		() => (config: { component: FC; validateSearch: { safeParse: (value: unknown) => { success: boolean } } }) => {
+			mocks.captured.Page = config.component;
+			mocks.captured.validateSearch = config.validateSearch;
+			return { ...config, useSearch: () => mocks.search };
+		},
 	Link: ({ children, to, search }: { children: ReactNode; to: string; search?: Record<string, string> }) => (
 		<a href={search ? `${to}?${new URLSearchParams(search)}` : to}>{children}</a>
 	),
@@ -172,7 +174,7 @@ describe("AuthCallbackPage", () => {
 	});
 
 	it("confirms a linked provider and returns to the account settings", async () => {
-		mocks.search = { linked: "true" };
+		mocks.search = { linked: true };
 
 		renderWithTheme(<mocks.captured.Page />);
 
@@ -181,6 +183,12 @@ describe("AuthCallbackPage", () => {
 		);
 		expect(mocks.successToast).toHaveBeenCalledWith("auth:oidc.linked");
 		expect(mocks.adoptOidcLoginCall).not.toHaveBeenCalled();
+	});
+
+	it("accepts the linked flag the router parses from ?linked=true", () => {
+		expect(mocks.captured.validateSearch.safeParse({ linked: true }).success).toBe(true);
+		expect(mocks.captured.validateSearch.safeParse({ linked: "true" }).success).toBe(true);
+		expect(mocks.captured.validateSearch.safeParse({ linked: 1 }).success).toBe(false);
 	});
 
 	it("explains a username clash and sends the user to sign in with their password", async () => {
