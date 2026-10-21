@@ -66,7 +66,7 @@ describe("BottomNav", () => {
 		await user.click(screen.getByRole("button", { name: "common:more" }));
 
 		expect(screen.getByRole("img", { name: "Jane Doe" })).toHaveAttribute("src", "/images/profile/jane.webp");
-		expect(screen.getByRole("img", { name: "Jane Doe" })).toHaveClass("rounded-full");
+		expect(screen.getByRole("img", { name: "Jane Doe" })).not.toHaveClass("rounded-full");
 	});
 
 	it("falls back to the initial of the signed-in user without a picture", async () => {

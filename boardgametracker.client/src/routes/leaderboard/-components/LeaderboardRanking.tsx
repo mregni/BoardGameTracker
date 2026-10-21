@@ -79,7 +79,7 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 						</>
 					)}
 				</span>
-				<BgtAvatar image={entry.image} title={entry.name} size="medium" shape="round" />
+				<BgtAvatar image={entry.image} title={entry.name} size="medium" />
 				<span className="min-w-0">
 					<strong className="block truncate">{entry.name}</strong>
 					<small className="block text-[11px] text-white/60 md:hidden">{details}</small>
