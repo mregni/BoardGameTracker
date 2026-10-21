@@ -20,7 +20,7 @@ interface Tile {
 
 const Holder = ({ entry, suffix }: { entry: LeaderboardEntry; suffix?: string }) => (
 	<span className="flex min-w-0 items-center gap-1.5">
-		<BgtAvatar image={entry.image} title={entry.name} size="small" shape="round" />
+		<BgtAvatar image={entry.image} title={entry.name} size="small" />
 		<span className="truncate">
 			{entry.name}
 			{suffix && ` · ${suffix}`}

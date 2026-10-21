@@ -37,7 +37,7 @@ export const NightAttendanceCard = ({ attendance, recentNights, nights, lookup }
 							return (
 								<StatRow
 									key={entry.playerId}
-									avatar={<BgtAvatar title={name} image={player?.image} size="medium" shape="round" />}
+									avatar={<BgtAvatar title={name} image={player?.image} size="medium" />}
 									name={name}
 									detail={
 										entry.nightsHosted > 0 ? t("stats.attendance.hosted", { count: entry.nightsHosted }) : undefined

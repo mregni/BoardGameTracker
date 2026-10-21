@@ -235,7 +235,6 @@ const ProfilePictureSection = ({ profile, onUpload, onRemove, isBusy }: ProfileP
 					image={profile.profileImage}
 					title={profile.displayName || profile.username}
 					colorKey={profile.id}
-					shape="round"
 					size="large"
 				/>
 				<input
@@ -435,12 +434,7 @@ const UserManagementSection = ({
 				header: t("auth:username"),
 				cell: ({ row }) => (
 					<div className="flex flex-wrap items-center gap-2">
-						<BgtAvatar
-							image={row.original.profileImage}
-							title={row.original.username}
-							colorKey={row.original.id}
-							shape="round"
-						/>
+						<BgtAvatar image={row.original.profileImage} title={row.original.username} colorKey={row.original.id} />
 						<span>{row.original.username}</span>
 						{badges(row.original)}
 					</div>
@@ -498,7 +492,7 @@ const UserManagementSection = ({
 						data-testid="user-card"
 						className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-3"
 					>
-						<BgtAvatar image={user.profileImage} title={user.username} colorKey={user.id} shape="round" size="large" />
+						<BgtAvatar image={user.profileImage} title={user.username} colorKey={user.id} size="large" />
 						<div className="flex min-w-0 flex-1 flex-col gap-1">
 							<div className="flex flex-wrap items-center gap-2">
 								<span className="truncate font-semibold text-white">{user.username}</span>

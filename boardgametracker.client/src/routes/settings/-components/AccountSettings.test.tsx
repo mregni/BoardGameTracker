@@ -133,7 +133,7 @@ describe("AccountSettings user management", () => {
 		expect(within(admin).queryByRole("img")).not.toBeInTheDocument();
 		expect(within(admin).getByTitle("admin")).toHaveTextContent("a");
 		const janeCard = screen.getAllByTestId("user-card")[1] as HTMLElement;
-		expect(within(janeCard).getByRole("img", { name: "jane" })).toHaveClass("rounded-full");
+		expect(within(janeCard).getByRole("img", { name: "jane" })).not.toHaveClass("rounded-full");
 	});
 
 	it("uploads a new profile picture and offers to remove the current one", async () => {

@@ -31,7 +31,7 @@ describe("Sidebar", () => {
 		auth.state = { user: null, isAuthenticated: false, authStatus: { authEnabled: false } };
 	});
 
-	it("shows the round profile picture of the signed-in user", () => {
+	it("shows the profile picture of the signed-in user with the square avatar shape", () => {
 		auth.state = {
 			user: {
 				id: "u1",
@@ -48,7 +48,7 @@ describe("Sidebar", () => {
 
 		const avatar = screen.getByRole("img", { name: "Jane Doe" });
 		expect(avatar).toHaveAttribute("src", "/images/profile/jane.webp");
-		expect(avatar).toHaveClass("rounded-full");
+		expect(avatar).not.toHaveClass("rounded-full");
 		expect(screen.getByText("Jane Doe")).toBeInTheDocument();
 	});
 
