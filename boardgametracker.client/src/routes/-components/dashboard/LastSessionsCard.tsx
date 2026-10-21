@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
-import { AvatarChip } from "@/components/GameNight/AvatarChip";
 import { useShortDuration } from "@/hooks/useShortDuration";
 import type { RecentActivity } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
@@ -60,9 +59,10 @@ export const LastSessionsCard = (props: Props) => {
 									)}
 									{!session.isCoop &&
 										session.winners.map((winner) => (
-											<AvatarChip key={winner.id} title={winner.name} image={winner.image} tone="winner" size="compact">
+											<span key={winner.id} className={pillVariants({ tone: "winner" })}>
+												{winner.name}
 												<Crown className="size-3.5 text-yellow-400" role="img" aria-label={t("common:won")} />
-											</AvatarChip>
+											</span>
 										))}
 								</span>
 							</Link>
