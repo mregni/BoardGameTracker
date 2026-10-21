@@ -4,15 +4,25 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Badges;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Badges;
 
 public class BadgeRepositoryTests
 {
+    private static readonly DateTime AwardedAt = new(2026, 10, 21, 18, 30, 0, DateTimeKind.Utc);
+    private readonly Mock<IDateTimeProvider> _clock = new();
+
+    public BadgeRepositoryTests()
+    {
+        _clock.Setup(x => x.UtcNow).Returns(AwardedAt);
+    }
+
     private static MainDbContext CreateContext(string databaseName)
     {
         var options = new DbContextOptionsBuilder<MainDbContext>()
@@ -40,7 +50,7 @@ public class BadgeRepositoryTests
 
         await using (var context = CreateContext(databaseName))
         {
-            var repository = new BadgeRepository(context);
+            var repository = new BadgeRepository(context, _clock.Object);
 
             var awarded = await repository.AwardBadgeToPlayer(playerId, badgeId);
             await context.SaveChangesAsync();
@@ -61,7 +71,7 @@ public class BadgeRepositoryTests
         var (badgeId, playerId) = await SeedAsync(databaseName);
 
         await using var context = CreateContext(databaseName);
-        var repository = new BadgeRepository(context);
+        var repository = new BadgeRepository(context, _clock.Object);
         await repository.AwardBadgeToPlayer(playerId, badgeId);
         await context.SaveChangesAsync();
 
@@ -77,12 +87,58 @@ public class BadgeRepositoryTests
         var (badgeId, playerId) = await SeedAsync(databaseName);
 
         await using var context = CreateContext(databaseName);
-        var repository = new BadgeRepository(context);
+        var repository = new BadgeRepository(context, _clock.Object);
 
         var missingBadge = async () => await repository.AwardBadgeToPlayer(playerId, badgeId + 1);
         var missingPlayer = async () => await repository.AwardBadgeToPlayer(playerId + 1, badgeId);
 
         await missingBadge.Should().ThrowAsync<EntityNotFoundException>();
         await missingPlayer.Should().ThrowAsync<EntityNotFoundException>();
+    }
+
+    [Fact]
+    public async Task AwardBadgeToPlayer_ShouldStampAwardedAtWithTheCurrentUtcTime()
+    {
+        var databaseName = Guid.NewGuid().ToString();
+        var (badgeId, playerId) = await SeedAsync(databaseName);
+
+        await using (var context = CreateContext(databaseName))
+        {
+            var repository = new BadgeRepository(context, _clock.Object);
+            await repository.AwardBadgeToPlayer(playerId, badgeId);
+            await context.SaveChangesAsync();
+        }
+
+        await using var verify = CreateContext(databaseName);
+        var playerBadge = await verify.Set<PlayerBadge>().SingleAsync();
+        playerBadge.PlayerId.Should().Be(playerId);
+        playerBadge.BadgeId.Should().Be(badgeId);
+        playerBadge.AwardedAt.Should().Be(AwardedAt);
+    }
+
+    [Fact]
+    public async Task AwardBadgeToPlayer_ShouldKeepTheOriginalAwardedAt_WhenEvaluatedAgain()
+    {
+        var databaseName = Guid.NewGuid().ToString();
+        var (badgeId, playerId) = await SeedAsync(databaseName);
+
+        await using (var context = CreateContext(databaseName))
+        {
+            await new BadgeRepository(context, _clock.Object).AwardBadgeToPlayer(playerId, badgeId);
+            await context.SaveChangesAsync();
+        }
+
+        _clock.Setup(x => x.UtcNow).Returns(AwardedAt.AddDays(3));
+
+        await using (var context = CreateContext(databaseName))
+        {
+            var awardedAgain = await new BadgeRepository(context, _clock.Object).AwardBadgeToPlayer(playerId, badgeId);
+            await context.SaveChangesAsync();
+            awardedAgain.Should().BeFalse();
+        }
+
+        await using var verify = CreateContext(databaseName);
+        var playerBadge = await verify.Set<PlayerBadge>().SingleAsync();
+        playerBadge.AwardedAt.Should().Be(AwardedAt);
     }
 }

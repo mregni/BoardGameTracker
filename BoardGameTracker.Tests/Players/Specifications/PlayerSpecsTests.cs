@@ -34,7 +34,7 @@ public class PlayerSpecsTests
         spec.IsSatisfiedBy(player).Should().BeTrue();
         new PlayerByIdWithBadgesSpec(8).IsSatisfiedBy(player).Should().BeFalse();
         spec.AsNoTracking.Should().BeTrue();
-        spec.ShouldIncludeExactly("Badges");
+        spec.ShouldIncludeExactly("PlayerBadges", "PlayerBadges.Badge");
     }
 
     [Fact]

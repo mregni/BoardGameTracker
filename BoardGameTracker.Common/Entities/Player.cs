@@ -19,6 +19,7 @@ public class Player : HasId
     public string? Email { get; private set; }
     public ICollection<PlayerSession> PlayerSessions { get; private set; }
     public ICollection<Badge> Badges { get; private set; }
+    public ICollection<PlayerBadge> PlayerBadges { get; private set; }
     public ICollection<Loan> Loans { get; private set; }
     public ICollection<GameNightRsvp> GameNightRsvps { get; private set; }
 
@@ -29,6 +30,7 @@ public class Player : HasId
         Email = email;
         PlayerSessions = new List<PlayerSession>();
         Badges = new List<Badge>();
+        PlayerBadges = new List<PlayerBadge>();
         Loans = new List<Loan>();
         GameNightRsvps = new List<GameNightRsvp>();
     }

@@ -1,6 +1,7 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Badges.Interfaces;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,11 +9,13 @@ namespace BoardGameTracker.Core.Badges;
 
 public class BadgeRepository : EfRepository<Badge>, IBadgeRepository
 {
-    private const string BadgePlayerJoinEntity = "BadgePlayer";
     private readonly MainDbContext _context;
-    public BadgeRepository(MainDbContext context) : base(context)
+    private readonly IDateTimeProvider _dateTimeProvider;
+
+    public BadgeRepository(MainDbContext context, IDateTimeProvider dateTimeProvider) : base(context)
     {
         _context = context;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public async Task<Dictionary<int, List<Badge>>> GetPlayerBadgesBatchAsync(IEnumerable<int> playerIds)
@@ -53,19 +56,14 @@ public class BadgeRepository : EfRepository<Badge>, IBadgeRepository
             throw new EntityNotFoundException(nameof(Player), playerId);
         }
 
-        var alreadyAwarded = await _context.Badges
-            .Where(x => x.Id == badgeId)
-            .AnyAsync(x => x.Players.Any(p => p.Id == playerId));
+        var alreadyAwarded = await _context.Set<PlayerBadge>()
+            .AnyAsync(x => x.BadgeId == badgeId && x.PlayerId == playerId);
         if (alreadyAwarded)
         {
             return false;
         }
 
-        _context.Set<Dictionary<string, object>>(BadgePlayerJoinEntity).Add(new Dictionary<string, object>
-        {
-            ["BadgesId"] = badgeId,
-            ["PlayersId"] = playerId
-        });
+        _context.Set<PlayerBadge>().Add(new PlayerBadge(playerId, badgeId, _dateTimeProvider.UtcNow));
         return true;
     }
 }

@@ -353,7 +353,17 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
 
         builder.Entity<Player>()
             .HasMany(x => x.Badges)
-            .WithMany(x => x.Players);
+            .WithMany(x => x.Players)
+            .UsingEntity<PlayerBadge>(
+                badge => badge.HasOne(x => x.Badge).WithMany().HasForeignKey(x => x.BadgeId),
+                player => player.HasOne(x => x.Player).WithMany(x => x.PlayerBadges).HasForeignKey(x => x.PlayerId),
+                join =>
+                {
+                    join.ToTable("BadgePlayer");
+                    join.HasKey(x => new { x.BadgeId, x.PlayerId });
+                    join.Property(x => x.BadgeId).HasColumnName("BadgesId");
+                    join.Property(x => x.PlayerId).HasColumnName("PlayersId");
+                });
 
         builder.Entity<Player>()
             .HasMany(x => x.GameNightRsvps)

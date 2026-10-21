@@ -30,4 +30,5 @@ export interface Badge {
 	type: BadgeType;
 	level: BadgeLevel | null;
 	image: string;
+	awardedAt?: string | null;
 }
