@@ -56,5 +56,13 @@
     "next": "Volgende: {{goal}}",
     "complete": "Alle niveaus behaald",
     "see-all": "Alle prestaties bekijken"
+  },
+  "account": {
+    "label": "Gekoppeld account",
+    "none": "Niet gekoppeld",
+    "moves": "Nu gekoppeld aan {{player}}; bij opslaan wordt de koppeling naar hier verplaatst",
+    "uses-picture": "Gebruikt de profielfoto van account {{username}}",
+    "own-picture": "Heeft een eigen foto; verwijder die om de profielfoto van account {{username}} te gebruiken",
+    "link-failed": "Het gekoppelde account kon niet worden gewijzigd"
   }
 }

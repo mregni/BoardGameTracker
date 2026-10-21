@@ -26,6 +26,7 @@
     "invalid-auth-session": "Ongeldige of verlopen aanmeldsessie",
     "invalid-redirect-uri": "Ongeldige redirect-URI",
     "player-already-linked": "Deze speler is al gekoppeld aan een ander account",
+    "player-link-update-failed": "Het gekoppelde account kon niet worden gewijzigd. Herlaad de pagina en probeer het opnieuw.",
     "invalid-reset-token": "Deze link om je wachtwoord opnieuw in te stellen is ongeldig of verlopen",
     "not-authenticated": "Je moet aangemeld zijn",
     "insecure-authority": "De URL van de provider moet https gebruiken (http mag enkel voor lokale adressen)",

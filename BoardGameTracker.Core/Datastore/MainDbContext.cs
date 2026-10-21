@@ -340,6 +340,12 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
     private static void BuildPlayer(ModelBuilder builder)
     {
         builder.Entity<Player>()
+            .Property(x => x.ImageSource)
+            .HasConversion<string>()
+            .HasDefaultValue(PlayerImageSource.None)
+            .HasSentinel(PlayerImageSource.None);
+
+        builder.Entity<Player>()
             .HasMany(x => x.PlayerSessions)
             .WithOne(x => x.Player)
             .HasForeignKey(x => x.PlayerId)

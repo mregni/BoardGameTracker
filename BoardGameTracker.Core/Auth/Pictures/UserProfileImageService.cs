@@ -6,6 +6,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -17,17 +18,20 @@ public class UserProfileImageService : IUserProfileImageService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IImageService _imageService;
     private readonly IIdentityProviderPictureDownloader _downloader;
+    private readonly IPlayerAccountImageService _playerAccountImageService;
     private readonly ILogger<UserProfileImageService> _logger;
 
     public UserProfileImageService(
         UserManager<ApplicationUser> userManager,
         IImageService imageService,
         IIdentityProviderPictureDownloader downloader,
+        IPlayerAccountImageService playerAccountImageService,
         ILogger<UserProfileImageService> logger)
     {
         _userManager = userManager;
         _imageService = imageService;
         _downloader = downloader;
+        _playerAccountImageService = playerAccountImageService;
         _logger = logger;
     }
 
@@ -44,6 +48,7 @@ public class UserProfileImageService : IUserProfileImageService
         user.UseUploadedProfileImage(image);
         await SaveOrDiscardAsync(user, image);
         _imageService.DeleteImage(previous);
+        await _playerAccountImageService.ApplyAccountImageAsync(user);
 
         _logger.LogInformation("User {UserId} uploaded a profile picture", userId);
         return user.ToProfileDto(await _userManager.GetRolesAsync(user));
@@ -56,6 +61,7 @@ public class UserProfileImageService : IUserProfileImageService
         user.RemoveProfileImage();
         await SaveOrDiscardAsync(user, null);
         _imageService.DeleteImage(previous);
+        await _playerAccountImageService.ApplyAccountImageAsync(user);
 
         _logger.LogInformation("User {UserId} removed their profile picture", userId);
         return user.ToProfileDto(await _userManager.GetRolesAsync(user));
@@ -93,6 +99,7 @@ public class UserProfileImageService : IUserProfileImageService
         }
 
         _imageService.DeleteImage(previous);
+        await _playerAccountImageService.ApplyAccountImageAsync(user);
         _logger.LogInformation("Imported the identity provider picture of user {UserId}", user.Id);
     }
 

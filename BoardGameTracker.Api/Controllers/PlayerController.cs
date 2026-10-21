@@ -55,7 +55,7 @@ public class PlayerController : ControllerBase
     public async Task<IActionResult> UpdatePlayer([FromBody] UpdatePlayerCommand command)
     {
         var player = await _playerService.Update(command);
-        return Ok(player.ToDto());
+        return Ok(player.ToDto(await _playerService.GetLinkedAccountAsync(player.Id)));
     }
 
     [HttpGet]
@@ -69,7 +69,7 @@ public class PlayerController : ControllerBase
             return NotFound();
         }
 
-        return Ok(player.ToDto());
+        return Ok(player.ToDto(await _playerService.GetLinkedAccountAsync(id)));
     }
 
     [HttpDelete]

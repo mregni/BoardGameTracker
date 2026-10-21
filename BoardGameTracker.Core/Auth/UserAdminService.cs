@@ -1,11 +1,13 @@
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
+using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -19,6 +21,7 @@ public class UserAdminService : IUserAdminService
     private readonly IUserAccessCheck _accessCheck;
     private readonly MainDbContext _context;
     private readonly IImageService _imageService;
+    private readonly IPlayerAccountImageService _playerAccountImageService;
     private readonly ILogger<UserAdminService> _logger;
 
     public UserAdminService(
@@ -27,6 +30,7 @@ public class UserAdminService : IUserAdminService
         IUserAccessCheck accessCheck,
         MainDbContext context,
         IImageService imageService,
+        IPlayerAccountImageService playerAccountImageService,
         ILogger<UserAdminService> logger)
     {
         _userManager = userManager;
@@ -34,7 +38,58 @@ public class UserAdminService : IUserAdminService
         _accessCheck = accessCheck;
         _context = context;
         _imageService = imageService;
+        _playerAccountImageService = playerAccountImageService;
         _logger = logger;
+    }
+
+    public async Task LinkPlayerAccountAsync(int playerId, string? userId)
+    {
+        if (!await _context.Players.AnyAsync(p => p.Id == playerId))
+        {
+            throw new EntityNotFoundException(nameof(Player), playerId);
+        }
+
+        var target = userId == null
+            ? null
+            : await _userManager.FindByIdAsync(userId) ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
+        var current = await _context.Users.FirstOrDefaultAsync(u => u.PlayerId == playerId);
+        if (current?.Id == target?.Id)
+        {
+            return;
+        }
+
+        if (current != null)
+        {
+            current.UnlinkPlayer();
+            await SaveLinkAsync(current);
+        }
+
+        if (target == null)
+        {
+            await _playerAccountImageService.ReleaseAsync(playerId);
+            _logger.LogInformation("Unlinked player {PlayerId} from its account", playerId);
+            return;
+        }
+
+        var previousPlayerId = target.PlayerId;
+        target.LinkPlayer(playerId);
+        await SaveLinkAsync(target);
+        await _playerAccountImageService.ReleaseAsync(previousPlayerId);
+        if (!await _playerAccountImageService.ApplyAccountImageAsync(target))
+        {
+            await _playerAccountImageService.ReleaseAsync(playerId);
+        }
+
+        _logger.LogInformation("Linked player {PlayerId} to user {UserId}", playerId, target.Id);
+    }
+
+    private async Task SaveLinkAsync(ApplicationUser user)
+    {
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            throw new DomainException(Constants.Errors.PlayerLinkUpdateFailed);
+        }
     }
 
     public async Task<List<UserDto>> GetAllAsync()
@@ -79,9 +134,11 @@ public class UserAdminService : IUserAdminService
             throw new DomainException(Constants.Errors.CannotDeleteLastAdmin);
         }
 
+        var linkedPlayerId = user.PlayerId;
         await _userManager.DeleteAsync(user);
         _accessCheck.Forget(userId);
         _imageService.DeleteImage(user.ProfileImage);
+        await _playerAccountImageService.ReleaseAsync(linkedPlayerId);
 
         _logger.LogInformation("Admin {AdminId} deleted user {UserId} ({Username})",
             currentUserId, userId, user.UserName);
@@ -152,6 +209,7 @@ public class UserAdminService : IUserAdminService
 
         user.UpdateEmail(email);
 
+        var previousPlayerId = user.PlayerId;
         if (playerId != user.PlayerId)
         {
             if (playerId.HasValue)
@@ -166,6 +224,7 @@ public class UserAdminService : IUserAdminService
         }
 
         await _userManager.UpdateAsync(user);
+        await _playerAccountImageService.RelinkAsync(previousPlayerId, user);
 
         await ReplaceRoleAsync(user, role);
 

@@ -32,7 +32,7 @@ interface ControlledBinding {
 
 export interface BgtSelectBaseProps {
 	label: string;
-	items: BgtSelectImageItem[] | BgtSelectItem[];
+	items: (BgtSelectImageItem | BgtSelectItem)[];
 	disabled?: boolean;
 	placeholder?: string;
 	hasSearch?: boolean;

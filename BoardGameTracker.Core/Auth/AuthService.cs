@@ -25,6 +25,7 @@ public class AuthService : IAuthService
     private readonly ITokenService _tokenService;
     private readonly IEnvironmentProvider _environmentProvider;
     private readonly IPlayerService _playerService;
+    private readonly IPlayerAccountImageService _playerAccountImageService;
     private readonly IEmailService _emailService;
     private readonly IPublicUrlBuilder _publicUrlBuilder;
     private readonly IBackgroundEmailSender _backgroundEmailSender;
@@ -44,6 +45,7 @@ public class AuthService : IAuthService
         ITokenService tokenService,
         IEnvironmentProvider environmentProvider,
         IPlayerService playerService,
+        IPlayerAccountImageService playerAccountImageService,
         IEmailService emailService,
         IPublicUrlBuilder publicUrlBuilder,
         IBackgroundEmailSender backgroundEmailSender,
@@ -58,6 +60,7 @@ public class AuthService : IAuthService
         _tokenService = tokenService;
         _environmentProvider = environmentProvider;
         _playerService = playerService;
+        _playerAccountImageService = playerAccountImageService;
         _emailService = emailService;
         _publicUrlBuilder = publicUrlBuilder;
         _backgroundEmailSender = backgroundEmailSender;
@@ -246,11 +249,13 @@ public class AuthService : IAuthService
             });
             user.LinkPlayer(player.Id);
             await _userManager.UpdateAsync(user);
+            await _playerAccountImageService.ApplyAccountImageAsync(user);
         }
         else if (request.PlayerId.HasValue)
         {
             user.LinkPlayer(request.PlayerId.Value);
             await _userManager.UpdateAsync(user);
+            await _playerAccountImageService.ApplyAccountImageAsync(user);
         }
 
         _logger.LogInformation("Admin created new user: {Username} with role {Role}", request.Username, role);
@@ -282,6 +287,7 @@ public class AuthService : IAuthService
             user.UpdateEmail(request.Email);
         }
 
+        var previousPlayerId = user.PlayerId;
         if (request.PlayerId != user.PlayerId)
         {
             if (request.PlayerId.HasValue)
@@ -296,6 +302,7 @@ public class AuthService : IAuthService
         }
 
         await _userManager.UpdateAsync(user);
+        await _playerAccountImageService.RelinkAsync(previousPlayerId, user);
 
         _logger.LogInformation("User {UserId} updated their profile", userId);
         NotifyPreviousEmail(user, previousEmail);

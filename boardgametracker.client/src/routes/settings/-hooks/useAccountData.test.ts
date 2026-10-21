@@ -39,6 +39,7 @@ vi.mock("@/services/authService", () => ({
 }));
 
 import {
+	deleteUserCall,
 	removeProfileImageCall,
 	updateProfileCall,
 	updateUserCall,
@@ -180,5 +181,77 @@ describe("useAccountData profile picture", () => {
 		await act(() => result.current.removeProfileImage().catch(() => undefined));
 
 		expect(errorToast).toHaveBeenCalledWith("settings:account.notifications.picture-update-failed");
+	});
+});
+
+describe("useAccountData linked player refresh", () => {
+	const setup = () => {
+		const queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+		});
+		const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+		const wrapper = ({ children }: { children: React.ReactNode }) =>
+			React.createElement(QueryClientProvider, { client: queryClient }, children);
+		const { result } = renderHook(() => useAccountData(), { wrapper });
+		return { result, invalidate };
+	};
+
+	const expectPlayersRefreshed = (invalidate: ReturnType<typeof vi.spyOn>) => {
+		expect(invalidate).toHaveBeenCalledWith({ queryKey: ["players"] });
+		expect(invalidate).toHaveBeenCalledWith({ queryKey: ["player"] });
+	};
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		useAuth.getState().setSession("access", signedIn);
+	});
+
+	it("refreshes the players after a new account picture", async () => {
+		vi.mocked(uploadProfileImageCall).mockResolvedValue(profile("/images/profile/new.webp"));
+		const { result, invalidate } = setup();
+
+		await act(() => result.current.uploadProfileImage(new File(["png"], "me.png", { type: "image/png" })));
+
+		expectPlayersRefreshed(invalidate);
+	});
+
+	it("refreshes the players after removing the account picture", async () => {
+		vi.mocked(removeProfileImageCall).mockResolvedValue(profile(null));
+		const { result, invalidate } = setup();
+
+		await act(() => result.current.removeProfileImage());
+
+		expectPlayersRefreshed(invalidate);
+	});
+
+	it("refreshes the players after changing the linked player", async () => {
+		vi.mocked(updateProfileCall).mockResolvedValue({ ...profile(null), playerId: 3 });
+		const { result, invalidate } = setup();
+
+		await act(() =>
+			result.current.updateProfile({ displayName: "Administrator", email: null, playerId: 3, currentPassword: null }),
+		);
+
+		expectPlayersRefreshed(invalidate);
+	});
+
+	it("refreshes the players after an admin changes a link", async () => {
+		vi.mocked(updateUserCall).mockResolvedValue(userDto({ id: "u2", username: "lotte", roles: ["User"] }));
+		const { result, invalidate } = setup();
+
+		await act(() =>
+			result.current.updateUser({ userId: "u2", username: "lotte", email: null, role: "User", playerId: 4 }),
+		);
+
+		expectPlayersRefreshed(invalidate);
+	});
+
+	it("refreshes the players after deleting an account", async () => {
+		vi.mocked(deleteUserCall).mockResolvedValue(undefined);
+		const { result, invalidate } = setup();
+
+		await act(() => result.current.deleteUser("u2"));
+
+		expectPlayersRefreshed(invalidate);
 	});
 });

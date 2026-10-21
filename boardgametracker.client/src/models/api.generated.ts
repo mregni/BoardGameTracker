@@ -4026,6 +4026,62 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/players/{id}/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["LinkPlayerAccountRequest"];
+                    "text/json": components["schemas"]["LinkPlayerAccountRequest"];
+                    "application/*+json": components["schemas"]["LinkPlayerAccountRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PlayerDto"];
+                        "application/json": components["schemas"]["PlayerDto"];
+                        "text/json": components["schemas"]["PlayerDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/rag/game/{gameId}/ask": {
         parameters: {
             query?: never;
@@ -5721,6 +5777,9 @@ export interface components {
         };
         /** @enum {string} */
         LeaderboardRankBy: "wins" | "winRate" | "sessions";
+        LinkPlayerAccountRequest: {
+            userId: string | null;
+        };
         LoanDto: {
             /** Format: int32 */
             id: number;
@@ -5949,13 +6008,23 @@ export interface components {
             id: number;
             name: string;
             image: string | null;
+            imageSource: components["schemas"]["PlayerImageSource"];
             email: string | null;
             badges: components["schemas"]["BadgeDto"][] | null;
+            linkedAccount: components["schemas"]["PlayerLinkedAccountDto"];
         };
+        /** @enum {string} */
+        PlayerImageSource: "none" | "upload" | "account";
         PlayerLinkDto: {
             /** Format: int32 */
             id: number;
             name: string;
+        };
+        PlayerLinkedAccountDto: {
+            id: string;
+            username: string;
+            displayName: string | null;
+            profileImage: string | null;
         };
         PlayerOverviewDto: {
             /** Format: int32 */

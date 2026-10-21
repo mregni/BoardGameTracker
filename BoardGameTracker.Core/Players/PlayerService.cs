@@ -22,6 +22,7 @@ public class PlayerService : IPlayerService
     private readonly IPlayerStatisticsService _playerStatisticsService;
     private readonly ISessionRepository _sessionRepository;
     private readonly IReadRepository<GameNight> _gameNightRepository;
+    private readonly IPlayerAccountImageService _accountImageService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PlayerService> _logger;
 
@@ -31,6 +32,7 @@ public class PlayerService : IPlayerService
         IPlayerStatisticsService playerStatisticsService,
         ISessionRepository sessionRepository,
         IReadRepository<GameNight> gameNightRepository,
+        IPlayerAccountImageService accountImageService,
         IUnitOfWork unitOfWork,
         ILogger<PlayerService> logger)
     {
@@ -39,8 +41,14 @@ public class PlayerService : IPlayerService
         _playerStatisticsService = playerStatisticsService;
         _sessionRepository = sessionRepository;
         _gameNightRepository = gameNightRepository;
+        _accountImageService = accountImageService;
         _unitOfWork = unitOfWork;
         _logger = logger;
+    }
+
+    public Task<PlayerLinkedAccountDto?> GetLinkedAccountAsync(int id)
+    {
+        return _accountImageService.FindLinkedAccountAsync(id);
     }
 
     public Task<List<Player>> GetList()
@@ -93,10 +101,33 @@ public class PlayerService : IPlayerService
         
         var name = await EnsureUniqueName(command.Name, command.Id);
         var previousImage = dbPlayer.Image;
-        dbPlayer.UpdateImage(command.Image);
+        var newImage = string.IsNullOrEmpty(command.Image) ? null : command.Image;
+        string? accountImage = null;
+        if (newImage != previousImage)
+        {
+            dbPlayer.UpdateImage(newImage);
+            if (newImage == null)
+            {
+                accountImage = await _accountImageService.CopyLinkedAccountImageAsync(dbPlayer.Id);
+            }
+
+            if (accountImage != null)
+            {
+                dbPlayer.UseAccountImage(accountImage);
+            }
+        }
+
         dbPlayer.UpdateName(name);
         dbPlayer.UpdateEmail(command.Email);
-        await _unitOfWork.SaveChangesAsync();
+        try
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            _imageService.DeleteImage(accountImage);
+            throw;
+        }
 
         if (previousImage != dbPlayer.Image)
         {

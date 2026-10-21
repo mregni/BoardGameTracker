@@ -14,4 +14,5 @@ public interface IUserAdminService
     Task<List<ExternalLoginDto>> GetExternalLoginsAsync(string userId);
     Task UnlinkExternalLoginAsync(string userId, int externalLoginId, string currentUserId);
     Task<UserDto> ManageRoleByIdentityProviderAsync(string userId, string currentUserId);
+    Task LinkPlayerAccountAsync(int playerId, string? userId);
 }
