@@ -36,7 +36,7 @@ export const UserAccessModal = ({ open, close, user, isCurrentUser }: Props) => 
 				<BgtDialogTitle>{t("account.users.access.title")}</BgtDialogTitle>
 				<div className="flex flex-col gap-4 my-3">
 					<div className="flex items-center gap-3">
-						<BgtAvatar image={user.profileImage} title={user.username} colorKey={user.id} shape="round" size="large" />
+						<BgtAvatar image={user.profileImage} title={user.username} colorKey={user.id} size="large" />
 						<BgtText color="white" className="font-semibold truncate">
 							{user.username}
 						</BgtText>

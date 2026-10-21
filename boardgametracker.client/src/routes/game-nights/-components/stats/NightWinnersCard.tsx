@@ -32,7 +32,7 @@ export const NightWinnersCard = ({ winners, tiedNights, lookup }: Props) => {
 									key={winner.playerId}
 									rank={winner.rank}
 									highlight={winner.rank === 1}
-									avatar={<BgtAvatar title={name} image={player?.image} size="medium" shape="round" />}
+									avatar={<BgtAvatar title={name} image={player?.image} size="medium" />}
 									name={name}
 									detail={[
 										t("stats.winners.nights", { count: winner.nightsAttended }),
