@@ -49,7 +49,7 @@ function AuthCallbackPage() {
 			if (!handled.current) {
 				handled.current = true;
 				successToast("auth:oidc.linked");
-				navigate({ to: "/settings", replace: true });
+				navigate({ to: "/settings", search: { tab: "account" }, replace: true });
 			}
 			return;
 		}
@@ -92,7 +92,11 @@ function AuthCallbackPage() {
 									{t("oidc.sign-in-with-password")}
 								</Link>
 							) : (
-								<Link to={isAuthenticated ? "/settings" : "/login"} className="text-primary-text hover:underline">
+								<Link
+									to={isAuthenticated ? "/settings" : "/login"}
+									search={isAuthenticated ? { tab: "account" } : undefined}
+									className="text-primary-text hover:underline"
+								>
 									{t(isAuthenticated ? "back-to-settings" : "back-to-login")}
 								</Link>
 							)}

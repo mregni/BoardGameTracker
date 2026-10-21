@@ -18,7 +18,9 @@ vi.mock("@tanstack/react-router", () => ({
 		mocks.captured.Page = config.component;
 		return { ...config, useSearch: () => mocks.search };
 	},
-	Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
+	Link: ({ children, to, search }: { children: ReactNode; to: string; search?: Record<string, string> }) => (
+		<a href={search ? `${to}?${new URLSearchParams(search)}` : to}>{children}</a>
+	),
 	useNavigate: () => mocks.navigate,
 }));
 
@@ -148,14 +150,14 @@ describe("AuthCallbackPage", () => {
 		expect(mocks.adoptOidcLoginCall).not.toHaveBeenCalled();
 	});
 
-	it("sends a signed-in user back to the settings when linking a provider failed", async () => {
+	it("sends a signed-in user back to the account settings when linking a provider failed", async () => {
 		mocks.search = { error: "error.auth.oidc-already-linked" };
 		mocks.isAuthenticated = true;
 
 		renderWithTheme(<mocks.captured.Page />);
 
 		const link = await screen.findByRole("link");
-		expect(link).toHaveAttribute("href", "/settings");
+		expect(link).toHaveAttribute("href", "/settings?tab=account");
 		expect(link).toHaveTextContent("back-to-settings");
 		expect(mocks.adoptOidcLoginCall).not.toHaveBeenCalled();
 	});
@@ -169,12 +171,14 @@ describe("AuthCallbackPage", () => {
 		expect(mocks.setSession).not.toHaveBeenCalled();
 	});
 
-	it("confirms a linked provider and returns to the settings", async () => {
+	it("confirms a linked provider and returns to the account settings", async () => {
 		mocks.search = { linked: "fake" };
 
 		renderWithTheme(<mocks.captured.Page />);
 
-		await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith({ to: "/settings", replace: true }));
+		await waitFor(() =>
+			expect(mocks.navigate).toHaveBeenCalledWith({ to: "/settings", search: { tab: "account" }, replace: true }),
+		);
 		expect(mocks.successToast).toHaveBeenCalledWith("auth:oidc.linked");
 		expect(mocks.adoptOidcLoginCall).not.toHaveBeenCalled();
 	});
