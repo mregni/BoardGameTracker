@@ -17,7 +17,7 @@ import { announceSessionChange } from "@/utils/sessionSync";
 const callbackSearchSchema = z.object({
 	error: z.string().optional(),
 	redirect: z.string().optional(),
-	linked: z.string().optional(),
+	linked: z.union([z.boolean(), z.string()]).optional(),
 });
 
 const SIGN_IN_WITH_PASSWORD_ERRORS = new Set(["error.auth.oidc-username-taken", "error.auth.oidc-email-exists"]);
