@@ -63,7 +63,7 @@ Under **Settings → Single sign-on** the provider cannot be enabled while the *
 ### Register the client at your provider
 
 1. Create a **public** client (no client secret is required; a secret is accepted but not needed with PKCE).
-2. Allow the two redirect URIs shown under **Settings → Single sign-on → Register at the provider**: `<PUBLIC_URL>/api/auth/oidc/<name>/callback` for sign-in and `<PUBLIC_URL>/api/auth/oidc/<name>/link-callback` for linking an existing local account. They update while you type the short name, and each has a copy button.
+2. Allow the two redirect URIs shown under **Settings → Single sign-on → Register at the provider**: `<PUBLIC_URL>/api/auth/oidc/callback` for sign-in and `<PUBLIC_URL>/api/auth/oidc/link-callback` for linking an existing local account. Each has a copy button.
 3. Allow the post-logout redirect URI from the same list, `<PUBLIC_URL>/login`, so signing out of BoardGameTracker also ends the session at the provider and comes back to the login page.
 4. Grant the scopes `openid profile email`. `openid` is always requested, even when it is missing from the scopes field, because the sign-in relies on the id_token.
 
@@ -71,13 +71,12 @@ Under **Settings → Single sign-on** the provider cannot be enabled while the *
 
 ### Configure the provider in BoardGameTracker
 
-An administrator fills in the provider under **Settings → Single sign-on**. Enter the authority (issuer URL) and press **Test discovery** before saving: it fetches the provider's discovery document and tells you whether the reported issuer matches what you typed. Most providers only need the short name, button label, authority and client ID; the claim and endpoint fields are for providers that do not follow the defaults.
+An administrator fills in the provider under **Settings → Single sign-on**. Enter the authority (issuer URL) and press **Test discovery** before saving: it fetches the provider's discovery document and tells you whether the reported issuer matches what you typed. Most providers only need the button label, authority and client ID; the claim and endpoint fields are for providers that do not follow the defaults.
 
 The same configuration is available through the API (`POST /api/admin/oidc-providers`, also in Swagger when `SWAGGER_ENABLED=true`):
 
 ```json
 {
-  "name": "keycloak",
   "displayName": "Company login",
   "authority": "https://sso.example.com/realms/games",
   "clientId": "boardgametracker",
@@ -93,8 +92,8 @@ The same configuration is available through the API (`POST /api/admin/oidc-provi
 - **autoProvisionUsers** creates an account with the default role on first sign-in. When the username or the email already belongs to a local account that is not linked, the sign-in is refused and the user is told to log in with the password first and link the provider under **Settings → Account → External logins**. Accounts are never linked automatically by username or email.
 - **rolesClaimType** / **adminGroupValue** / **defaultRole** map the provider's groups to a role: `Admin` when the named group is present in that claim, otherwise the default role (`User` or `Reader`). For accounts created through the provider this is applied again on every sign-in, so a group change at the provider takes effect at the next sign-in. Without a groups claim and admin group nothing is changed after the first sign-in. The last active admin is never demoted; the server logs a warning instead.
 - A role that an admin sets under **Settings → Account** is a local override and is no longer changed by the provider. **Access → Let the identity provider manage the role** hands it back. Local accounts that were linked to the provider later keep their local role.
-- **Short name** can be changed later. Linked accounts keep working because links are stored per issuer and subject, not per name, but the redirect URIs change, so register the new ones at the provider.
-- Only one provider can be enabled at a time; the login page shows one *Continue with …* button. Switch **Enabled** off to hide the button without losing the configuration.
+- **displayName** is the label of the sign-in button and of the linked account under **Settings → Account**. It can be changed at any time; links are stored per issuer and subject, so linked accounts keep working and the redirect URIs stay the same.
+- Only one provider can be configured; creating a second one is refused. The login page shows one *Continue with …* button. Switch **Enabled** off to hide the button without losing the configuration.
 - Removing the provider also removes every linked external account; people keep their local password if they have one.
 
 ### Linking an existing account
