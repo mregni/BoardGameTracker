@@ -21,6 +21,7 @@ public class UserAdminServiceTests : IDisposable
     private readonly Mock<IUserStore<ApplicationUser>> _userStoreMock;
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
     private readonly Mock<ITokenService> _tokenServiceMock = new();
+    private readonly Mock<IUserAccessCheck> _accessCheckMock = new();
     private readonly MainDbContext _context;
     private readonly Mock<ILogger<UserAdminService>> _loggerMock;
     private readonly UserAdminService _service;
@@ -40,6 +41,7 @@ public class UserAdminServiceTests : IDisposable
         _service = new UserAdminService(
             _userManagerMock.Object,
             _tokenServiceMock.Object,
+            _accessCheckMock.Object,
             _context,
             _loggerMock.Object);
 
@@ -56,6 +58,7 @@ public class UserAdminServiceTests : IDisposable
     {
         _userManagerMock.VerifyNoOtherCalls();
         _tokenServiceMock.VerifyNoOtherCalls();
+        _accessCheckMock.VerifyNoOtherCalls();
         _loggerMock.VerifyNoOtherCalls();
     }
 
@@ -206,6 +209,7 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         _userManagerMock.Verify(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin), Times.Once);
         _userManagerMock.Verify(x => x.DeleteAsync(targetUser), Times.Once);
+        _accessCheckMock.Verify(x => x.Forget(targetUserId), Times.Once);
         VerifyInformationLogged(currentUserId, targetUserId);
         VerifyNoOtherCalls();
     }
@@ -235,6 +239,7 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         _userManagerMock.Verify(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin), Times.Once);
         _userManagerMock.Verify(x => x.DeleteAsync(targetUser), Times.Once);
+        _accessCheckMock.Verify(x => x.Forget(targetUserId), Times.Once);
         VerifyInformationLogged(currentUserId, targetUserId);
         VerifyNoOtherCalls();
     }
@@ -728,6 +733,7 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
         _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync("user-2", "Account disabled"), Times.Once);
+        _accessCheckMock.Verify(x => x.Forget("user-2"), Times.Once);
         VerifyInformationLogged("admin-1", "user-2");
         VerifyNoOtherCalls();
     }
@@ -786,6 +792,7 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.FindByIdAsync("user-2"), Times.Once);
         _userManagerMock.Verify(x => x.SetLockoutEndDateAsync(user, null), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _accessCheckMock.Verify(x => x.Forget("user-2"), Times.Once);
         VerifyInformationLogged("admin-1", "user-2");
         VerifyNoOtherCalls();
     }

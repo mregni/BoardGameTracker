@@ -31,7 +31,7 @@ public class AuthControllerTests
         _authServiceMock = new Mock<IAuthService>();
         _oidcServiceMock = new Mock<IOidcService>();
         _imageTicketsMock = new Mock<IProfileImageTicketService>();
-        _imageTicketsMock.Setup(x => x.Issue()).Returns("image-ticket");
+        _imageTicketsMock.Setup(x => x.Issue(It.IsAny<string>())).Returns("image-ticket");
         _imageTicketsMock.Setup(x => x.Lifetime).Returns(TimeSpan.FromDays(7));
         _loggerMock = new Mock<ILogger<AuthController>>();
         var sessionCookies = new AuthSessionCookies(_imageTicketsMock.Object, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }));
@@ -198,7 +198,6 @@ public class AuthControllerTests
 
     [Theory]
     [InlineData(Constants.Errors.InvalidRefreshToken)]
-    [InlineData(Constants.Errors.RefreshTokenSuperseded)]
     [InlineData(Constants.Errors.AccountDisabled)]
     public async Task Refresh_ShouldPropagateException_AndClearBothCookies_WhenTheRefreshFails(string error)
     {
@@ -218,6 +217,25 @@ public class AuthControllerTests
         SetCookie(ProfileImageCookie.Name).Should().Contain("expires=Thu, 01 Jan 1970");
 
         _authServiceMock.Verify(x => x.RefreshAsync("stale-token"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Refresh_ShouldKeepTheCookie_WhenAnotherRequestRotatedTheSameTokenFirst()
+    {
+        var context = ContextWithRefreshCookie("raced-token");
+        var response = new StartableResponseFeature();
+        context.Features.Set<IHttpResponseFeature>(response);
+        _controller.ControllerContext = new ControllerContext { HttpContext = context };
+        _authServiceMock.Setup(x => x.RefreshAsync("raced-token")).ThrowsAsync(new AuthenticationFailedException(Constants.Errors.RefreshTokenSuperseded));
+
+        var act = () => _controller.Refresh();
+
+        await act.Should().ThrowAsync<AuthenticationFailedException>().WithMessage(Constants.Errors.RefreshTokenSuperseded);
+        await response.StartAsync();
+        context.Response.Headers.SetCookie.Should().BeEmpty("the winning request just set the cookie this browser must keep");
+
+        _authServiceMock.Verify(x => x.RefreshAsync("raced-token"), Times.Once);
         VerifyNoOtherCalls();
     }
 

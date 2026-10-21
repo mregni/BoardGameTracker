@@ -58,7 +58,7 @@ public class OidcController : ControllerBase
 
     [HttpGet("{provider}/login")]
     [AllowAnonymous]
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting(RateLimitPolicies.Oidc)]
     [RequireOidcHttps(OidcHttpsRefusal.LoginPage)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> Login(string provider, [FromQuery] string? redirect)
@@ -79,7 +79,7 @@ public class OidcController : ControllerBase
 
     [HttpGet("{provider}/callback")]
     [AllowAnonymous]
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting(RateLimitPolicies.Oidc)]
     [RequireOidcHttps(OidcHttpsRefusal.CallbackPage)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> Callback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error, [FromQuery] string? iss)
@@ -109,7 +109,7 @@ public class OidcController : ControllerBase
 
     [HttpPost("adopt")]
     [AllowAnonymous]
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting(RateLimitPolicies.Oidc)]
     [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
     public IActionResult Adopt()
     {
@@ -120,7 +120,7 @@ public class OidcController : ControllerBase
             throw new AuthenticationFailedException(Constants.Errors.OidcHandoffExpired);
         }
 
-        _sessionCookies.Issue(HttpContext, login.RefreshToken);
+        _sessionCookies.Issue(HttpContext, login.RefreshToken, login.User.Id);
         return Ok(login);
     }
 
@@ -139,7 +139,7 @@ public class OidcController : ControllerBase
 
     [HttpGet("{provider}/link-callback")]
     [AllowAnonymous]
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting(RateLimitPolicies.Oidc)]
     [RequireOidcHttps(OidcHttpsRefusal.CallbackPage)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> LinkCallback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error, [FromQuery] string? iss)

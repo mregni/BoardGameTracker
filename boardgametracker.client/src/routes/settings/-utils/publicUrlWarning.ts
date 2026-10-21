@@ -1,3 +1,5 @@
+import { effectivePublicUrl } from "@/utils/publicUrl";
+
 export type PublicUrlWarning = "insecure" | "host-mismatch" | null;
 
 export const getPublicUrlWarning = (
@@ -36,3 +38,11 @@ export const breaksSingleSignOn = (url: string): boolean => {
 
 	return parsed.protocol === "http:" && !isLoopbackHost(parsed.hostname);
 };
+
+export const stopsSingleSignOn = (
+	publicUrl: string | null | undefined,
+	savedPublicUrl: string | null | undefined,
+	origin: string,
+): boolean =>
+	breaksSingleSignOn(effectivePublicUrl(publicUrl, origin)) &&
+	!breaksSingleSignOn(effectivePublicUrl(savedPublicUrl, origin));

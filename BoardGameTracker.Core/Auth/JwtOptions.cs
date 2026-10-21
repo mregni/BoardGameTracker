@@ -15,7 +15,7 @@ public sealed class JwtOptions
     public string Audience { get; set; } = "boardgametracker-client";
 
     [Range(1, 1440)]
-    public int AccessTokenExpiryMinutes { get; set; } = 60;
+    public int AccessTokenExpiryMinutes { get; set; } = 15;
 
     [Range(1, 365)]
     public int RefreshTokenExpiryDays { get; set; } = 7;

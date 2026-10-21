@@ -12,6 +12,32 @@ public static class StartupSecrets
     public static string PlaceholderMessage(string variable) =>
         $"{variable} still holds the CHANGEME placeholder from the example configuration. Replace it with your own random value of at least 32 characters (for example the output of `openssl rand -base64 48`).";
 
+    public static string? FindProblem(string? jwtSecret, string? dataProtectionKey, bool authEnabled)
+    {
+        try
+        {
+            ResolveJwtSecret(jwtSecret, authEnabled);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return ex.Message;
+        }
+
+        return string.IsNullOrWhiteSpace(dataProtectionKey) ? null : DataProtectionKeyProblem(dataProtectionKey);
+    }
+
+    public static string? DataProtectionKeyProblem(string secret)
+    {
+        if (IsPlaceholder(secret))
+        {
+            return PlaceholderMessage("DATA_PROTECTION_KEY");
+        }
+
+        return secret.Length < DataProtectionKeyMaterial.MinimumSecretLength
+            ? $"DATA_PROTECTION_KEY must be at least {DataProtectionKeyMaterial.MinimumSecretLength} characters long, but was {secret.Length}."
+            : null;
+    }
+
     public static string ResolveJwtSecret(string? secret, bool authEnabled)
     {
         if (string.IsNullOrWhiteSpace(secret))

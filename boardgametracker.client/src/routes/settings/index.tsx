@@ -1,5 +1,6 @@
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import CogIcon from "@/assets/icons/cog.svg?react";
@@ -11,6 +12,7 @@ import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpin
 import { useAppForm } from "@/hooks/form";
 import { usePermissions } from "@/hooks/usePermissions";
 import { type Settings, SettingsSchema } from "@/models";
+import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
 import { getLanguages, getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { AccountSettings } from "./-components/AccountSettings";
@@ -24,6 +26,8 @@ import { ShelfOfShameSettings } from "./-components/ShelfOfShameSettings";
 import { SsoSettings } from "./-components/SsoSettings";
 import { useRefreshIntegrationStatus } from "./-hooks/useIntegrationStatus";
 import { useSettingsData } from "./-hooks/useSettingsData";
+import { useSingleSignOnEnabled } from "./-hooks/useSingleSignOnEnabled";
+import { stopsSingleSignOn } from "./-utils/publicUrlWarning";
 import { resolveSettingsCategory } from "./-utils/settingsCategory";
 import { settingsFormOpts } from "./-utils/settingsFormOpts";
 
@@ -111,6 +115,18 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 	});
 
 	const overrides = settings.environmentOverrides ?? {};
+	const ssoEnabled = useSingleSignOnEnabled();
+	const [confirmSsoStop, setConfirmSsoStop] = useState(false);
+
+	const submit = (event: FormEvent) => {
+		if (ssoEnabled && stopsSingleSignOn(form.state.values.publicUrl, settings.publicUrl, globalThis.location.origin)) {
+			event.preventDefault();
+			event.stopPropagation();
+			setConfirmSsoStop(true);
+			return;
+		}
+		handleFormSubmit(form)(event);
+	};
 
 	const renderContent = () => {
 		switch (activeCategory) {
@@ -158,7 +174,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 						{activeCategory === "account" || activeCategory === "sso" ? (
 							content
 						) : (
-							<form onSubmit={handleFormSubmit(form)}>
+							<form onSubmit={submit}>
 								{content}
 								<div className="mt-6 pt-4 lg:ml-4 xl:ml-6 border-t border-white/10">
 									<div className="flex justify-between flex-wrap gap-3 items-start">
@@ -176,6 +192,20 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 						)}
 					</div>
 				</div>
+				{confirmSsoStop && (
+					<BgtDeleteModal
+						open
+						close={() => setConfirmSsoStop(false)}
+						title={t("general.public-url.sso-confirm.title")}
+						heading={t("general.public-url.sso-confirm.title")}
+						description={t("general.public-url.sso-confirm.description")}
+						confirmLabel={t("general.public-url.sso-confirm.confirm")}
+						onDelete={() => {
+							setConfirmSsoStop(false);
+							form.handleSubmit();
+						}}
+					/>
+				)}
 			</BgtPageContent>
 		</BgtPage>
 	);

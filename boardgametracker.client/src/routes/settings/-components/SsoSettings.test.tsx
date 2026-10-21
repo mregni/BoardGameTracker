@@ -103,7 +103,8 @@ describe("SsoSettings", () => {
 		expect(screen.queryByText("sso.description.inactive")).not.toBeInTheDocument();
 	});
 
-	it("shows an enabled provider as configured but inactive without https, locked at its stored value", () => {
+	it("shows an enabled provider as configured but inactive without https, and only lets it be switched off", async () => {
+		const user = userEvent.setup();
 		mocks.state.provider = provider;
 		mocks.state.setup = { ...setup, publicBaseUrl: "http://games.example.com", httpsRequired: true };
 		renderWithProviders(<SsoSettings />);
@@ -112,11 +113,20 @@ describe("SsoSettings", () => {
 		expect(screen.getAllByRole("alert")).toHaveLength(1);
 		expect(screen.getByRole("alert")).toHaveTextContent("sso.https-required-locked");
 		const toggle = screen.getByRole("switch", { name: "sso.fields.enabled.label" });
-		expect(toggle).toBeDisabled();
+		expect(toggle).toBeEnabled();
 		expect(toggle).toHaveAttribute("aria-checked", "true");
 		expect(screen.getByText("sso.fields.enabled.description")).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "sso.save" })).toBeDisabled();
-		expect(mocks.state.save).not.toHaveBeenCalled();
+
+		await user.click(toggle);
+
+		expect(toggle).toHaveAttribute("aria-checked", "false");
+		expect(toggle).toBeDisabled();
+		const save = screen.getByRole("button", { name: "sso.save" });
+		expect(save).toBeEnabled();
+		await user.click(save);
+		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
+		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ enabled: false });
 	});
 
 	it("greys out the redirect URIs until the public URL is https", () => {

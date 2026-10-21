@@ -2,21 +2,15 @@ import axios, { isAxiosError } from "axios";
 import { useAuth } from "@/hooks/useAuth";
 import type { LoginResponse } from "@/models/Auth/Auth";
 import { apiUrl } from "./apiUrl";
+import { withRefreshLock } from "./refreshLock";
 import { announceSessionChange, listenForSessionChanges } from "./sessionSync";
 
 export const SESSION_HEADERS = { "X-Requested-With": "XMLHttpRequest" } as const;
 export const SUPERSEDED_RETRY_DELAY_MS = 300;
 
-const REFRESH_LOCK = "bgt-token-refresh";
 const SUPERSEDED_ERROR = "error.auth.refresh-token-superseded";
 
 let inFlight: Promise<string> | null = null;
-let lastRefreshInAnotherTab = 0;
-
-const withRefreshLock = <T>(task: () => Promise<T>): Promise<T> => {
-	const locks = globalThis.navigator?.locks;
-	return locks ? (locks.request(REFRESH_LOCK, () => task()) as Promise<T>) : task();
-};
 
 const postRefresh = async (): Promise<LoginResponse> => {
 	const response = await axios.post<LoginResponse>(`${apiUrl}auth/refresh`, null, {
@@ -35,7 +29,6 @@ const wasSuperseded = (error: unknown): boolean => {
 };
 
 const refreshWithCookie = async (): Promise<LoginResponse> => {
-	const startedAt = Date.now();
 	try {
 		return await postRefresh();
 	} catch (error) {
@@ -43,9 +36,6 @@ const refreshWithCookie = async (): Promise<LoginResponse> => {
 			throw error;
 		}
 		await new Promise((resolve) => setTimeout(resolve, SUPERSEDED_RETRY_DELAY_MS));
-		if (lastRefreshInAnotherTab < startedAt) {
-			throw error;
-		}
 		return postRefresh();
 	}
 };
@@ -79,7 +69,6 @@ export const startSessionSync = (): (() => void) =>
 			return;
 		}
 		if (change === "refreshed") {
-			lastRefreshInAnotherTab = Date.now();
 			return;
 		}
 		refreshSession().catch(() => undefined);

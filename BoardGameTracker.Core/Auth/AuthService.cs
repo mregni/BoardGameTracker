@@ -20,8 +20,6 @@ namespace BoardGameTracker.Core.Auth;
 
 public class AuthService : IAuthService
 {
-    private static readonly TimeSpan RotationGracePeriod = TimeSpan.FromSeconds(30);
-
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenService _tokenService;
@@ -118,39 +116,15 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponse> RefreshAsync(string refreshToken)
     {
-        var existingToken = await _tokenService.GetRefreshTokenAsync(refreshToken);
-        if (existingToken == null)
+        var presented = await _tokenService.GetRefreshTokenAsync(refreshToken);
+        if (presented == null || presented.IsExpired)
         {
             throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
         }
 
-        if (existingToken.IsRevoked && existingToken.ReplacedByToken != null)
-        {
-            if (existingToken.WasRotatedWithin(RotationGracePeriod))
-            {
-                _logger.LogInformation("A refresh token rotated moments ago was presented again for user {UserId}; treating it as a concurrent refresh", existingToken.UserId);
-                throw new AuthenticationFailedException(Constants.Errors.RefreshTokenSuperseded);
-            }
+        var current = presented.IsActive ? presented : await FindUnusedSuccessorAsync(presented);
 
-            var successor = await _tokenService.GetSuccessorAsync(existingToken);
-            if (successor?.ReplacedByToken != null)
-            {
-                _logger.LogWarning("A rotated refresh token was presented again after its successor was used for user {UserId}; revoking every session", existingToken.UserId);
-                await _tokenService.RevokeAllUserTokensAsync(existingToken.UserId, "Refresh token reuse detected");
-                throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
-            }
-
-            _logger.LogWarning("A rotated refresh token whose successor was never used was presented again for user {UserId}; ending that session only", existingToken.UserId);
-            await _tokenService.RevokeRefreshTokenAsync(existingToken, "Stale refresh token replayed");
-            throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
-        }
-
-        if (!existingToken.IsActive)
-        {
-            throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
-        }
-
-        var user = existingToken.User!;
+        var user = presented.User!;
         if (user.IsDisabled)
         {
             _logger.LogWarning("Refresh refused for disabled user {UserId}", user.Id);
@@ -163,11 +137,13 @@ public class AuthService : IAuthService
         RefreshToken newRefreshToken;
         try
         {
-            newRefreshToken = await _tokenService.RotateRefreshTokenAsync(existingToken);
+            newRefreshToken = current == presented
+                ? await _tokenService.RotateRefreshTokenAsync(current)
+                : await _tokenService.SupersedeRefreshTokenAsync(current);
         }
         catch (DbUpdateConcurrencyException)
         {
-            _logger.LogWarning("Two refreshes raced on one refresh token for user {UserId}; only the first got a new token", existingToken.UserId);
+            _logger.LogInformation("Two refreshes raced on one refresh token for user {UserId}; only the first got a new token", presented.UserId);
             throw new AuthenticationFailedException(Constants.Errors.RefreshTokenSuperseded);
         }
 
@@ -178,6 +154,42 @@ public class AuthService : IAuthService
             newRefreshToken.PlainTextToken!,
             _tokenService.GetAccessTokenExpiry(),
             user.ToUserInfo(roles));
+    }
+
+    private async Task<RefreshToken> FindUnusedSuccessorAsync(RefreshToken presented)
+    {
+        if (presented.ReplacedByToken == null)
+        {
+            throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+        }
+
+        var seen = new HashSet<string>(StringComparer.Ordinal) { presented.Token };
+        var successor = await _tokenService.GetSuccessorAsync(presented);
+        while (successor != null && seen.Add(successor.Token))
+        {
+            if (successor.WasUsed)
+            {
+                _logger.LogWarning("A replaced refresh token was presented again after a later token of its session was used for user {UserId}; revoking every session", presented.UserId);
+                await _tokenService.RevokeAllUserTokensAsync(presented.UserId, "Refresh token reuse detected");
+                throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+            }
+
+            if (successor.IsActive)
+            {
+                _logger.LogInformation("A replaced refresh token whose successor was never used was presented again for user {UserId}; treating it as a lost response", presented.UserId);
+                return successor;
+            }
+
+            if (!successor.IsSuperseded)
+            {
+                break;
+            }
+
+            successor = await _tokenService.GetSuccessorAsync(successor);
+        }
+
+        _logger.LogInformation("A replaced refresh token was presented for user {UserId}, but its session has ended", presented.UserId);
+        throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
     }
 
     public async Task LogoutAsync(string? userId, string? refreshToken)

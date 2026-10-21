@@ -82,7 +82,9 @@ export const ExternalLoginsSection = () => {
 					open
 					close={() => setPendingUnlink(null)}
 					title={providerLabel(pendingUnlink)}
+					heading={t("account.external-logins.unlink-title", { provider: providerLabel(pendingUnlink) })}
 					description={t("account.external-logins.unlink-confirm")}
+					confirmLabel={t("account.external-logins.unlink")}
 					onDelete={() => {
 						unlink(pendingUnlink.id);
 						setPendingUnlink(null);

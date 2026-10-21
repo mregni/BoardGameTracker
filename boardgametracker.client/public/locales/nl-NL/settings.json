@@ -28,7 +28,12 @@
 			"not-set": "Niet ingesteld. Uitnodigingen en e-mails om je wachtwoord te herstellen worden niet verstuurd, en single sign-on gebruikt het adres waarop je de app opent.",
 			"insecure-warning": "De publieke URL gebruikt http terwijl BoardGameTracker via https geopend is. Links in e-mails, RSVP-uitnodigingen en single sign-on-redirects gebruiken het onveilige adres.",
 			"host-mismatch-warning": "De publieke URL verwijst naar een andere host dan {{host}}. Links in e-mails, RSVP-uitnodigingen en single sign-on-redirects gebruiken die host.",
-			"sso-warning": "Single sign-on werkt niet meer met een http-adres."
+			"sso-warning": "Single sign-on werkt niet meer met een http-adres.",
+			"sso-confirm": {
+				"title": "Single sign-on stoppen?",
+				"description": "Met deze publieke URL werkt single sign-on voor niemand meer, ook niet via https, totdat de publieke URL weer https gebruikt.",
+				"confirm": "Opslaan en single sign-on stoppen"
+			}
 		},
 		"ui-language": {
 			"label": "Taal",
@@ -315,14 +320,15 @@
 				"unlink-failed": "Het account van de identiteitsprovider kon niet worden ontkoppeld.",
 				"link-failed": "Het koppelen kon niet worden gestart."
 			},
-			"unlink-confirm": "Je kunt dan niet meer inloggen met deze provider tot je hem opnieuw koppelt."
+			"unlink-confirm": "Je kunt dan niet meer inloggen met deze provider tot je hem opnieuw koppelt.",
+			"unlink-title": "{{provider}} ontkoppelen?"
 		}
 	},
 	"env-override": "Ingesteld via de omgevingsvariabele {{variable}}. Pas die daar aan om deze instelling te wijzigen.",
 	"sso": {
 		"title": "Identiteitsprovider",
 		"description": {
-			"empty": "Laat mensen inloggen via je identiteitsprovider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Registreer daar eerst een publieke client en vul daarna de gegevens hieronder in.",
+			"empty": "Laat mensen inloggen via je identiteitsprovider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Registreer daar eerst een client (publiek, of vertrouwelijk met een clientgeheim) en vul daarna de gegevens hieronder in.",
 			"configured": "Provider {{name}} is ingesteld. Wijzigingen gelden vanaf de volgende keer dat iemand inlogt.",
 			"inactive": "Provider {{name}} is ingesteld maar niet actief: er is een https-adres als publieke URL nodig."
 		},
@@ -421,7 +427,7 @@
 			"deleted": "Provider verwijderd.",
 			"delete-failed": "De provider kon niet worden verwijderd."
 		},
-		"https-required-locked": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL. Tot dan kan de ingeschakelde provider niet worden gewijzigd."
+		"https-required-locked": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL. Tot dan kun je de provider alleen uitschakelen."
 	},
 	"changedetection": {
 		"title": "changedetection.io",

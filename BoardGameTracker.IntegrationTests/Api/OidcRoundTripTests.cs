@@ -138,10 +138,23 @@ public class OidcRoundTripTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task SingleSignOn_ShouldNotUseUpThePasswordLoginLimit()
+    {
+        using var browser = _fixture.CreateBrowserClient(Https);
+        for (var i = 0; i < RateLimitPolicies.AuthPermitsPerMinute + 2; i++)
+        {
+            (await browser.PostAsync("/api/auth/oidc/adopt", null)).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        var password = await browser.PostAsJsonAsync("/api/auth/login", new LoginRequest("user", IntegrationFixture.UserPassword));
+        password.StatusCode.Should().Be(HttpStatusCode.OK, "SSO requests have their own budget");
+    }
+
+    [Fact]
     public async Task Login_ShouldSendARateLimitedBrowserToTheErrorPage()
     {
         using var browser = _fixture.CreateBrowserClient(Https);
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < RateLimitPolicies.OidcPermitsPerMinute; i++)
         {
             await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login");
         }

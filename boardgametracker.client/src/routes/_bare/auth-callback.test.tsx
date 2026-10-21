@@ -54,6 +54,7 @@ const translations: Record<string, string> = {
 vi.mock("@/utils/i18n", () => ({
 	default: {
 		t: (key: string, options?: { defaultValue?: string }) => translations[key] ?? options?.defaultValue ?? key,
+		exists: (key: string) => key in translations,
 	},
 }));
 
@@ -121,6 +122,18 @@ describe("AuthCallbackPage", () => {
 		expect(mocks.adoptOidcLoginCall).not.toHaveBeenCalled();
 		expect(mocks.navigate).not.toHaveBeenCalled();
 	});
+
+	it.each(["<script>alert(1)</script>", "Your account is locked, call 0800 123 456", "error.auth.made-up-key"])(
+		"shows the generic failure instead of text from the address (%s)",
+		async (error) => {
+			mocks.search = { error };
+
+			renderWithTheme(<mocks.captured.Page />);
+
+			expect(await screen.findByText("Signing in with the identity provider failed.")).toBeInTheDocument();
+			expect(screen.queryByText(error)).not.toBeInTheDocument();
+		},
+	);
 
 	it("explains that single sign-on needs https when the callback arrived over plain http", async () => {
 		mocks.search = { error: "error.auth.oidc-https-required" };

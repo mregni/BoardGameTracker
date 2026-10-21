@@ -13,15 +13,10 @@ public sealed class DataProtectionKeyMaterial
 
     public DataProtectionKeyMaterial(string secret)
     {
-        if (StartupSecrets.IsPlaceholder(secret))
+        var problem = StartupSecrets.DataProtectionKeyProblem(secret);
+        if (problem != null)
         {
-            throw new ArgumentException(StartupSecrets.PlaceholderMessage("DATA_PROTECTION_KEY"), nameof(secret));
-        }
-
-        if (secret.Length < MinimumSecretLength)
-        {
-            throw new ArgumentException(
-                $"DATA_PROTECTION_KEY must be at least {MinimumSecretLength} characters long, but was {secret.Length}.", nameof(secret));
+            throw new ArgumentException(problem, nameof(secret));
         }
 
         Key = HKDF.DeriveKey(HashAlgorithmName.SHA256, Encoding.UTF8.GetBytes(secret), 32, info: DerivationInfo);

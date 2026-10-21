@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { breaksSingleSignOn, getPublicUrlWarning } from "./publicUrlWarning";
+import { breaksSingleSignOn, getPublicUrlWarning, stopsSingleSignOn } from "./publicUrlWarning";
 
 const https = { protocol: "https:", host: "games.example.com" };
 
@@ -35,5 +35,26 @@ describe("breaksSingleSignOn", () => {
 
 	it("ignores a value that is not a URL yet", () => {
 		expect(breaksSingleSignOn("games")).toBe(false);
+	});
+});
+
+describe("stopsSingleSignOn", () => {
+	const lan = "http://192.168.1.20:8080";
+
+	it("is true when the new address breaks single sign-on and the saved one did not", () => {
+		expect(
+			stopsSingleSignOn("http://games.example.com", "https://games.example.com", "https://games.example.com"),
+		).toBe(true);
+		expect(stopsSingleSignOn("", "https://games.example.com", lan)).toBe(true);
+	});
+
+	it("is false when single sign-on keeps working", () => {
+		expect(stopsSingleSignOn("https://games.example.com", "", lan)).toBe(false);
+		expect(stopsSingleSignOn("", null, "https://games.example.com")).toBe(false);
+	});
+
+	it("is false when single sign-on was already stopped by the saved address", () => {
+		expect(stopsSingleSignOn("http://games.example.com", "", lan)).toBe(false);
+		expect(stopsSingleSignOn("", null, lan)).toBe(false);
 	});
 });

@@ -28,7 +28,7 @@ public class OidcAdoptTests
 
     public OidcAdoptTests()
     {
-        _imageTicketsMock.Setup(x => x.Issue()).Returns("image-ticket");
+        _imageTicketsMock.Setup(x => x.Issue(It.IsAny<string>())).Returns("image-ticket");
         _imageTicketsMock.Setup(x => x.Lifetime).Returns(TimeSpan.FromDays(7));
         var sessionCookies = new AuthSessionCookies(_imageTicketsMock.Object, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }));
         _controller = new OidcController(_oidcServiceMock.Object, _publicUrlBuilderMock.Object, sessionCookies, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }), Mock.Of<ILogger<OidcController>>());

@@ -72,10 +72,20 @@ public class TokenService : ITokenService
         return refreshToken;
     }
 
-    public async Task<RefreshToken> RotateRefreshTokenAsync(RefreshToken current)
+    public Task<RefreshToken> RotateRefreshTokenAsync(RefreshToken current)
+    {
+        return ReplaceAsync(current, RefreshToken.RotatedReason);
+    }
+
+    public Task<RefreshToken> SupersedeRefreshTokenAsync(RefreshToken unused)
+    {
+        return ReplaceAsync(unused, RefreshToken.SupersededReason);
+    }
+
+    private async Task<RefreshToken> ReplaceAsync(RefreshToken current, string reason)
     {
         var replacement = RefreshToken.Create(current.UserId, _options.RefreshTokenExpiryDays);
-        current.Revoke("Replaced by new token", replacement.Token);
+        current.Revoke(reason, replacement.Token);
 
         _context.RefreshTokens.Add(replacement);
         _context.RefreshTokens.Update(current);

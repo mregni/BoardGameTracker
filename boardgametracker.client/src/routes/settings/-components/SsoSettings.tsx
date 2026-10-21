@@ -358,15 +358,19 @@ export const SsoSettings = () => {
 									field={field}
 									label={t("sso.fields.enabled.label")}
 									description={t("sso.fields.enabled.description")}
-									disabled={busy || httpsRequired}
+									disabled={busy || (httpsRequired && !field.state.value)}
 								/>
 							)}
 						</form.Field>
 					)}
 					<div className="flex flex-wrap gap-3 pt-2">
-						<BgtButton type="submit" disabled={busy || lockedByHttps}>
-							{provider ? t("sso.save") : t("sso.create")}
-						</BgtButton>
+						<form.Subscribe selector={(state) => state.values.enabled}>
+							{(enabled) => (
+								<BgtButton type="submit" disabled={busy || (lockedByHttps && enabled)}>
+									{provider ? t("sso.save") : t("sso.create")}
+								</BgtButton>
+							)}
+						</form.Subscribe>
 						{provider && (
 							<BgtButton variant="error" disabled={busy} onClick={deleteModal.show}>
 								{t("sso.delete")}

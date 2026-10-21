@@ -317,87 +317,190 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldRejectWithoutRevokingOtherSessions_WhenTheTokenWasRotatedMomentsAgo()
+    public async Task RefreshAsync_ShouldContinueTheSession_WhenAReplacedTokenComesBackAndItsSuccessorWasNeverUsed()
     {
-        var rotatedToken = RefreshToken.Create("user-id-123", 7);
-        rotatedToken.Revoke("Replaced by new token", "next-token-hash");
-        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(rotatedToken);
+        var user = new ApplicationUser("testuser", "test@test.com", "Test User");
+        var presented = Replaced(CreateActiveRefreshTokenWithUser(user.Id, user), RefreshToken.RotatedReason);
+        var unusedSuccessor = RefreshToken.Create(user.Id, 7);
+        var fresh = RefreshToken.Create(user.Id, 7);
+        var roles = new List<string> { "User" };
+        var expiry = DateTime.UtcNow.AddMinutes(15);
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(presented);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(presented)).ReturnsAsync(unusedSuccessor);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
+        _tokenServiceMock.Setup(x => x.SupersedeRefreshTokenAsync(unusedSuccessor)).ReturnsAsync(fresh);
+        _tokenServiceMock.Setup(x => x.GenerateAccessToken(user, roles)).Returns("access");
+        _tokenServiceMock.Setup(x => x.GetAccessTokenExpiry()).Returns(expiry);
 
-        var act = () => _authService.RefreshAsync("old-token");
+        var result = await _authService.RefreshAsync("old-token");
 
-        await act.Should().ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage(Constants.Errors.RefreshTokenSuperseded);
-
+        result.AccessToken.Should().Be("access");
+        result.RefreshToken.Should().Be(fresh.PlainTextToken);
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _tokenServiceMock.Verify(x => x.SupersedeRefreshTokenAsync(unusedSuccessor), Times.Once);
+        _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetAccessTokenExpiry(), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldRevokeEverySession_WhenARotatedTokenIsPresentedAgainAfterItsSuccessorWasUsed()
+    public async Task RefreshAsync_ShouldFollowSupersededTokens_ToTheUnusedTipOfTheSession()
     {
-        var rotatedToken = RotatedLongAgo("user-id-123");
-        var successor = RefreshToken.Create("user-id-123", 7);
-        successor.Revoke("Replaced by new token", "third-token-hash");
-        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(rotatedToken);
-        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(rotatedToken)).ReturnsAsync(successor);
-        _tokenServiceMock.Setup(x => x.RevokeAllUserTokensAsync("user-id-123", "Refresh token reuse detected")).Returns(Task.CompletedTask);
+        var user = new ApplicationUser("testuser", "test@test.com", "Test User");
+        var presented = Replaced(CreateActiveRefreshTokenWithUser(user.Id, user), RefreshToken.SupersededReason);
+        var superseded = Replaced(RefreshToken.Create(user.Id, 7), RefreshToken.SupersededReason);
+        var tip = RefreshToken.Create(user.Id, 7);
+        var fresh = RefreshToken.Create(user.Id, 7);
+        var roles = new List<string> { "User" };
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(presented);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(presented)).ReturnsAsync(superseded);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(superseded)).ReturnsAsync(tip);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
+        _tokenServiceMock.Setup(x => x.SupersedeRefreshTokenAsync(tip)).ReturnsAsync(fresh);
+        _tokenServiceMock.Setup(x => x.GenerateAccessToken(user, roles)).Returns("access");
+
+        var result = await _authService.RefreshAsync("old-token");
+
+        result.RefreshToken.Should().Be(fresh.PlainTextToken);
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(superseded), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _tokenServiceMock.Verify(x => x.SupersedeRefreshTokenAsync(tip), Times.Once);
+        _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetAccessTokenExpiry(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldRevokeEverySession_WhenAReplacedTokenComesBackAfterItsSuccessorWasUsed()
+    {
+        var presented = Replaced(RefreshToken.Create("user-id-123", 7), RefreshToken.RotatedReason);
+        var usedSuccessor = Replaced(RefreshToken.Create("user-id-123", 7), RefreshToken.RotatedReason);
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(presented);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(presented)).ReturnsAsync(usedSuccessor);
 
         var act = () => _authService.RefreshAsync("old-token");
 
-        await act.Should().ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage(Constants.Errors.InvalidRefreshToken);
-
+        await act.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage(Constants.Errors.InvalidRefreshToken);
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
-        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(rotatedToken), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
         _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync("user-id-123", "Refresh token reuse detected"), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldEndOnlyThatSession_WhenAStaleTokenIsReplayedAndItsSuccessorWasNeverUsed()
+    public async Task RefreshAsync_ShouldRevokeEverySession_WhenALaterTokenOfTheSessionWasUsed()
     {
-        var rotatedToken = RotatedLongAgo("user-id-123");
-        var unusedSuccessor = RefreshToken.Create("user-id-123", 7);
-        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(rotatedToken);
-        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(rotatedToken)).ReturnsAsync(unusedSuccessor);
-        _tokenServiceMock.Setup(x => x.RevokeRefreshTokenAsync(rotatedToken, "Stale refresh token replayed")).Returns(Task.CompletedTask);
+        var presented = Replaced(RefreshToken.Create("user-id-123", 7), RefreshToken.RotatedReason);
+        var superseded = Replaced(RefreshToken.Create("user-id-123", 7), RefreshToken.SupersededReason);
+        var used = Replaced(RefreshToken.Create("user-id-123", 7), RefreshToken.RotatedReason);
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(presented);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(presented)).ReturnsAsync(superseded);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(superseded)).ReturnsAsync(used);
 
         var act = () => _authService.RefreshAsync("old-token");
 
-        await act.Should().ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage(Constants.Errors.InvalidRefreshToken);
-
+        await act.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage(Constants.Errors.InvalidRefreshToken);
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
-        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(rotatedToken), Times.Once);
-        _tokenServiceMock.Verify(x => x.RevokeRefreshTokenAsync(rotatedToken, "Stale refresh token replayed"), Times.Once);
-        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(superseded), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync("user-id-123", "Refresh token reuse detected"), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldEndOnlyThatSession_WhenTheSuccessorIsGone()
+    public async Task RefreshAsync_ShouldRefuseWithoutRevokingAnything_WhenTheSessionOfAReplacedTokenHasEnded()
     {
-        var rotatedToken = RotatedLongAgo("user-id-123");
-        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(rotatedToken);
-        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(rotatedToken)).ReturnsAsync((RefreshToken?)null);
-        _tokenServiceMock.Setup(x => x.RevokeRefreshTokenAsync(rotatedToken, "Stale refresh token replayed")).Returns(Task.CompletedTask);
+        var presented = Replaced(RefreshToken.Create("user-id-123", 7), RefreshToken.RotatedReason);
+        var loggedOut = RefreshToken.Create("user-id-123", 7);
+        loggedOut.Revoke("Logged out");
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(presented);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(presented)).ReturnsAsync(loggedOut);
 
         var act = () => _authService.RefreshAsync("old-token");
 
-        await act.Should().ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage(Constants.Errors.InvalidRefreshToken);
-
+        await act.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage(Constants.Errors.InvalidRefreshToken);
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
-        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(rotatedToken), Times.Once);
-        _tokenServiceMock.Verify(x => x.RevokeRefreshTokenAsync(rotatedToken, "Stale refresh token replayed"), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
         VerifyNoOtherCalls();
     }
 
-    private static RefreshToken RotatedLongAgo(string userId)
+    [Fact]
+    public async Task RefreshAsync_ShouldRefuse_WhenTheSuccessorIsGone()
     {
-        var token = RefreshToken.Create(userId, 7);
-        token.Revoke("Replaced by new token", "next-token-hash");
-        typeof(RefreshToken).GetProperty(nameof(RefreshToken.RevokedAt))!.SetValue(token, DateTime.UtcNow.AddMinutes(-5));
+        var presented = Replaced(RefreshToken.Create("user-id-123", 7), RefreshToken.RotatedReason);
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(presented);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(presented)).ReturnsAsync((RefreshToken?)null);
+
+        var act = () => _authService.RefreshAsync("old-token");
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage(Constants.Errors.InvalidRefreshToken);
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldStop_WhenTheChainLoopsBackOnItself()
+    {
+        var presented = Replaced(RefreshToken.Create("user-id-123", 7), RefreshToken.SupersededReason);
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(presented);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(presented)).ReturnsAsync(presented);
+
+        var act = () => _authService.RefreshAsync("old-token");
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage(Constants.Errors.InvalidRefreshToken);
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldTellTheLoserToRetry_WhenTwoLostResponsesRaceOnOneSuccessor()
+    {
+        var user = new ApplicationUser("testuser", "test@test.com", "Test User");
+        var presented = Replaced(CreateActiveRefreshTokenWithUser(user.Id, user), RefreshToken.RotatedReason);
+        var unusedSuccessor = RefreshToken.Create(user.Id, 7);
+        var roles = new List<string> { "User" };
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(presented);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(presented)).ReturnsAsync(unusedSuccessor);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
+        _tokenServiceMock.Setup(x => x.SupersedeRefreshTokenAsync(unusedSuccessor)).ThrowsAsync(new DbUpdateConcurrencyException());
+
+        var act = () => _authService.RefreshAsync("old-token");
+
+        await act.Should().ThrowAsync<AuthenticationFailedException>().WithMessage(Constants.Errors.RefreshTokenSuperseded);
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _tokenServiceMock.Verify(x => x.SupersedeRefreshTokenAsync(unusedSuccessor), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldRefuseADisabledUser_EvenWhenTheResponseWasLost()
+    {
+        var user = new ApplicationUser("testuser", "test@test.com", "Test User") { LockoutEnd = DateTimeOffset.MaxValue };
+        var presented = Replaced(CreateActiveRefreshTokenWithUser(user.Id, user), RefreshToken.RotatedReason);
+        var unusedSuccessor = RefreshToken.Create(user.Id, 7);
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(presented);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(presented)).ReturnsAsync(unusedSuccessor);
+
+        var act = () => _authService.RefreshAsync("old-token");
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage(Constants.Errors.AccountDisabled);
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync(user.Id, "Account disabled"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    private static RefreshToken Replaced(RefreshToken token, string reason)
+    {
+        token.Revoke(reason, RefreshToken.Hash(Guid.NewGuid().ToString("N")));
         return token;
     }
 

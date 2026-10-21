@@ -139,6 +139,27 @@ public class TokenServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SupersedeRefreshTokenAsync_ShouldReplaceAnUnusedToken_WithoutMarkingItUsed()
+    {
+        var first = await _tokenService.GenerateRefreshTokenAsync("test-user-id");
+        var second = await _tokenService.RotateRefreshTokenAsync(first);
+
+        var third = await _tokenService.SupersedeRefreshTokenAsync(second);
+
+        var stored = await _context.RefreshTokens.ToListAsync(TestContext.Current.CancellationToken);
+        var storedFirst = stored.Single(t => t.Token == first.Token);
+        var storedSecond = stored.Single(t => t.Token == second.Token);
+        storedFirst.WasUsed.Should().BeTrue();
+        storedFirst.IsSuperseded.Should().BeFalse();
+        storedSecond.WasUsed.Should().BeFalse();
+        storedSecond.IsSuperseded.Should().BeTrue();
+        storedSecond.ReplacedByToken.Should().Be(third.Token);
+        storedSecond.RevokedReason.Should().Be(RefreshToken.SupersededReason);
+        stored.Single(t => t.Token == third.Token).IsActive.Should().BeTrue();
+        third.PlainTextToken.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
     public async Task GetSuccessorAsync_ShouldReturnTheTokenItWasRotatedInto()
     {
         var first = await _tokenService.GenerateRefreshTokenAsync("user-1");

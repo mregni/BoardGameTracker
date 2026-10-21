@@ -1,13 +1,14 @@
 import type { FC } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Settings } from "@/models";
-import { renderWithProviders, screen, userEvent } from "@/test/test-utils";
+import { renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
 
 const mocks = vi.hoisted(() => ({
 	captured: {} as { config: { component: FC } },
 	search: {} as { tab?: string },
 	saveSettings: vi.fn(),
 	refreshIntegrationStatus: vi.fn(),
+	ssoEnabled: false,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -54,7 +55,14 @@ vi.mock("./-hooks/useIntegrationStatus", () => ({
 }));
 
 vi.mock("./-components/BggSettings", () => ({ BggSettings: () => <div>bgg-tab</div> }));
-vi.mock("./-components/GeneralSettings", () => ({ GeneralSettings: () => <div>general-tab</div> }));
+vi.mock("./-hooks/useSingleSignOnEnabled", () => ({ useSingleSignOnEnabled: () => mocks.ssoEnabled }));
+vi.mock("./-components/GeneralSettings", () => ({
+	GeneralSettings: ({ form }: { form: { setFieldValue: (name: string, value: string) => void } }) => (
+		<button type="button" onClick={() => form.setFieldValue("publicUrl", "http://192.168.1.20:8080")}>
+			use-lan-address
+		</button>
+	),
+}));
 vi.mock("./-components/SettingsSidebar", () => ({ SettingsSidebar: () => null }));
 vi.mock("./-components/AccountSettings", () => ({ AccountSettings: () => null }));
 vi.mock("./-components/AdvancedSettings", () => ({ AdvancedSettings: () => null }));
@@ -73,6 +81,7 @@ const renderPage = () => {
 describe("Settings page save flow", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mocks.ssoEnabled = false;
 		mocks.saveSettings.mockResolvedValue(settings);
 	});
 
@@ -99,5 +108,49 @@ describe("Settings page save flow", () => {
 
 		await vi.waitFor(() => expect(mocks.saveSettings).toHaveBeenCalledTimes(1));
 		expect(mocks.refreshIntegrationStatus).not.toHaveBeenCalled();
+	});
+
+	it("asks before saving a public URL that stops single sign-on, and saves once confirmed", async () => {
+		const user = userEvent.setup();
+		mocks.ssoEnabled = true;
+		mocks.search = { tab: "general" };
+		renderPage();
+
+		await user.click(screen.getByRole("button", { name: "use-lan-address" }));
+		await user.click(screen.getByRole("button", { name: "save.button" }));
+
+		const dialog = await screen.findByRole("dialog", { name: "general.public-url.sso-confirm.title" });
+		expect(mocks.saveSettings).not.toHaveBeenCalled();
+		await user.click(within(dialog).getByRole("button", { name: "general.public-url.sso-confirm.confirm" }));
+
+		await vi.waitFor(() => expect(mocks.saveSettings).toHaveBeenCalledTimes(1));
+		expect(mocks.saveSettings.mock.calls[0][0]).toMatchObject({ publicUrl: "http://192.168.1.20:8080" });
+	});
+
+	it("does not save when the admin keeps single sign-on", async () => {
+		const user = userEvent.setup();
+		mocks.ssoEnabled = true;
+		mocks.search = { tab: "general" };
+		renderPage();
+
+		await user.click(screen.getByRole("button", { name: "use-lan-address" }));
+		await user.click(screen.getByRole("button", { name: "save.button" }));
+		const dialog = await screen.findByRole("dialog", { name: "general.public-url.sso-confirm.title" });
+		await user.click(within(dialog).getByRole("button", { name: "common:cancel" }));
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(mocks.saveSettings).not.toHaveBeenCalled();
+	});
+
+	it("saves without asking when no provider is enabled", async () => {
+		const user = userEvent.setup();
+		mocks.search = { tab: "general" };
+		renderPage();
+
+		await user.click(screen.getByRole("button", { name: "use-lan-address" }));
+		await user.click(screen.getByRole("button", { name: "save.button" }));
+
+		await vi.waitFor(() => expect(mocks.saveSettings).toHaveBeenCalledTimes(1));
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 	});
 });

@@ -16,7 +16,7 @@ public class AuthSessionCookiesTests
 
     public AuthSessionCookiesTests()
     {
-        _imageTicketsMock.Setup(x => x.Issue()).Returns("image-ticket");
+        _imageTicketsMock.Setup(x => x.Issue(It.IsAny<string>())).Returns("image-ticket");
         _imageTicketsMock.Setup(x => x.Lifetime).Returns(TimeSpan.FromDays(14));
         _cookies = new AuthSessionCookies(_imageTicketsMock.Object, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 14 }));
     }
@@ -37,12 +37,12 @@ public class AuthSessionCookiesTests
         var context = new DefaultHttpContext();
         context.Request.Scheme = scheme;
 
-        _cookies.Issue(context, "refresh-value");
+        _cookies.Issue(context, "refresh-value", "user-1");
 
         var cookie = RefreshCookie(context);
         cookie.Should().Be($"bgt_refresh=refresh-value; max-age=1209600; path=/api/auth; {(secure ? "secure; " : string.Empty)}samesite=lax; httponly");
         context.Response.Headers.SetCookie.Should().Contain(c => c!.StartsWith($"{ProfileImageCookie.Name}=image-ticket", StringComparison.Ordinal));
-        _imageTicketsMock.Verify(x => x.Issue(), Times.Once);
+        _imageTicketsMock.Verify(x => x.Issue("user-1"), Times.Once);
         _imageTicketsMock.Verify(x => x.Lifetime, Times.Once);
         VerifyNoOtherCalls();
     }

@@ -73,7 +73,9 @@ describe("UserAccessModal", () => {
 		expect(screen.getByText("keycloak · Jane Doe")).toBeInTheDocument();
 		await pointer.click(screen.getByRole("button", { name: "account.users.access.unlink" }));
 		expect(screen.getByText("account.users.access.unlink-confirm")).toBeInTheDocument();
-		await pointer.click(screen.getByRole("button", { name: "delete.button" }));
+		const confirm = screen.getByRole("dialog", { name: "account.external-logins.unlink-title" });
+		expect(within(confirm).queryByRole("button", { name: "delete.button" })).not.toBeInTheDocument();
+		await pointer.click(within(confirm).getByRole("button", { name: "account.users.access.unlink" }));
 
 		expect(mocks.state.unlink).toHaveBeenCalledWith(9);
 	});
