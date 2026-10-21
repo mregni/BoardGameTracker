@@ -24,21 +24,6 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("BadgePlayer", b =>
-                {
-                    b.Property<int>("BadgesId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PlayersId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("BadgesId", "PlayersId");
-
-                    b.HasIndex("PlayersId");
-
-                    b.ToTable("BadgePlayer");
-                });
-
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -1279,6 +1264,26 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.ToTable("Players");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.PlayerBadge", b =>
+                {
+                    b.Property<int>("BadgeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("BadgesId");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer")
+                        .HasColumnName("PlayersId");
+
+                    b.Property<DateTime?>("AwardedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("BadgeId", "PlayerId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("BadgePlayer", (string)null);
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.RunningGame", b =>
                 {
                     b.Property<int>("Id")
@@ -1576,21 +1581,6 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", "auth");
-                });
-
-            modelBuilder.Entity("BadgePlayer", b =>
-                {
-                    b.HasOne("BoardGameTracker.Common.Entities.Badge", null)
-                        .WithMany()
-                        .HasForeignKey("BadgesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BoardGameTracker.Common.Entities.Player", null)
-                        .WithMany()
-                        .HasForeignKey("PlayersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.ApplicationUser", b =>
@@ -1941,6 +1931,25 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Navigation("Manual");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.PlayerBadge", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Badge", "Badge")
+                        .WithMany()
+                        .HasForeignKey("BadgeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Player", "Player")
+                        .WithMany("PlayerBadges")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Badge");
+
+                    b.Navigation("Player");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.RunningGame", b =>
                 {
                     b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
@@ -2150,6 +2159,8 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Navigation("GameNightRsvps");
 
                     b.Navigation("Loans");
+
+                    b.Navigation("PlayerBadges");
 
                     b.Navigation("PlayerSessions");
                 });

@@ -5780,6 +5780,11 @@
           },
           "image": {
             "type": "string"
+          },
+          "awardedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false

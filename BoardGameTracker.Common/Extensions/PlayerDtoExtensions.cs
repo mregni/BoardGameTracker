@@ -19,7 +19,7 @@ public static class PlayerDtoExtensions
             Image = player.Image,
             ImageSource = player.ImageSource,
             Email = player.Email,
-            Badges = player.Badges?.Select(b => b.ToDto()).ToList(),
+            Badges = player.PlayerBadges?.Select(b => b.ToDto()).ToList(),
             LinkedAccount = linkedAccount
         };
     }

@@ -33,7 +33,7 @@ describe("PlayerAchievementsCard", () => {
 });
 
 describe("PlayerAchievementsSummary", () => {
-	it("shows the earned count and the progress, and links to the full list instead of repeating the badges", () => {
+	it("shows the earned count, the progress, the earned badges and a link to the full list", () => {
 		renderWithTheme(<PlayerAchievementsSummary badges={allBadges} playerBadges={earnedBadges} />);
 
 		expect(screen.getByText("titles.achievements (2/4)")).toBeInTheDocument();
@@ -41,8 +41,33 @@ describe("PlayerAchievementsSummary", () => {
 		expect(progress).toHaveAttribute("value", "2");
 		expect(progress).toHaveAttribute("max", "4");
 		expect(within(progress.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({ width: "50%" });
-		expect(screen.queryAllByRole("img")).toHaveLength(0);
+		expect(within(screen.getByRole("list")).getAllByRole("img")).toHaveLength(3);
 		expect(screen.getByRole("link", { name: "achievements.see-all" })).toHaveAttribute("href", "#player-achievements");
+	});
+
+	it("shows only the five most recently earned badges, newest first", () => {
+		const playerBadges = allBadges.map((badge, index) => ({
+			...badge,
+			awardedAt: index === 0 ? null : `2026-01-${String(index + 1).padStart(2, "0")}T10:00:00Z`,
+		}));
+		renderWithTheme(<PlayerAchievementsSummary badges={allBadges} playerBadges={playerBadges} />);
+
+		const icons = within(screen.getByRole("list")).getAllByRole("img");
+		expect(icons.map((icon) => icon.getAttribute("src"))).toEqual([
+			"/images/badges/marathonRunner.png",
+			"/images/badges/firstTry.png",
+			"/images/badges/wins-gold.png",
+			"/images/badges/wins-red.png",
+			"/images/badges/wins-blue.png",
+		]);
+	});
+
+	it("shows no badge row when the player has not earned any", () => {
+		renderWithTheme(<PlayerAchievementsSummary badges={allBadges} playerBadges={[]} />);
+
+		expect(screen.queryByRole("list")).not.toBeInTheDocument();
+		expect(screen.queryAllByRole("img")).toHaveLength(0);
+		expect(screen.getByRole("link", { name: "achievements.see-all" })).toBeInTheDocument();
 	});
 
 	it("shows an empty progress bar when there are no badges", () => {
