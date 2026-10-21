@@ -2,7 +2,12 @@ import { cx } from "class-variance-authority";
 import type { ReactNode } from "react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 
-const chip = "inline-flex items-center gap-1.5 rounded-full border p-1 pr-3 text-xs font-medium";
+const chip = "inline-flex items-center gap-1.5 rounded-full border text-xs font-medium";
+
+const sizes = {
+	default: "p-1 pr-3",
+	compact: "p-0 pr-2",
+} as const;
 
 const tones = {
 	neutral: "border-white/10 bg-white/5",
@@ -18,11 +23,12 @@ interface Props {
 	image: string | null | undefined;
 	onClick?: () => void;
 	tone?: keyof typeof tones;
+	size?: keyof typeof sizes;
 	children?: ReactNode;
 }
 
-export const AvatarChip = ({ title, image, onClick, tone = "neutral", children }: Props) => (
-	<div className={cx(chip, tones[tone])}>
+export const AvatarChip = ({ title, image, onClick, tone = "neutral", size = "default", children }: Props) => (
+	<div className={cx(chip, sizes[size], tones[tone])}>
 		<BgtAvatar title={title} image={image} size="small" shape="round" withTitle onClick={onClick} />
 		{children}
 	</div>
@@ -43,7 +49,12 @@ export const AvatarChipButton = ({ title, image, onClick, disabled, label, child
 		disabled={disabled}
 		onClick={onClick}
 		aria-label={label}
-		className={cx(chip, tones.neutral, "hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60")}
+		className={cx(
+			chip,
+			sizes.default,
+			tones.neutral,
+			"hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60",
+		)}
 	>
 		<BgtAvatar title={title} image={image} size="small" shape="round" />
 		{title}
