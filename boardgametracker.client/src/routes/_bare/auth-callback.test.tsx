@@ -172,7 +172,7 @@ describe("AuthCallbackPage", () => {
 	});
 
 	it("confirms a linked provider and returns to the account settings", async () => {
-		mocks.search = { linked: "fake" };
+		mocks.search = { linked: "true" };
 
 		renderWithTheme(<mocks.captured.Page />);
 

@@ -19,7 +19,6 @@ export interface LoginResponse {
 }
 
 export interface OidcProvider {
-	name: string;
 	displayName: string;
 	iconUrl: string | null;
 	buttonColor: string | null;

@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
@@ -10,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Auth;
 
-public partial class OidcProviderService : IOidcProviderService
+public class OidcProviderService : IOidcProviderService
 {
     private readonly MainDbContext _context;
     private readonly IOidcConfigurationProvider _configurations;
@@ -36,21 +35,20 @@ public partial class OidcProviderService : IOidcProviderService
             ?? throw new EntityNotFoundException(nameof(OidcProvider), id);
     }
 
-    public async Task<OidcProvider> CreateAsync(string name, string displayName, string authority, string clientId,
+    public async Task<OidcProvider> CreateAsync(string displayName, string authority, string clientId,
         string? clientSecret, string scopes, bool autoProvisionUsers,
         string? authorizationEndpoint, string? tokenEndpoint, string? userInfoEndpoint,
         string? usernameClaimType, string? emailClaimType, string? displayNameClaimType,
         string? rolesClaimType, string? adminGroupValue,
         string? iconUrl, string? buttonColor, string? defaultRole = null, bool enabled = true)
     {
-        var existingCount = await _context.OidcProviders.CountAsync();
-        if (existingCount > 0)
+        if (await _context.OidcProviders.AnyAsync())
         {
-            throw new DomainException("Only one OIDC provider is supported. Delete the existing provider first.");
+            throw new DomainException(Constants.Errors.OidcProviderExists);
         }
 
         EnsureSecureAuthority(authority);
-        var provider = new OidcProvider(name, displayName, authority, clientId);
+        var provider = new OidcProvider(displayName, authority, clientId);
         provider.Update(displayName, authority, clientId, ProtectSecret(clientSecret), enabled, scopes, autoProvisionUsers,
             authorizationEndpoint, tokenEndpoint, userInfoEndpoint,
             usernameClaimType, emailClaimType, displayNameClaimType,
@@ -61,7 +59,7 @@ public partial class OidcProviderService : IOidcProviderService
         _context.OidcProviders.Add(provider);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("OIDC provider {ProviderName} created", provider.Name);
+        _logger.LogInformation("OIDC provider {DisplayName} created", provider.DisplayName);
 
         return provider;
     }
@@ -71,20 +69,14 @@ public partial class OidcProviderService : IOidcProviderService
         string? authorizationEndpoint, string? tokenEndpoint, string? userInfoEndpoint,
         string? usernameClaimType, string? emailClaimType, string? displayNameClaimType,
         string? rolesClaimType, string? adminGroupValue,
-        string? iconUrl, string? buttonColor, string? defaultRole = null, string? name = null)
+        string? iconUrl, string? buttonColor, string? defaultRole = null)
     {
         var provider = await _context.OidcProviders.FindAsync(id)
             ?? throw new EntityNotFoundException(nameof(OidcProvider), id);
 
         EnsureSecureAuthority(authority);
-        var previousName = provider.Name;
+        var previousDisplayName = provider.DisplayName;
         var previousAuthority = provider.Authority;
-        var newName = string.IsNullOrWhiteSpace(name) ? previousName : name.Trim();
-        if (newName != previousName)
-        {
-            await EnsureValidNewNameAsync(newName, provider.Id);
-        }
-
         var authorityChanged = !string.Equals(NormalizeAuthority(previousAuthority), NormalizeAuthority(authority), StringComparison.OrdinalIgnoreCase);
         provider.Update(displayName, authority, clientId, ProtectSecret(clientSecret), enabled, scopes, autoProvisionUsers,
             authorizationEndpoint, tokenEndpoint, userInfoEndpoint,
@@ -96,26 +88,20 @@ public partial class OidcProviderService : IOidcProviderService
             provider.SetDefaultRole(role);
         }
 
-        var externalLogins = await LinksOfAsync(previousAuthority, previousName);
+        var externalLogins = await LinksOfAsync(previousAuthority);
         if (authorityChanged)
         {
             _context.ExternalLogins.RemoveRange(externalLogins);
             _context.OidcSessions.RemoveRange(await _context.OidcSessions.Where(x => x.ProviderId == provider.Id).ToListAsync());
-            _logger.LogWarning("OIDC provider {ProviderName} now points at a different authority; {Count} linked accounts must link it again",
-                previousName, externalLogins.Count);
+            _logger.LogWarning("OIDC provider {DisplayName} now points at a different authority; {Count} linked accounts must link it again",
+                previousDisplayName, externalLogins.Count);
         }
-        else if (newName != previousName)
+        else
         {
-            foreach (var login in externalLogins)
+            foreach (var login in externalLogins.Where(x => x.Provider != provider.DisplayName))
             {
-                login.UpdateProvider(newName);
+                login.UpdateProvider(provider.DisplayName);
             }
-        }
-
-        if (newName != previousName)
-        {
-            provider.Rename(newName);
-            _logger.LogInformation("OIDC provider {PreviousName} renamed to {ProviderName}", previousName, newName);
         }
 
         await _context.SaveChangesAsync();
@@ -123,7 +109,7 @@ public partial class OidcProviderService : IOidcProviderService
         _configurations.Invalidate(previousAuthority);
         _configurations.Invalidate(authority);
 
-        _logger.LogInformation("OIDC provider {ProviderName} updated", provider.Name);
+        _logger.LogInformation("OIDC provider {DisplayName} updated", provider.DisplayName);
 
         return provider;
     }
@@ -133,7 +119,7 @@ public partial class OidcProviderService : IOidcProviderService
         var provider = await _context.OidcProviders.FindAsync(id)
             ?? throw new EntityNotFoundException(nameof(OidcProvider), id);
 
-        var externalLogins = await LinksOfAsync(provider.Authority, provider.Name);
+        var externalLogins = await LinksOfAsync(provider.Authority);
         _context.ExternalLogins.RemoveRange(externalLogins);
         _context.OidcSessions.RemoveRange(await _context.OidcSessions.Where(x => x.ProviderId == provider.Id).ToListAsync());
 
@@ -142,31 +128,18 @@ public partial class OidcProviderService : IOidcProviderService
 
         _configurations.Invalidate(provider.Authority);
 
-        _logger.LogInformation("OIDC provider {ProviderName} deleted with {Count} associated external logins removed",
-            provider.Name, externalLogins.Count);
+        _logger.LogInformation("OIDC provider {DisplayName} deleted with {Count} associated external logins removed",
+            provider.DisplayName, externalLogins.Count);
     }
 
-    private async Task<List<ExternalLogin>> LinksOfAsync(string authority, string providerName)
+    private async Task<List<ExternalLogin>> LinksOfAsync(string authority)
     {
         var candidates = await _context.ExternalLogins
-            .Where(x => x.Issuer != null || x.Provider == providerName)
+            .Where(x => x.Issuer != null)
             .ToListAsync();
         return candidates
-            .Where(x => x.Issuer == null || OidcIssuer.Matches(x.Issuer, authority))
+            .Where(x => OidcIssuer.Matches(x.Issuer!, authority))
             .ToList();
-    }
-
-    private async Task EnsureValidNewNameAsync(string name, int providerId)
-    {
-        if (name.Length > 100 || !ProviderNamePattern().IsMatch(name))
-        {
-            throw new ValidationException(Constants.Errors.OidcProviderNameInvalid);
-        }
-
-        if (await _context.OidcProviders.AnyAsync(p => p.Name == name && p.Id != providerId))
-        {
-            throw new ValidationException(Constants.Errors.OidcProviderNameInvalid);
-        }
     }
 
     private static string? ValidDefaultRole(string? defaultRole)
@@ -180,9 +153,6 @@ public partial class OidcProviderService : IOidcProviderService
             ? defaultRole
             : throw new ValidationException(Constants.Errors.InvalidRole);
     }
-
-    [GeneratedRegex("^[a-z0-9][a-z0-9-]*$")]
-    private static partial Regex ProviderNamePattern();
 
     private static string NormalizeAuthority(string authority) => authority.Trim().TrimEnd('/');
 

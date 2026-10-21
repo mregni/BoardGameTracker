@@ -31,7 +31,7 @@ public class FactoryResetTests
         {
             var context = scope.ServiceProvider.GetRequiredService<MainDbContext>();
             var user = await context.Users.SingleAsync(u => u.UserName == "user", TestContext.Current.CancellationToken);
-            context.OidcProviders.Add(new OidcProvider("factory-idp", "Factory IdP", "https://idp.example.com", "bgt-client"));
+            context.OidcProviders.Add(new OidcProvider("Factory IdP", "https://idp.example.com", "bgt-client"));
             context.ExternalLogins.Add(new ExternalLogin(user.Id, "factory-idp", "https://factory-idp.example.com", "factory-subject"));
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             await context.Config

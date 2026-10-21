@@ -15,7 +15,6 @@ namespace BoardGameTracker.IntegrationTests.Api;
 [Collection(IntegrationCollection.Name)]
 public class OidcRoundTripTests : IAsyncLifetime
 {
-    private const string ProviderName = "fake";
     private static readonly Uri Https = new("https://localhost");
     private static readonly Uri LanHttp = new("http://192.168.1.20:5444");
     private readonly IntegrationFixture _fixture;
@@ -33,7 +32,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         _idp.ClientSecret = "fake-idp-secret";
         using var admin = await _fixture.CreateAdminClientAsync();
         var response = await admin.PostAsJsonAsync("/api/admin/oidc-providers", new CreateOidcProviderRequest(
-            ProviderName, "Fake IdP", _idp.Authority, _idp.ClientId, _idp.ClientSecret, "openid profile email", true,
+            "Fake IdP", _idp.Authority, _idp.ClientId, _idp.ClientSecret, "openid profile email", true,
             null, null, null, null, null, null, null, null, null, null));
         response.StatusCode.Should().Be(HttpStatusCode.Created, await response.Content.ReadAsStringAsync());
         _providerId = (await response.Content.ReadFromJsonAsync<OidcProviderDto>(IntegrationFixture.Json))!.Id;
@@ -52,13 +51,13 @@ public class OidcRoundTripTests : IAsyncLifetime
         using var browser = _fixture.CreateBrowserClient(Https);
         using var idpBrowser = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
 
-        var start = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login?redirect=%2Fgames%2F3");
+        var start = await browser.GetAsync("/api/auth/oidc/login?redirect=%2Fgames%2F3");
 
         start.StatusCode.Should().Be(HttpStatusCode.Found);
         var authorizeUrl = start.Headers.Location!;
         authorizeUrl.GetLeftPart(UriPartial.Path).Should().Be($"{_idp.Authority}/authorize");
         var authorizeQuery = HttpUtility.ParseQueryString(authorizeUrl.Query);
-        authorizeQuery["redirect_uri"].Should().Be($"https://localhost/api/auth/oidc/{ProviderName}/callback");
+        authorizeQuery["redirect_uri"].Should().Be("https://localhost/api/auth/oidc/callback");
         authorizeQuery["code_challenge_method"].Should().Be("S256");
         authorizeQuery["nonce"].Should().NotBeNullOrEmpty();
         start.Headers.GetValues("Set-Cookie").Should().ContainSingle(c => c.StartsWith($"{OidcController.StateCookieName}=", StringComparison.Ordinal) && c.Contains("httponly", StringComparison.OrdinalIgnoreCase) && c.Contains("samesite=lax", StringComparison.OrdinalIgnoreCase));
@@ -66,7 +65,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         var idpResponse = await idpBrowser.GetAsync(authorizeUrl);
         idpResponse.StatusCode.Should().Be(HttpStatusCode.Found);
         var callbackUrl = idpResponse.Headers.Location!;
-        callbackUrl.GetLeftPart(UriPartial.Path).Should().Be($"https://localhost/api/auth/oidc/{ProviderName}/callback");
+        callbackUrl.GetLeftPart(UriPartial.Path).Should().Be("https://localhost/api/auth/oidc/callback");
 
         var callback = await browser.GetAsync(callbackUrl.PathAndQuery);
 
@@ -116,7 +115,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         _idp.User["name"] = "Sam Doe";
         using var browser = _fixture.CreateBrowserClient(Https);
         using var idpBrowser = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
-        var start = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login");
+        var start = await browser.GetAsync("/api/auth/oidc/login");
         var idpResponse = await idpBrowser.GetAsync(start.Headers.Location!);
 
         var callback = await browser.GetAsync(idpResponse.Headers.Location!.PathAndQuery);
@@ -127,14 +126,52 @@ public class OidcRoundTripTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Login_ShouldSendTheBrowserToTheErrorPage_WhenTheProviderDoesNotExist()
+    public async Task Login_ShouldSendTheBrowserToTheErrorPage_WhenNoProviderIsEnabled()
     {
+        using (var admin = await _fixture.CreateAdminClientAsync())
+        {
+            var disable = await admin.PutAsJsonAsync($"/api/admin/oidc-providers/{_providerId}", new UpdateOidcProviderRequest(
+                _providerId, "Fake IdP", _idp.Authority, _idp.ClientId, null, false, "openid profile email", true,
+                null, null, null, null, null, null, null, null, null, null));
+            disable.StatusCode.Should().Be(HttpStatusCode.OK, await disable.Content.ReadAsStringAsync());
+        }
+
         using var browser = _fixture.CreateBrowserClient(Https);
 
-        var start = await browser.GetAsync("/api/auth/oidc/no-such-provider/login");
+        var start = await browser.GetAsync("/api/auth/oidc/login");
 
         start.StatusCode.Should().Be(HttpStatusCode.Found);
         start.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcProviderUnavailable)}");
+    }
+
+    [Theory]
+    [InlineData("fake")]
+    [InlineData("no-such-provider")]
+    public async Task LegacyLogin_ShouldRedirectAnOldBookmarkToTheLoginRoute(string provider)
+    {
+        using var browser = _fixture.CreateBrowserClient(Https);
+
+        var start = await browser.GetAsync($"/api/auth/oidc/{provider}/login?redirect=%2F%2Fevil.example.com");
+
+        start.StatusCode.Should().Be(HttpStatusCode.Found);
+        start.Headers.Location!.ToString().Should().Be("/api/auth/oidc/login");
+        start.Headers.TryGetValues("Set-Cookie", out var cookies);
+        (cookies ?? []).Should().NotContain(c => c.StartsWith("bgt_oidc_", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task CreateProvider_ShouldRefuseASecondProvider()
+    {
+        using var admin = await _fixture.CreateAdminClientAsync();
+
+        var response = await admin.PostAsJsonAsync("/api/admin/oidc-providers", new CreateOidcProviderRequest(
+            "Second IdP", "https://second-idp.example.com", "second", null, "openid", true,
+            null, null, null, null, null, null, null, null, null, null));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await response.Content.ReadAsStringAsync()).Should().Contain(Constants.Errors.OidcProviderExists);
+        var providers = await admin.GetFromJsonAsync<List<OidcProviderListDto>>("/api/admin/oidc-providers", IntegrationFixture.Json);
+        providers.Should().ContainSingle().Which.Id.Should().Be(_providerId);
     }
 
     [Fact]
@@ -156,10 +193,10 @@ public class OidcRoundTripTests : IAsyncLifetime
         using var browser = _fixture.CreateBrowserClient(Https);
         for (var i = 0; i < RateLimitPolicies.OidcPermitsPerMinute; i++)
         {
-            await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login");
+            await browser.GetAsync("/api/auth/oidc/login");
         }
 
-        var limited = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login");
+        var limited = await browser.GetAsync("/api/auth/oidc/login");
 
         limited.StatusCode.Should().Be(HttpStatusCode.Found);
         limited.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.TooManyRequests)}");
@@ -170,7 +207,7 @@ public class OidcRoundTripTests : IAsyncLifetime
     {
         using var browser = _fixture.CreateBrowserClient(Https);
 
-        var callback = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/callback?code=forged&state=forged");
+        var callback = await browser.GetAsync("/api/auth/oidc/callback?code=forged&state=forged");
 
         callback.StatusCode.Should().Be(HttpStatusCode.Found);
         callback.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.InvalidAuthSession)}");
@@ -180,9 +217,9 @@ public class OidcRoundTripTests : IAsyncLifetime
     public async Task Callback_ShouldReportAProviderRefusal_AsAStableErrorKey()
     {
         using var browser = _fixture.CreateBrowserClient(Https);
-        await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login");
+        await browser.GetAsync("/api/auth/oidc/login");
 
-        var callback = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/callback?error=access_denied&state=whatever");
+        var callback = await browser.GetAsync("/api/auth/oidc/callback?error=access_denied&state=whatever");
 
         callback.StatusCode.Should().Be(HttpStatusCode.Found);
         callback.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcProviderRejected)}");
@@ -195,7 +232,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         using var attacker = _fixture.CreateBrowserClient(Https);
         using var idpBrowser = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
 
-        var start = await victim.GetAsync($"/api/auth/oidc/{ProviderName}/login");
+        var start = await victim.GetAsync("/api/auth/oidc/login");
         var idpResponse = await idpBrowser.GetAsync(start.Headers.Location!);
 
         var callback = await attacker.GetAsync(idpResponse.Headers.Location!.PathAndQuery);
@@ -215,8 +252,8 @@ public class OidcRoundTripTests : IAsyncLifetime
 
         setup!.PublicBaseUrl.Should().Be("http://localhost");
         setup.PublicUrlConfigured.Should().BeFalse();
-        setup.CallbackUriTemplate.Should().Be("http://localhost/api/auth/oidc/{name}/callback");
-        setup.LinkCallbackUriTemplate.Should().Be("http://localhost/api/auth/oidc/{name}/link-callback");
+        setup.CallbackUri.Should().Be("http://localhost/api/auth/oidc/callback");
+        setup.LinkCallbackUri.Should().Be("http://localhost/api/auth/oidc/link-callback");
         setup.PostLogoutRedirectUri.Should().Be("http://localhost/login");
     }
 
@@ -257,20 +294,20 @@ public class OidcRoundTripTests : IAsyncLifetime
         var session = await login.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json);
         browser.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session!.AccessToken);
 
-        var start = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/link");
+        var start = await browser.GetAsync("/api/auth/oidc/link");
         start.StatusCode.Should().Be(HttpStatusCode.OK, await start.Content.ReadAsStringAsync());
         var authorization = await start.Content.ReadFromJsonAsync<AuthorizationUrlResponse>(IntegrationFixture.Json);
-        HttpUtility.ParseQueryString(new Uri(authorization!.Url).Query)["redirect_uri"].Should().Be($"https://localhost/api/auth/oidc/{ProviderName}/link-callback");
+        HttpUtility.ParseQueryString(new Uri(authorization!.Url).Query)["redirect_uri"].Should().Be("https://localhost/api/auth/oidc/link-callback");
 
         var idpResponse = await idpBrowser.GetAsync(authorization.Url);
         browser.DefaultRequestHeaders.Authorization = null;
         var callback = await browser.GetAsync(idpResponse.Headers.Location!.PathAndQuery);
         callback.StatusCode.Should().Be(HttpStatusCode.Found);
-        callback.Headers.Location!.ToString().Should().Be($"/auth-callback?linked={ProviderName}");
+        callback.Headers.Location!.ToString().Should().Be("/auth-callback?linked=true");
 
         browser.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
         var logins = await browser.GetFromJsonAsync<List<ExternalLoginDto>>("/api/auth/external-logins", IntegrationFixture.Json);
-        logins.Should().ContainSingle(x => x.Provider == ProviderName && x.ProviderDisplayName == "Jane Doe");
+        logins.Should().ContainSingle(x => x.Provider == "Fake IdP" && x.ProviderDisplayName == "Jane Doe");
 
         var unlink = await browser.DeleteAsync($"/api/auth/external-logins/{logins![0].Id}");
         unlink.StatusCode.Should().Be(HttpStatusCode.NoContent);
@@ -339,7 +376,7 @@ public class OidcRoundTripTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Rename_ShouldKeepTheLinkedAccount()
+    public async Task ChangingTheDisplayName_ShouldKeepTheLinkedAccount_AndRelabelIt()
     {
         UseIdentity("rename");
         LoginResponse first;
@@ -352,13 +389,13 @@ public class OidcRoundTripTests : IAsyncLifetime
         using (var admin = await _fixture.CreateAdminClientAsync())
         {
             var update = await admin.PutAsJsonAsync($"/api/admin/oidc-providers/{_providerId}", new UpdateOidcProviderRequest(
-                _providerId, "Fake IdP", _idp.Authority, _idp.ClientId, null, true, "openid profile email", true,
-                null, null, null, null, null, null, null, null, null, null, null, "fake-renamed"));
+                _providerId, "Fake IdP renamed", _idp.Authority, _idp.ClientId, null, true, "openid profile email", true,
+                null, null, null, null, null, null, null, null, null, null));
             update.StatusCode.Should().Be(HttpStatusCode.OK, await update.Content.ReadAsStringAsync());
         }
 
         using var again = _fixture.CreateBrowserClient(Https);
-        var callback = await SignInAsync(again, "fake-renamed");
+        var callback = await SignInAsync(again);
         callback.Headers.Location!.ToString().Should().StartWith("/auth-callback?redirect=");
         var second = await AdoptAsync(again);
 
@@ -366,7 +403,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         using var api = _fixture.CreateClient();
         api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", second.AccessToken);
         var logins = await api.GetFromJsonAsync<List<ExternalLoginDto>>("/api/auth/external-logins", IntegrationFixture.Json);
-        logins.Should().ContainSingle().Which.Provider.Should().Be("fake-renamed");
+        logins.Should().ContainSingle().Which.Provider.Should().Be("Fake IdP renamed");
     }
 
     [Fact]
@@ -462,7 +499,7 @@ public class OidcRoundTripTests : IAsyncLifetime
     {
         using var browser = _fixture.CreateBrowserClient(LanHttp);
 
-        var start = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login?redirect=%2Fgames");
+        var start = await browser.GetAsync("/api/auth/oidc/login?redirect=%2Fgames");
 
         start.StatusCode.Should().Be(HttpStatusCode.Found);
         start.Headers.Location!.ToString().Should().Be($"/login?error={Uri.EscapeDataString(Constants.Errors.OidcHttpsRequired)}");
@@ -477,7 +514,7 @@ public class OidcRoundTripTests : IAsyncLifetime
     public async Task OidcFlow_ShouldIgnoreSpoofedForwardedHeaders_WithoutATrustedProxy(string endpoint, string refusalPage)
     {
         using var browser = _fixture.CreateBrowserClient(LanHttp);
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/auth/oidc/{ProviderName}/{endpoint}");
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/auth/oidc/{endpoint}");
         request.Headers.Add("X-Forwarded-Proto", "https");
         request.Headers.Add("X-Forwarded-Host", "localhost");
         request.Headers.Add("X-Forwarded-For", "127.0.0.1");
@@ -495,7 +532,7 @@ public class OidcRoundTripTests : IAsyncLifetime
     {
         using var browser = _fixture.CreateBrowserClient(new Uri("https://evil.example.com"));
 
-        var start = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login?redirect=%2F%2Fevil.example.com");
+        var start = await browser.GetAsync("/api/auth/oidc/login?redirect=%2F%2Fevil.example.com");
 
         start.StatusCode.Should().Be(HttpStatusCode.Found);
         start.Headers.Location!.GetLeftPart(UriPartial.Path).Should().Be($"{_idp.Authority}/authorize");
@@ -509,7 +546,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         using var browser = _fixture.CreateBrowserClient(Https);
         using var idpBrowser = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
 
-        var start = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login");
+        var start = await browser.GetAsync("/api/auth/oidc/login");
         var idpResponse = await idpBrowser.GetAsync(start.Headers.Location!);
         var callback = await browser.GetAsync(idpResponse.Headers.Location!.PathAndQuery);
 
@@ -527,7 +564,7 @@ public class OidcRoundTripTests : IAsyncLifetime
     {
         using var browser = _fixture.CreateBrowserClient(LanHttp);
 
-        var response = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/{callback}?code=code&state=state");
+        var response = await browser.GetAsync($"/api/auth/oidc/{callback}?code=code&state=state");
 
         response.StatusCode.Should().Be(HttpStatusCode.Found);
         response.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcHttpsRequired)}");
@@ -542,7 +579,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         var session = await login.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json);
         browser.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session!.AccessToken);
 
-        var start = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/link");
+        var start = await browser.GetAsync("/api/auth/oidc/link");
 
         start.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         (await start.Content.ReadAsStringAsync()).Should().Contain(Constants.Errors.OidcHttpsRequired);
@@ -619,10 +656,10 @@ public class OidcRoundTripTests : IAsyncLifetime
         update.StatusCode.Should().Be(HttpStatusCode.OK, await update.Content.ReadAsStringAsync());
     }
 
-    private static async Task<HttpResponseMessage> SignInAsync(HttpClient browser, string providerName = ProviderName)
+    private static async Task<HttpResponseMessage> SignInAsync(HttpClient browser)
     {
         using var idpBrowser = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
-        var start = await browser.GetAsync($"/api/auth/oidc/{providerName}/login");
+        var start = await browser.GetAsync("/api/auth/oidc/login");
         start.StatusCode.Should().Be(HttpStatusCode.Found);
         var idpResponse = await idpBrowser.GetAsync(start.Headers.Location!);
         var callback = await browser.GetAsync(idpResponse.Headers.Location!.PathAndQuery);

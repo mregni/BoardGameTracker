@@ -12,6 +12,7 @@ import {
 	getOidcProviderCall,
 	getUserExternalLoginsCall,
 	manageRoleByIdentityProviderCall,
+	startOidcLinkCall,
 	unlinkUserExternalLoginCall,
 } from "./authService";
 
@@ -28,7 +29,7 @@ describe("getOidcProviderCall", () => {
 	});
 
 	it("returns the configured provider", async () => {
-		const provider = { name: "keycloak", displayName: "Company login", iconUrl: null, buttonColor: null };
+		const provider = { displayName: "Company login", iconUrl: null, buttonColor: null };
 		axiosMock.get.mockResolvedValue({ data: provider });
 
 		await expect(getOidcProviderCall()).resolves.toEqual(provider);
@@ -44,6 +45,19 @@ describe("getOidcProviderCall", () => {
 		axiosMock.get.mockRejectedValue(apiError(500));
 
 		await expect(getOidcProviderCall()).rejects.toMatchObject({ status: 500 });
+	});
+});
+
+describe("startOidcLinkCall", () => {
+	beforeEach(() => {
+		axiosMock.get.mockReset();
+	});
+
+	it("starts linking at the fixed route without a provider segment", async () => {
+		axiosMock.get.mockResolvedValue({ data: { url: "https://sso.example.com/authorize?state=abc" } });
+
+		await expect(startOidcLinkCall()).resolves.toBe("https://sso.example.com/authorize?state=abc");
+		expect(axiosMock.get).toHaveBeenCalledWith("auth/oidc/link");
 	});
 });
 

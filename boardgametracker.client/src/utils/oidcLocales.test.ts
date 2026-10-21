@@ -30,7 +30,7 @@ const keys = {
 	error: [
 		"auth.oidc-id-token-invalid",
 		"auth.oidc-username-taken",
-		"auth.oidc-provider-name-invalid",
+		"auth.oidc-provider-exists",
 		"auth.oidc-role-not-managed",
 		"auth.account-disabled",
 		"auth.cannot-disable-self",
@@ -39,7 +39,6 @@ const keys = {
 	],
 	auth: ["oidc.sign-in-with-password", "sso-https-hint", "sso-https-error"],
 	settings: [
-		"sso.fields.name.rename-warning",
 		"sso.fields.default-role.label",
 		"sso.fields.role-sync",
 		"sso.discovery.end-session",
@@ -64,6 +63,18 @@ describe("OIDC phase 3 translations", () => {
 				expect(lookup(files[file as keyof typeof files], path), `${file}:${path}`).toEqual(expect.any(String));
 			}
 		}
+	});
+
+	it.each(Object.entries(locales))("drop the provider short name texts in %s", (_locale, files) => {
+		expect(lookup(files.settings, "sso.fields.name")).toBeUndefined();
+		expect(lookup(files.settings, "sso.validation.name")).toBeUndefined();
+		expect(lookup(files.error, "auth.oidc-provider-name-invalid")).toBeUndefined();
+	});
+
+	it("tells an admin that only one identity provider is supported", () => {
+		expect(lookup(enError, "auth.oidc-provider-exists")).toBe(
+			"Only one identity provider is supported. Delete the existing one first.",
+		);
 	});
 
 	it("tells an IdP user with a clashing username exactly how to continue", () => {

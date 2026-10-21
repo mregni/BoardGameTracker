@@ -3731,20 +3731,12 @@
         }
       }
     },
-    "/api/auth/oidc/{provider}/login": {
+    "/api/auth/oidc/login": {
       "get": {
         "tags": [
           "Oidc"
         ],
         "parameters": [
-          {
-            "name": "provider",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "redirect",
             "in": "query",
@@ -3760,20 +3752,12 @@
         }
       }
     },
-    "/api/auth/oidc/{provider}/callback": {
+    "/api/auth/oidc/callback": {
       "get": {
         "tags": [
           "Oidc"
         ],
         "parameters": [
-          {
-            "name": "provider",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "code",
             "in": "query",
@@ -3839,20 +3823,10 @@
         }
       }
     },
-    "/api/auth/oidc/{provider}/link": {
+    "/api/auth/oidc/link": {
       "get": {
         "tags": [
           "Oidc"
-        ],
-        "parameters": [
-          {
-            "name": "provider",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
         ],
         "responses": {
           "200": {
@@ -3878,20 +3852,12 @@
         }
       }
     },
-    "/api/auth/oidc/{provider}/link-callback": {
+    "/api/auth/oidc/link-callback": {
       "get": {
         "tags": [
           "Oidc"
         ],
         "parameters": [
-          {
-            "name": "provider",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "code",
             "in": "query",
@@ -6301,9 +6267,6 @@
       "CreateOidcProviderRequest": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string"
-          },
           "displayName": {
             "type": "string"
           },
@@ -8332,9 +8295,6 @@
             "type": "integer",
             "format": "int32"
           },
-          "name": {
-            "type": "string"
-          },
           "displayName": {
             "type": "string"
           },
@@ -8405,9 +8365,6 @@
       "OidcProviderInfo": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string"
-          },
           "displayName": {
             "type": "string"
           },
@@ -8432,9 +8389,6 @@
             "type": "integer",
             "format": "int32"
           },
-          "name": {
-            "type": "string"
-          },
           "displayName": {
             "type": "string"
           },
@@ -8453,10 +8407,10 @@
           "publicUrlConfigured": {
             "type": "boolean"
           },
-          "callbackUriTemplate": {
+          "callbackUri": {
             "type": "string"
           },
-          "linkCallbackUriTemplate": {
+          "linkCallbackUri": {
             "type": "string"
           },
           "postLogoutRedirectUri": {
@@ -9762,10 +9716,6 @@
             "nullable": true
           },
           "defaultRole": {
-            "type": "string",
-            "nullable": true
-          },
-          "name": {
             "type": "string",
             "nullable": true
           }

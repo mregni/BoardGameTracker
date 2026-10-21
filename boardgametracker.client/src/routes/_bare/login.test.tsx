@@ -64,7 +64,6 @@ vi.mock("@/utils/i18n", () => ({
 import "./login";
 
 const provider: OidcProvider = {
-	name: "keycloak",
 	displayName: "Company login",
 	iconUrl: null,
 	buttonColor: null,
@@ -194,7 +193,7 @@ describe("LoginPage", () => {
 
 			await user.click(await screen.findByRole("button", { name: "Company login" }));
 
-			expect(page.href).toBe("/api/auth/oidc/keycloak/login?redirect=%2Fgames");
+			expect(page.href).toBe("/api/auth/oidc/login?redirect=%2Fgames");
 		});
 
 		it("continues the sign-on it was sent here for on the public URL", async () => {
@@ -202,7 +201,7 @@ describe("LoginPage", () => {
 			mocks.search = { redirect: "/games", sso: true };
 			renderWithProviders(<mocks.captured.Page />);
 
-			await waitFor(() => expect(page.href).toBe("/api/auth/oidc/keycloak/login?redirect=%2Fgames"));
+			await waitFor(() => expect(page.href).toBe("/api/auth/oidc/login?redirect=%2Fgames"));
 		});
 
 		it("does not start single sign-on by itself on another address than the public URL", async () => {

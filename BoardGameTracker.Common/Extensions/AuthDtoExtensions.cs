@@ -11,7 +11,7 @@ public static class AuthDtoExtensions
             user.IsDisabled, user.RoleManagedByIdentityProvider, externalLoginCount);
 
     public static OidcProviderDto ToDto(this OidcProvider provider) =>
-        new(provider.Id, provider.Name, provider.DisplayName, provider.Enabled,
+        new(provider.Id, provider.DisplayName, provider.Enabled,
             provider.Authority, provider.ClientId, provider.ClientSecret != null,
             provider.Scopes, provider.AutoProvisionUsers,
             provider.AuthorizationEndpoint, provider.TokenEndpoint, provider.UserInfoEndpoint,
@@ -31,5 +31,5 @@ public static class AuthDtoExtensions
         new(user.Id, user.UserName ?? "", user.DisplayName, roles);
 
     public static OidcProviderListDto ToListDto(this OidcProvider provider) =>
-        new(provider.Id, provider.Name, provider.DisplayName, provider.Enabled);
+        new(provider.Id, provider.DisplayName, provider.Enabled);
 }

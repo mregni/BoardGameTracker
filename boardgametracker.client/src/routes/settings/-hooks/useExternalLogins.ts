@@ -23,7 +23,7 @@ export const useExternalLogins = () => {
 	});
 
 	const linkMutation = useMutation({
-		mutationFn: (provider: string) => startOidcLinkCall(provider),
+		mutationFn: () => startOidcLinkCall(),
 		onSuccess: (url) => {
 			globalThis.location.href = url;
 		},
@@ -37,7 +37,7 @@ export const useExternalLogins = () => {
 		isLoading: loginsQuery.isLoading || providerQuery.isLoading,
 		unlink: unlinkMutation.mutate,
 		isUnlinking: unlinkMutation.isPending,
-		link: linkMutation.mutate,
+		link: () => linkMutation.mutate(),
 		isLinking: linkMutation.isPending,
 	};
 };

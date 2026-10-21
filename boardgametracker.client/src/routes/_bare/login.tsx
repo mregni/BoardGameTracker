@@ -30,8 +30,8 @@ const loginSearchSchema = z.object({
 	sso: z.boolean().optional().catch(undefined),
 });
 
-const ssoStartUrl = (provider: OidcProvider, redirect: string | undefined) =>
-	`${apiUrl}auth/oidc/${encodeURIComponent(provider.name)}/login?redirect=${encodeURIComponent(safeRedirectPath(redirect))}`;
+const ssoStartUrl = (redirect: string | undefined) =>
+	`${apiUrl}auth/oidc/login?redirect=${encodeURIComponent(safeRedirectPath(redirect))}`;
 
 export const Route = createFileRoute("/_bare/login")({
 	component: LoginPage,
@@ -79,9 +79,9 @@ function LoginPage() {
 		},
 	});
 
-	const handleOidcLogin = (provider: OidcProvider) => {
+	const handleOidcLogin = () => {
 		globalThis.location.href =
-			publicHostLoginUrl(settings?.publicUrl, globalThis.location.origin, redirect) ?? ssoStartUrl(provider, redirect);
+			publicHostLoginUrl(settings?.publicUrl, globalThis.location.origin, redirect) ?? ssoStartUrl(redirect);
 	};
 
 	const ssoStarted = useRef(false);
@@ -93,7 +93,7 @@ function LoginPage() {
 			return;
 		}
 		ssoStarted.current = true;
-		globalThis.location.href = ssoStartUrl(oidcProvider, redirect);
+		globalThis.location.href = ssoStartUrl(redirect);
 	}, [sso, isAuthenticated, oidcProvider, settings, redirect]);
 
 	if (isAuthenticated || authEnabled === false) {
@@ -177,7 +177,7 @@ function LoginPage() {
 									size="3"
 									className="w-full"
 									disabled={oidcProvider.httpsRequired}
-									onClick={() => handleOidcLogin(oidcProvider)}
+									onClick={handleOidcLogin}
 									style={oidcProvider.buttonColor ? { borderColor: oidcProvider.buttonColor } : undefined}
 								>
 									{oidcProvider.iconUrl && <img src={oidcProvider.iconUrl} alt="" className="w-5 h-5" />}

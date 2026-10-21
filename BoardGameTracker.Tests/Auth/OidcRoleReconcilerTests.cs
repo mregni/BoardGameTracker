@@ -34,7 +34,7 @@ public class OidcRoleReconcilerTests
 
     private static OidcProvider Provider(string? rolesClaim = "groups", string? adminGroup = "bgt-admins", string defaultRole = "User")
     {
-        var provider = new OidcProvider("kc", "Keycloak", "https://idp.example.com", "bgt");
+        var provider = new OidcProvider("Keycloak", "https://idp.example.com", "bgt");
         provider.Update("Keycloak", "https://idp.example.com", "bgt", null, true, "openid", true,
             null, null, null, null, null, null, rolesClaim, adminGroup, null, null);
         provider.SetDefaultRole(defaultRole);

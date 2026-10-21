@@ -3,7 +3,6 @@ namespace BoardGameTracker.Common.Entities.Auth;
 public class OidcProvider
 {
     public int Id { get; private set; }
-    public string Name { get; private set; } = string.Empty;
     public string DisplayName { get; private set; } = string.Empty;
     public bool Enabled { get; private set; }
     public string Authority { get; private set; } = string.Empty;
@@ -33,18 +32,12 @@ public class OidcProvider
 
     private OidcProvider() { }
 
-    public OidcProvider(string name, string displayName, string authority, string clientId)
+    public OidcProvider(string displayName, string authority, string clientId)
     {
-        Name = name;
         DisplayName = displayName;
         Authority = authority;
         ClientId = clientId;
         Enabled = true;
-    }
-
-    public void Rename(string name)
-    {
-        Name = name;
     }
 
     public void SetDefaultRole(string defaultRole)
