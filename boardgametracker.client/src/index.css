@@ -90,7 +90,13 @@
 
 :root {
 	--default-font-family: "Chakra Petch", sans-serif;
+	--bottom-nav-h: calc(5rem + env(safe-area-inset-bottom));
+	--form-action-bar-h: calc(4rem + env(safe-area-inset-bottom));
 	color-scheme: dark;
+}
+
+[data-bottom-nav="hidden"] {
+	--bottom-nav-h: 0px;
 }
 
 .hide-arrow[type="number"]::-webkit-inner-spin-button,
@@ -103,6 +109,7 @@ body {
 	font-family: var(--default-font-family);
 	background-color: var(--color-background);
 	color: white;
+	padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
 }
 
 @media (pointer: coarse), (max-width: 47.999rem) {

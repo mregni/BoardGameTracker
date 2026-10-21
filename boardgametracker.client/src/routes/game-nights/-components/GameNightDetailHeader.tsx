@@ -118,7 +118,7 @@ export const GameNightDetailHeader = (props: Props) => {
 						{showLog && (
 							<div
 								className={cx(
-									"fixed inset-x-0 bottom-20 z-20 grid gap-2 border-t border-white/10 bg-background/95 px-4 py-3 backdrop-blur-sm md:static md:flex md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none",
+									"fixed inset-x-0 bottom-(--bottom-nav-h) z-20 grid gap-2 border-t border-white/10 bg-background/95 px-4 py-3 backdrop-blur-sm md:static md:flex md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none",
 									showStart ? "grid-cols-2" : "grid-cols-1",
 								)}
 							>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtDialogFooter } from "@/components/BgtDialog";
+import { BgtFormActionBar } from "@/components/BgtForm/BgtFormActionBar";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -145,15 +146,16 @@ export const SessionForm = (props: Props) => {
 							onGameChange={handleGameChange}
 							onMinutesChange={syncStartWithDuration}
 						/>
-						<div className="sticky bottom-20 z-10 -mx-4 bg-background/95 px-4 py-3 backdrop-blur-sm md:static md:mx-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+						<BgtFormActionBar>
 							<BgtDialogFooter
+								className="pt-0 md:pt-2"
 								onCancel={goBack}
 								cancelDisabled={disabled}
 								confirmLabel={buttonText}
 								confirmType="submit"
 								loading={disabled}
 							/>
-						</div>
+						</BgtFormActionBar>
 					</form>
 				</BgtCard>
 			</BgtPageContent>

@@ -2,7 +2,7 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
-import { BgtImageSelector, BgtSwitch, BgtTextArea } from "@/components/BgtForm";
+import { BgtFormActionBar, BgtImageSelector, BgtSwitch, BgtTextArea } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -118,14 +118,16 @@ export const GameForm = (props: Props) => {
 								<GameFormCoopFields form={form} disabled={disabled} />
 							</div>
 
-							<div className="flex flex-row gap-2 mt-2">
-								<BgtButton variant="cancel" type="button" className="flex-none" onClick={goBack} disabled={disabled}>
-									{t("common:cancel")}
-								</BgtButton>
-								<BgtButton type="submit" className="flex-1" variant="primary" disabled={disabled}>
-									{buttonText}
-								</BgtButton>
-							</div>
+							<BgtFormActionBar className="md:mt-2">
+								<div className="flex flex-row gap-2">
+									<BgtButton variant="cancel" type="button" className="flex-none" onClick={goBack} disabled={disabled}>
+										{t("common:cancel")}
+									</BgtButton>
+									<BgtButton type="submit" className="flex-1" variant="primary" disabled={disabled}>
+										{buttonText}
+									</BgtButton>
+								</div>
+							</BgtFormActionBar>
 						</div>
 					</form>
 				</BgtCard>
