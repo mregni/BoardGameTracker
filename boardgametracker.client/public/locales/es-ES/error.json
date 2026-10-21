@@ -26,6 +26,7 @@
     "invalid-auth-session": "Sesión de autenticación no válida o caducada",
     "invalid-redirect-uri": "URI de redirección no válida",
     "player-already-linked": "Este jugador ya está vinculado a otra cuenta",
+    "player-link-update-failed": "No se pudo cambiar la cuenta vinculada. Recarga la página e inténtalo de nuevo.",
     "invalid-reset-token": "Este enlace para restablecer la contraseña no es válido o ha caducado",
     "not-authenticated": "Debes iniciar sesión",
     "insecure-authority": "La URL del proveedor debe usar https (http solo se permite para direcciones locales)",

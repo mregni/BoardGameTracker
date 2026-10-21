@@ -82,6 +82,7 @@ export interface UserDto {
 	id: string;
 	username: string;
 	email: string | null;
+	displayName?: string | null;
 	roles: string[];
 	createdAt: Date;
 	lastLoginAt: Date | null;

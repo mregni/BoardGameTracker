@@ -169,6 +169,21 @@ public class ImageService : IImageService
         return $"/{path.Replace("\\", "/")}";
     }
 
+    public async Task<string?> CopyProfileImage(string image)
+    {
+        var source = PathHelper.MapImageWebPathToPhysical(image);
+        if (source == null || !_diskProvider.FileExists(source))
+        {
+            _logger.LogWarning("Cannot copy a profile picture whose file is missing");
+            return null;
+        }
+
+        await using var stream = _diskProvider.OpenRead(source);
+        var newFileName = await _diskProvider.WriteFile(stream, "player.webp", PathHelper.FullProfileImagePath);
+        var path = Path.Combine(PathHelper.ProfileImagePath, newFileName);
+        return $"/{path.Replace("\\", "/")}";
+    }
+
     public void DeleteImage(string? image)
     {
         if (string.IsNullOrWhiteSpace(image))

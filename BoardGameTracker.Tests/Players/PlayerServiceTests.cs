@@ -6,6 +6,7 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore.Interfaces;
@@ -30,6 +31,7 @@ public class PlayerServiceTests
     private readonly Mock<IPlayerStatisticsService> _playerStatisticsDomainServiceMock;
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IReadRepository<GameNight>> _gameNightRepositoryMock;
+    private readonly Mock<IPlayerAccountImageService> _accountImageServiceMock = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ILogger<PlayerService>> _loggerMock;
     private readonly PlayerService _playerService;
@@ -50,6 +52,7 @@ public class PlayerServiceTests
             _playerStatisticsDomainServiceMock.Object,
             _sessionRepositoryMock.Object,
             _gameNightRepositoryMock.Object,
+            _accountImageServiceMock.Object,
             _unitOfWorkMock.Object,
             _loggerMock.Object);
     }
@@ -61,6 +64,7 @@ public class PlayerServiceTests
         _playerStatisticsDomainServiceMock.VerifyNoOtherCalls();
         _sessionRepositoryMock.VerifyNoOtherCalls();
         _gameNightRepositoryMock.VerifyNoOtherCalls();
+        _accountImageServiceMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
@@ -288,6 +292,118 @@ public class PlayerServiceTests
         VerifyNameChecked();
         _imageServiceMock.Verify(x => x.DeleteImage("old.png"), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    private void SetupPlayerForUpdate(Player player)
+    {
+        _playerRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(player);
+    }
+
+    [Fact]
+    public async Task Update_ShouldMarkANewPictureAsUploaded_EvenOverAnAccountPicture()
+    {
+        var player = new Player("Jane") { Id = 1 };
+        player.UseAccountImage("/images/profile/account_copy.webp");
+        SetupPlayerForUpdate(player);
+
+        var result = await _playerService.Update(new UpdatePlayerCommand { Id = 1, Name = "Jane", Image = "/images/profile/own.webp" });
+
+        result.Image.Should().Be("/images/profile/own.webp");
+        result.ImageSource.Should().Be(PlayerImageSource.Upload);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNameChecked();
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/account_copy.webp"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldKeepTheAccountPicture_WhenTheImageIsUnchanged()
+    {
+        var player = new Player("Jane") { Id = 1 };
+        player.UseAccountImage("/images/profile/account_copy.webp");
+        SetupPlayerForUpdate(player);
+
+        var result = await _playerService.Update(new UpdatePlayerCommand { Id = 1, Name = "Jane B", Image = "/images/profile/account_copy.webp" });
+
+        result.ImageSource.Should().Be(PlayerImageSource.Account);
+        result.Name.Should().Be("Jane B");
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNameChecked();
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldFallBackToTheAccountPicture_WhenTheOwnPictureIsRemoved()
+    {
+        var player = new Player("Jane", "/images/profile/own.webp") { Id = 1 };
+        SetupPlayerForUpdate(player);
+        _accountImageServiceMock.Setup(x => x.CopyLinkedAccountImageAsync(1)).ReturnsAsync("/images/profile/account_copy.webp");
+
+        var result = await _playerService.Update(new UpdatePlayerCommand { Id = 1, Name = "Jane", Image = null });
+
+        result.Image.Should().Be("/images/profile/account_copy.webp");
+        result.ImageSource.Should().Be(PlayerImageSource.Account);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNameChecked();
+        _accountImageServiceMock.Verify(x => x.CopyLinkedAccountImageAsync(1), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/own.webp"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldClearThePicture_WhenRemovedWithoutALinkedAccountPicture()
+    {
+        var player = new Player("Jane", "/images/profile/own.webp") { Id = 1 };
+        SetupPlayerForUpdate(player);
+        _accountImageServiceMock.Setup(x => x.CopyLinkedAccountImageAsync(1)).ReturnsAsync((string?)null);
+
+        var result = await _playerService.Update(new UpdatePlayerCommand { Id = 1, Name = "Jane", Image = "" });
+
+        result.Image.Should().BeNull();
+        result.ImageSource.Should().Be(PlayerImageSource.None);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNameChecked();
+        _accountImageServiceMock.Verify(x => x.CopyLinkedAccountImageAsync(1), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/own.webp"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldDeleteTheAccountCopy_WhenSavingFails()
+    {
+        var player = new Player("Jane", "/images/profile/own.webp") { Id = 1 };
+        SetupPlayerForUpdate(player);
+        _accountImageServiceMock.Setup(x => x.CopyLinkedAccountImageAsync(1)).ReturnsAsync("/images/profile/account_copy.webp");
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ThrowsAsync(new InvalidOperationException("db down"));
+
+        var act = () => _playerService.Update(new UpdatePlayerCommand { Id = 1, Name = "Jane", Image = null });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNameChecked();
+        _accountImageServiceMock.Verify(x => x.CopyLinkedAccountImageAsync(1), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/account_copy.webp"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLinkedAccountAsync_ShouldReturnTheLinkedAccount()
+    {
+        var account = new PlayerLinkedAccountDto { Id = "u1", Username = "jane" };
+        _accountImageServiceMock.Setup(x => x.FindLinkedAccountAsync(1)).ReturnsAsync(account);
+
+        var result = await _playerService.GetLinkedAccountAsync(1);
+
+        result.Should().BeSameAs(account);
+        _accountImageServiceMock.Verify(x => x.FindLinkedAccountAsync(1), Times.Once);
         VerifyNoOtherCalls();
     }
 

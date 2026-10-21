@@ -5,6 +5,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Auth.Pictures;
 using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -22,6 +23,7 @@ public class UserProfileImageServiceTests
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
     private readonly Mock<IImageService> _imageServiceMock = new();
     private readonly Mock<IIdentityProviderPictureDownloader> _downloaderMock = new();
+    private readonly Mock<IPlayerAccountImageService> _playerAccountImageServiceMock = new();
     private readonly Mock<ILogger<UserProfileImageService>> _loggerMock = new();
     private readonly UserProfileImageService _service;
     private readonly ApplicationUser _user = new("jane", "jane@example.com", "Jane");
@@ -35,7 +37,7 @@ public class UserProfileImageServiceTests
         _userManagerMock.Setup(x => x.GetRolesAsync(_user)).ReturnsAsync(["User"]);
         _downloaderMock.Setup(x => x.DownloadAsync(It.IsAny<string>(), Authority, It.IsAny<CancellationToken>())).ReturnsAsync([1, 2, 3]);
         _imageServiceMock.Setup(x => x.SaveProfileImage(It.IsAny<byte[]>())).ReturnsAsync("/images/profile/idp.webp");
-        _service = new UserProfileImageService(_userManagerMock.Object, _imageServiceMock.Object, _downloaderMock.Object, _loggerMock.Object);
+        _service = new UserProfileImageService(_userManagerMock.Object, _imageServiceMock.Object, _downloaderMock.Object, _playerAccountImageServiceMock.Object, _loggerMock.Object);
     }
 
     [Fact]
@@ -47,6 +49,7 @@ public class UserProfileImageServiceTests
         _user.ProfileImageSource.Should().Be(ProfileImageSource.IdentityProvider);
         _user.ProfileImageSourceUrl.Should().Be(PictureUrl);
         _userManagerMock.Verify(x => x.UpdateAsync(_user), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(_user), Times.Once);
     }
 
     [Fact]
@@ -60,6 +63,7 @@ public class UserProfileImageServiceTests
         _user.ProfileImageSource.Should().Be(ProfileImageSource.Upload);
         _downloaderMock.Verify(x => x.DownloadAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         _userManagerMock.Verify(x => x.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        _playerAccountImageServiceMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -130,6 +134,7 @@ public class UserProfileImageServiceTests
         await ImportAsync(PictureUrl);
 
         _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/idp.webp"), Times.Once);
+        _playerAccountImageServiceMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -152,6 +157,7 @@ public class UserProfileImageServiceTests
         profile.ProfileImage.Should().Be("/images/profile/mine.webp");
         _user.ProfileImageSource.Should().Be(ProfileImageSource.Upload);
         _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/idp-old.webp"), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(_user), Times.Once);
     }
 
     [Fact]
@@ -175,6 +181,7 @@ public class UserProfileImageServiceTests
 
         await action.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.ProfileImageUpdateFailed);
         _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/mine.webp"), Times.Once);
+        _playerAccountImageServiceMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -195,6 +202,7 @@ public class UserProfileImageServiceTests
         profile.ProfileImage.Should().BeNull();
         _user.ProfileImageSource.Should().Be(ProfileImageSource.None);
         _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/mine.webp"), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(_user), Times.Once);
     }
 
     [Fact]

@@ -2,12 +2,23 @@ import { z } from "zod";
 
 import type { Badge } from "../Badge/Badge";
 
+export type PlayerImageSource = "none" | "upload" | "account";
+
+export interface PlayerLinkedAccount {
+	id: string;
+	username: string;
+	displayName: string | null;
+	profileImage: string | null;
+}
+
 export interface Player {
 	id: number;
 	name: string;
 	image: string | null;
 	email: string | null;
 	badges: Badge[];
+	imageSource?: PlayerImageSource;
+	linkedAccount?: PlayerLinkedAccount | null;
 }
 
 export const CreatePlayerSchema = z.object({

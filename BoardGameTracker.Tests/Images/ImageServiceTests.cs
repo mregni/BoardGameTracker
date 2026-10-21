@@ -285,6 +285,49 @@ public class ImageServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CopyProfileImage_ShouldWriteASeparateFileInTheProfileFolder()
+    {
+        const string imagePath = "/images/profile/avatar_abc.webp";
+        var physical = PathHelper.MapImageWebPathToPhysical(imagePath)!;
+        _diskProviderMock.Setup(x => x.FileExists(physical)).Returns(true);
+        _diskProviderMock.Setup(x => x.OpenRead(physical)).Returns(() => new MemoryStream([1, 2, 3]));
+        _diskProviderMock
+            .Setup(x => x.WriteFile(It.IsAny<Stream>(), "player.webp", PathHelper.FullProfileImagePath))
+            .ReturnsAsync("player_xyz.webp");
+
+        var result = await _imageService.CopyProfileImage(imagePath);
+
+        result.Should().Be("/images/profile/player_xyz.webp");
+        _diskProviderMock.Verify(x => x.FileExists(physical), Times.Once);
+        _diskProviderMock.Verify(x => x.OpenRead(physical), Times.Once);
+        _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Stream>(), "player.webp", PathHelper.FullProfileImagePath), Times.Once);
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CopyProfileImage_ShouldReturnNull_WhenTheSourceFileIsMissing()
+    {
+        const string imagePath = "/images/profile/gone.webp";
+        var physical = PathHelper.MapImageWebPathToPhysical(imagePath)!;
+        _diskProviderMock.Setup(x => x.FileExists(physical)).Returns(false);
+
+        var result = await _imageService.CopyProfileImage(imagePath);
+
+        result.Should().BeNull();
+        _diskProviderMock.Verify(x => x.FileExists(physical), Times.Once);
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CopyProfileImage_ShouldRefusePathsOutsideTheImagesFolder()
+    {
+        var result = await _imageService.CopyProfileImage("/images/../../secret.txt");
+
+        result.Should().BeNull();
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public void DeleteImage_ShouldNotCallDiskProvider_WhenImagePathIsNull()
     {
         _imageService.DeleteImage(null);

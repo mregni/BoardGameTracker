@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { uploadImageCall } from "@/services/imageService";
-import { addPlayerCall, updatePlayerCall } from "@/services/playerService";
+import { addPlayerCall, linkPlayerAccountCall, updatePlayerCall } from "@/services/playerService";
 import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface Props {
@@ -45,12 +45,31 @@ export const usePlayerModal = ({ onSaveSuccess, onUpdateSuccess }: Props) => {
 		},
 	});
 
-	const isLoading = uploadImageMutation.isPending || saveMutation.isPending || updateMutation.isPending;
+	const linkAccountMutation = useMutation({
+		mutationFn: ({ playerId, userId }: { playerId: number; userId: string | null }) =>
+			linkPlayerAccountCall(playerId, userId),
+		async onSuccess() {
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.player] });
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
+		},
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "player:account.link-failed"));
+		},
+	});
+
+	const isLoading =
+		uploadImageMutation.isPending ||
+		saveMutation.isPending ||
+		updateMutation.isPending ||
+		linkAccountMutation.isPending;
 
 	return {
 		savePlayer: saveMutation.mutateAsync,
 		updatePlayer: updateMutation.mutateAsync,
 		uploadImage: uploadImageMutation.mutateAsync,
+		linkAccount: linkAccountMutation.mutateAsync,
 		isLoading,
 	};
 };
