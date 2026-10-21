@@ -348,6 +348,30 @@ public class ImageServiceTests : IDisposable
         return formFileMock.Object;
     }
 
+    [Fact]
+    public async Task SaveProfileImage_ShouldResizeEncodeAsWebpIntoTheProfileFolder()
+    {
+        byte[]? written = null;
+        _diskProviderMock
+            .Setup(x => x.WriteFile(It.IsAny<Stream>(), "avatar.webp", PathHelper.FullProfileImagePath))
+            .Callback<Stream, string, string>((stream, _, _) => written = ReadAll(stream))
+            .ReturnsAsync("unique-avatar.webp");
+
+        var result = await _imageService.SaveProfileImage(CreateTestImageBytes());
+
+        result.Should().Be($"/{PathHelper.ProfileImagePath}/unique-avatar.webp".Replace("\\", "/"));
+        AssertResizedWebp(written);
+    }
+
+    [Fact]
+    public async Task SaveProfileImage_ShouldStoreNothing_WhenTheBytesAreNotAnImage()
+    {
+        var result = await _imageService.SaveProfileImage("<html>not an image</html>"u8.ToArray());
+
+        result.Should().BeEmpty();
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
     private static byte[] CreateTestImageBytes(int width = 100, int height = 100)
     {
         using var bitmap = new SKBitmap(width, height);

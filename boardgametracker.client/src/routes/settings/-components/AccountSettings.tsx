@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useCallback, useMemo, useState } from "react";
+import { type ChangeEvent, useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtActionMenu } from "@/components/BgtActionMenu/BgtActionMenu";
+import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
@@ -53,6 +54,9 @@ export const AccountSettings = () => {
 		isAdmin,
 		updateProfile,
 		isUpdatingProfile,
+		uploadProfileImage,
+		removeProfileImage,
+		isChangingProfileImage,
 		changePassword,
 		isChangingPassword,
 		registerUser,
@@ -89,6 +93,13 @@ export const AccountSettings = () => {
 				updateProfile={updateProfile}
 				isUpdatingProfile={isUpdatingProfile}
 				onChangePassword={changePasswordModal.show}
+			/>
+
+			<ProfilePictureSection
+				profile={profile}
+				onUpload={uploadProfileImage}
+				onRemove={removeProfileImage}
+				isBusy={isChangingProfileImage}
 			/>
 
 			<ExternalLoginsSection />
@@ -195,6 +206,56 @@ export const AccountSettings = () => {
 				/>
 			)}
 		</>
+	);
+};
+
+interface ProfilePictureSectionProps {
+	profile: ProfileResponse;
+	onUpload: (file: File) => Promise<unknown>;
+	onRemove: () => Promise<unknown>;
+	isBusy: boolean;
+}
+
+const ProfilePictureSection = ({ profile, onUpload, onRemove, isBusy }: ProfilePictureSectionProps) => {
+	const { t } = useTranslation("settings");
+	const fileInput = useRef<HTMLInputElement>(null);
+
+	const onFileChosen = async (event: ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		event.target.value = "";
+		if (file) {
+			await onUpload(file).catch(() => undefined);
+		}
+	};
+
+	return (
+		<SettingsSection title={t("account.profile.picture.label")} description={t("account.profile.picture.hint")}>
+			<div className="flex items-center gap-4">
+				<BgtAvatar
+					image={profile.profileImage}
+					title={profile.displayName || profile.username}
+					colorKey={profile.id}
+					shape="round"
+					size="large"
+				/>
+				<input
+					ref={fileInput}
+					type="file"
+					accept="image/*"
+					className="hidden"
+					data-testid="profile-picture-input"
+					onChange={onFileChosen}
+				/>
+				<BgtButton variant="cancel" disabled={isBusy} onClick={() => fileInput.current?.click()}>
+					{t("account.profile.picture.upload")}
+				</BgtButton>
+				{profile.profileImage && (
+					<BgtButton variant="cancel" disabled={isBusy} onClick={() => onRemove().catch(() => undefined)}>
+						{t("account.profile.picture.remove")}
+					</BgtButton>
+				)}
+			</div>
+		</SettingsSection>
 	);
 };
 
@@ -374,6 +435,12 @@ const UserManagementSection = ({
 				header: t("auth:username"),
 				cell: ({ row }) => (
 					<div className="flex flex-wrap items-center gap-2">
+						<BgtAvatar
+							image={row.original.profileImage}
+							title={row.original.username}
+							colorKey={row.original.id}
+							shape="round"
+						/>
 						<span>{row.original.username}</span>
 						{badges(row.original)}
 					</div>
@@ -431,6 +498,7 @@ const UserManagementSection = ({
 						data-testid="user-card"
 						className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-3"
 					>
+						<BgtAvatar image={user.profileImage} title={user.username} colorKey={user.id} shape="round" size="large" />
 						<div className="flex min-w-0 flex-1 flex-col gap-1">
 							<div className="flex flex-wrap items-center gap-2">
 								<span className="truncate font-semibold text-white">{user.username}</span>

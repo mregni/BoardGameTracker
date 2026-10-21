@@ -7,6 +7,7 @@ public interface IImageService
 {
     Task<string> DownloadImage(string imageUrl, string imageFileName);
     Task<string> SaveImage(IFormFile? file, UploadFileType type);
+    Task<string> SaveProfileImage(byte[] content);
     void DeleteImage(string? image);
     void ClearAllImages();
 }

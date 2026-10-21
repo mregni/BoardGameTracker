@@ -1,4 +1,5 @@
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Maintenance.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,12 @@ public class MaintenanceRepository : IMaintenanceRepository
         await _context.GameMechanics.ExecuteDeleteAsync(cancellationToken);
         await _context.Players.ExecuteDeleteAsync(cancellationToken);
         await _context.Locations.ExecuteDeleteAsync(cancellationToken);
+        await _context.Users
+            .Where(u => u.ProfileImage != null || u.ProfileImageSourceUrl != null)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.ProfileImage, (string?)null)
+                .SetProperty(u => u.ProfileImageSource, ProfileImageSource.None)
+                .SetProperty(u => u.ProfileImageSourceUrl, (string?)null), cancellationToken);
     }
 
     public async Task ClearSettingsAndAuthAsync(CancellationToken cancellationToken = default)

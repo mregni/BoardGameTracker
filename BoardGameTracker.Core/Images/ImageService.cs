@@ -16,7 +16,8 @@ public class ImageService : IImageService
     public const string HttpClientName = "images";
 
     private const long MaxDownloadBytes = 15 * 1024 * 1024;
-    private const long MaxUploadBytes = 15 * 1024 * 1024;
+    public const long MaxUploadBytes = 15 * 1024 * 1024;
+    public const long MaxUploadRequestBytes = MaxUploadBytes + 1024 * 1024;
     private const long MaxUploadPixels = 50_000_000;
     private const int WebpQuality = 80;
     private static readonly SKSamplingOptions Sampling = new(SKFilterMode.Linear, SKMipmapMode.Linear);
@@ -143,6 +144,28 @@ public class ImageService : IImageService
         var outputFileName = Path.ChangeExtension(file.FileName, ".webp");
         var newFileName = await _diskProvider.WriteFile(webp, outputFileName, fullPath);
         var path = Path.Combine(folder, newFileName);
+        return $"/{path.Replace("\\", "/")}";
+    }
+
+    public async Task<string> SaveProfileImage(byte[] content)
+    {
+        using var data = SKData.CreateCopy(content);
+        using var codec = SKCodec.Create(data);
+        if (codec == null)
+        {
+            _logger.LogWarning("Rejected a profile picture: unsupported image format");
+            return string.Empty;
+        }
+
+        if ((long)codec.Info.Width * codec.Info.Height > MaxUploadPixels)
+        {
+            _logger.LogWarning("Rejected a profile picture: more than {Max} pixels", MaxUploadPixels);
+            return string.Empty;
+        }
+
+        await using var webp = ResizeToWebp(codec);
+        var newFileName = await _diskProvider.WriteFile(webp, "avatar.webp", PathHelper.FullProfileImagePath);
+        var path = Path.Combine(PathHelper.ProfileImagePath, newFileName);
         return $"/{path.Replace("\\", "/")}";
     }
 

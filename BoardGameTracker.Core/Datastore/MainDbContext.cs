@@ -387,6 +387,12 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.Entity<ApplicationUser>()
+            .Property(x => x.ProfileImageSource)
+            .HasConversion<string>()
+            .HasDefaultValue(ProfileImageSource.None)
+            .HasSentinel(ProfileImageSource.None);
+
+        builder.Entity<ApplicationUser>()
             .HasIndex(x => x.PlayerId)
             .IsUnique()
             .HasFilter("\"PlayerId\" IS NOT NULL");

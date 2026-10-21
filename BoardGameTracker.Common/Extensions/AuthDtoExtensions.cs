@@ -8,7 +8,7 @@ public static class AuthDtoExtensions
     public static UserDto ToDto(this ApplicationUser user, IEnumerable<string> roles, int externalLoginCount = 0) =>
         new(user.Id, user.UserName ?? "", user.Email, user.DisplayName,
             roles, user.CreatedAt, user.LastLoginAt, user.PlayerId,
-            user.IsDisabled, user.RoleManagedByIdentityProvider, externalLoginCount);
+            user.IsDisabled, user.RoleManagedByIdentityProvider, externalLoginCount, user.ProfileImage);
 
     public static OidcProviderDto ToDto(this OidcProvider provider) =>
         new(provider.Id, provider.DisplayName, provider.Enabled,
@@ -17,7 +17,7 @@ public static class AuthDtoExtensions
             provider.AuthorizationEndpoint, provider.TokenEndpoint, provider.UserInfoEndpoint,
             provider.UsernameClaimType, provider.EmailClaimType, provider.DisplayNameClaimType,
             provider.RolesClaimType, provider.AdminGroupValue,
-            provider.IconUrl, provider.ButtonColor, provider.DefaultRole);
+            provider.IconUrl, provider.ButtonColor, provider.DefaultRole, provider.PictureClaimType);
 
     public static ExternalLoginDto ToDto(this ExternalLogin login) =>
         new(login.Id, login.Provider, login.ProviderKey, login.ProviderDisplayName,
@@ -25,10 +25,10 @@ public static class AuthDtoExtensions
 
     public static ProfileResponse ToProfileDto(this ApplicationUser user, IEnumerable<string>  roles) =>
         new(user.Id, user.UserName ?? "", user.Email, user.DisplayName,
-            roles, user.CreatedAt, user.LastLoginAt, user.PlayerId);
+            roles, user.CreatedAt, user.LastLoginAt, user.PlayerId, user.ProfileImage);
 
     public static UserInfo ToUserInfo(this ApplicationUser user, IEnumerable<string> roles) =>
-        new(user.Id, user.UserName ?? "", user.DisplayName, roles);
+        new(user.Id, user.UserName ?? "", user.DisplayName, roles, user.ProfileImage);
 
     public static OidcProviderListDto ToListDto(this OidcProvider provider) =>
         new(provider.Id, provider.DisplayName, provider.Enabled);

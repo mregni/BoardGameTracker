@@ -23,6 +23,7 @@ export interface OidcProviderConfig extends OidcProviderSummary {
 	usernameClaimType: string | null;
 	emailClaimType: string | null;
 	displayNameClaimType: string | null;
+	pictureClaimType: string | null;
 	rolesClaimType: string | null;
 	adminGroupValue: string | null;
 	iconUrl: string | null;
@@ -82,6 +83,7 @@ export const OidcProviderSchema = z.object({
 	usernameClaimType: optionalText,
 	emailClaimType: optionalText,
 	displayNameClaimType: optionalText,
+	pictureClaimType: optionalText,
 	rolesClaimType: optionalText,
 	adminGroupValue: optionalText,
 });

@@ -257,6 +257,71 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/profile/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "multipart/form-data": {
+                        /** Format: binary */
+                        File: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProfileResponse"];
+                        "application/json": components["schemas"]["ProfileResponse"];
+                        "text/json": components["schemas"]["ProfileResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProfileResponse"];
+                        "application/json": components["schemas"]["ProfileResponse"];
+                        "text/json": components["schemas"]["ProfileResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/linkable-players": {
         parameters: {
             query?: never;
@@ -5124,6 +5189,7 @@ export interface components {
             buttonColor: string | null;
             defaultRole: string | null;
             enabled: boolean;
+            pictureClaimType: string | null;
         };
         CreatePlayerCommand: {
             name: string;
@@ -5837,6 +5903,7 @@ export interface components {
             iconUrl: string | null;
             buttonColor: string | null;
             defaultRole: string;
+            pictureClaimType: string | null;
         };
         OidcProviderInfo: {
             displayName: string;
@@ -5968,6 +6035,7 @@ export interface components {
             lastLoginAt: string | null;
             /** Format: int32 */
             playerId: number | null;
+            profileImage: string | null;
         };
         RagAnswerDto: {
             answer: string;
@@ -6298,6 +6366,7 @@ export interface components {
             iconUrl: string | null;
             buttonColor: string | null;
             defaultRole: string | null;
+            pictureClaimType: string | null;
         };
         UpdatePlayerCommand: {
             name: string;
@@ -6373,12 +6442,14 @@ export interface components {
             roleManagedByIdentityProvider: boolean;
             /** Format: int32 */
             externalLoginCount: number;
+            profileImage: string | null;
         };
         UserInfo: {
             id: string;
             username: string;
             displayName: string | null;
             roles: string[];
+            profileImage: string | null;
         };
         /** @enum {string} */
         VersionTrack: "stable" | "beta";

@@ -6,7 +6,8 @@
     "type-not-supported": "Afbeeldingstype wordt niet ondersteund",
     "error": "Fout bij het uploaden van de afbeelding, bekijk de logs",
     "too-large": "Afbeelding is te groot",
-    "unsupported-format": "Niet-ondersteund afbeeldingsformaat"
+    "unsupported-format": "Niet-ondersteund afbeeldingsformaat",
+    "profile-update-failed": "Je profielfoto kon niet worden opgeslagen, probeer het opnieuw"
   },
   "auth": {
     "username-already-exists": "Gebruikersnaam bestaat al",

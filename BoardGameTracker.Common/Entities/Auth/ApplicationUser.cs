@@ -1,3 +1,4 @@
+using BoardGameTracker.Common.Enums;
 using Microsoft.AspNetCore.Identity;
 
 namespace BoardGameTracker.Common.Entities.Auth;
@@ -10,6 +11,9 @@ public class ApplicationUser : IdentityUser
     public int? PlayerId { get; private set; }
     public Player? Player { get; private set; }
     public bool RoleManagedByIdentityProvider { get; private set; }
+    public string? ProfileImage { get; private set; }
+    public ProfileImageSource ProfileImageSource { get; private set; }
+    public string? ProfileImageSourceUrl { get; private set; }
 
     private ApplicationUser() { }
 
@@ -56,5 +60,30 @@ public class ApplicationUser : IdentityUser
     public void UnlinkPlayer()
     {
         PlayerId = null;
+    }
+
+    public bool AcceptsIdentityProviderPicture(string pictureUrl)
+    {
+        return ProfileImageSource != ProfileImageSource.Upload
+               && !string.Equals(ProfileImageSourceUrl, pictureUrl, StringComparison.Ordinal);
+    }
+
+    public void UseIdentityProviderPicture(string image, string pictureUrl)
+    {
+        ProfileImage = image;
+        ProfileImageSource = ProfileImageSource.IdentityProvider;
+        ProfileImageSourceUrl = pictureUrl;
+    }
+
+    public void UseUploadedProfileImage(string image)
+    {
+        ProfileImage = image;
+        ProfileImageSource = ProfileImageSource.Upload;
+    }
+
+    public void RemoveProfileImage()
+    {
+        ProfileImage = null;
+        ProfileImageSource = ProfileImageSource.None;
     }
 }

@@ -96,6 +96,15 @@ The same configuration is available through the API (`POST /api/admin/oidc-provi
 - Only one provider can be configured; creating a second one is refused. The login page shows one *Continue with …* button. Switch **Enabled** off to hide the button without losing the configuration.
 - Removing the provider also removes every linked external account; people keep their local password if they have one.
 
+### Avatars from the provider
+
+On every sign-in and link, BoardGameTracker reads the standard OIDC `picture` claim from the id_token or the userinfo response and uses that picture as the user's avatar in the menu and the user lists. Set **Avatar claim** (`pictureClaimType`) when your provider puts the picture address in another claim. Your identity provider must include the claim, which usually means requesting the `profile` scope; if the provider sends no picture, users simply keep their initials.
+
+- The server downloads the picture once, right after the sign-in, and stores it like an uploaded profile picture. Browsers never load it from the provider. The download only accepts `https` addresses (a provider on `localhost` may use its own loopback address during development), refuses addresses that resolve to private, link-local or cloud metadata IPs unless they belong to the provider's own host, follows redirects only on the same host, gives up after 5 seconds, and only accepts images up to 2 MB.
+- A picture the user uploads under **Settings → Account** always wins; the provider never replaces it. After a user removes their picture, the same provider picture is not imported again; it only comes back when the provider reports a different picture address.
+- The picture is downloaded again only when its address changes. A failed download is logged as a warning, never blocks the sign-in, and is retried at the next sign-in.
+- Some providers only fill the claim when their avatar setting allows it. In Authentik, for example, the `picture` claim depends on the configured avatar source.
+
 ### Linking an existing account
 
 Anyone with a local account can link it to the provider under **Settings → Account → External logins**. Afterwards both the password and the provider sign in to the same account, and the same screen shows when the link was made and lets the user unlink it again. An account created through the provider has no password, so its last external login cannot be unlinked until a password is set (Forgot password, or an admin reset). A sign-in through the provider is refused when the email already belongs to an unlinked local account, so link first.

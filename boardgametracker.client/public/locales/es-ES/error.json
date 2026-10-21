@@ -6,7 +6,8 @@
     "type-not-supported": "Tipo de imagen no compatible",
     "error": "Error al subir la imagen, revisa los registros",
     "too-large": "La imagen es demasiado grande",
-    "unsupported-format": "Formato de imagen no compatible"
+    "unsupported-format": "Formato de imagen no compatible",
+    "profile-update-failed": "No se ha podido guardar tu foto de perfil, inténtalo de nuevo"
   },
   "auth": {
     "username-already-exists": "El nombre de usuario ya existe",

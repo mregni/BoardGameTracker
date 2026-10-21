@@ -1,6 +1,7 @@
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
+using BoardGameTracker.Core.Auth.Pictures;
 using BoardGameTracker.Core.Badges;
 using BoardGameTracker.Core.Badges.BadgeEvaluators;
 using BoardGameTracker.Core.Badges.Interfaces;
@@ -146,6 +147,11 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IUserAdminService, UserAdminService>();
         serviceCollection.AddScoped<IUserAccessCheck, UserAccessCheck>();
         serviceCollection.AddSingleton<IHostedService, RefreshTokenCleanupService>();
+        serviceCollection.AddSingleton<IHostAddressResolver, DnsHostAddressResolver>();
+        serviceCollection.AddScoped<IIdentityProviderPictureDownloader, IdentityProviderPictureDownloader>();
+        serviceCollection.AddScoped<IUserProfileImageService, UserProfileImageService>();
+        serviceCollection.AddSingleton<IIdentityProviderPictureQueue, IdentityProviderPictureQueue>();
+        serviceCollection.AddHostedService<IdentityProviderPictureImportService>();
 
         serviceCollection.AddScoped<IGameStatisticsService, GameStatisticsService>();
         serviceCollection.AddScoped<IPlayerStatisticsService, PlayerStatisticsService>();

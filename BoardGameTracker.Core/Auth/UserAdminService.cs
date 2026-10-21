@@ -5,6 +5,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Core.Images.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ public class UserAdminService : IUserAdminService
     private readonly ITokenService _tokenService;
     private readonly IUserAccessCheck _accessCheck;
     private readonly MainDbContext _context;
+    private readonly IImageService _imageService;
     private readonly ILogger<UserAdminService> _logger;
 
     public UserAdminService(
@@ -24,12 +26,14 @@ public class UserAdminService : IUserAdminService
         ITokenService tokenService,
         IUserAccessCheck accessCheck,
         MainDbContext context,
+        IImageService imageService,
         ILogger<UserAdminService> logger)
     {
         _userManager = userManager;
         _tokenService = tokenService;
         _accessCheck = accessCheck;
         _context = context;
+        _imageService = imageService;
         _logger = logger;
     }
 
@@ -77,6 +81,7 @@ public class UserAdminService : IUserAdminService
 
         await _userManager.DeleteAsync(user);
         _accessCheck.Forget(userId);
+        _imageService.DeleteImage(user.ProfileImage);
 
         _logger.LogInformation("Admin {AdminId} deleted user {UserId} ({Username})",
             currentUserId, userId, user.UserName);

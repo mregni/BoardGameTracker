@@ -24,6 +24,7 @@ public class AuthControllerTests
     private readonly Mock<IOidcService> _oidcServiceMock;
     private readonly Mock<IProfileImageTicketService> _imageTicketsMock;
     private readonly Mock<ILogger<AuthController>> _loggerMock;
+    private readonly Mock<IUserProfileImageService> _profileImagesMock = new();
     private readonly AuthController _controller;
 
     public AuthControllerTests()
@@ -35,13 +36,14 @@ public class AuthControllerTests
         _imageTicketsMock.Setup(x => x.Lifetime).Returns(TimeSpan.FromDays(7));
         _loggerMock = new Mock<ILogger<AuthController>>();
         var sessionCookies = new AuthSessionCookies(_imageTicketsMock.Object, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }));
-        _controller = new AuthController(_authServiceMock.Object, _oidcServiceMock.Object, sessionCookies, _loggerMock.Object);
+        _controller = new AuthController(_authServiceMock.Object, _oidcServiceMock.Object, sessionCookies, _profileImagesMock.Object, _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
         _authServiceMock.VerifyNoOtherCalls();
         _oidcServiceMock.VerifyNoOtherCalls();
+        _profileImagesMock.VerifyNoOtherCalls();
     }
 
     private string SetCookie(string name) =>
@@ -368,6 +370,41 @@ public class AuthControllerTests
         okResult.Value.Should().BeSameAs(expectedProfile);
 
         _authServiceMock.Verify(x => x.GetProfileAsync("user-id"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region ProfileImage
+
+    [Fact]
+    public async Task UploadProfileImage_ShouldStoreTheFileForTheCurrentUser()
+    {
+        SetupAuthenticatedUser("user-id");
+        var file = new Mock<Microsoft.AspNetCore.Http.IFormFile>().Object;
+        var expectedProfile = new ProfileResponse(
+            "user-id", "testuser", null, null, ["User"], DateTime.UtcNow, null, null, "/images/profile/a.webp");
+        _profileImagesMock.Setup(x => x.UploadAsync("user-id", file)).ReturnsAsync(expectedProfile);
+
+        var result = await _controller.UploadProfileImage(new BoardGameTracker.Common.DTOs.Commands.UploadProfileImageCommand { File = file });
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(expectedProfile);
+        _profileImagesMock.Verify(x => x.UploadAsync("user-id", file), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RemoveProfileImage_ShouldClearTheImageOfTheCurrentUser()
+    {
+        SetupAuthenticatedUser("user-id");
+        var expectedProfile = new ProfileResponse(
+            "user-id", "testuser", null, null, ["User"], DateTime.UtcNow, null, null);
+        _profileImagesMock.Setup(x => x.RemoveAsync("user-id")).ReturnsAsync(expectedProfile);
+
+        var result = await _controller.RemoveProfileImage();
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(expectedProfile);
+        _profileImagesMock.Verify(x => x.RemoveAsync("user-id"), Times.Once);
         VerifyNoOtherCalls();
     }
 

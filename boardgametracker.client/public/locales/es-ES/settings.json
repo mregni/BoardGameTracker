@@ -183,6 +183,12 @@
 			"username": {
 				"label": "Nombre de usuario"
 			},
+			"picture": {
+				"label": "Foto de perfil",
+				"upload": "Subir foto",
+				"remove": "Quitar foto",
+				"hint": "Cuando inicias sesión con inicio de sesión único, se usa la foto de tu proveedor de identidad hasta que subas la tuya. Una foto quitada solo vuelve cuando tu proveedor de identidad muestra otra distinta."
+			},
 			"player": {
 				"label": "Jugador vinculado",
 				"none": "Sin vincular"
@@ -306,7 +312,10 @@
 			"user-disable-failed": "No se pudo desactivar el usuario",
 			"user-enable-failed": "No se pudo activar el usuario",
 			"external-login-unlink-failed": "No se pudo desvincular la cuenta del proveedor de identidad",
-			"role-manage-failed": "No se pudo ceder el rol al proveedor de identidad"
+			"role-manage-failed": "No se pudo ceder el rol al proveedor de identidad",
+			"picture-updated": "Foto de perfil guardada",
+			"picture-removed": "Foto de perfil quitada",
+			"picture-update-failed": "No se ha podido guardar la foto de perfil"
 		},
 		"external-logins": {
 			"title": "Inicio de sesión único",
@@ -362,6 +371,10 @@
 			},
 			"display-name-claim": {
 				"label": "Claim del nombre visible"
+			},
+			"picture-claim": {
+				"label": "Claim de avatar",
+				"hint": "La foto de este claim se convierte en el avatar de los usuarios que no han subido la suya. Tu proveedor de identidad debe incluir un claim picture en el token o en la información de usuario."
 			},
 			"roles-claim": {
 				"label": "Claim de grupos/roles"

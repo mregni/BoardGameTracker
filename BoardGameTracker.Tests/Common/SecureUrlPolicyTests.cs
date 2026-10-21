@@ -57,4 +57,44 @@ public class SecureUrlPolicyTests
     {
         SecureUrlPolicy.IsPublicWebAddress(url).Should().Be(expected);
     }
+
+    [Theory]
+    [InlineData("localhost", true)]
+    [InlineData("LOCALHOST.", true)]
+    [InlineData("app.localhost", true)]
+    [InlineData("127.0.0.1", true)]
+    [InlineData("[::1]", true)]
+    [InlineData("idp.example.com", false)]
+    [InlineData("192.168.1.20", false)]
+    public void IsLoopbackHost_ShouldRecogniseLoopbackNamesAndAddresses(string host, bool expected)
+    {
+        SecureUrlPolicy.IsLoopbackHost(host).Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("127.0.0.1", true)]
+    [InlineData("0.0.0.0", true)]
+    [InlineData("0.1.2.3", true)]
+    [InlineData("100.64.1.1", true)]
+    [InlineData("224.0.0.1", true)]
+    [InlineData("::ffff:10.0.0.1", true)]
+    [InlineData("ff02::1", true)]
+    [InlineData("8.8.8.8", false)]
+    [InlineData("100.128.0.1", false)]
+    [InlineData("2001:4860:4860::8888", false)]
+    public void IsInternalAddress_ShouldFlagAddressesThatAreNotPublic(string address, bool expected)
+    {
+        SecureUrlPolicy.IsInternalAddress(System.Net.IPAddress.Parse(address)).Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("169.254.169.254", true)]
+    [InlineData("::ffff:169.254.169.254", true)]
+    [InlineData("fd00:ec2::254", true)]
+    [InlineData("100.100.100.200", true)]
+    [InlineData("169.254.169.253", false)]
+    public void IsMetadataAddress_ShouldFlagCloudMetadataEndpoints(string address, bool expected)
+    {
+        SecureUrlPolicy.IsMetadataAddress(System.Net.IPAddress.Parse(address)).Should().Be(expected);
+    }
 }

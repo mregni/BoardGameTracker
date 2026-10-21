@@ -183,6 +183,12 @@
 			"username": {
 				"label": "Username"
 			},
+			"picture": {
+				"label": "Profile picture",
+				"upload": "Upload picture",
+				"remove": "Remove picture",
+				"hint": "When you sign in with single sign-on, the picture from your identity provider is used until you upload your own. A removed picture only comes back when your identity provider shows a different one."
+			},
 			"player": {
 				"label": "Linked player",
 				"none": "Not linked"
@@ -306,7 +312,10 @@
 			"user-disable-failed": "Failed to disable the user",
 			"user-enable-failed": "Failed to enable the user",
 			"external-login-unlink-failed": "Failed to unlink the identity provider account",
-			"role-manage-failed": "Failed to hand the role to the identity provider"
+			"role-manage-failed": "Failed to hand the role to the identity provider",
+			"picture-updated": "Profile picture saved",
+			"picture-removed": "Profile picture removed",
+			"picture-update-failed": "The profile picture could not be saved"
 		},
 		"external-logins": {
 			"title": "Single sign-on",
@@ -362,6 +371,10 @@
 			},
 			"display-name-claim": {
 				"label": "Display name claim"
+			},
+			"picture-claim": {
+				"label": "Avatar claim",
+				"hint": "The picture in this claim becomes the avatar of users who have not uploaded their own. Your identity provider must include a picture claim in the token or user info."
 			},
 			"roles-claim": {
 				"label": "Groups/roles claim"

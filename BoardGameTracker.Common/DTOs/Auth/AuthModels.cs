@@ -12,7 +12,8 @@ public record ProfileResponse(
     IEnumerable<string> Roles,
     DateTime CreatedAt,
     DateTime? LastLoginAt,
-    int? PlayerId);
+    int? PlayerId,
+    string? ProfileImage = null);
 
 public record AuthStatusResponse(bool AuthEnabled);
 

@@ -15,9 +15,12 @@ vi.mock("@tanstack/react-router", () => ({
 	useRouterState: () => ({ location: { pathname: "/games" } }),
 }));
 
+const auth = vi.hoisted(() => ({
+	state: { user: null as unknown, isAuthenticated: false, authStatus: { authEnabled: false } },
+}));
+
 vi.mock("@/hooks/useAuth", () => ({
-	useAuth: (selector: (state: unknown) => unknown) =>
-		selector({ user: null, isAuthenticated: false, authStatus: { authEnabled: false } }),
+	useAuth: (selector: (state: unknown) => unknown) => selector(auth.state),
 }));
 
 vi.mock("@/hooks/useLogout", () => ({
@@ -42,6 +45,43 @@ vi.mock("@/components/BgtMenu/BgtMenuItem", () => ({
 describe("BottomNav", () => {
 	beforeEach(() => {
 		useBottomNavStore.setState({ hideRequests: 0 });
+		auth.state = { user: null, isAuthenticated: false, authStatus: { authEnabled: false } };
+	});
+
+	it("shows the profile picture of the signed-in user in the more sheet", async () => {
+		auth.state = {
+			user: {
+				id: "u1",
+				username: "jane",
+				displayName: "Jane Doe",
+				roles: ["User"],
+				profileImage: "/images/profile/jane.webp",
+			},
+			isAuthenticated: true,
+			authStatus: { authEnabled: true },
+		};
+		const user = userEvent.setup();
+		renderWithTheme(<BottomNav />);
+
+		await user.click(screen.getByRole("button", { name: "common:more" }));
+
+		expect(screen.getByRole("img", { name: "Jane Doe" })).toHaveAttribute("src", "/images/profile/jane.webp");
+		expect(screen.getByRole("img", { name: "Jane Doe" })).toHaveClass("rounded-full");
+	});
+
+	it("falls back to the initial of the signed-in user without a picture", async () => {
+		auth.state = {
+			user: { id: "u1", username: "jane", displayName: null, roles: ["User"], profileImage: null },
+			isAuthenticated: true,
+			authStatus: { authEnabled: true },
+		};
+		const user = userEvent.setup();
+		renderWithTheme(<BottomNav />);
+
+		await user.click(screen.getByRole("button", { name: "common:more" }));
+
+		expect(screen.queryByRole("img", { name: "jane" })).not.toBeInTheDocument();
+		expect(screen.getByTitle("jane")).toHaveTextContent("j");
 	});
 
 	it("sizes the nav from the shared height variable including the safe area", () => {

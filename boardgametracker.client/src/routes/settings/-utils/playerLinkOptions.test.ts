@@ -15,6 +15,7 @@ const user = (id: string, playerId: number | null): UserDto => ({
 	isDisabled: false,
 	roleManagedByIdentityProvider: false,
 	externalLoginCount: 0,
+	profileImage: null,
 });
 
 describe("buildLinkablePlayerItems", () => {

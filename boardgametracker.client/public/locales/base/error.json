@@ -6,7 +6,8 @@
     "type-not-supported": "Image type not supported",
     "error": "Error while uploading image, check logs",
     "too-large": "Image is too large",
-    "unsupported-format": "Unsupported image format"
+    "unsupported-format": "Unsupported image format",
+    "profile-update-failed": "Your profile picture could not be saved, please try again"
   },
   "auth": {
     "username-already-exists": "Username already exists",

@@ -5,6 +5,7 @@ export interface User {
 	username: string;
 	displayName: string | null;
 	roles: string[];
+	profileImage: string | null;
 }
 
 export interface LoginRequest {
@@ -38,6 +39,7 @@ export interface ProfileResponse {
 	createdAt: Date;
 	lastLoginAt: Date | null;
 	playerId: number | null;
+	profileImage: string | null;
 }
 
 export interface UpdateProfileRequest {
@@ -87,6 +89,7 @@ export interface UserDto {
 	isDisabled: boolean;
 	roleManagedByIdentityProvider: boolean;
 	externalLoginCount: number;
+	profileImage: string | null;
 }
 
 export interface ResetPasswordResponse {

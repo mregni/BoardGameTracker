@@ -36,6 +36,7 @@ const toForm = (provider: OidcProviderConfig | null, httpsRequired: boolean): Oi
 	usernameClaimType: provider?.usernameClaimType ?? "",
 	emailClaimType: provider?.emailClaimType ?? "",
 	displayNameClaimType: provider?.displayNameClaimType ?? "",
+	pictureClaimType: provider?.pictureClaimType ?? "",
 	rolesClaimType: provider?.rolesClaimType ?? "",
 	adminGroupValue: provider?.adminGroupValue ?? "",
 });
@@ -300,6 +301,17 @@ export const SsoSettings = ({ dateFormat = DEFAULT_DATE_FORMAT, uiLanguage = "en
 								/>
 							)}
 						</form.Field>
+						<form.Field name="pictureClaimType">
+							{(field: AnyFieldApi) => (
+								<BgtInputField
+									field={field}
+									type="text"
+									label={t("sso.fields.picture-claim.label")}
+									placeholder="picture"
+									disabled={busy}
+								/>
+							)}
+						</form.Field>
 						<form.Field name="rolesClaimType">
 							{(field: AnyFieldApi) => (
 								<BgtInputField
@@ -330,6 +342,9 @@ export const SsoSettings = ({ dateFormat = DEFAULT_DATE_FORMAT, uiLanguage = "en
 					</div>
 					<BgtText size="2" color="gray">
 						{t("sso.fields.role-sync")}
+					</BgtText>
+					<BgtText size="2" color="gray">
+						{t("sso.fields.picture-claim.hint")}
 					</BgtText>
 					<form.Field name="autoProvisionUsers">
 						{(field: AnyFieldApi) => (

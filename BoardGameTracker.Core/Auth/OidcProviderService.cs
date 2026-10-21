@@ -40,7 +40,7 @@ public class OidcProviderService : IOidcProviderService
         string? authorizationEndpoint, string? tokenEndpoint, string? userInfoEndpoint,
         string? usernameClaimType, string? emailClaimType, string? displayNameClaimType,
         string? rolesClaimType, string? adminGroupValue,
-        string? iconUrl, string? buttonColor, string? defaultRole = null, bool enabled = true)
+        string? iconUrl, string? buttonColor, string? defaultRole = null, bool enabled = true, string? pictureClaimType = null)
     {
         if (await _context.OidcProviders.AnyAsync())
         {
@@ -54,6 +54,7 @@ public class OidcProviderService : IOidcProviderService
             usernameClaimType, emailClaimType, displayNameClaimType,
             rolesClaimType, adminGroupValue,
             iconUrl, buttonColor);
+        provider.SetPictureClaimType(pictureClaimType);
         provider.SetDefaultRole(ValidDefaultRole(defaultRole) ?? Constants.AuthRoles.User);
 
         _context.OidcProviders.Add(provider);
@@ -71,7 +72,7 @@ public class OidcProviderService : IOidcProviderService
         string? authorizationEndpoint, string? tokenEndpoint, string? userInfoEndpoint,
         string? usernameClaimType, string? emailClaimType, string? displayNameClaimType,
         string? rolesClaimType, string? adminGroupValue,
-        string? iconUrl, string? buttonColor, string? defaultRole = null)
+        string? iconUrl, string? buttonColor, string? defaultRole = null, string? pictureClaimType = null)
     {
         var provider = await _context.OidcProviders.FindAsync(id)
             ?? throw new EntityNotFoundException(nameof(OidcProvider), id);
@@ -85,6 +86,7 @@ public class OidcProviderService : IOidcProviderService
             usernameClaimType, emailClaimType, displayNameClaimType,
             rolesClaimType, adminGroupValue,
             iconUrl, buttonColor);
+        provider.SetPictureClaimType(pictureClaimType);
         if (ValidDefaultRole(defaultRole) is { } role)
         {
             provider.SetDefaultRole(role);

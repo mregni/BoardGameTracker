@@ -77,7 +77,7 @@ public class OidcProvidersController : ControllerBase
             request.AuthorizationEndpoint, request.TokenEndpoint, request.UserInfoEndpoint,
             request.UsernameClaimType, request.EmailClaimType, request.DisplayNameClaimType,
             request.RolesClaimType, request.AdminGroupValue,
-            request.IconUrl, request.ButtonColor, request.DefaultRole, request.Enabled);
+            request.IconUrl, request.ButtonColor, request.DefaultRole, request.Enabled, request.PictureClaimType);
 
         return CreatedAtAction(nameof(GetProvider), new { id = provider.Id }, provider.ToDto());
     }
@@ -93,7 +93,7 @@ public class OidcProvidersController : ControllerBase
             request.AuthorizationEndpoint, request.TokenEndpoint, request.UserInfoEndpoint,
             request.UsernameClaimType, request.EmailClaimType, request.DisplayNameClaimType,
             request.RolesClaimType, request.AdminGroupValue,
-            request.IconUrl, request.ButtonColor, request.DefaultRole);
+            request.IconUrl, request.ButtonColor, request.DefaultRole, request.PictureClaimType);
 
         return Ok(provider.ToDto());
     }

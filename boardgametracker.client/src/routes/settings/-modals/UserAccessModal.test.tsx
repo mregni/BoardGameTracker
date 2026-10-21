@@ -39,6 +39,7 @@ const user: UserDto = {
 	isDisabled: false,
 	roleManagedByIdentityProvider: false,
 	externalLoginCount: 1,
+	profileImage: null,
 };
 
 const login: ExternalLogin = {
@@ -64,6 +65,12 @@ describe("UserAccessModal", () => {
 			manageRoleByIdentityProvider: vi.fn(),
 			isBusy: false,
 		};
+	});
+
+	it("shows the avatar of the user", () => {
+		renderModal({ user: { ...user, profileImage: "/images/profile/jane.webp" } });
+
+		expect(screen.getByRole("img", { name: "jane" })).toHaveAttribute("src", "/images/profile/jane.webp");
 	});
 
 	it("lists the linked identities and unlinks one after confirmation", async () => {
