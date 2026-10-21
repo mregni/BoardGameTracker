@@ -398,7 +398,10 @@
 			"token": "Token",
 			"userinfo": "Información del usuario",
 			"end-session": "Cierre de sesión",
-			"none": "no disponible"
+			"none": "no disponible",
+			"signing": "Algoritmos de firma",
+			"signing-unsupported": "El proveedor solo firma los tokens con {{algorithms}}, que BoardGameTracker no acepta. Configura una clave de firma en el proveedor (en Authentik: Provider → Signing Key).",
+			"certificate-expired": "El certificado de firma del proveedor caducó el {{date}}. El inicio de sesión sigue funcionando, pero renuévalo en el proveedor (en Authentik: System → Certificates)."
 		},
 		"setup": {
 			"title": "Registro en el proveedor",

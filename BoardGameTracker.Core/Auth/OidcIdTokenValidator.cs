@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using BoardGameTracker.Common;
@@ -17,6 +18,7 @@ public class OidcIdTokenValidator : IOidcIdTokenValidator
 
     private static readonly JsonWebTokenHandler Handler = new();
 
+    private readonly ConditionalWeakTable<OpenIdConnectConfiguration, string> _expiredCertificateWarnings = new();
     private readonly IOidcConfigurationProvider _configurations;
     private readonly ILogger<OidcIdTokenValidator> _logger;
 
@@ -28,23 +30,31 @@ public class OidcIdTokenValidator : IOidcIdTokenValidator
 
     public async Task<OidcIdToken> ValidateAsync(string authority, OpenIdConnectConfiguration configuration, string clientId, string idToken, string expectedNonce)
     {
-        if (SupportedAlgorithms(configuration).Count == 0)
+        var result = await TryValidateAsync(authority, configuration, clientId, idToken);
+        if (NeedsFreshConfiguration(result))
         {
-            _logger.LogWarning("{Authority} signs id_tokens only with algorithms outside the allow list", authority);
-            throw Invalid();
+            _logger.LogInformation("The id_token of {Authority} failed on its algorithm or signature; refetching the OIDC configuration and signing keys", authority);
+            configuration = await _configurations.RefreshAsync(authority);
+            result = await TryValidateAsync(authority, configuration, clientId, idToken);
         }
 
-        var result = await Handler.ValidateTokenAsync(idToken, Parameters(configuration, clientId));
-        if (!result.IsValid && result.Exception is SecurityTokenSignatureKeyNotFoundException && HasUnknownKeyId(idToken, configuration))
+        if (result is null)
         {
-            _logger.LogInformation("The id_token of {Authority} is signed with an unknown key; refetching the signing keys", authority);
-            var refreshed = await _configurations.RefreshAsync(authority);
-            result = await Handler.ValidateTokenAsync(idToken, Parameters(refreshed, clientId));
+            _logger.LogWarning("{Authority} signs id_tokens only with algorithms that BoardGameTracker does not accept, such as HS256; set a signing key at the identity provider so it signs with RS256 or ES256", authority);
+            throw Invalid();
         }
 
         if (!result.IsValid)
         {
-            _logger.LogWarning("The id_token of {Authority} was rejected: {Reason}", authority, result.Exception?.GetType().Name ?? "unknown");
+            if (result.Exception is SecurityTokenInvalidAlgorithmException)
+            {
+                _logger.LogWarning("The id_token of {Authority} is signed with an algorithm that BoardGameTracker does not accept; set a signing key at the identity provider so it signs with RS256 or ES256", authority);
+            }
+            else
+            {
+                _logger.LogWarning("The id_token of {Authority} was rejected: {Reason}", authority, result.Exception?.GetType().Name ?? "unknown");
+            }
+
             throw Invalid();
         }
 
@@ -63,18 +73,20 @@ public class OidcIdTokenValidator : IOidcIdTokenValidator
         return new OidcIdToken(subject, claims);
     }
 
-    private static bool HasUnknownKeyId(string idToken, OpenIdConnectConfiguration configuration)
+    private async Task<TokenValidationResult?> TryValidateAsync(string authority, OpenIdConnectConfiguration configuration, string clientId, string idToken)
     {
-        if (!Handler.CanReadToken(idToken))
-        {
-            return false;
-        }
-
-        var keyId = Handler.ReadJsonWebToken(idToken).Kid;
-        return !string.IsNullOrEmpty(keyId) && configuration.SigningKeys.All(k => k.KeyId != keyId);
+        return SupportedAlgorithms(configuration).Count == 0
+            ? null
+            : await Handler.ValidateTokenAsync(idToken, Parameters(authority, configuration, clientId));
     }
 
-    private static TokenValidationParameters Parameters(OpenIdConnectConfiguration configuration, string clientId)
+    private static bool NeedsFreshConfiguration(TokenValidationResult? result)
+    {
+        return result is null
+            || (!result.IsValid && result.Exception is SecurityTokenInvalidAlgorithmException or SecurityTokenInvalidSignatureException);
+    }
+
+    private TokenValidationParameters Parameters(string authority, OpenIdConnectConfiguration configuration, string clientId)
     {
         return new TokenValidationParameters
         {
@@ -84,6 +96,7 @@ public class OidcIdTokenValidator : IOidcIdTokenValidator
             ValidateAudience = true,
             IssuerSigningKeys = configuration.SigningKeys,
             ValidateIssuerSigningKey = true,
+            IssuerSigningKeyValidator = (key, _, _) => AcceptSigningKey(authority, configuration, key),
             RequireSignedTokens = true,
             RequireExpirationTime = true,
             ValidateLifetime = true,
@@ -92,9 +105,26 @@ public class OidcIdTokenValidator : IOidcIdTokenValidator
         };
     }
 
+    private bool AcceptSigningKey(string authority, OpenIdConnectConfiguration configuration, SecurityKey key)
+    {
+        if (key is X509SecurityKey { Certificate: { } certificate }
+            && certificate.NotAfter.ToUniversalTime() < DateTime.UtcNow
+            && _expiredCertificateWarnings.TryAdd(configuration, authority))
+        {
+            _logger.LogWarning("The signing certificate of {Authority} expired on {ExpiredOn:yyyy-MM-dd}; consider rotating it at the identity provider",
+                authority, certificate.NotAfter.ToUniversalTime());
+        }
+
+        return true;
+    }
+
     public static List<string> SupportedAlgorithms(OpenIdConnectConfiguration configuration)
     {
-        var advertised = configuration.IdTokenSigningAlgValuesSupported;
+        return SupportedAlgorithms(configuration.IdTokenSigningAlgValuesSupported);
+    }
+
+    public static List<string> SupportedAlgorithms(ICollection<string> advertised)
+    {
         return advertised.Count == 0
             ? AllowedAlgorithms.ToList()
             : AllowedAlgorithms.Where(advertised.Contains).ToList();

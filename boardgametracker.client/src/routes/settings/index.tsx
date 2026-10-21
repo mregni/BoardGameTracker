@@ -151,7 +151,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 			case "account":
 				return <AccountSettings />;
 			case "sso":
-				return <SsoSettings />;
+				return <SsoSettings dateFormat={settings.dateFormat} uiLanguage={settings.uiLanguage} />;
 			default:
 				return <GeneralSettings form={form} languages={languages} disabled={isSaving} overrides={overrides} />;
 		}

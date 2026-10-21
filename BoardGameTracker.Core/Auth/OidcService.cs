@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using BoardGameTracker.Common;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BoardGameTracker.Core.Auth;
 
@@ -218,13 +220,17 @@ public class OidcService : IOidcService
         }
 
         var (issuer, document) = await FetchDiscoveryAsync(authority.TrimEnd('/'));
+        _configurations.Invalidate(authority);
         return new OidcDiscoveryResultDto(
             issuer,
             document.AuthorizationEndpoint,
             document.TokenEndpoint,
             document.UserInfoEndpoint,
             document.EndSessionEndpoint,
-            OidcIssuer.Matches(issuer, authority));
+            OidcIssuer.Matches(issuer, authority),
+            document.SigningAlgorithms,
+            OidcIdTokenValidator.SupportedAlgorithms(document.SigningAlgorithms).Count > 0,
+            await SigningCertificateExpiryAsync(authority, document.JwksUri));
     }
 
     public string CreateHandoff(LoginResponse login)
@@ -631,8 +637,77 @@ public class OidcService : IOidcService
                 RequiredEndpoint(doc, "authorization_endpoint"),
                 RequiredEndpoint(doc, "token_endpoint"),
                 OptionalEndpoint(doc, "userinfo_endpoint"),
-                OptionalEndpoint(doc, "end_session_endpoint")));
+                OptionalEndpoint(doc, "end_session_endpoint"),
+                SigningAlgorithms(doc),
+                OptionalEndpoint(doc, "jwks_uri")));
         }
+    }
+
+    private async Task<DateTimeOffset?> SigningCertificateExpiryAsync(string authority, string? jwksUri)
+    {
+        if (jwksUri == null || !SecureUrlPolicy.IsAcceptable(jwksUri))
+        {
+            return null;
+        }
+
+        try
+        {
+            var client = _httpClientFactory.CreateClient(HttpClientName);
+            using var response = await client.GetAsync(jwksUri);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("The signing keys of {Authority} could not be loaded: {StatusCode}", authority, response.StatusCode);
+                return null;
+            }
+
+            var keys = new JsonWebKeySet(await response.Content.ReadAsStringAsync());
+            var now = DateTimeOffset.UtcNow;
+            return keys.Keys
+                .Where(IsAllowedSigningKey)
+                .Select(CertificateExpiry)
+                .Where(x => x < now)
+                .Min();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or ArgumentException)
+        {
+            _logger.LogWarning(ex, "The signing keys of {Authority} could not be loaded", authority);
+            return null;
+        }
+    }
+
+    private static bool IsAllowedSigningKey(JsonWebKey key)
+    {
+        return (string.IsNullOrEmpty(key.Use) || key.Use == JsonWebKeyUseNames.Sig)
+            && (string.IsNullOrEmpty(key.Alg) || OidcIdTokenValidator.AllowedAlgorithms.Contains(key.Alg));
+    }
+
+    private static DateTimeOffset? CertificateExpiry(JsonWebKey key)
+    {
+        if (key.X5c.Count == 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            using var certificate = X509CertificateLoader.LoadCertificate(Convert.FromBase64String(key.X5c[0]));
+            return new DateTimeOffset(certificate.NotAfter.ToUniversalTime(), TimeSpan.Zero);
+        }
+        catch (Exception ex) when (ex is FormatException or CryptographicException)
+        {
+            return null;
+        }
+    }
+
+    private static List<string> SigningAlgorithms(JsonElement doc)
+    {
+        return doc.TryGetProperty("id_token_signing_alg_values_supported", out var value) && value.ValueKind == JsonValueKind.Array
+            ? value.EnumerateArray()
+                .Where(x => x.ValueKind == JsonValueKind.String)
+                .Select(x => x.GetString()!)
+                .Where(x => x.Length > 0)
+                .ToList()
+            : [];
     }
 
     private static string RequiredEndpoint(JsonElement doc, string name)
@@ -736,5 +811,5 @@ public class OidcService : IOidcService
 
     private sealed record OidcIdentity(string Issuer, string Subject, OidcClaims Claims, string IdToken, string? EndSessionEndpoint);
 
-    private sealed record DiscoveryDocument(string AuthorizationEndpoint, string TokenEndpoint, string? UserInfoEndpoint, string? EndSessionEndpoint);
+    private sealed record DiscoveryDocument(string AuthorizationEndpoint, string TokenEndpoint, string? UserInfoEndpoint, string? EndSessionEndpoint, List<string> SigningAlgorithms, string? JwksUri);
 }

@@ -25,7 +25,10 @@ public record OidcDiscoveryResultDto(
     string TokenEndpoint,
     string? UserInfoEndpoint,
     string? EndSessionEndpoint,
-    bool IssuerMatchesAuthority);
+    bool IssuerMatchesAuthority,
+    IReadOnlyList<string> SigningAlgorithms,
+    bool SigningSupported,
+    DateTimeOffset? SigningCertificateExpiredOn);
 
 public record CreateOidcProviderRequest(
     [Required, StringLength(100)] string Name,

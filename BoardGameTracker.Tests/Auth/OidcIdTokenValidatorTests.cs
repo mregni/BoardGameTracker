@@ -19,12 +19,13 @@ public class OidcIdTokenValidatorTests : IDisposable
     private const string Nonce = "expected-nonce";
 
     private readonly Mock<IOidcConfigurationProvider> _configurationsMock = new();
+    private readonly Mock<ILogger<OidcIdTokenValidator>> _loggerMock = new();
     private readonly TestIdTokens _keys = new();
     private readonly OidcIdTokenValidator _validator;
 
     public OidcIdTokenValidatorTests()
     {
-        _validator = new OidcIdTokenValidator(_configurationsMock.Object, Mock.Of<ILogger<OidcIdTokenValidator>>());
+        _validator = new OidcIdTokenValidator(_configurationsMock.Object, _loggerMock.Object);
     }
 
     public void Dispose()
@@ -46,6 +47,24 @@ public class OidcIdTokenValidatorTests : IDisposable
             configuration.SigningKeys.Add(key);
         }
 
+        return configuration;
+    }
+
+    private void SetupRefresh(OpenIdConnectConfiguration configuration)
+    {
+        _configurationsMock.Setup(x => x.RefreshAsync(Authority, default)).ReturnsAsync(configuration);
+    }
+
+    private void VerifyRefreshedOnce()
+    {
+        _configurationsMock.Verify(x => x.RefreshAsync(Authority, default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    private static OpenIdConnectConfiguration Advertising(string algorithm, params SecurityKey[] keys)
+    {
+        var configuration = Configuration(keys);
+        configuration.IdTokenSigningAlgValuesSupported.Add(algorithm);
         return configuration;
     }
 
@@ -83,11 +102,12 @@ public class OidcIdTokenValidatorTests : IDisposable
     public async Task ValidateAsync_ShouldReject_ATokenSignedByAnotherKeyWithTheSameKid()
     {
         using var attacker = new TestIdTokens(_keys.KeyId);
+        SetupRefresh(Configuration(_keys.PublicKey));
 
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, attacker.Sign(ValidClaims()), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
-        VerifyNoOtherCalls();
+        VerifyRefreshedOnce();
     }
 
     [Fact]
@@ -98,11 +118,12 @@ public class OidcIdTokenValidatorTests : IDisposable
         var tamperedClaims = ValidClaims();
         tamperedClaims["sub"] = "someone-else";
         var tamperedPayload = _keys.Sign(tamperedClaims).Split('.')[1];
+        SetupRefresh(Configuration(_keys.PublicKey));
 
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, $"{parts[0]}.{tamperedPayload}.{parts[2]}", Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
-        VerifyNoOtherCalls();
+        VerifyRefreshedOnce();
     }
 
     [Fact]
@@ -300,22 +321,23 @@ public class OidcIdTokenValidatorTests : IDisposable
     [Fact]
     public async Task ValidateAsync_ShouldReject_ASymmetricAlgorithm()
     {
-        _configurationsMock.Setup(x => x.RefreshAsync(Authority, default)).ReturnsAsync(Configuration(_keys.PublicKey));
+        SetupRefresh(Configuration(_keys.PublicKey));
+
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, TestIdTokens.SignWithSymmetricKey(ValidClaims()), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
-        _configurationsMock.Verify(x => x.RefreshAsync(It.IsAny<string>(), default), Times.AtMostOnce);
-        _configurationsMock.Invocations.Clear();
-        VerifyNoOtherCalls();
+        VerifyRefreshedOnce();
     }
 
     [Fact]
     public async Task ValidateAsync_ShouldReject_AnAlgorithmOutsideTheAllowList()
     {
+        SetupRefresh(Configuration(_keys.PublicKey));
+
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(ValidClaims(), SecurityAlgorithms.RsaSha384), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
-        VerifyNoOtherCalls();
+        VerifyRefreshedOnce();
     }
 
     [Fact]
@@ -325,9 +347,13 @@ public class OidcIdTokenValidatorTests : IDisposable
         var parts = token.Split('.');
         var header = Base64UrlEncoder.Encode("{\"alg\":\"none\",\"typ\":\"JWT\"}");
 
+        SetupRefresh(Configuration(_keys.PublicKey));
+
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, $"{header}.{parts[1]}.", Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _configurationsMock.Verify(x => x.RefreshAsync(Authority, default), Times.AtMostOnce);
+        _configurationsMock.Invocations.Clear();
         VerifyNoOtherCalls();
     }
 
@@ -344,12 +370,111 @@ public class OidcIdTokenValidatorTests : IDisposable
     }
 
     [Fact]
-    public async Task ValidateAsync_ShouldReject_WhenTheProviderOnlyAdvertisesDisallowedAlgorithms()
+    public async Task ValidateAsync_ShouldReject_WhenTheProviderStillOnlyAdvertisesHs256AfterOneRefresh()
     {
-        var configuration = Configuration(_keys.PublicKey);
-        configuration.IdTokenSigningAlgValuesSupported.Add("HS256");
+        SetupRefresh(Advertising("HS256", _keys.PublicKey));
 
-        var act = () => _validator.ValidateAsync(Authority, configuration, ClientId, _keys.Sign(ValidClaims()), Nonce);
+        var act = () => _validator.ValidateAsync(Authority, Advertising("HS256", _keys.PublicKey), ClientId, _keys.Sign(ValidClaims()), Nonce);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        VerifyRefreshedOnce();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ShouldRefreshAStaleHs256Configuration_AndAcceptTheTokenOnceTheProviderSignsWithRs256()
+    {
+        SetupRefresh(Advertising("RS256", _keys.PublicKey));
+
+        var result = await _validator.ValidateAsync(Authority, Advertising("HS256"), ClientId, _keys.Sign(ValidClaims()), Nonce);
+
+        result.Subject.Should().Be("user-sub");
+        VerifyRefreshedOnce();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ShouldRefreshOnce_WhenTheCachedKeyWithTheSameKidNoLongerMatches()
+    {
+        using var fresh = new TestIdTokens(_keys.KeyId);
+        SetupRefresh(Advertising("RS256", fresh.PublicKey));
+
+        var result = await _validator.ValidateAsync(Authority, Advertising("RS256", _keys.PublicKey), ClientId, fresh.Sign(ValidClaims()), Nonce);
+
+        result.Subject.Should().Be("user-sub");
+        VerifyRefreshedOnce();
+    }
+
+    private void VerifyExpiredCertificateWarnings(Times times)
+    {
+        _loggerMock.Verify(x => x.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, _) => v.ToString()!.Contains("signing certificate of " + Authority + " expired on 2026-05-08")),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()), times);
+    }
+
+    private X509SecurityKey ExpiredCertificateKey()
+    {
+        var certificate = _keys.Certificate(new DateTimeOffset(2025, 5, 8, 12, 0, 0, TimeSpan.Zero), new DateTimeOffset(2026, 5, 8, 12, 0, 0, TimeSpan.Zero));
+        return new X509SecurityKey(certificate, _keys.KeyId);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ShouldAcceptACorrectlySignedToken_WhenTheSigningCertificateHasExpired()
+    {
+        var configuration = Advertising("RS256", ExpiredCertificateKey());
+
+        var first = await _validator.ValidateAsync(Authority, configuration, ClientId, _keys.Sign(ValidClaims()), Nonce);
+        var second = await _validator.ValidateAsync(Authority, configuration, ClientId, _keys.Sign(ValidClaims()), Nonce);
+
+        first.Subject.Should().Be("user-sub");
+        second.Subject.Should().Be("user-sub");
+        VerifyExpiredCertificateWarnings(Times.Once());
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ShouldWarnAgain_AfterTheConfigurationWasRefreshed()
+    {
+        await _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, _keys.Sign(ValidClaims()), Nonce);
+        await _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, _keys.Sign(ValidClaims()), Nonce);
+
+        VerifyExpiredCertificateWarnings(Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ShouldStillRejectAWrongSignature_WhenTheSigningCertificateHasExpired()
+    {
+        using var attacker = new TestIdTokens(_keys.KeyId);
+        SetupRefresh(Advertising("RS256", ExpiredCertificateKey()));
+
+        var act = () => _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, attacker.Sign(ValidClaims()), Nonce);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        VerifyExpiredCertificateWarnings(Times.Never());
+        VerifyRefreshedOnce();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ShouldNotWarn_WhenTheSigningCertificateIsStillValid()
+    {
+        var certificate = _keys.Certificate(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
+
+        var result = await _validator.ValidateAsync(Authority, Advertising("RS256", new X509SecurityKey(certificate, _keys.KeyId)), ClientId, _keys.Sign(ValidClaims()), Nonce);
+
+        result.Subject.Should().Be("user-sub");
+        _loggerMock.Verify(x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception?>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ShouldNotRefresh_WhenTheTokenFailsForAnotherReason()
+    {
+        var claims = ValidClaims();
+        claims["aud"] = "another-client";
+
+        var act = () => _validator.ValidateAsync(Authority, Advertising("RS256", _keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         VerifyNoOtherCalls();

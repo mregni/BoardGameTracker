@@ -1,4 +1,8 @@
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common;
@@ -391,6 +395,175 @@ public class OidcServiceTests : IDisposable
 
         (await _context.OidcSessions.SingleAsync(TestContext.Current.CancellationToken)).KeyHash.Should().Be("new");
         VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region TestDiscoveryAsync
+
+    private const string DiscoveryAuthority = "https://sso.example.com/realms/bgt";
+
+    private readonly Dictionary<string, (HttpStatusCode Status, string Body)> _documents = new();
+
+    private void SetupDiscovery(HttpStatusCode status, string body)
+    {
+        _documents[$"{DiscoveryAuthority}/.well-known/openid-configuration"] = (status, body);
+        _httpClientFactoryMock.Setup(x => x.CreateClient(OidcService.HttpClientName))
+            .Returns(() => new HttpClient(new StaticHandler(_documents)));
+    }
+
+    private static string DiscoveryDocument(object? algorithms, string? jwksUri = null)
+    {
+        var document = new Dictionary<string, object>
+        {
+            ["issuer"] = DiscoveryAuthority,
+            ["authorization_endpoint"] = $"{DiscoveryAuthority}/auth",
+            ["token_endpoint"] = $"{DiscoveryAuthority}/token",
+        };
+        if (algorithms != null)
+        {
+            document["id_token_signing_alg_values_supported"] = algorithms;
+        }
+
+        if (jwksUri != null)
+        {
+            document["jwks_uri"] = jwksUri;
+        }
+
+        return JsonSerializer.Serialize(document);
+    }
+
+    [Fact]
+    public async Task TestDiscoveryAsync_ShouldWarn_WhenTheProviderOnlySignsWithHs256()
+    {
+        SetupDiscovery(HttpStatusCode.OK, DiscoveryDocument(new[] { "HS256" }));
+
+        var result = await _service.TestDiscoveryAsync(DiscoveryAuthority);
+
+        result.SigningAlgorithms.Should().Equal("HS256");
+        result.SigningSupported.Should().BeFalse();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
+        _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TestDiscoveryAsync_ShouldReportTheAdvertisedAlgorithms_AndReplaceTheCachedConfiguration()
+    {
+        SetupDiscovery(HttpStatusCode.OK, DiscoveryDocument(new object[] { "HS256", "RS256", 42, "" }));
+
+        var result = await _service.TestDiscoveryAsync(DiscoveryAuthority);
+
+        result.SigningAlgorithms.Should().Equal("HS256", "RS256");
+        result.SigningSupported.Should().BeTrue();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
+        _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("RS256")]
+    public async Task TestDiscoveryAsync_ShouldTreatMissingAlgorithmsAsSupported(string? algorithms)
+    {
+        SetupDiscovery(HttpStatusCode.OK, DiscoveryDocument(algorithms));
+
+        var result = await _service.TestDiscoveryAsync(DiscoveryAuthority);
+
+        result.SigningAlgorithms.Should().BeEmpty();
+        result.SigningSupported.Should().BeTrue();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
+        _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TestDiscoveryAsync_ShouldKeepTheCachedConfiguration_WhenTheDocumentCannotBeLoaded()
+    {
+        SetupDiscovery(HttpStatusCode.InternalServerError, "");
+
+        var act = () => _service.TestDiscoveryAsync(DiscoveryAuthority);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TestDiscoveryAsync_ShouldReportAnExpiredSigningCertificate()
+    {
+        using var keys = new TestIdTokens();
+        using var expired = keys.Certificate(new DateTimeOffset(2025, 5, 8, 12, 0, 0, TimeSpan.Zero), new DateTimeOffset(2026, 5, 8, 12, 0, 0, TimeSpan.Zero));
+        SetupDiscovery(HttpStatusCode.OK, DiscoveryDocument(new[] { "RS256" }, $"{DiscoveryAuthority}/jwks"));
+        _documents[$"{DiscoveryAuthority}/jwks"] = (HttpStatusCode.OK, keys.JwksJsonWithCertificate(expired));
+
+        var result = await _service.TestDiscoveryAsync(DiscoveryAuthority);
+
+        result.SigningCertificateExpiredOn.Should().Be(new DateTimeOffset(2026, 5, 8, 12, 0, 0, TimeSpan.Zero));
+        result.SigningSupported.Should().BeTrue();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("valid", "RS256", "sig")]
+    [InlineData("expired", "HS256", "sig")]
+    [InlineData("expired", "RS256", "enc")]
+    [InlineData("none", null, null)]
+    [InlineData("broken", null, null)]
+    [InlineData("missing", null, null)]
+    [InlineData("insecure", null, null)]
+    public async Task TestDiscoveryAsync_ShouldNotReportAnExpiredSigningCertificate_WhenNoAllowedSigningKeyHasOne(string kind, string? alg, string? use)
+    {
+        using var keys = new TestIdTokens();
+        using var valid = keys.Certificate(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
+        using var expired = keys.Certificate(new DateTimeOffset(2025, 5, 8, 12, 0, 0, TimeSpan.Zero), new DateTimeOffset(2026, 5, 8, 12, 0, 0, TimeSpan.Zero));
+        var jwksUri = kind == "insecure" ? "http://keys.example.com/jwks" : $"{DiscoveryAuthority}/jwks";
+        SetupDiscovery(HttpStatusCode.OK, DiscoveryDocument(new[] { "RS256" }, jwksUri));
+        _documents[$"{DiscoveryAuthority}/jwks"] = kind switch
+        {
+            "valid" => (HttpStatusCode.OK, keys.JwksJsonWithCertificate(valid, alg, use)),
+            "expired" => (HttpStatusCode.OK, keys.JwksJsonWithCertificate(expired, alg, use)),
+            "none" => (HttpStatusCode.OK, keys.JwksJson),
+            "broken" => (HttpStatusCode.OK, keys.JwksJsonWithCertificate(expired, x5c: "bm90LWEtY2VydGlmaWNhdGU=")),
+            "missing" => (HttpStatusCode.NotFound, ""),
+            _ => (HttpStatusCode.OK, keys.JwksJsonWithCertificate(expired)),
+        };
+
+        var result = await _service.TestDiscoveryAsync(DiscoveryAuthority);
+
+        result.SigningCertificateExpiredOn.Should().BeNull();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), kind == "insecure" ? Times.Once() : Times.Exactly(2));
+        _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TestDiscoveryAsync_ShouldStillAnswer_WhenTheSigningKeysAreNotAKeySet()
+    {
+        SetupDiscovery(HttpStatusCode.OK, DiscoveryDocument(new[] { "RS256" }, $"{DiscoveryAuthority}/jwks"));
+        _documents[$"{DiscoveryAuthority}/jwks"] = (HttpStatusCode.OK, "not json");
+
+        var result = await _service.TestDiscoveryAsync(DiscoveryAuthority);
+
+        result.SigningCertificateExpiredOn.Should().BeNull();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    private sealed class StaticHandler(Dictionary<string, (HttpStatusCode Status, string Body)> documents) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (!documents.TryGetValue(request.RequestUri!.ToString(), out var document))
+            {
+                throw new HttpRequestException("No route");
+            }
+
+            return Task.FromResult(new HttpResponseMessage(document.Status) { Content = new StringContent(document.Body, Encoding.UTF8, "application/json") });
+        }
     }
 
     #endregion

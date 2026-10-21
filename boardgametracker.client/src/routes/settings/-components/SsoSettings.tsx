@@ -18,6 +18,7 @@ import {
 	type OidcSetup,
 } from "@/models";
 import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
+import { DEFAULT_DATE_FORMAT, toDisplay } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { useSsoSettings } from "../-hooks/useSsoSettings";
@@ -106,7 +107,12 @@ const statusLine = (provider: OidcProviderConfig | null, httpsRequired: boolean,
 
 const normalizeAuthority = (authority: string) => authority.trim().replace(/\/+$/, "").toLowerCase();
 
-export const SsoSettings = () => {
+interface Props {
+	dateFormat?: string;
+	uiLanguage?: string;
+}
+
+export const SsoSettings = ({ dateFormat = DEFAULT_DATE_FORMAT, uiLanguage = "en-US" }: Props) => {
 	const { t } = useTranslation(["settings", "common"]);
 	const {
 		isLoading,
@@ -247,6 +253,26 @@ export const SsoSettings = () => {
 							<span className="truncate">
 								{t("sso.discovery.end-session")}: {discovery.endSessionEndpoint ?? t("sso.discovery.none")}
 							</span>
+							<span className="truncate">
+								{t("sso.discovery.signing")}:{" "}
+								{discovery.signingAlgorithms.length > 0
+									? discovery.signingAlgorithms.join(", ")
+									: t("sso.discovery.none")}
+							</span>
+							{!discovery.signingSupported && (
+								<BgtText size="2" color="red">
+									{t("sso.discovery.signing-unsupported", {
+										algorithms: discovery.signingAlgorithms.join(", "),
+									})}
+								</BgtText>
+							)}
+							{discovery.signingCertificateExpiredOn && (
+								<BgtText size="2" color="amber">
+									{t("sso.discovery.certificate-expired", {
+										date: toDisplay(discovery.signingCertificateExpiredOn, dateFormat, uiLanguage),
+									})}
+								</BgtText>
+							)}
 						</div>
 					)}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">

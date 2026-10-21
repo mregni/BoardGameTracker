@@ -61,6 +61,8 @@ public partial class OidcProviderService : IOidcProviderService
         _context.OidcProviders.Add(provider);
         await _context.SaveChangesAsync();
 
+        _configurations.Invalidate(authority);
+
         _logger.LogInformation("OIDC provider {ProviderName} created", provider.Name);
 
         return provider;
