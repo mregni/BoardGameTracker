@@ -6,6 +6,7 @@ import { BgtFieldLabel, BgtImageSelector, BgtInputField, BgtSelect } from "@/com
 import { useAppForm } from "@/hooks/form";
 import {
 	type BgtSelectImageItem,
+	type BgtSelectItem,
 	CreatePlayerSchema,
 	type ModalProps,
 	type Player,
@@ -67,9 +68,9 @@ export const EditPlayerModal = (props: Props) => {
 	const { authEnabled, canManage, users, players } = useLinkedAccountOptions();
 	const currentAccountId = player.linkedAccount?.id ?? NOT_LINKED;
 
-	const accountItems: BgtSelectImageItem[] = useMemo(
+	const accountItems: (BgtSelectImageItem | BgtSelectItem)[] = useMemo(
 		() => [
-			{ value: NOT_LINKED, label: t("account.none"), image: null },
+			{ value: NOT_LINKED, label: t("account.none") },
 			...users.map((user: UserDto) => ({
 				value: user.id,
 				label: accountLabel(user),
