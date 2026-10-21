@@ -1,11 +1,12 @@
 import type { FC } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { OidcProvider } from "@/models/Auth/Auth";
-import { renderWithProviders, screen } from "@/test/test-utils";
+import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
 
 const mocks = vi.hoisted(() => ({
 	navigate: vi.fn(),
-	search: {} as { redirect?: string; error?: string },
+	search: {} as { redirect?: string; error?: string; sso?: boolean },
+	publicUrl: "",
 	provider: null as OidcProvider | null,
 	captured: {} as { Page: FC },
 	auth: { isAuthenticated: false, authEnabled: true as boolean | undefined },
@@ -25,7 +26,10 @@ vi.mock("@/services/authService", () => ({
 }));
 
 vi.mock("@/services/queries/settings", () => ({
-	getSettings: () => ({ queryKey: ["settings"], queryFn: () => Promise.resolve({ emailEnabled: false }) }),
+	getSettings: () => ({
+		queryKey: ["settings"],
+		queryFn: () => Promise.resolve({ emailEnabled: false, publicUrl: mocks.publicUrl }),
+	}),
 }));
 
 interface AuthState {
@@ -73,6 +77,7 @@ describe("LoginPage", () => {
 		mocks.search = {};
 		mocks.provider = provider;
 		mocks.auth = { isAuthenticated: false, authEnabled: true };
+		mocks.publicUrl = "";
 	});
 
 	it("shows the single sign-on button when it is usable over this connection", async () => {
@@ -145,5 +150,79 @@ describe("LoginPage", () => {
 
 		await screen.findByRole("button", { name: "Company login" });
 		expect(screen.queryByText(/requires HTTPS/)).not.toBeInTheDocument();
+	});
+
+	describe("single sign-on host", () => {
+		const page = { origin: "http://localhost:5444", href: "http://localhost:5444/login" };
+
+		beforeEach(() => {
+			page.href = "http://localhost:5444/login";
+			vi.stubGlobal("location", page);
+		});
+
+		afterEach(() => {
+			vi.unstubAllGlobals();
+		});
+
+		it("moves to the https public URL before starting single sign-on, keeping only a local redirect", async () => {
+			const user = userEvent.setup();
+			mocks.publicUrl = "https://games.example.com/";
+			mocks.search = { redirect: "/games/3" };
+			renderWithProviders(<mocks.captured.Page />);
+
+			await user.click(await screen.findByRole("button", { name: "Company login" }));
+
+			expect(page.href).toBe("https://games.example.com/login?redirect=%2Fgames%2F3&sso=true");
+		});
+
+		it("drops an external redirect when moving to the public URL", async () => {
+			const user = userEvent.setup();
+			mocks.publicUrl = "https://games.example.com";
+			mocks.search = { redirect: "https://evil.example" };
+			renderWithProviders(<mocks.captured.Page />);
+
+			await user.click(await screen.findByRole("button", { name: "Company login" }));
+
+			expect(page.href).toBe("https://games.example.com/login?redirect=%2F&sso=true");
+		});
+
+		it("starts single sign-on here when this already is the public URL, or the public URL is not https", async () => {
+			const user = userEvent.setup();
+			mocks.publicUrl = "http://192.168.1.20:5444";
+			mocks.search = { redirect: "/games" };
+			renderWithProviders(<mocks.captured.Page />);
+
+			await user.click(await screen.findByRole("button", { name: "Company login" }));
+
+			expect(page.href).toBe("/api/auth/oidc/keycloak/login?redirect=%2Fgames");
+		});
+
+		it("continues the sign-on it was sent here for on the public URL", async () => {
+			mocks.publicUrl = "http://localhost:5444";
+			mocks.search = { redirect: "/games", sso: true };
+			renderWithProviders(<mocks.captured.Page />);
+
+			await waitFor(() => expect(page.href).toBe("/api/auth/oidc/keycloak/login?redirect=%2Fgames"));
+		});
+
+		it("does not start single sign-on by itself on another address than the public URL", async () => {
+			mocks.publicUrl = "https://games.example.com";
+			mocks.search = { sso: true };
+			renderWithProviders(<mocks.captured.Page />);
+
+			await screen.findByRole("button", { name: "Company login" });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+			expect(page.href).toBe("http://localhost:5444/login");
+		});
+
+		it("does not start single sign-on by itself when it cannot work over this connection", async () => {
+			mocks.provider = { ...provider, httpsRequired: true };
+			mocks.search = { sso: true };
+			renderWithProviders(<mocks.captured.Page />);
+
+			await screen.findByRole("button", { name: "Company login" });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+			expect(page.href).toBe("http://localhost:5444/login");
+		});
 	});
 });

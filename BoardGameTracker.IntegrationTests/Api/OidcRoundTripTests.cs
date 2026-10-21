@@ -6,10 +6,8 @@ using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
-using BoardGameTracker.Core.Email.Interfaces;
 using BoardGameTracker.IntegrationTests.Infrastructure;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace BoardGameTracker.IntegrationTests.Api;
@@ -137,36 +135,6 @@ public class OidcRoundTripTests : IAsyncLifetime
 
         start.StatusCode.Should().Be(HttpStatusCode.Found);
         start.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcProviderUnavailable)}");
-    }
-
-    [Fact]
-    public async Task Login_ShouldContinueOnThePublicUrl_WhenStartedFromAnotherAddress_AndFinishThere()
-    {
-        UseIdentity("public-host");
-        using var browser = _fixture.CreateBrowserClientWith(
-            services => services.AddScoped<IPublicUrlBuilder>(_ => new FixedPublicUrl("https://localhost")),
-            new Uri("http://127.0.0.1:5444"));
-        using var idpBrowser = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
-
-        using var start = new HttpRequestMessage(HttpMethod.Get, $"/api/auth/oidc/{ProviderName}/login?redirect=%2Fgames");
-        start.Headers.Referrer = new Uri("http://127.0.0.1:5444/login?redirect=%2Fgames");
-        var moved = await browser.SendAsync(start);
-
-        moved.StatusCode.Should().Be(HttpStatusCode.Found);
-        moved.Headers.Location.Should().Be(new Uri($"https://localhost/api/auth/oidc/{ProviderName}/login?redirect=%2Fgames"));
-        moved.Headers.Contains("Set-Cookie").Should().BeFalse("no state cookie may land on the address the callback never returns to");
-
-        var onPublicHost = await browser.GetAsync(moved.Headers.Location);
-        onPublicHost.StatusCode.Should().Be(HttpStatusCode.Found);
-        var idpResponse = await idpBrowser.GetAsync(onPublicHost.Headers.Location!);
-        var callbackUrl = idpResponse.Headers.Location!;
-        callbackUrl.GetLeftPart(UriPartial.Authority).Should().Be("https://localhost");
-
-        var callback = await browser.GetAsync(callbackUrl);
-
-        callback.Headers.Location!.ToString().Should().Be("/auth-callback?redirect=%2Fgames");
-        var adopt = await browser.PostAsync("https://localhost/api/auth/oidc/adopt", null);
-        adopt.StatusCode.Should().Be(HttpStatusCode.OK, await adopt.Content.ReadAsStringAsync());
     }
 
     [Fact]
@@ -667,14 +635,5 @@ public class OidcRoundTripTests : IAsyncLifetime
         var adopt = await browser.PostAsync("/api/auth/oidc/adopt", null);
         adopt.StatusCode.Should().Be(HttpStatusCode.OK);
         return (await adopt.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json))!;
-    }
-
-    private sealed class FixedPublicUrl(string baseUrl) : IPublicUrlBuilder
-    {
-        public Task<string> BuildRsvpUrlAsync(Guid linkId) => Task.FromResult($"{baseUrl}/rsvp/{linkId}");
-
-        public Task<string> BuildResetUrlAsync(string userId, string token) => Task.FromResult($"{baseUrl}/reset-password");
-
-        public Task<string?> GetConfiguredBaseUrlAsync() => Task.FromResult<string?>(baseUrl);
     }
 }

@@ -9,7 +9,10 @@ interface Lease {
 	expires: number;
 }
 
-const tabId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+const randomId = () =>
+	Array.from(globalThis.crypto.getRandomValues(new Uint32Array(2)), (part) => part.toString(36)).join("");
+
+const tabId = `${Date.now().toString(36)}-${randomId()}`;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -56,7 +59,7 @@ const release = (store: Storage, owner: string): boolean => {
 };
 
 const withLease = async <T>(store: Storage, task: () => Promise<T>): Promise<T> => {
-	const owner = `${tabId}-${Math.random().toString(36).slice(2)}`;
+	const owner = `${tabId}-${randomId()}`;
 	const giveUpAt = Date.now() + LEASE_MS;
 	let acquired = false;
 	try {

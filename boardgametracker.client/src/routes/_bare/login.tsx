@@ -1,7 +1,7 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import BgtButton from "@/components/BgtButton/BgtButton";
@@ -18,6 +18,7 @@ import { getSettings } from "@/services/queries/settings";
 import { apiUrl } from "@/utils/apiUrl";
 import { translateUrlError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { publicHostLoginUrl } from "@/utils/publicUrl";
 import { safeRedirectPath } from "@/utils/redirectUtils";
 import { loginErrorKey } from "./-utils/loginError";
 
@@ -26,7 +27,11 @@ const HTTPS_REQUIRED_ERROR = "error.auth.oidc-https-required";
 const loginSearchSchema = z.object({
 	redirect: z.string().optional(),
 	error: z.string().optional(),
+	sso: z.boolean().optional().catch(undefined),
 });
+
+const ssoStartUrl = (provider: OidcProvider, redirect: string | undefined) =>
+	`${apiUrl}auth/oidc/${encodeURIComponent(provider.name)}/login?redirect=${encodeURIComponent(safeRedirectPath(redirect))}`;
 
 export const Route = createFileRoute("/_bare/login")({
 	component: LoginPage,
@@ -40,7 +45,7 @@ function LoginPage() {
 	const isLoading = useAuth((s) => s.isLoading);
 	const isAuthenticated = useAuth((s) => s.isAuthenticated);
 	const authEnabled = useAuth((s) => s.authStatus?.authEnabled);
-	const { redirect, error: searchError } = Route.useSearch();
+	const { redirect, error: searchError, sso } = Route.useSearch();
 	const httpsError = searchError === HTTPS_REQUIRED_ERROR;
 	const [error, setError] = useState<string | null>(() => {
 		if (!searchError) {
@@ -75,9 +80,21 @@ function LoginPage() {
 	});
 
 	const handleOidcLogin = (provider: OidcProvider) => {
-		const target = safeRedirectPath(redirect);
-		globalThis.location.href = `${apiUrl}auth/oidc/${encodeURIComponent(provider.name)}/login?redirect=${encodeURIComponent(target)}`;
+		globalThis.location.href =
+			publicHostLoginUrl(settings?.publicUrl, globalThis.location.origin, redirect) ?? ssoStartUrl(provider, redirect);
 	};
+
+	const ssoStarted = useRef(false);
+	useEffect(() => {
+		if (!sso || isAuthenticated || ssoStarted.current || !oidcProvider || oidcProvider.httpsRequired || !settings) {
+			return;
+		}
+		if (publicHostLoginUrl(settings.publicUrl, globalThis.location.origin, redirect) !== null) {
+			return;
+		}
+		ssoStarted.current = true;
+		globalThis.location.href = ssoStartUrl(oidcProvider, redirect);
+	}, [sso, isAuthenticated, oidcProvider, settings, redirect]);
 
 	if (isAuthenticated || authEnabled === false) {
 		return <Navigate to={safeRedirectPath(redirect)} replace />;

@@ -63,18 +63,10 @@ public class OidcController : ControllerBase
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> Login(string provider, [FromQuery] string? redirect)
     {
-        var configuredBaseUrl = await _publicUrlBuilder.GetConfiguredBaseUrlAsync();
-        var publicHostLogin = PublicHostRedirect(Request, configuredBaseUrl);
-        if (publicHostLogin != null)
-        {
-            _logger.LogInformation("OIDC login for provider {Provider} was started on another address than the public URL; continuing on the public URL", provider);
-            return Redirect(publicHostLogin);
-        }
-
         _logger.LogInformation("OIDC login initiated for provider {Provider}", provider);
         try
         {
-            var request = await _oidcService.StartLoginAsync(provider, configuredBaseUrl ?? $"{Request.Scheme}://{Request.Host}", redirect);
+            var request = await _oidcService.StartLoginAsync(provider, await PublicBaseUrlAsync(), redirect);
             SetCookie(StateCookieName, request.State, OidcService.PendingAuthorizationLifetime);
             return Redirect(request.Url);
         }
@@ -199,24 +191,6 @@ public class OidcController : ControllerBase
     {
         return LocalRedirect($"{CallbackPage}?error={Uri.EscapeDataString(errorKey)}");
     }
-
-    internal static string? PublicHostRedirect(HttpRequest request, string? configuredBaseUrl)
-    {
-        if (configuredBaseUrl == null
-            || !Uri.TryCreate(configuredBaseUrl, UriKind.Absolute, out var publicUri)
-            || !Uri.TryCreate(request.Headers.Referer.ToString(), UriKind.Absolute, out var referer)
-            || OriginEquals(publicUri, referer))
-        {
-            return null;
-        }
-
-        return $"{configuredBaseUrl.TrimEnd('/')}{request.Path}{request.QueryString}";
-    }
-
-    private static bool OriginEquals(Uri left, Uri right) =>
-        string.Equals(left.Scheme, right.Scheme, StringComparison.OrdinalIgnoreCase)
-        && string.Equals(left.IdnHost, right.IdnHost, StringComparison.OrdinalIgnoreCase)
-        && left.Port == right.Port;
 
     internal static string ErrorKey(Exception exception)
     {
