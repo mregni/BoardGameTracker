@@ -5020,6 +5020,8 @@ export interface components {
             type: components["schemas"]["BadgeType"];
             level: components["schemas"]["BadgeLevel"];
             image: string;
+            /** Format: date-time */
+            awardedAt: string | null;
         };
         /** @enum {string} */
         BadgeLevel: "green" | "blue" | "red" | "gold";

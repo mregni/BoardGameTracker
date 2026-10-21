@@ -5,6 +5,13 @@ namespace BoardGameTracker.Common.Extensions;
 
 public static class BadgeDtoExtensions
 {
+    public static BadgeDto ToDto(this PlayerBadge playerBadge)
+    {
+        var dto = playerBadge.Badge.ToDto();
+        dto.AwardedAt = playerBadge.AwardedAt;
+        return dto;
+    }
+
     public static BadgeDto ToDto(this Badge badge)
     {
         return new BadgeDto

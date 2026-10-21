@@ -10,4 +10,5 @@ public class BadgeDto
     public BadgeType Type { get; set; }
     public BadgeLevel? Level { get; set; }
     public string Image { get; set; } = string.Empty;
+    public DateTime? AwardedAt { get; set; }
 }

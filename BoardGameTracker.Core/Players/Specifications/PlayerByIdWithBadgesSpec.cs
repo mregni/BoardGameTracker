@@ -9,7 +9,8 @@ public sealed class PlayerByIdWithBadgesSpec : SingleResultSpecification<Player>
     {
         Query
             .Where(x => x.Id == id)
-            .Include(x => x.Badges)
+            .Include(x => x.PlayerBadges)
+            .ThenInclude(x => x.Badge)
             .AsNoTracking();
     }
 }
