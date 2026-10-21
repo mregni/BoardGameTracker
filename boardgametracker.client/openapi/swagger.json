@@ -8274,6 +8274,20 @@
           },
           "issuerMatchesAuthority": {
             "type": "boolean"
+          },
+          "signingAlgorithms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "signingSupported": {
+            "type": "boolean"
+          },
+          "signingCertificateExpiredOn": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false

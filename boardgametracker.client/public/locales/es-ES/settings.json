@@ -393,7 +393,10 @@
 			"token": "Token",
 			"userinfo": "Información del usuario",
 			"end-session": "Cierre de sesión",
-			"none": "no disponible"
+			"none": "no disponible",
+			"signing": "Algoritmos de firma",
+			"signing-unsupported": "El proveedor solo firma los tokens con {{algorithms}}, que BoardGameTracker no acepta. Configura una clave de firma RS256 o ES256 para este cliente en tu proveedor de identidad.",
+			"certificate-expired": "El certificado de firma del proveedor caducó el {{date}}. El inicio de sesión sigue funcionando, pero renueva el certificado de firma en tu proveedor de identidad."
 		},
 		"setup": {
 			"title": "Registro en el proveedor",

@@ -5808,6 +5808,10 @@ export interface components {
             userInfoEndpoint: string | null;
             endSessionEndpoint: string | null;
             issuerMatchesAuthority: boolean;
+            signingAlgorithms: string[];
+            signingSupported: boolean;
+            /** Format: date-time */
+            signingCertificateExpiredOn: string | null;
         };
         OidcLogoutResponse: {
             url: string | null;

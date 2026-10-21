@@ -261,6 +261,9 @@ describe("SsoSettings", () => {
 			userInfoEndpoint: null,
 			endSessionEndpoint: "https://sso.example.com/logout",
 			issuerMatchesAuthority: false,
+			signingAlgorithms: ["RS256"],
+			signingSupported: true,
+			signingCertificateExpiredOn: null,
 		};
 		renderWithProviders(<SsoSettings />);
 
@@ -272,6 +275,63 @@ describe("SsoSettings", () => {
 		expect(screen.getByText("sso.discovery.token: https://sso.example.com/token")).toBeInTheDocument();
 		expect(screen.getByText("sso.discovery.userinfo: sso.discovery.none")).toBeInTheDocument();
 		expect(screen.getByText("sso.discovery.end-session: https://sso.example.com/logout")).toBeInTheDocument();
+		expect(screen.getByText("sso.discovery.signing: RS256")).toBeInTheDocument();
+		expect(screen.queryByText("sso.discovery.signing-unsupported")).not.toBeInTheDocument();
+		expect(screen.queryByText("sso.discovery.certificate-expired")).not.toBeInTheDocument();
+	});
+
+	it("warns when the provider only signs with algorithms that are not accepted", () => {
+		mocks.state.discovery = {
+			issuer: "https://sso.example.com",
+			authorizationEndpoint: "https://sso.example.com/auth",
+			tokenEndpoint: "https://sso.example.com/token",
+			userInfoEndpoint: null,
+			endSessionEndpoint: null,
+			issuerMatchesAuthority: true,
+			signingAlgorithms: ["HS256"],
+			signingSupported: false,
+			signingCertificateExpiredOn: null,
+		};
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.getByText("sso.discovery.signing: HS256")).toBeInTheDocument();
+		expect(screen.getByText("sso.discovery.signing-unsupported")).toBeInTheDocument();
+	});
+
+	it("shows the advertised algorithms as not offered when the provider lists none", () => {
+		mocks.state.discovery = {
+			issuer: "https://sso.example.com",
+			authorizationEndpoint: "https://sso.example.com/auth",
+			tokenEndpoint: "https://sso.example.com/token",
+			userInfoEndpoint: null,
+			endSessionEndpoint: null,
+			issuerMatchesAuthority: true,
+			signingAlgorithms: [],
+			signingSupported: true,
+			signingCertificateExpiredOn: null,
+		};
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.getByText("sso.discovery.signing: sso.discovery.none")).toBeInTheDocument();
+		expect(screen.queryByText("sso.discovery.signing-unsupported")).not.toBeInTheDocument();
+	});
+
+	it("warns about an expired signing certificate", () => {
+		mocks.state.discovery = {
+			issuer: "https://sso.example.com",
+			authorizationEndpoint: "https://sso.example.com/auth",
+			tokenEndpoint: "https://sso.example.com/token",
+			userInfoEndpoint: null,
+			endSessionEndpoint: null,
+			issuerMatchesAuthority: true,
+			signingAlgorithms: ["RS256"],
+			signingSupported: true,
+			signingCertificateExpiredOn: "2026-05-08T12:00:00+00:00",
+		};
+		renderWithProviders(<SsoSettings dateFormat="yyyy-MM-dd" uiLanguage="en-US" />);
+
+		expect(screen.getByText("sso.discovery.certificate-expired")).toBeInTheDocument();
+		expect(screen.queryByText("sso.discovery.signing-unsupported")).not.toBeInTheDocument();
 	});
 
 	it("removes the provider after confirmation", async () => {

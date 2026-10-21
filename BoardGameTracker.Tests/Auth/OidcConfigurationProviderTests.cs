@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
+using BoardGameTracker.Core.Auth.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Moq;
 using Xunit;
 
@@ -137,6 +139,67 @@ public class OidcConfigurationProviderTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
         _handler.Requests.Should().NotContain("http://keys.example.com/certs");
+    }
+
+    private void Advertise(string algorithm)
+    {
+        _handler.Documents[$"{Authority}/.well-known/openid-configuration"] = JsonSerializer.Serialize(new
+        {
+            issuer = Authority,
+            authorization_endpoint = $"{Authority}/auth",
+            token_endpoint = $"{Authority}/token",
+            jwks_uri = $"{Authority}/certs",
+            id_token_signing_alg_values_supported = new[] { algorithm },
+        });
+    }
+
+    private Task<OidcIdToken> ValidateAsync(OidcConfigurationProvider provider, OpenIdConnectConfiguration configuration)
+    {
+        var validator = new OidcIdTokenValidator(provider, Mock.Of<ILogger<OidcIdTokenValidator>>());
+        return validator.ValidateAsync(Authority, configuration, "bgt-client", _keys.Sign(TestIdTokens.Claims(Authority, "bgt-client", "user-sub", "nonce")), "nonce");
+    }
+
+    [Fact]
+    public async Task Validator_ShouldPickUpTheNewSigningAlgorithm_WhenTheCachedConfigurationIsOldEnough()
+    {
+        var provider = CreateProvider(TimeSpan.Zero);
+        Advertise("HS256");
+        var stale = await provider.GetAsync(Authority);
+        Advertise("RS256");
+
+        var result = await ValidateAsync(provider, stale);
+
+        result.Subject.Should().Be("user-sub");
+        _handler.Requests.Should().HaveCount(4);
+    }
+
+    [Fact]
+    public async Task Validator_ShouldNotRefetch_WithinTheMinimumInterval()
+    {
+        var provider = CreateProvider(TimeSpan.FromMinutes(5));
+        Advertise("HS256");
+        var stale = await provider.GetAsync(Authority);
+        Advertise("RS256");
+
+        var act = () => ValidateAsync(provider, stale);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _handler.Requests.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task Validator_ShouldAcceptKeysFromAKeySetWithAnExpiredCertificate()
+    {
+        var provider = CreateProvider();
+        Advertise("RS256");
+        using var expired = _keys.Certificate(new DateTimeOffset(2025, 5, 8, 12, 0, 0, TimeSpan.Zero), new DateTimeOffset(2026, 5, 8, 12, 0, 0, TimeSpan.Zero));
+        _handler.Documents[$"{Authority}/certs"] = _keys.JwksJsonWithCertificate(expired);
+        var configuration = await provider.GetAsync(Authority);
+
+        var result = await ValidateAsync(provider, configuration);
+
+        result.Subject.Should().Be("user-sub");
+        _handler.Requests.Should().HaveCount(2);
     }
 
     private sealed class MetadataHandler : HttpMessageHandler

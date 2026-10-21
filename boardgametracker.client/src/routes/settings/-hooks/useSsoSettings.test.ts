@@ -138,6 +138,9 @@ describe("useSsoSettings", () => {
 			userInfoEndpoint: "https://sso.example.com/userinfo",
 			endSessionEndpoint: "https://sso.example.com/logout",
 			issuerMatchesAuthority: true,
+			signingAlgorithms: ["RS256"],
+			signingSupported: true,
+			signingCertificateExpiredOn: null,
 		};
 		vi.mocked(testOidcDiscoveryCall).mockResolvedValueOnce(discovered).mockRejectedValueOnce(new Error("unreachable"));
 		const { result } = renderHook(() => useSsoSettings(), { wrapper: createWrapper() });

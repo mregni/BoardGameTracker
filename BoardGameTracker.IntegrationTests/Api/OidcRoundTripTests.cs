@@ -272,6 +272,33 @@ public class OidcRoundTripTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Login_ShouldRecover_OnceTheProviderSignsWithRs256AndDiscoveryIsTestedAgain()
+    {
+        _idp.SigningAlgorithms = ["HS256"];
+        UseIdentity("signing-key");
+        using var admin = await _fixture.CreateAdminClientAsync();
+
+        var hs256 = await TestDiscoveryAsync(admin);
+        using var staleBrowser = _fixture.CreateBrowserClient(Https);
+        var rejected = await SignInAsync(staleBrowser);
+        _idp.SigningAlgorithms = ["RS256"];
+        using var cachedBrowser = _fixture.CreateBrowserClient(Https);
+        var stillCached = await SignInAsync(cachedBrowser);
+        var rs256 = await TestDiscoveryAsync(admin);
+        using var browser = _fixture.CreateBrowserClient(Https);
+        var accepted = await SignInAsync(browser);
+
+        hs256.SigningAlgorithms.Should().Equal("HS256");
+        hs256.SigningSupported.Should().BeFalse();
+        rejected.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcIdTokenInvalid)}");
+        stillCached.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcIdTokenInvalid)}", "a refresh within the minimum interval keeps the cached configuration");
+        rs256.SigningAlgorithms.Should().Equal("RS256");
+        rs256.SigningSupported.Should().BeTrue();
+        accepted.Headers.Location!.ToString().Should().Be("/auth-callback?redirect=%2F");
+        (await AdoptAsync(browser)).User.DisplayName.Should().Be("signing-key user");
+    }
+
+    [Fact]
     public async Task TestDiscovery_ShouldBeAdminOnly_AndRefuseAnInsecureAuthority()
     {
         using var user = await _fixture.CreateClientAsAsync("user");
@@ -665,6 +692,13 @@ public class OidcRoundTripTests : IAsyncLifetime
         var callback = await browser.GetAsync(idpResponse.Headers.Location!.PathAndQuery);
         callback.StatusCode.Should().Be(HttpStatusCode.Found);
         return callback;
+    }
+
+    private async Task<OidcDiscoveryResultDto> TestDiscoveryAsync(HttpClient admin)
+    {
+        var response = await admin.PostAsJsonAsync("/api/admin/oidc-providers/test-discovery", new TestOidcDiscoveryRequest(_idp.Authority));
+        response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+        return (await response.Content.ReadFromJsonAsync<OidcDiscoveryResultDto>(IntegrationFixture.Json))!;
     }
 
     private static async Task<LoginResponse> AdoptAsync(HttpClient browser)

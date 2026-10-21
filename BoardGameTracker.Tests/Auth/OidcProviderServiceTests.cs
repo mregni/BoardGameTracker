@@ -156,6 +156,16 @@ public class OidcProviderServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateAsync_ShouldInvalidateTheCachedDiscoveryDocument()
+    {
+        await _service.CreateAsync("Authentik", "https://sso.example.com/application/o/bgt/", "client-id",
+            null, "openid profile email", true, null, null, null, null, null, null, null, null, null, null);
+
+        _configurationsMock.Verify(x => x.Invalidate("https://sso.example.com/application/o/bgt/"), Times.Once);
+        _configurationsMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task CreateAsync_ShouldRefuseASecondProvider()
     {
         _context.OidcProviders.Add(new OidcProvider("Google", "https://accounts.google.com", "client-id"));
