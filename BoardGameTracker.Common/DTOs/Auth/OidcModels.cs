@@ -44,7 +44,8 @@ public record CreateOidcProviderRequest(
     [Url] string? IconUrl,
     string? ButtonColor,
     string? DefaultRole = null,
-    bool Enabled = true);
+    bool Enabled = true,
+    string? PictureClaimType = null);
 
 public record UpdateOidcProviderRequest(
     [Range(1, int.MaxValue)] int Id,
@@ -65,7 +66,8 @@ public record UpdateOidcProviderRequest(
     string? AdminGroupValue,
     [Url] string? IconUrl,
     string? ButtonColor,
-    string? DefaultRole = null);
+    string? DefaultRole = null,
+    string? PictureClaimType = null);
 
 public record OidcProviderListDto(
     int Id,
@@ -91,7 +93,8 @@ public record OidcProviderDto(
     string? AdminGroupValue,
     string? IconUrl,
     string? ButtonColor,
-    string DefaultRole);
+    string DefaultRole,
+    string? PictureClaimType = null);
 
 public record ExternalLoginDto(
     int Id,

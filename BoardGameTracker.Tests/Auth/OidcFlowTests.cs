@@ -12,6 +12,7 @@ using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
+using BoardGameTracker.Core.Auth.Pictures;
 using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
 using Microsoft.AspNetCore.DataProtection;
@@ -38,6 +39,7 @@ public class OidcFlowTests : IDisposable
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
     private readonly SecretProtector _secretProtector;
     private readonly OidcService _service;
+    private readonly IdentityProviderPictureQueue _pictureQueue = new();
 
     public OidcFlowTests()
     {
@@ -82,6 +84,7 @@ public class OidcFlowTests : IDisposable
             configurations,
             new OidcIdTokenValidator(configurations, Mock.Of<ILogger<OidcIdTokenValidator>>()),
             new OidcRoleReconciler(_userManagerMock.Object, Mock.Of<ILogger<OidcRoleReconciler>>()),
+            _pictureQueue,
             Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }),
             Mock.Of<ILogger<OidcService>>());
     }
@@ -824,6 +827,99 @@ public class OidcFlowTests : IDisposable
             Task.Run(() => service.TakeHandoff(key), TestContext.Current.CancellationToken));
 
         results.Should().ContainSingle(x => x != null).Which.Should().Be(login);
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldQueueThePictureClaim_ForTheSignedInUser()
+    {
+        var user = LinkedUser();
+        _idp.User = KnownUser("sub-1");
+        _idp.User["picture"] = "https://idp.example.com/avatars/jane.png";
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-1"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await LoginAsync();
+
+        var queued = await TakeQueuedPictureAsync();
+        queued.Should().Be(new IdentityProviderPictureImport(user.Id, "https://idp.example.com/avatars/jane.png", Authority));
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldReadThePictureFromUserInfo_WhenTheIdTokenHasNone()
+    {
+        _idp.User = KnownUser("sub-new");
+        _idp.UserInfo = KnownUser("sub-new");
+        _idp.UserInfo["picture"] = "https://idp.example.com/avatars/userinfo.png";
+        SetUpProvisioning();
+
+        var result = await LoginAsync();
+
+        var queued = await TakeQueuedPictureAsync();
+        queued.UserId.Should().Be(result.Login.User.Id);
+        queued.PictureUrl.Should().Be("https://idp.example.com/avatars/userinfo.png");
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldUseTheConfiguredPictureClaim()
+    {
+        await UpdateProviderAsync(p => p.SetPictureClaimType("avatar_url"));
+        _idp.User = KnownUser("sub-new");
+        _idp.User["picture"] = "https://idp.example.com/avatars/ignored.png";
+        _idp.User["avatar_url"] = "https://idp.example.com/avatars/custom.png";
+        SetUpProvisioning();
+
+        await LoginAsync();
+
+        (await TakeQueuedPictureAsync()).PictureUrl.Should().Be("https://idp.example.com/avatars/custom.png");
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldQueueNothing_WhenThereIsNoPictureClaim()
+    {
+        _idp.User = KnownUser("sub-new");
+        SetUpProvisioning();
+
+        await LoginAsync();
+
+        _pictureQueue.DequeueAsync(CancellationToken.None).IsCompleted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldStillSignIn_WhenThePictureQueueIsFull()
+    {
+        for (var i = 0; i < IdentityProviderPictureQueue.Capacity; i++)
+        {
+            _pictureQueue.Enqueue(new IdentityProviderPictureImport($"other-{i}", "https://idp.example.com/a.png", Authority));
+        }
+
+        _idp.User = KnownUser("sub-new");
+        _idp.User["picture"] = "https://idp.example.com/avatars/jane.png";
+        SetUpProvisioning();
+
+        var result = await LoginAsync();
+
+        result.Login.AccessToken.Should().Be("access-token");
+    }
+
+    [Fact]
+    public async Task CompleteLinkAsync_ShouldQueueThePictureClaim()
+    {
+        var user = LinkedUser();
+        _idp.User = KnownUser("sub-9");
+        _idp.User["picture"] = "https://idp.example.com/avatars/linked.png";
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id)).ReturnsAsync(user);
+
+        var request = await _service.StartLinkAsync(user.Id, PublicBase);
+        await _service.CompleteLinkAsync(await _idp.AuthorizeAsync(request.Url), request.State, request.State, Authority);
+
+        (await TakeQueuedPictureAsync()).Should().Be(new IdentityProviderPictureImport(user.Id, "https://idp.example.com/avatars/linked.png", Authority));
+    }
+
+    private async Task<IdentityProviderPictureImport> TakeQueuedPictureAsync()
+    {
+        var pending = _pictureQueue.DequeueAsync(TestContext.Current.CancellationToken);
+        pending.IsCompleted.Should().BeTrue();
+        return await pending;
     }
 
     private async Task<OidcLoginResult> LoginAsync(string? issuer = Authority)

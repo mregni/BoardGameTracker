@@ -146,6 +146,28 @@ public class ImageService : IImageService
         return $"/{path.Replace("\\", "/")}";
     }
 
+    public async Task<string> SaveProfileImage(byte[] content)
+    {
+        using var data = SKData.CreateCopy(content);
+        using var codec = SKCodec.Create(data);
+        if (codec == null)
+        {
+            _logger.LogWarning("Rejected a profile picture: unsupported image format");
+            return string.Empty;
+        }
+
+        if ((long)codec.Info.Width * codec.Info.Height > MaxUploadPixels)
+        {
+            _logger.LogWarning("Rejected a profile picture: more than {Max} pixels", MaxUploadPixels);
+            return string.Empty;
+        }
+
+        await using var webp = ResizeToWebp(codec);
+        var newFileName = await _diskProvider.WriteFile(webp, "avatar.webp", PathHelper.FullProfileImagePath);
+        var path = Path.Combine(PathHelper.ProfileImagePath, newFileName);
+        return $"/{path.Replace("\\", "/")}";
+    }
+
     public void DeleteImage(string? image)
     {
         if (string.IsNullOrWhiteSpace(image))

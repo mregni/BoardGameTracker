@@ -2,6 +2,7 @@ using System.Security.Claims;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Common;
@@ -22,12 +23,14 @@ public class AuthController : ControllerBase
     private readonly IAuthService _authService;
     private readonly IOidcService _oidcService;
     private readonly AuthSessionCookies _sessionCookies;
+    private readonly IUserProfileImageService _profileImages;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService, IOidcService oidcService, AuthSessionCookies sessionCookies, ILogger<AuthController> logger)
+    public AuthController(IAuthService authService, IOidcService oidcService, AuthSessionCookies sessionCookies, IUserProfileImageService profileImages, ILogger<AuthController> logger)
     {
         _authService = authService;
         _sessionCookies = sessionCookies;
+        _profileImages = profileImages;
         _oidcService = oidcService;
         _logger = logger;
     }
@@ -109,6 +112,23 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
         var profile = await _authService.UpdateProfileAsync(GetCurrentUserId(), request);
+        return Ok(profile);
+    }
+
+    [HttpPut("profile/image")]
+    [RequestSizeLimit(16 * 1024 * 1024)]
+    [ProducesResponseType<ProfileResponse>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> UploadProfileImage([FromForm] UploadProfileImageCommand command)
+    {
+        var profile = await _profileImages.UploadAsync(GetCurrentUserId(), command.File);
+        return Ok(profile);
+    }
+
+    [HttpDelete("profile/image")]
+    [ProducesResponseType<ProfileResponse>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RemoveProfileImage()
+    {
+        var profile = await _profileImages.RemoveAsync(GetCurrentUserId());
         return Ok(profile);
     }
 

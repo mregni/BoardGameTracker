@@ -12,4 +12,5 @@ public record UserInfo(
     string Id,
     string Username,
     string? DisplayName,
-    IEnumerable<string> Roles);
+    IEnumerable<string> Roles,
+    string? ProfileImage = null);

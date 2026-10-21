@@ -41,6 +41,10 @@ public sealed class FakeIdentityProvider : IAsyncDisposable
 
     public string? LastIdToken { get; private set; }
 
+    public byte[] Picture { get; set; } = [];
+
+    public int PictureRequests { get; private set; }
+
     public Dictionary<string, object> User { get; } = new()
     {
         ["sub"] = "fake-sub-1",
@@ -112,6 +116,12 @@ public sealed class FakeIdentityProvider : IAsyncDisposable
 
             provider.LastIdToken = provider.IssueIdToken(issued.Nonce);
             return Results.Json(new { access_token = AccessToken, token_type = "Bearer", id_token = provider.LastIdToken });
+        });
+
+        app.MapGet("/avatar.png", () =>
+        {
+            provider.PictureRequests++;
+            return Results.File(provider.Picture, "image/png");
         });
 
         app.MapGet("/userinfo", (HttpRequest request) =>

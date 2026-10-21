@@ -24,6 +24,7 @@ public class UserAdminServiceTests : IDisposable
     private readonly Mock<IUserAccessCheck> _accessCheckMock = new();
     private readonly MainDbContext _context;
     private readonly Mock<ILogger<UserAdminService>> _loggerMock;
+    private readonly Mock<BoardGameTracker.Core.Images.Interfaces.IImageService> _imageServiceMock = new();
     private readonly UserAdminService _service;
 
     public UserAdminServiceTests()
@@ -43,6 +44,7 @@ public class UserAdminServiceTests : IDisposable
             _tokenServiceMock.Object,
             _accessCheckMock.Object,
             _context,
+            _imageServiceMock.Object,
             _loggerMock.Object);
 
         _userManagerMock.Invocations.Clear();

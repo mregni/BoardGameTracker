@@ -8,6 +8,7 @@ using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Auth.Interfaces;
+using BoardGameTracker.Core.Auth.Pictures;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.AspNetCore.Identity;
@@ -37,6 +38,7 @@ public class OidcService : IOidcService
     private readonly IOidcConfigurationProvider _configurations;
     private readonly IOidcIdTokenValidator _idTokenValidator;
     private readonly IOidcRoleReconciler _roleReconciler;
+    private readonly IIdentityProviderPictureQueue _pictureQueue;
     private readonly JwtOptions _jwtOptions;
     private readonly ILogger<OidcService> _logger;
 
@@ -50,6 +52,7 @@ public class OidcService : IOidcService
         IOidcConfigurationProvider configurations,
         IOidcIdTokenValidator idTokenValidator,
         IOidcRoleReconciler roleReconciler,
+        IIdentityProviderPictureQueue pictureQueue,
         IOptions<JwtOptions> jwtOptions,
         ILogger<OidcService> logger)
     {
@@ -62,6 +65,7 @@ public class OidcService : IOidcService
         _configurations = configurations;
         _idTokenValidator = idTokenValidator;
         _roleReconciler = roleReconciler;
+        _pictureQueue = pictureQueue;
         _jwtOptions = jwtOptions.Value;
         _logger = logger;
     }
@@ -192,6 +196,7 @@ public class OidcService : IOidcService
         await _userManager.UpdateAsync(user);
         var sessionKey = StartSession(user, provider, identity);
         await _context.SaveChangesAsync();
+        QueuePictureImport(user.Id, provider, identity.Claims);
 
         return new OidcLoginResult(await IssueTokensAsync(user), pending.RedirectPath, sessionKey);
     }
@@ -212,6 +217,7 @@ public class OidcService : IOidcService
 
         _context.ExternalLogins.Add(new ExternalLogin(user.Id, provider.DisplayName, identity.Issuer, identity.Subject, displayName));
         await _context.SaveChangesAsync();
+        QueuePictureImport(user.Id, provider, identity.Claims);
 
         _logger.LogInformation("Linked OIDC provider {Provider} to user {UserId}", provider.DisplayName, user.Id);
         return new OidcLinkResult(user.Id);
@@ -400,6 +406,20 @@ public class OidcService : IOidcService
         }
 
         return login;
+    }
+
+    private void QueuePictureImport(string userId, OidcProvider provider, OidcClaims claims)
+    {
+        var pictureUrl = OidcPictureClaim.Read(provider, claims);
+        if (pictureUrl == null)
+        {
+            return;
+        }
+
+        if (!_pictureQueue.Enqueue(new IdentityProviderPictureImport(userId, pictureUrl, provider.Authority)))
+        {
+            _logger.LogWarning("Skipped the identity provider picture of user {UserId} because the import queue is full", userId);
+        }
     }
 
     private string? StartSession(ApplicationUser user, OidcProvider provider, OidcIdentity identity)

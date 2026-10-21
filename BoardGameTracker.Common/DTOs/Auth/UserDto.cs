@@ -11,4 +11,5 @@ public record UserDto(
     int? PlayerId,
     bool IsDisabled = false,
     bool RoleManagedByIdentityProvider = false,
-    int ExternalLoginCount = 0);
+    int ExternalLoginCount = 0,
+    string? ProfileImage = null);

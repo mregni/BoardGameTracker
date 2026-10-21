@@ -31,6 +31,7 @@ public class OidcServiceTests : IDisposable
     private readonly Mock<IOidcRoleReconciler> _roleReconcilerMock = new();
     private readonly Mock<ISecretProtector> _secretProtectorMock = new();
     private readonly OidcService _service;
+    private readonly BoardGameTracker.Core.Auth.Pictures.IdentityProviderPictureQueue _pictureQueue = new();
 
     public OidcServiceTests()
     {
@@ -58,6 +59,7 @@ public class OidcServiceTests : IDisposable
             _configurationsMock.Object,
             _idTokenValidatorMock.Object,
             _roleReconcilerMock.Object,
+            _pictureQueue,
             Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }),
             _loggerMock.Object);
 

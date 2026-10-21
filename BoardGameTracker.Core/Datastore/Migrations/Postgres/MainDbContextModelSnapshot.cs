@@ -93,6 +93,18 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<int?>("PlayerId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ProfileImage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProfileImageSource")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("None");
+
+                    b.Property<string>("ProfileImageSourceUrl")
+                        .HasColumnType("text");
+
                     b.Property<bool>("RoleManagedByIdentityProvider")
                         .HasColumnType("boolean");
 
@@ -213,6 +225,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .HasColumnType("boolean");
 
                     b.Property<string>("IconUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PictureClaimType")
                         .HasColumnType("text");
 
                     b.Property<string>("RolesClaimType")

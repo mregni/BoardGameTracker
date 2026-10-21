@@ -25,6 +25,7 @@ public class OidcProvider
     public string? DisplayNameClaimType { get; private set; }
     public string? RolesClaimType { get; private set; }
     public string? AdminGroupValue { get; private set; }
+    public string? PictureClaimType { get; private set; }
 
     // UI customization
     public string? IconUrl { get; private set; }
@@ -38,6 +39,11 @@ public class OidcProvider
         Authority = authority;
         ClientId = clientId;
         Enabled = true;
+    }
+
+    public void SetPictureClaimType(string? pictureClaimType)
+    {
+        PictureClaimType = string.IsNullOrWhiteSpace(pictureClaimType) ? null : pictureClaimType.Trim();
     }
 
     public void SetDefaultRole(string defaultRole)

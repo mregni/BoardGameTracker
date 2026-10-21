@@ -249,6 +249,18 @@ builder.Services.AddHttpClient(BoardGameTracker.Core.Integrations.BggConnectionT
 builder.Services.AddHttpClient(OidcService.HttpClientName)
     .ConfigureHttpClient(client => client.MaxResponseContentBufferSize = 1024 * 1024)
     .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
+builder.Services.AddHttpClient(BoardGameTracker.Core.Auth.Pictures.IdentityProviderPictureDownloader.HttpClientName)
+    .ConfigureHttpClient(client =>
+    {
+        client.Timeout = BoardGameTracker.Core.Auth.Pictures.IdentityProviderPictureDownloader.Timeout;
+        client.MaxResponseContentBufferSize = BoardGameTracker.Core.Auth.Pictures.IdentityProviderPictureDownloader.MaxBytes;
+    })
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+    {
+        AllowAutoRedirect = false,
+        UseProxy = false,
+        ConnectCallback = BoardGameTracker.Core.Auth.Pictures.PinnedAddressConnector.ConnectAsync,
+    });
 builder.Services.AddHttpClient(ImageService.HttpClientName)
     .AddStandardResilienceHandler();
 builder.Services.AddMemoryCache();
