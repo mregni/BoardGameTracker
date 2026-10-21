@@ -81,6 +81,18 @@ export const updateProfileCall = (request: UpdateProfileRequest): Promise<Profil
 	});
 };
 
+export const uploadProfileImageCall = (file: File): Promise<ProfileResponse> => {
+	const formData = new FormData();
+	formData.append("file", file);
+	return axiosInstance
+		.put<ProfileResponse>(`${domain}/profile/image`, formData, { headers: { "Content-Type": "multipart/form-data" } })
+		.then((response) => response.data);
+};
+
+export const removeProfileImageCall = (): Promise<ProfileResponse> => {
+	return axiosInstance.delete<ProfileResponse>(`${domain}/profile/image`).then((response) => response.data);
+};
+
 export const changePasswordCall = (request: ChangePasswordRequest): Promise<void> => {
 	return axiosInstance.post(`${domain}/change-password`, request);
 };

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtText } from "@/components/BgtText/BgtText";
@@ -34,6 +35,12 @@ export const UserAccessModal = ({ open, close, user, isCurrentUser }: Props) => 
 			<BgtDialogContent aria-describedby={undefined}>
 				<BgtDialogTitle>{t("account.users.access.title")}</BgtDialogTitle>
 				<div className="flex flex-col gap-4 my-3">
+					<div className="flex items-center gap-3">
+						<BgtAvatar image={user.profileImage} title={user.username} colorKey={user.id} shape="round" size="large" />
+						<BgtText color="white" className="font-semibold truncate">
+							{user.username}
+						</BgtText>
+					</div>
 					<section className="flex flex-col gap-2">
 						<div className="flex items-center justify-between gap-3">
 							<BgtText color={user.isDisabled ? "red" : "green"} className="font-semibold">

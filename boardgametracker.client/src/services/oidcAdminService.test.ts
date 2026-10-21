@@ -19,6 +19,7 @@ const request: OidcProviderRequest = {
 	usernameClaimType: null,
 	emailClaimType: null,
 	displayNameClaimType: null,
+	pictureClaimType: null,
 	rolesClaimType: "groups",
 	adminGroupValue: null,
 };

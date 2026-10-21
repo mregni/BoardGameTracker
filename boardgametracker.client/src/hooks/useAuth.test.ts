@@ -23,7 +23,7 @@ vi.mock("@/utils/sessionSync", () => sessionSync);
 
 import { LEGACY_AUTH_STORAGE_KEY, removeLegacySession, useAuth } from "./useAuth";
 
-const user: User = { id: "u1", username: "alice", displayName: null, roles: ["User"] };
+const user: User = { id: "u1", username: "alice", displayName: null, roles: ["User"], profileImage: null };
 
 const storedValues = () => [
 	...Object.keys(localStorage).map((key) => localStorage.getItem(key) ?? ""),
@@ -89,6 +89,23 @@ describe("useAuth", () => {
 		expect(useAuth.getState().accessToken).toBeNull();
 		expect(useAuth.getState().user).toBeNull();
 		expect(sessionSync.announceSessionChange).toHaveBeenCalledWith("logout");
+	});
+
+	it("updateUser merges changes into the signed-in user", () => {
+		useAuth.getState().setSession("access", user);
+
+		useAuth.getState().updateUser({ displayName: "Reggi" });
+
+		expect(useAuth.getState().user).toEqual({ ...user, displayName: "Reggi" });
+		expect(useAuth.getState().accessToken).toBe("access");
+	});
+
+	it("updateUser does nothing while signed out", () => {
+		useAuth.getState().clearAuth();
+
+		useAuth.getState().updateUser({ displayName: "Reggi" });
+
+		expect(useAuth.getState().user).toBeNull();
 	});
 
 	it("logout always calls the server because only the server can see the cookie", async () => {

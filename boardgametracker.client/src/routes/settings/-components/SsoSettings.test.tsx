@@ -49,6 +49,7 @@ const provider: OidcProviderConfig = {
 	usernameClaimType: null,
 	emailClaimType: null,
 	displayNameClaimType: null,
+	pictureClaimType: null,
 	rolesClaimType: "groups",
 	adminGroupValue: "bgt-admins",
 	iconUrl: null,
@@ -196,6 +197,23 @@ describe("SsoSettings", () => {
 			usernameClaimType: null,
 			defaultRole: "Reader",
 		});
+	});
+
+	it("submits the avatar claim, or nothing when it is left empty", async () => {
+		const user = userEvent.setup();
+		mocks.state.provider = provider;
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.getByLabelText("sso.fields.picture-claim.label")).toHaveAttribute("placeholder", "picture");
+		expect(screen.getByText("sso.fields.picture-claim.hint")).toBeInTheDocument();
+		await user.click(screen.getByRole("button", { name: "sso.save" }));
+		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
+		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ pictureClaimType: null });
+
+		await user.type(screen.getByLabelText("sso.fields.picture-claim.label"), " avatar_url ");
+		await user.click(screen.getByRole("button", { name: "sso.save" }));
+		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(2));
+		expect(mocks.state.save.mock.calls[1][0]).toMatchObject({ pictureClaimType: "avatar_url" });
 	});
 
 	it("creates a provider with the User role as default", async () => {

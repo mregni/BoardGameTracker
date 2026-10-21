@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiError } from "@/models/Common/ApiError";
 
-const axiosMock = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), delete: vi.fn() }));
+const axiosMock = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() }));
 
 vi.mock("../utils/axiosInstance", () => ({ axiosInstance: axiosMock }));
 
@@ -12,8 +12,10 @@ import {
 	getOidcProviderCall,
 	getUserExternalLoginsCall,
 	manageRoleByIdentityProviderCall,
+	removeProfileImageCall,
 	startOidcLinkCall,
 	unlinkUserExternalLoginCall,
+	uploadProfileImageCall,
 } from "./authService";
 
 const apiError = (status: number): ApiError => ({
@@ -107,5 +109,32 @@ describe("admin user access calls", () => {
 
 		expect(axiosMock.get).toHaveBeenCalledWith("admin/users/u-1/external-logins");
 		expect(axiosMock.delete).toHaveBeenCalledWith("admin/users/u-1/external-logins/3");
+	});
+});
+
+describe("profile picture calls", () => {
+	beforeEach(() => {
+		axiosMock.put.mockReset();
+		axiosMock.delete.mockReset();
+	});
+
+	it("uploads the picture as a form file", async () => {
+		const profile = { id: "u1", profileImage: "/images/profile/a.webp" };
+		axiosMock.put.mockResolvedValue({ data: profile });
+		const file = new File(["png"], "me.png", { type: "image/png" });
+
+		await expect(uploadProfileImageCall(file)).resolves.toEqual(profile);
+
+		const [url, body, config] = axiosMock.put.mock.calls[0];
+		expect(url).toBe("auth/profile/image");
+		expect((body as FormData).get("file")).toBe(file);
+		expect(config).toEqual({ headers: { "Content-Type": "multipart/form-data" } });
+	});
+
+	it("removes the picture", async () => {
+		axiosMock.delete.mockResolvedValue({ data: { id: "u1", profileImage: null } });
+
+		await expect(removeProfileImageCall()).resolves.toEqual({ id: "u1", profileImage: null });
+		expect(axiosMock.delete).toHaveBeenCalledWith("auth/profile/image");
 	});
 });

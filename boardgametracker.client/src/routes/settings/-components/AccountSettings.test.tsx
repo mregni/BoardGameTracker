@@ -7,6 +7,9 @@ const mocks = vi.hoisted(() => ({
 	accessModal: vi.fn(),
 	resetPassword: vi.fn(),
 	errorToast: vi.fn(),
+	profileImage: null as string | null,
+	uploadProfileImage: vi.fn(),
+	removeProfileImage: vi.fn(),
 }));
 
 vi.mock("@/routes/-hooks/useToasts", () => ({
@@ -32,6 +35,7 @@ vi.mock("../-hooks/useAccountData", () => ({
 			createdAt: new Date(2026, 0, 1),
 			lastLoginAt: null,
 			playerId: null,
+			profileImage: mocks.profileImage,
 		},
 		isProfileLoading: false,
 		users: mocks.users,
@@ -40,6 +44,9 @@ vi.mock("../-hooks/useAccountData", () => ({
 		isAdmin: true,
 		updateProfile: vi.fn(),
 		isUpdatingProfile: false,
+		uploadProfileImage: mocks.uploadProfileImage,
+		removeProfileImage: mocks.removeProfileImage,
+		isChangingProfileImage: false,
 		changePassword: vi.fn(),
 		isChangingPassword: false,
 		registerUser: vi.fn(),
@@ -98,6 +105,7 @@ const user = (overrides: Partial<UserDto>): UserDto => ({
 	isDisabled: false,
 	roleManagedByIdentityProvider: false,
 	externalLoginCount: 0,
+	profileImage: null,
 	...overrides,
 });
 
@@ -108,6 +116,49 @@ describe("AccountSettings user management", () => {
 			user({ id: "admin-1", username: "admin", roles: ["Admin"] }),
 			user({ id: "user-2", username: "jane", isDisabled: true, externalLoginCount: 1 }),
 		];
+	});
+
+	it("shows each user's avatar in the table and the cards, with the initial as fallback", () => {
+		mocks.users = [
+			user({ id: "admin-1", username: "admin", roles: ["Admin"] }),
+			user({ id: "user-2", username: "jane", profileImage: "/images/profile/jane.webp" }),
+		];
+		renderWithProviders(<AccountSettings />);
+
+		const jane = within(screen.getByRole("table")).getByText("jane").closest("tr") as HTMLElement;
+		expect(within(jane).getByRole("img", { name: "jane" })).toHaveAttribute("src", "/images/profile/jane.webp");
+		const admin = within(screen.getByRole("table"))
+			.getByText("admin", { selector: "span" })
+			.closest("tr") as HTMLElement;
+		expect(within(admin).queryByRole("img")).not.toBeInTheDocument();
+		expect(within(admin).getByTitle("admin")).toHaveTextContent("a");
+		const janeCard = screen.getAllByTestId("user-card")[1] as HTMLElement;
+		expect(within(janeCard).getByRole("img", { name: "jane" })).toHaveClass("rounded-full");
+	});
+
+	it("uploads a new profile picture and offers to remove the current one", async () => {
+		mocks.profileImage = "/images/profile/admin.webp";
+		mocks.uploadProfileImage.mockResolvedValue({});
+		mocks.removeProfileImage.mockResolvedValue({});
+		const pointer = userEvent.setup();
+		renderWithProviders(<AccountSettings />);
+
+		expect(screen.getByRole("img", { name: "Administrator" })).toHaveAttribute("src", "/images/profile/admin.webp");
+		const file = new File(["png"], "me.png", { type: "image/png" });
+		await pointer.upload(screen.getByTestId("profile-picture-input"), file);
+		expect(mocks.uploadProfileImage).toHaveBeenCalledWith(file);
+
+		await pointer.click(screen.getByRole("button", { name: "account.profile.picture.remove" }));
+		expect(mocks.removeProfileImage).toHaveBeenCalled();
+		mocks.profileImage = null;
+	});
+
+	it("hides the remove button without a profile picture", () => {
+		mocks.profileImage = null;
+		renderWithProviders(<AccountSettings />);
+
+		expect(screen.getByRole("button", { name: "account.profile.picture.upload" })).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "account.profile.picture.remove" })).not.toBeInTheDocument();
 	});
 
 	it("marks disabled users and users with single sign-on", () => {

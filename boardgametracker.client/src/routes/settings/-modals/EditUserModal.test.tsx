@@ -18,6 +18,7 @@ const editedUser: UserDto = {
 	isDisabled: false,
 	roleManagedByIdentityProvider: false,
 	externalLoginCount: 0,
+	profileImage: null,
 };
 
 const renderModal = (overrides: Partial<Parameters<typeof EditUserModal>[0]> = {}) => {

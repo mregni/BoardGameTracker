@@ -278,6 +278,82 @@
         }
       }
     },
+    "/api/auth/profile/image": {
+      "put": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "File": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "File": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/auth/linkable-players": {
       "get": {
         "tags": [
@@ -6332,6 +6408,10 @@
           },
           "enabled": {
             "type": "boolean"
+          },
+          "pictureClaimType": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -8358,6 +8438,10 @@
           },
           "defaultRole": {
             "type": "string"
+          },
+          "pictureClaimType": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -8713,6 +8797,10 @@
           "playerId": {
             "type": "integer",
             "format": "int32",
+            "nullable": true
+          },
+          "profileImage": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -9718,6 +9806,10 @@
           "defaultRole": {
             "type": "string",
             "nullable": true
+          },
+          "pictureClaimType": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -9965,6 +10057,10 @@
           "externalLoginCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "profileImage": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -9987,6 +10083,10 @@
             "items": {
               "type": "string"
             }
+          },
+          "profileImage": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

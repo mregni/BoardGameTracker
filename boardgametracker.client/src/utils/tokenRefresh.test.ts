@@ -19,8 +19,8 @@ vi.mock("./sessionSync", () => ({
 
 import { refreshSession, restoreSession, SESSION_HEADERS, startSessionSync } from "./tokenRefresh";
 
-const user: User = { id: "u1", username: "alice", displayName: null, roles: ["User"] };
-const admin: User = { id: "u2", username: "bob", displayName: null, roles: ["Admin"] };
+const user: User = { id: "u1", username: "alice", displayName: null, roles: ["User"], profileImage: null };
+const admin: User = { id: "u2", username: "bob", displayName: null, roles: ["Admin"], profileImage: null };
 
 const rejection = (status: number, title?: string) =>
 	new AxiosError("failed", "ERR_BAD_REQUEST", undefined, undefined, {

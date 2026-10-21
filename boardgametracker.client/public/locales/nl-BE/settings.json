@@ -183,6 +183,12 @@
 			"username": {
 				"label": "Gebruikersnaam"
 			},
+			"picture": {
+				"label": "Profielfoto",
+				"upload": "Foto uploaden",
+				"remove": "Foto verwijderen",
+				"hint": "Wanneer je aanmeldt met single sign-on, wordt de foto van je identiteitsprovider gebruikt tot je zelf een foto uploadt. Een verwijderde foto komt pas terug wanneer je identiteitsprovider een andere foto toont."
+			},
 			"player": {
 				"label": "Gekoppelde speler",
 				"none": "Niet gekoppeld"
@@ -306,7 +312,10 @@
 			"user-disable-failed": "Gebruiker uitschakelen is mislukt",
 			"user-enable-failed": "Gebruiker inschakelen is mislukt",
 			"external-login-unlink-failed": "Account van de identiteitsprovider ontkoppelen is mislukt",
-			"role-manage-failed": "De rol aan de identiteitsprovider overdragen is mislukt"
+			"role-manage-failed": "De rol aan de identiteitsprovider overdragen is mislukt",
+			"picture-updated": "Profielfoto opgeslagen",
+			"picture-removed": "Profielfoto verwijderd",
+			"picture-update-failed": "De profielfoto kon niet worden opgeslagen"
 		},
 		"external-logins": {
 			"title": "Single sign-on",
@@ -362,6 +371,10 @@
 			},
 			"display-name-claim": {
 				"label": "Claim voor weergavenaam"
+			},
+			"picture-claim": {
+				"label": "Avatarclaim",
+				"hint": "De foto in deze claim wordt de avatar van gebruikers die zelf geen foto hebben geüpload. Je identiteitsprovider moet een picture-claim meesturen in het token of in de gebruikersinfo."
 			},
 			"roles-claim": {
 				"label": "Claim voor groepen/rollen"

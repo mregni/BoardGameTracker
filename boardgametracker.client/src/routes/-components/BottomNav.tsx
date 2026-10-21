@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import LogOut from "@/assets/icons/log-out.svg?react";
 import More from "@/assets/icons/more.svg?react";
-import User from "@/assets/icons/user.svg?react";
+import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtMenuItem } from "@/components/BgtMenu/BgtMenuItem";
 import { BgtText } from "@/components/BgtText/BgtText";
@@ -67,8 +67,13 @@ export const BottomNav = () => {
 
 					{showAuth && isAuthenticated && user && (
 						<div className="px-2  bg-white/5 flex items-center gap-2 py-2">
-							<div className="w-6 h-6 bg-white/5 rounded-full flex items-center justify-center shrink-0">
-								<User className="text-white/40" />
+							<div className="shrink-0">
+								<BgtAvatar
+									image={user.profileImage}
+									title={user.displayName || user.username}
+									colorKey={user.id}
+									shape="round"
+								/>
 							</div>
 							<div className="flex-1 min-w-0">
 								<div className="text-xs text-white/60 truncate">{user.displayName || user.username}</div>
