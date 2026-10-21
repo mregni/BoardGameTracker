@@ -33,6 +33,7 @@ public class AuthServiceTests : IDisposable
     private readonly Mock<ITokenService> _tokenServiceMock;
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly Mock<IPlayerService> _playerServiceMock;
+    private readonly Mock<IPlayerAccountImageService> _playerAccountImageServiceMock = new();
     private readonly Mock<IEmailService> _emailServiceMock;
     private readonly Mock<IPublicUrlBuilder> _publicUrlBuilderMock;
     private readonly Mock<IBackgroundEmailSender> _backgroundEmailSenderMock;
@@ -76,6 +77,7 @@ public class AuthServiceTests : IDisposable
             _tokenServiceMock.Object,
             _environmentProviderMock.Object,
             _playerServiceMock.Object,
+            _playerAccountImageServiceMock.Object,
             _emailServiceMock.Object,
             _publicUrlBuilderMock.Object,
             _backgroundEmailSenderMock.Object,
@@ -101,6 +103,7 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.VerifyNoOtherCalls();
         _environmentProviderMock.VerifyNoOtherCalls();
         _playerServiceMock.VerifyNoOtherCalls();
+        _playerAccountImageServiceMock.VerifyNoOtherCalls();
         _emailServiceMock.VerifyNoOtherCalls();
         _publicUrlBuilderMock.VerifyNoOtherCalls();
         _backgroundEmailSenderMock.VerifyNoOtherCalls();
@@ -825,6 +828,7 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
         _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
         _backgroundEmailSenderMock.Verify(x => x.Queue("old@test.com", It.IsAny<string>(), It.Is<string>(b => b.Contains("new@test.com"))), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, user), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -880,6 +884,7 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, user), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -903,6 +908,7 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, user), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -951,6 +957,7 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), Constants.AuthRoles.User), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.PlayerId == 5)), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -971,6 +978,7 @@ public class AuthServiceTests : IDisposable
 
         result.PlayerId.Should().Be(7);
 
+        _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.PlayerId == 7)), Times.Once);
         _userManagerMock.Verify(x => x.FindByNameAsync("newuser"), Times.Once);
         _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>(), "password123"), Times.Once);
         _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), Constants.AuthRoles.User), Times.Once);
@@ -1018,6 +1026,7 @@ public class AuthServiceTests : IDisposable
 
         result.PlayerId.Should().Be(3);
         user.PlayerId.Should().Be(3);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, user), Times.Once);
 
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
@@ -1041,6 +1050,7 @@ public class AuthServiceTests : IDisposable
 
         result.PlayerId.Should().BeNull();
         user.PlayerId.Should().BeNull();
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(3, user), Times.Once);
 
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
@@ -1547,6 +1557,7 @@ public class AuthServiceTests : IDisposable
         var result = await _authService.UpdateProfileAsync(userId, request);
 
         result.Email.Should().Be("new@test.com");
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, user), Times.Once);
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.CheckPasswordAsync(user, "current-password"), Times.Once);

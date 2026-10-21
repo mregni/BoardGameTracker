@@ -27,6 +27,12 @@ export const updatePlayerCall = (player: Player): Promise<Player> => {
 	});
 };
 
+export const linkPlayerAccountCall = (id: number, userId: string | null): Promise<Player> => {
+	return axiosInstance.put<Player>(`admin/players/${id}/account`, { userId }).then((response) => {
+		return response.data;
+	});
+};
+
 export const getPlayerCall = (id: number): Promise<Player> => {
 	return axiosInstance.get<Player>(`${domain}/${id}`).then((response) => {
 		return response.data;

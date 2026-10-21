@@ -56,5 +56,13 @@
     "next": "Next: {{goal}}",
     "complete": "All levels earned",
     "see-all": "See all achievements"
+  },
+  "account": {
+    "label": "Linked account",
+    "none": "Not linked",
+    "moves": "Currently linked to {{player}}; saving moves the link here",
+    "uses-picture": "Uses the profile picture of account {{username}}",
+    "own-picture": "Has its own picture; remove it to use the profile picture of account {{username}}",
+    "link-failed": "Failed changing the linked account"
   }
 }

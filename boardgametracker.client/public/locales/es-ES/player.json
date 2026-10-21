@@ -56,5 +56,13 @@
     "next": "Siguiente: {{goal}}",
     "complete": "Todos los niveles conseguidos",
     "see-all": "Ver todos los logros"
+  },
+  "account": {
+    "label": "Cuenta vinculada",
+    "none": "Sin vincular",
+    "moves": "Ahora vinculada a {{player}}; al guardar, el vínculo se mueve aquí",
+    "uses-picture": "Usa la foto de perfil de la cuenta {{username}}",
+    "own-picture": "Tiene su propia foto; elimínala para usar la foto de perfil de la cuenta {{username}}",
+    "link-failed": "No se pudo cambiar la cuenta vinculada"
   }
 }

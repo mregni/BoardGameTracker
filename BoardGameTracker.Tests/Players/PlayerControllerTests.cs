@@ -4,6 +4,7 @@ using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
@@ -137,8 +138,10 @@ public class PlayerControllerTests
         playerDto.Id.Should().Be(1);
         playerDto.Name.Should().Be("Alice Updated");
         playerDto.Image.Should().Be("https://example.com/alice_new.jpg");
+        playerDto.ImageSource.Should().Be(PlayerImageSource.Upload);
 
         _playerServiceMock.Verify(x => x.Update(command), Times.Once);
+        _playerServiceMock.Verify(x => x.GetLinkedAccountAsync(1), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -152,6 +155,9 @@ public class PlayerControllerTests
         _playerServiceMock
             .Setup(x => x.Get(playerId))
             .ReturnsAsync(player);
+        _playerServiceMock
+            .Setup(x => x.GetLinkedAccountAsync(playerId))
+            .ReturnsAsync(new PlayerLinkedAccountDto { Id = "u1", Username = "frank", DisplayName = "Frank F" });
 
         // Act
         var result = await _controller.GetPlayerById(playerId);
@@ -162,8 +168,10 @@ public class PlayerControllerTests
 
         playerDto.Id.Should().Be(playerId);
         playerDto.Name.Should().Be("Frank");
+        playerDto.LinkedAccount!.Username.Should().Be("frank");
 
         _playerServiceMock.Verify(x => x.Get(playerId), Times.Once);
+        _playerServiceMock.Verify(x => x.GetLinkedAccountAsync(playerId), Times.Once);
         VerifyNoOtherCalls();
     }
 

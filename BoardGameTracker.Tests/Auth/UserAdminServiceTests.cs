@@ -7,6 +7,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ public class UserAdminServiceTests : IDisposable
     private readonly MainDbContext _context;
     private readonly Mock<ILogger<UserAdminService>> _loggerMock;
     private readonly Mock<BoardGameTracker.Core.Images.Interfaces.IImageService> _imageServiceMock = new();
+    private readonly Mock<IPlayerAccountImageService> _playerAccountImageServiceMock = new();
     private readonly UserAdminService _service;
 
     public UserAdminServiceTests()
@@ -45,6 +47,7 @@ public class UserAdminServiceTests : IDisposable
             _accessCheckMock.Object,
             _context,
             _imageServiceMock.Object,
+            _playerAccountImageServiceMock.Object,
             _loggerMock.Object);
 
         _userManagerMock.Invocations.Clear();
@@ -61,6 +64,7 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.VerifyNoOtherCalls();
         _tokenServiceMock.VerifyNoOtherCalls();
         _accessCheckMock.VerifyNoOtherCalls();
+        _playerAccountImageServiceMock.VerifyNoOtherCalls();
         _loggerMock.VerifyNoOtherCalls();
     }
 
@@ -212,6 +216,7 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin), Times.Once);
         _userManagerMock.Verify(x => x.DeleteAsync(targetUser), Times.Once);
         _accessCheckMock.Verify(x => x.Forget(targetUserId), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ReleaseAsync(null), Times.Once);
         VerifyInformationLogged(currentUserId, targetUserId);
         VerifyNoOtherCalls();
     }
@@ -242,6 +247,7 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin), Times.Once);
         _userManagerMock.Verify(x => x.DeleteAsync(targetUser), Times.Once);
         _accessCheckMock.Verify(x => x.Forget(targetUserId), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ReleaseAsync(null), Times.Once);
         VerifyInformationLogged(currentUserId, targetUserId);
         VerifyNoOtherCalls();
     }
@@ -457,6 +463,7 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.FindByNameAsync("newuser"), Times.Once);
         _userManagerMock.Verify(x => x.SetUserNameAsync(targetUser, "newuser"), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(It.IsAny<int?>(), targetUser), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
         _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, currentRoles), Times.Once);
         _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.Reader), Times.Once);
@@ -489,6 +496,7 @@ public class UserAdminServiceTests : IDisposable
 
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(It.IsAny<int?>(), targetUser), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
         _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, currentRoles), Times.Once);
         _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.Admin), Times.Once);
@@ -516,6 +524,7 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.SetUserNameAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Never);
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(It.IsAny<int?>(), targetUser), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
         _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, It.IsAny<IEnumerable<string>>()), Times.Never);
         _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, It.IsAny<string>()), Times.Never);
@@ -618,9 +627,11 @@ public class UserAdminServiceTests : IDisposable
 
         result.PlayerId.Should().Be(5);
         targetUser.PlayerId.Should().Be(5);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, targetUser), Times.Once);
 
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(It.IsAny<int?>(), targetUser), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
         _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, It.IsAny<IEnumerable<string>>()), Times.Never);
         _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, It.IsAny<string>()), Times.Never);
@@ -645,9 +656,11 @@ public class UserAdminServiceTests : IDisposable
 
         result.PlayerId.Should().BeNull();
         targetUser.PlayerId.Should().BeNull();
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(5, targetUser), Times.Once);
 
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(It.IsAny<int?>(), targetUser), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
         _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, It.IsAny<IEnumerable<string>>()), Times.Never);
         _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, It.IsAny<string>()), Times.Never);
@@ -921,6 +934,180 @@ public class UserAdminServiceTests : IDisposable
         await _service.UpdateRoleAsync("user-2", Constants.AuthRoles.User, "admin-1");
 
         user.RoleManagedByIdentityProvider.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region LinkPlayerAccountAsync
+
+    private async Task AddPlayerAsync(int id)
+    {
+        _context.Players.Add(new Player($"Player {id}") { Id = id });
+        await _context.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ShouldReleaseTheLinkedPlayersAccountPicture()
+    {
+        var target = new ApplicationUser("linked", "linked@test.com") { Id = "user-2" };
+        target.LinkPlayer(5);
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(target);
+        _userManagerMock.Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin)).ReturnsAsync(new List<ApplicationUser>());
+        _userManagerMock.Setup(x => x.DeleteAsync(target)).ReturnsAsync(IdentityResult.Success);
+
+        await _service.DeleteAsync("user-2", "admin-1");
+
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-2"), Times.Once);
+        _userManagerMock.Verify(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin), Times.Once);
+        _userManagerMock.Verify(x => x.DeleteAsync(target), Times.Once);
+        _accessCheckMock.Verify(x => x.Forget("user-2"), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ReleaseAsync(5), Times.Once);
+        VerifyInformationLogged("admin-1", "user-2");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkPlayerAccountAsync_ShouldLinkTheAccount_AndApplyItsPicture()
+    {
+        await AddPlayerAsync(5);
+        var target = new ApplicationUser("bob", "b@test.com") { Id = "user-2" };
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(target);
+        _userManagerMock.Setup(x => x.UpdateAsync(target)).ReturnsAsync(IdentityResult.Success);
+        _playerAccountImageServiceMock.Setup(x => x.ApplyAccountImageAsync(target)).ReturnsAsync(true);
+
+        await _service.LinkPlayerAccountAsync(5, "user-2");
+
+        target.PlayerId.Should().Be(5);
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-2"), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(target), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ReleaseAsync(null), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(target), Times.Once);
+        VerifyInformationLogged();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkPlayerAccountAsync_ShouldMoveTheLink_FromTheOtherPlayerAndAccount()
+    {
+        await AddPlayerAsync(5);
+        await AddPlayerAsync(7);
+        var current = new ApplicationUser("old", "old@test.com") { Id = "user-1" };
+        current.LinkPlayer(5);
+        _context.Users.Add(current);
+        await _context.SaveChangesAsync();
+        var target = new ApplicationUser("bob", "b@test.com") { Id = "user-2" };
+        target.LinkPlayer(7);
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(target);
+        _userManagerMock.Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
+        _playerAccountImageServiceMock.Setup(x => x.ApplyAccountImageAsync(target)).ReturnsAsync(true);
+
+        await _service.LinkPlayerAccountAsync(5, "user-2");
+
+        current.PlayerId.Should().BeNull();
+        target.PlayerId.Should().Be(5);
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-2"), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(current), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(target), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ReleaseAsync(7), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(target), Times.Once);
+        VerifyInformationLogged();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkPlayerAccountAsync_ShouldReleaseThePlayer_WhenTheNewAccountPictureCannotBeApplied()
+    {
+        await AddPlayerAsync(5);
+        var target = new ApplicationUser("bob", "b@test.com") { Id = "user-2" };
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(target);
+        _userManagerMock.Setup(x => x.UpdateAsync(target)).ReturnsAsync(IdentityResult.Success);
+        _playerAccountImageServiceMock.Setup(x => x.ApplyAccountImageAsync(target)).ReturnsAsync(false);
+
+        await _service.LinkPlayerAccountAsync(5, "user-2");
+
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-2"), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(target), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ReleaseAsync(null), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(target), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ReleaseAsync(5), Times.Once);
+        VerifyInformationLogged();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkPlayerAccountAsync_ShouldUnlinkTheCurrentAccount_WhenNoAccountIsGiven()
+    {
+        await AddPlayerAsync(5);
+        var current = new ApplicationUser("old", "old@test.com") { Id = "user-1" };
+        current.LinkPlayer(5);
+        _context.Users.Add(current);
+        await _context.SaveChangesAsync();
+        _userManagerMock.Setup(x => x.UpdateAsync(current)).ReturnsAsync(IdentityResult.Success);
+
+        await _service.LinkPlayerAccountAsync(5, null);
+
+        current.PlayerId.Should().BeNull();
+        _userManagerMock.Verify(x => x.UpdateAsync(current), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ReleaseAsync(5), Times.Once);
+        VerifyInformationLogged();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkPlayerAccountAsync_ShouldDoNothing_WhenTheAccountIsAlreadyLinked()
+    {
+        await AddPlayerAsync(5);
+        var current = new ApplicationUser("old", "old@test.com") { Id = "user-1" };
+        current.LinkPlayer(5);
+        _context.Users.Add(current);
+        await _context.SaveChangesAsync();
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-1")).ReturnsAsync(current);
+
+        await _service.LinkPlayerAccountAsync(5, "user-1");
+
+        current.PlayerId.Should().Be(5);
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-1"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkPlayerAccountAsync_ShouldThrow_WhenThePlayerDoesNotExist()
+    {
+        var act = () => _service.LinkPlayerAccountAsync(42, "user-2");
+
+        await act.Should().ThrowAsync<EntityNotFoundException>()
+            .Where(e => e.EntityType == nameof(Player));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkPlayerAccountAsync_ShouldThrow_WhenTheAccountDoesNotExist()
+    {
+        await AddPlayerAsync(5);
+        _userManagerMock.Setup(x => x.FindByIdAsync("missing")).ReturnsAsync((ApplicationUser?)null);
+
+        var act = () => _service.LinkPlayerAccountAsync(5, "missing");
+
+        await act.Should().ThrowAsync<EntityNotFoundException>()
+            .Where(e => e.EntityType == nameof(ApplicationUser));
+        _userManagerMock.Verify(x => x.FindByIdAsync("missing"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkPlayerAccountAsync_ShouldThrowAClearError_WhenTheLinkCannotBeSaved()
+    {
+        await AddPlayerAsync(5);
+        var target = new ApplicationUser("bob", "b@test.com") { Id = "user-2" };
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(target);
+        _userManagerMock.Setup(x => x.UpdateAsync(target)).ReturnsAsync(IdentityResult.Failed(new IdentityError { Code = "ConcurrencyFailure" }));
+
+        var act = () => _service.LinkPlayerAccountAsync(5, "user-2");
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.PlayerLinkUpdateFailed);
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-2"), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(target), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     #endregion

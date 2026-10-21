@@ -19,4 +19,5 @@ public interface IPlayerService
     Task<Player> Update(UpdatePlayerCommand command);
     Task<int> CountAsync(CancellationToken cancellationToken = default);
     Task<List<Session>> GetSessions(int id, int? count);
+    Task<PlayerLinkedAccountDto?> GetLinkedAccountAsync(int id);
 }

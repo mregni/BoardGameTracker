@@ -1264,6 +1264,12 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<string>("Image")
                         .HasColumnType("text");
 
+                    b.Property<string>("ImageSource")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("None");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");

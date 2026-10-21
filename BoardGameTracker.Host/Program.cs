@@ -21,6 +21,7 @@ using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Extensions;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Images;
+using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Updates;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -503,6 +504,7 @@ RunDbMigrations(app.Services);
 await EncryptDataProtectionKeys(app.Services);
 await SeedConfig(app.Services);
 await ProtectIntegrationKeys(app.Services);
+await BackfillPlayerAccountImages(app.Services);
 if (authEnabled)
 {
     await SeedAuthData(app.Services, environmentProvider.AdminPassword);
@@ -648,6 +650,20 @@ static async Task ProtectIntegrationKeys(IServiceProvider serviceProvider)
     using var scope = serviceProvider.CreateScope();
     var migrator = scope.ServiceProvider.GetRequiredService<IIntegrationKeyMigrator>();
     await migrator.ProtectLegacyKeysAsync();
+}
+
+static async Task BackfillPlayerAccountImages(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var accountImages = scope.ServiceProvider.GetRequiredService<IPlayerAccountImageService>();
+    try
+    {
+        await accountImages.BackfillAsync();
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Could not give linked players the profile picture of their account");
+    }
 }
 
 static async Task SeedAuthData(IServiceProvider serviceProvider, string? adminPassword)

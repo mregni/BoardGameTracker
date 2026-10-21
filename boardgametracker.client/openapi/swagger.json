@@ -4626,6 +4626,85 @@
         }
       }
     },
+    "/api/admin/players/{id}/account": {
+      "put": {
+        "tags": [
+          "PlayerAccount"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkPlayerAccountRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkPlayerAccountRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkPlayerAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/rag/game/{gameId}/ask": {
       "post": {
         "tags": [
@@ -7966,6 +8045,18 @@
         ],
         "type": "string"
       },
+      "LinkPlayerAccountRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "maxLength": 450,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "LoanDto": {
         "type": "object",
         "properties": {
@@ -8583,6 +8674,9 @@
             "type": "string",
             "nullable": true
           },
+          "imageSource": {
+            "$ref": "#/components/schemas/PlayerImageSource"
+          },
           "email": {
             "type": "string",
             "nullable": true
@@ -8593,9 +8687,20 @@
               "$ref": "#/components/schemas/BadgeDto"
             },
             "nullable": true
+          },
+          "linkedAccount": {
+            "$ref": "#/components/schemas/PlayerLinkedAccountDto"
           }
         },
         "additionalProperties": false
+      },
+      "PlayerImageSource": {
+        "enum": [
+          "none",
+          "upload",
+          "account"
+        ],
+        "type": "string"
       },
       "PlayerLinkDto": {
         "type": "object",
@@ -8606,6 +8711,26 @@
           },
           "name": {
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PlayerLinkedAccountDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "profileImage": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -10199,6 +10324,9 @@
     },
     {
       "name": "Player"
+    },
+    {
+      "name": "PlayerAccount"
     },
     {
       "name": "Rag"
