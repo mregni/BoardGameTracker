@@ -28,6 +28,7 @@ interface AuthState {
 	login: (request: LoginRequest) => Promise<void>;
 	logout: () => Promise<void>;
 	setSession: (accessToken: string, user: User) => void;
+	updateUser: (changes: Partial<Omit<User, "id">>) => void;
 	hasRole: (role: string) => boolean;
 	fetchAuthStatus: () => Promise<AuthStatus>;
 	clearAuth: () => void;
@@ -73,6 +74,13 @@ export const useAuth = create<AuthState>()((set, get) => ({
 
 	setSession: (accessToken: string, user: User) => {
 		set({ accessToken, user, isAuthenticated: true });
+	},
+
+	updateUser: (changes: Partial<Omit<User, "id">>) => {
+		const { user } = get();
+		if (user) {
+			set({ user: { ...user, ...changes } });
+		}
 	},
 
 	hasRole: (role: string) => {
