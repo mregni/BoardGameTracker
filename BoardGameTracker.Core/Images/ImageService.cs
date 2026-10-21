@@ -16,7 +16,8 @@ public class ImageService : IImageService
     public const string HttpClientName = "images";
 
     private const long MaxDownloadBytes = 15 * 1024 * 1024;
-    private const long MaxUploadBytes = 15 * 1024 * 1024;
+    public const long MaxUploadBytes = 15 * 1024 * 1024;
+    public const long MaxUploadRequestBytes = MaxUploadBytes + 1024 * 1024;
     private const long MaxUploadPixels = 50_000_000;
     private const int WebpQuality = 80;
     private static readonly SKSamplingOptions Sampling = new(SKFilterMode.Linear, SKMipmapMode.Linear);

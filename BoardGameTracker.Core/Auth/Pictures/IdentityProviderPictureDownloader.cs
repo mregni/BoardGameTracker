@@ -44,9 +44,9 @@ public class IdentityProviderPictureDownloader : IIdentityProviderPictureDownloa
         {
             return await FetchAsync(target, authorityUri, timeout.Token);
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            _logger.LogWarning("Downloading the identity provider picture from {Host} took longer than {Timeout} seconds", target.Host, Timeout.TotalSeconds);
+            _logger.LogWarning(ex, "Downloading the identity provider picture from {Host} took longer than {Timeout} seconds", target.Host, Timeout.TotalSeconds);
             return null;
         }
         catch (HttpRequestException ex)
@@ -163,7 +163,7 @@ public class IdentityProviderPictureDownloader : IIdentityProviderPictureDownloa
                 return null;
             }
 
-            buffer.Write(chunk, 0, read);
+            await buffer.WriteAsync(chunk.AsMemory(0, read), cancellationToken);
         }
 
         return buffer.ToArray();

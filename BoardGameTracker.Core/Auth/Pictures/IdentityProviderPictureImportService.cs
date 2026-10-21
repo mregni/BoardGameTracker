@@ -47,9 +47,9 @@ public class IdentityProviderPictureImportService : BackgroundService
             var images = scope.ServiceProvider.GetRequiredService<IUserProfileImageService>();
             await images.ImportFromIdentityProviderAsync(import, stoppingToken);
         }
-        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        catch (OperationCanceledException ex) when (stoppingToken.IsCancellationRequested)
         {
-            _logger.LogDebug("Stopped importing the identity provider picture of user {UserId} during shutdown", import.UserId);
+            _logger.LogDebug(ex, "Stopped importing the identity provider picture of user {UserId} during shutdown", import.UserId);
         }
         catch (Exception ex)
         {

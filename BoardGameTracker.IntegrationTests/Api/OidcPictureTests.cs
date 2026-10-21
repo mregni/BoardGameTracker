@@ -7,6 +7,7 @@ using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.IntegrationTests.Infrastructure;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SkiaSharp;
@@ -104,6 +105,20 @@ public class OidcPictureTests : IAsyncLifetime
         removed.StatusCode.Should().Be(HttpStatusCode.OK);
         (await removed.Content.ReadFromJsonAsync<ProfileResponse>(IntegrationFixture.Json, TestContext.Current.CancellationToken))!.ProfileImage.Should().BeNull();
         File.Exists(physical).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ProfileImage_ShouldRefuseAnOversizedUpload()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        using var form = new MultipartFormDataContent();
+        var file = new ByteArrayContent(new byte[BoardGameTracker.Core.Images.ImageService.MaxUploadBytes + 512 * 1024]);
+        file.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        form.Add(file, "File", "huge.png");
+
+        var response = await user.PutAsync("/api/auth/profile/image", form, TestContext.Current.CancellationToken);
+
+        ((int)response.StatusCode).Should().BeOneOf(StatusCodes.Status400BadRequest, StatusCodes.Status413PayloadTooLarge);
     }
 
     [Fact]

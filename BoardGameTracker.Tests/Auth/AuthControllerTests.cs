@@ -383,7 +383,7 @@ public class AuthControllerTests
         SetupAuthenticatedUser("user-id");
         var file = new Mock<Microsoft.AspNetCore.Http.IFormFile>().Object;
         var expectedProfile = new ProfileResponse(
-            "user-id", "testuser", null, null, new List<string> { "User" }, DateTime.UtcNow, null, null, "/images/profile/a.webp");
+            "user-id", "testuser", null, null, ["User"], DateTime.UtcNow, null, null, "/images/profile/a.webp");
         _profileImagesMock.Setup(x => x.UploadAsync("user-id", file)).ReturnsAsync(expectedProfile);
 
         var result = await _controller.UploadProfileImage(new BoardGameTracker.Common.DTOs.Commands.UploadProfileImageCommand { File = file });
@@ -398,7 +398,7 @@ public class AuthControllerTests
     {
         SetupAuthenticatedUser("user-id");
         var expectedProfile = new ProfileResponse(
-            "user-id", "testuser", null, null, new List<string> { "User" }, DateTime.UtcNow, null, null);
+            "user-id", "testuser", null, null, ["User"], DateTime.UtcNow, null, null);
         _profileImagesMock.Setup(x => x.RemoveAsync("user-id")).ReturnsAsync(expectedProfile);
 
         var result = await _controller.RemoveProfileImage();

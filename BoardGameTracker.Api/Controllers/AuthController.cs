@@ -6,6 +6,7 @@ using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Common;
+using BoardGameTracker.Core.Images;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -116,7 +117,8 @@ public class AuthController : ControllerBase
     }
 
     [HttpPut("profile/image")]
-    [RequestSizeLimit(16 * 1024 * 1024)]
+    [RequestSizeLimit(ImageService.MaxUploadRequestBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = ImageService.MaxUploadBytes)]
     [ProducesResponseType<ProfileResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UploadProfileImage([FromForm] UploadProfileImageCommand command)
     {
