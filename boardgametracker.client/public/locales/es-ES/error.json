@@ -45,7 +45,7 @@
     "oidc-provider-unavailable": "Este proveedor de inicio de sesión no está disponible. Elige otra forma de iniciar sesión o pregunta a tu administrador.",
     "oidc-id-token-invalid": "No se pudo verificar el token de inicio de sesión del proveedor de identidad. Inténtalo de nuevo o consulta a tu administrador.",
     "oidc-username-taken": "Ya existe una cuenta con este nombre de usuario. Inicia sesión con tu contraseña y vincula el inicio de sesión único en Ajustes → Cuenta.",
-    "oidc-provider-name-invalid": "Usa letras minúsculas, dígitos y guiones para el nombre corto, y elige uno que no esté en uso.",
+    "oidc-provider-exists": "Solo se admite un proveedor de identidad. Elimina primero el existente.",
     "oidc-role-not-managed": "Este usuario no tiene ninguna cuenta del proveedor de identidad vinculada, así que el proveedor no puede gestionar su rol.",
     "oidc-https-required": "El inicio de sesión único requiere HTTPS. Pon BoardGameTracker detrás de un proxy inverso con TLS y configura una URL pública https.",
     "account-disabled": "Esta cuenta está desactivada. Pide a tu administrador que la active.",

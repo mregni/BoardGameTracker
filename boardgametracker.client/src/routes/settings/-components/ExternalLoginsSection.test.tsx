@@ -28,7 +28,6 @@ vi.mock("@/services/queries/settings", () => ({
 import { ExternalLoginsSection } from "./ExternalLoginsSection";
 
 const provider: OidcProvider = {
-	name: "keycloak",
 	displayName: "Company login",
 	iconUrl: null,
 	buttonColor: null,
@@ -36,7 +35,7 @@ const provider: OidcProvider = {
 };
 const login: ExternalLogin = {
 	id: 9,
-	provider: "keycloak",
+	provider: "Company login",
 	providerKey: "sub-1",
 	providerDisplayName: "Jane Doe",
 	linkedAt: new Date("2026-09-01T10:00:00Z"),
@@ -70,7 +69,26 @@ describe("ExternalLoginsSection", () => {
 		expect(screen.getByText("account.external-logins.none")).toBeInTheDocument();
 		await user.click(screen.getByRole("button", { name: "account.external-logins.link" }));
 
-		expect(mocks.state.link).toHaveBeenCalledWith("keycloak");
+		expect(screen.getByText("account.external-logins.link")).toBeInTheDocument();
+		expect(mocks.state.link).toHaveBeenCalledTimes(1);
+		expect(mocks.state.link).toHaveBeenCalledWith();
+	});
+
+	it("does not offer another link once any login is linked, whatever its label", () => {
+		mocks.state.logins = [{ ...login, provider: "Old label" }];
+		renderWithProviders(<ExternalLoginsSection />);
+
+		expect(screen.getByText("Old label")).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "account.external-logins.link" })).not.toBeInTheDocument();
+	});
+
+	it("still lists linked logins when no provider is enabled", () => {
+		mocks.state.provider = null;
+		mocks.state.logins = [login];
+		renderWithProviders(<ExternalLoginsSection />);
+
+		expect(screen.getByText("Company login")).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "account.external-logins.link" })).not.toBeInTheDocument();
 	});
 
 	it("explains instead of offering linking when single sign-on needs https", () => {

@@ -82,7 +82,7 @@ public static class Constants
         public const string OidcProviderUnavailable = "error.auth.oidc-provider-unavailable";
         public const string OidcIdTokenInvalid = "error.auth.oidc-id-token-invalid";
         public const string OidcUsernameTaken = "error.auth.oidc-username-taken";
-        public const string OidcProviderNameInvalid = "error.auth.oidc-provider-name-invalid";
+        public const string OidcProviderExists = "error.auth.oidc-provider-exists";
         public const string OidcRoleNotManaged = "error.auth.oidc-role-not-managed";
         public const string OidcHttpsRequired = "error.auth.oidc-https-required";
         public const string AccountDisabled = "error.auth.account-disabled";

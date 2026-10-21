@@ -649,7 +649,7 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task RegisterAsync_ShouldCreateALocalUser_WhileAnOidcProviderIsEnabled()
     {
-        _context.OidcProviders.Add(new OidcProvider("google", "Google", "https://accounts.google.com", "client-id"));
+        _context.OidcProviders.Add(new OidcProvider("Google", "https://accounts.google.com", "client-id"));
         await _context.SaveChangesAsync();
         var request = new RegisterRequest("kid", "kid@test.com", "password123", Constants.AuthRoles.Reader);
         _userManagerMock.Setup(x => x.FindByNameAsync("kid")).ReturnsAsync((ApplicationUser?)null);

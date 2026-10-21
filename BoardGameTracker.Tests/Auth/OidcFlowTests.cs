@@ -65,7 +65,7 @@ public class OidcFlowTests : IDisposable
         _secretProtector = new SecretProtector(new EphemeralDataProtectionProvider(), Mock.Of<ILogger<SecretProtector>>());
         _service = CreateService(_cache);
 
-        _context.OidcProviders.Add(new OidcProvider("idp", "Example IdP", Authority, "bgt-client"));
+        _context.OidcProviders.Add(new OidcProvider("Example IdP", Authority, "bgt-client"));
         _context.SaveChanges();
     }
 
@@ -97,7 +97,7 @@ public class OidcFlowTests : IDisposable
     [Fact]
     public async Task StartLoginAsync_ShouldBuildAPkceRequest_WithTheServerDerivedRedirectUri()
     {
-        var request = await _service.StartLoginAsync("idp", PublicBase + "/", "/games/3");
+        var request = await _service.StartLoginAsync(PublicBase + "/", "/games/3");
 
         var uri = new Uri(request.Url);
         var query = HttpUtility.ParseQueryString(uri.Query);
@@ -105,7 +105,7 @@ public class OidcFlowTests : IDisposable
         query["client_id"].Should().Be("bgt-client");
         query["response_type"].Should().Be("code");
         query["scope"].Should().Be("openid profile email");
-        query["redirect_uri"].Should().Be($"{PublicBase}/api/auth/oidc/idp/callback");
+        query["redirect_uri"].Should().Be($"{PublicBase}/api/auth/oidc/callback");
         query["code_challenge_method"].Should().Be("S256");
         query["code_challenge"].Should().NotBeNullOrEmpty();
         query["nonce"].Should().NotBeNullOrEmpty();
@@ -119,7 +119,7 @@ public class OidcFlowTests : IDisposable
         await UpdateProviderAsync(p => p.Update(p.DisplayName, p.Authority, p.ClientId, null, true, "profile  email", true,
             null, null, null, null, null, null, null, null, null, null));
 
-        var request = await _service.StartLoginAsync("idp", PublicBase, null);
+        var request = await _service.StartLoginAsync(PublicBase, null);
 
         HttpUtility.ParseQueryString(new Uri(request.Url).Query)["scope"].Should().Be("openid profile email");
     }
@@ -136,8 +136,8 @@ public class OidcFlowTests : IDisposable
         _context.ExternalLogins.Add(new ExternalLogin(LinkedUser().Id, "idp", Authority, "sub-1"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var request = await _service.StartLoginAsync("idp", PublicBase, redirect);
-        var result = await _service.CompleteLoginAsync("idp", await _idp.AuthorizeAsync(request.Url), request.State, request.State, Authority);
+        var request = await _service.StartLoginAsync(PublicBase, redirect);
+        var result = await _service.CompleteLoginAsync(await _idp.AuthorizeAsync(request.Url), request.State, request.State, Authority);
 
         result.RedirectPath.Should().Be("/");
     }
@@ -149,12 +149,12 @@ public class OidcFlowTests : IDisposable
     [InlineData("https://evil.example.com")]
     public async Task StartLoginAsync_ShouldOnlyEverRedirectToTheProvidersAuthorizationEndpoint(string publicBaseUrl)
     {
-        var request = await _service.StartLoginAsync("idp", publicBaseUrl, "//evil.example.com");
+        var request = await _service.StartLoginAsync(publicBaseUrl, "//evil.example.com");
 
         var uri = new Uri(request.Url);
         uri.GetLeftPart(UriPartial.Path).Should().Be($"{Authority}/authorize");
         uri.Fragment.Should().BeEmpty();
-        HttpUtility.ParseQueryString(uri.Query)["redirect_uri"].Should().Be($"{publicBaseUrl}/api/auth/oidc/idp/callback");
+        HttpUtility.ParseQueryString(uri.Query)["redirect_uri"].Should().Be($"{publicBaseUrl}/api/auth/oidc/callback");
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public class OidcFlowTests : IDisposable
     {
         _idp.AuthorizationEndpoint = $"{Authority}/authorize?tenant=games#ignored";
 
-        var request = await _service.StartLoginAsync("idp", PublicBase, null);
+        var request = await _service.StartLoginAsync(PublicBase, null);
 
         var uri = new Uri(request.Url);
         uri.GetLeftPart(UriPartial.Path).Should().Be($"{Authority}/authorize");
@@ -178,7 +178,7 @@ public class OidcFlowTests : IDisposable
     {
         _idp.AuthorizationEndpoint = "http://idp.example.com/authorize";
 
-        var act = () => _service.StartLoginAsync("idp", PublicBase, null);
+        var act = () => _service.StartLoginAsync(PublicBase, null);
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InsecureAuthority);
     }
@@ -188,7 +188,7 @@ public class OidcFlowTests : IDisposable
     {
         _idp.Issuer = "https://other.example.com";
 
-        var act = () => _service.StartLoginAsync("idp", PublicBase, null);
+        var act = () => _service.StartLoginAsync(PublicBase, null);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIssuerMismatch);
     }
@@ -198,15 +198,18 @@ public class OidcFlowTests : IDisposable
     {
         _idp.DiscoveryStatus = HttpStatusCode.InternalServerError;
 
-        var act = () => _service.StartLoginAsync("idp", PublicBase, null);
+        var act = () => _service.StartLoginAsync(PublicBase, null);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
     }
 
     [Fact]
-    public async Task StartLoginAsync_ShouldThrow_WhenTheProviderIsUnknownOrDisabled()
+    public async Task StartLoginAsync_ShouldThrow_WhenNoProviderIsEnabled()
     {
-        var act = () => _service.StartLoginAsync("nope", PublicBase, null);
+        await UpdateProviderAsync(p => p.Update(p.DisplayName, p.Authority, p.ClientId, null, false, p.Scopes, p.AutoProvisionUsers,
+            null, null, null, null, null, null, null, null, null, null));
+
+        var act = () => _service.StartLoginAsync(PublicBase, null);
 
         await act.Should().ThrowAsync<EntityNotFoundException>();
     }
@@ -219,14 +222,14 @@ public class OidcFlowTests : IDisposable
         _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-1"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var request = await _service.StartLoginAsync("idp", PublicBase, "/players");
+        var request = await _service.StartLoginAsync(PublicBase, "/players");
         var code = await _idp.AuthorizeAsync(request.Url);
-        var result = await _service.CompleteLoginAsync("idp", code, request.State, request.State, Authority);
+        var result = await _service.CompleteLoginAsync(code, request.State, request.State, Authority);
 
         result.RedirectPath.Should().Be("/players");
         result.Login.AccessToken.Should().Be("access-token");
         result.Login.User.Username.Should().Be(user.UserName);
-        _idp.TokenRequest!["redirect_uri"].Should().Be($"{PublicBase}/api/auth/oidc/idp/callback");
+        _idp.TokenRequest!["redirect_uri"].Should().Be($"{PublicBase}/api/auth/oidc/callback");
         _idp.TokenRequest["code_verifier"].Should().NotBeNullOrEmpty();
         _idp.TokenRequest["grant_type"].Should().Be("authorization_code");
         _idp.TokenRequest["client_id"].Should().Be("bgt-client");
@@ -375,7 +378,7 @@ public class OidcFlowTests : IDisposable
         var login = await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken);
         login.ProviderKey.Should().Be("sub-new");
         login.Issuer.Should().Be(Authority);
-        login.Provider.Should().Be("idp");
+        login.Provider.Should().Be("Example IdP");
     }
 
     [Fact]
@@ -448,7 +451,7 @@ public class OidcFlowTests : IDisposable
     }
 
     [Fact]
-    public async Task CompleteLoginAsync_ShouldFindTheLinkByIssuer_AfterTheProviderWasRenamed()
+    public async Task CompleteLoginAsync_ShouldFindTheLinkByIssuer_AndRelabelItWithTheDisplayName()
     {
         var user = LinkedUser();
         _context.ExternalLogins.Add(new ExternalLogin(user.Id, "old-name", Authority, "sub-1"));
@@ -458,7 +461,7 @@ public class OidcFlowTests : IDisposable
         var result = await LoginAsync();
 
         result.Login.User.Username.Should().Be(user.UserName);
-        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).Provider.Should().Be("idp");
+        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).Provider.Should().Be("Example IdP");
         _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>()), Times.Never);
     }
 
@@ -567,9 +570,9 @@ public class OidcFlowTests : IDisposable
     [Fact]
     public async Task CompleteLoginAsync_ShouldReject_WhenTheBrowserStateCookieIsMissing()
     {
-        var request = await _service.StartLoginAsync("idp", PublicBase, null);
+        var request = await _service.StartLoginAsync(PublicBase, null);
 
-        var act = () => _service.CompleteLoginAsync("idp", "code", request.State, null, Authority);
+        var act = () => _service.CompleteLoginAsync("code", request.State, null, Authority);
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
         _idp.TokenRequest.Should().BeNull();
@@ -578,9 +581,9 @@ public class OidcFlowTests : IDisposable
     [Fact]
     public async Task CompleteLoginAsync_ShouldReject_WhenTheBrowserStateCookieDoesNotMatch()
     {
-        var request = await _service.StartLoginAsync("idp", PublicBase, null);
+        var request = await _service.StartLoginAsync(PublicBase, null);
 
-        var act = () => _service.CompleteLoginAsync("idp", "code", request.State, "someone-elses-state", Authority);
+        var act = () => _service.CompleteLoginAsync("code", request.State, "someone-elses-state", Authority);
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
     }
@@ -591,12 +594,12 @@ public class OidcFlowTests : IDisposable
         _idp.User = KnownUser("sub-1");
         _context.ExternalLogins.Add(new ExternalLogin(LinkedUser().Id, "idp", Authority, "sub-1"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
-        var request = await _service.StartLoginAsync("idp", PublicBase, null);
+        var request = await _service.StartLoginAsync(PublicBase, null);
         var code = await _idp.AuthorizeAsync(request.Url);
-        await _service.CompleteLoginAsync("idp", code, request.State, request.State, Authority);
+        await _service.CompleteLoginAsync(code, request.State, request.State, Authority);
 
-        var replay = () => _service.CompleteLoginAsync("idp", code, request.State, request.State, Authority);
-        var unknown = () => _service.CompleteLoginAsync("idp", code, "unknown", "unknown", Authority);
+        var replay = () => _service.CompleteLoginAsync(code, request.State, request.State, Authority);
+        var unknown = () => _service.CompleteLoginAsync(code, "unknown", "unknown", Authority);
 
         await replay.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
         await unknown.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
@@ -605,9 +608,9 @@ public class OidcFlowTests : IDisposable
     [Fact]
     public async Task CompleteLoginAsync_ShouldReject_AStateStartedForTheLinkFlow()
     {
-        var request = await _service.StartLinkAsync("user-1", "idp", PublicBase);
+        var request = await _service.StartLinkAsync("user-1", PublicBase);
 
-        var act = () => _service.CompleteLoginAsync("idp", "code", request.State, request.State, Authority);
+        var act = () => _service.CompleteLoginAsync("code", request.State, request.State, Authority);
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
     }
@@ -694,14 +697,13 @@ public class OidcFlowTests : IDisposable
         _idp.User = KnownUser("sub-9");
         _userManagerMock.Setup(x => x.FindByIdAsync(user.Id)).ReturnsAsync(user);
 
-        var request = await _service.StartLinkAsync(user.Id, "idp", PublicBase);
+        var request = await _service.StartLinkAsync(user.Id, PublicBase);
         var uri = new Uri(request.Url);
-        HttpUtility.ParseQueryString(uri.Query)["redirect_uri"].Should().Be($"{PublicBase}/api/auth/oidc/idp/link-callback");
+        HttpUtility.ParseQueryString(uri.Query)["redirect_uri"].Should().Be($"{PublicBase}/api/auth/oidc/link-callback");
 
-        var result = await _service.CompleteLinkAsync("idp", await _idp.AuthorizeAsync(request.Url), request.State, request.State, Authority);
+        var result = await _service.CompleteLinkAsync(await _idp.AuthorizeAsync(request.Url), request.State, request.State, Authority);
 
         result.UserId.Should().Be(user.Id);
-        result.ProviderName.Should().Be("idp");
         var login = await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken);
         login.UserId.Should().Be(user.Id);
         login.ProviderKey.Should().Be("sub-9");
@@ -719,9 +721,9 @@ public class OidcFlowTests : IDisposable
         _context.ExternalLogins.Add(new ExternalLogin(someoneElse.Id, "renamed", Authority, "sub-9"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var request = await _service.StartLinkAsync(user.Id, "idp", PublicBase);
+        var request = await _service.StartLinkAsync(user.Id, PublicBase);
         var code = await _idp.AuthorizeAsync(request.Url);
-        var act = () => _service.CompleteLinkAsync("idp", code, request.State, request.State, Authority);
+        var act = () => _service.CompleteLinkAsync(code, request.State, request.State, Authority);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcAlreadyLinked);
     }
@@ -735,9 +737,9 @@ public class OidcFlowTests : IDisposable
         using var attacker = new TestIdTokens(_idp.Keys.KeyId);
         _idp.Signer = attacker;
 
-        var request = await _service.StartLinkAsync(user.Id, "idp", PublicBase);
+        var request = await _service.StartLinkAsync(user.Id, PublicBase);
         var code = await _idp.AuthorizeAsync(request.Url);
-        var act = () => _service.CompleteLinkAsync("idp", code, request.State, request.State, Authority);
+        var act = () => _service.CompleteLinkAsync(code, request.State, request.State, Authority);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
@@ -826,9 +828,9 @@ public class OidcFlowTests : IDisposable
 
     private async Task<OidcLoginResult> LoginAsync(string? issuer = Authority)
     {
-        var request = await _service.StartLoginAsync("idp", PublicBase, null);
+        var request = await _service.StartLoginAsync(PublicBase, null);
         var code = await _idp.AuthorizeAsync(request.Url);
-        return await _service.CompleteLoginAsync("idp", code, request.State, request.State, issuer);
+        return await _service.CompleteLoginAsync(code, request.State, request.State, issuer);
     }
 
     private async Task UpdateProviderAsync(Action<OidcProvider> update)

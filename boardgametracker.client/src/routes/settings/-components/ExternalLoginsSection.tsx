@@ -28,11 +28,9 @@ export const ExternalLoginsSection = () => {
 		return null;
 	}
 
-	const canOfferLink = provider !== null && !logins.some((login) => login.provider === provider.name);
+	const canOfferLink = provider !== null && logins.length === 0;
 	const canLink = canOfferLink && !provider.httpsRequired;
 	const linkBlockedByHttps = canOfferLink && provider.httpsRequired;
-	const providerLabel = (login: ExternalLogin) =>
-		provider?.name === login.provider ? provider.displayName : login.provider;
 
 	return (
 		<SettingsSection title={t("account.external-logins.title")} description={t("account.external-logins.description")}>
@@ -49,7 +47,7 @@ export const ExternalLoginsSection = () => {
 						>
 							<div className="flex flex-col min-w-0">
 								<BgtText color="white" className="font-semibold truncate">
-									{providerLabel(login)}
+									{login.provider}
 								</BgtText>
 								<BgtText size="1" color="gray">
 									{login.providerDisplayName ? `${login.providerDisplayName} · ` : ""}
@@ -67,7 +65,7 @@ export const ExternalLoginsSection = () => {
 			)}
 			{canLink && (
 				<div>
-					<BgtButton disabled={isLinking} onClick={() => link(provider.name)}>
+					<BgtButton disabled={isLinking} onClick={() => link()}>
 						{t("account.external-logins.link", { provider: provider.displayName })}
 					</BgtButton>
 				</div>
@@ -81,8 +79,8 @@ export const ExternalLoginsSection = () => {
 				<BgtDeleteModal
 					open
 					close={() => setPendingUnlink(null)}
-					title={providerLabel(pendingUnlink)}
-					heading={t("account.external-logins.unlink-title", { provider: providerLabel(pendingUnlink) })}
+					title={pendingUnlink.provider}
+					heading={t("account.external-logins.unlink-title", { provider: pendingUnlink.provider })}
 					description={t("account.external-logins.unlink-confirm")}
 					confirmLabel={t("account.external-logins.unlink")}
 					onDelete={() => {

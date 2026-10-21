@@ -88,7 +88,7 @@ public class OidcServiceTests : IDisposable
 
     private static OidcProvider CreateDisabledProvider(string name)
     {
-        var provider = new OidcProvider(name, name, "https://idp.example.com", "client-id");
+        var provider = new OidcProvider(name, "https://idp.example.com", "client-id");
         provider.Update(name, "https://idp.example.com", "client-id", null, false, "openid", true,
             null, null, null, null, null, null, null, null, null, null);
         return provider;
@@ -99,13 +99,13 @@ public class OidcServiceTests : IDisposable
     [Fact]
     public async Task GetEnabledProviderAsync_ShouldReturnProviderInfo_WhenEnabledProviderExists()
     {
-        _context.OidcProviders.Add(new OidcProvider("google", "Google", "https://accounts.google.com", "client-id"));
+        _context.OidcProviders.Add(new OidcProvider("Google", "https://accounts.google.com", "client-id"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await _service.GetEnabledProviderAsync();
 
         result.Should().NotBeNull();
-        result!.Name.Should().Be("google");
+        result!.DisplayName.Should().Be("Google");
         result.DisplayName.Should().Be("Google");
         VerifyNoOtherCalls();
     }
@@ -138,7 +138,7 @@ public class OidcServiceTests : IDisposable
     [Fact]
     public async Task HasEnabledProviderAsync_ShouldReturnTrue_WhenEnabledProviderExists()
     {
-        _context.OidcProviders.Add(new OidcProvider("google", "Google", "https://accounts.google.com", "client-id"));
+        _context.OidcProviders.Add(new OidcProvider("Google", "https://accounts.google.com", "client-id"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await _service.HasEnabledProviderAsync();
@@ -269,7 +269,7 @@ public class OidcServiceTests : IDisposable
 
     private async Task<(OidcProvider Provider, string Key)> AddSessionAsync(DateTime expiresAt, bool enabled = true)
     {
-        var provider = new OidcProvider("kc", "Keycloak", "https://sso.example.com/realms/bgt", "bgt");
+        var provider = new OidcProvider("Keycloak", "https://sso.example.com/realms/bgt", "bgt");
         if (!enabled)
         {
             provider.Update("Keycloak", provider.Authority, "bgt", null, false, "openid", true, null, null, null, null, null, null, null, null, null, null);

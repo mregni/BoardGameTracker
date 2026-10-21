@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 namespace BoardGameTracker.Common.DTOs.Auth;
 
 public record OidcProviderInfo(
-    string Name,
     string DisplayName,
     string? IconUrl,
     string? ButtonColor,
@@ -12,8 +11,8 @@ public record OidcProviderInfo(
 public record OidcSetupDto(
     string PublicBaseUrl,
     bool PublicUrlConfigured,
-    string CallbackUriTemplate,
-    string LinkCallbackUriTemplate,
+    string CallbackUri,
+    string LinkCallbackUri,
     string PostLogoutRedirectUri,
     bool HttpsRequired = false);
 
@@ -31,7 +30,6 @@ public record OidcDiscoveryResultDto(
     DateTimeOffset? SigningCertificateExpiredOn);
 
 public record CreateOidcProviderRequest(
-    [Required, StringLength(100)] string Name,
     [Required, StringLength(200)] string DisplayName,
     [Required, Url] string Authority,
     [Required] string ClientId,
@@ -70,18 +68,15 @@ public record UpdateOidcProviderRequest(
     string? AdminGroupValue,
     [Url] string? IconUrl,
     string? ButtonColor,
-    string? DefaultRole = null,
-    [StringLength(100)] string? Name = null);
+    string? DefaultRole = null);
 
 public record OidcProviderListDto(
     int Id,
-    string Name,
     string DisplayName,
     bool Enabled);
 
 public record OidcProviderDto(
     int Id,
-    string Name,
     string DisplayName,
     bool Enabled,
     string Authority,

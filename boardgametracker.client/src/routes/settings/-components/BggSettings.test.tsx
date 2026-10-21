@@ -138,6 +138,15 @@ describe("BggSettings", () => {
 			await user.click(screen.getByRole("button", { name: "bgg.api-key.clear" }));
 
 			expect(screen.getByTestId("bggApiKey-value")).toHaveTextContent("null");
+			expect(screen.getByText("bgg.api-key.clear-hint")).toBeInTheDocument();
+		});
+
+		it("should place the clear button on the same row as the API key input", () => {
+			const { container } = renderWithProviders(<Harness bggStatus={status()} />);
+			const input = container.querySelector('input[type="password"]');
+			const row = screen.getByRole("button", { name: "bgg.api-key.clear" }).parentElement;
+			expect(row).toContainElement(input as HTMLElement);
+			expect(row).toContainElement(screen.getByText("bgg.api-key.label"));
 		});
 	});
 
@@ -189,6 +198,31 @@ describe("BggSettings", () => {
 
 			expect(screen.getByTestId("cdApiKey-value")).toHaveTextContent("null");
 			expect(screen.getByText("changedetection.api-key.label")).toBeInTheDocument();
+			expect(screen.getByText("changedetection.api-key.clear-hint")).toBeInTheDocument();
+		});
+
+		it("should keep the base URL on its own row and the clear button next to the API key input", () => {
+			renderWithProviders(<Harness bggStatus={createBggStatus()} changeDetectionStatus={cdConfigured} />);
+			const row = screen.getByRole("button", { name: "changedetection.api-key.clear" }).parentElement;
+			expect(row).toContainElement(screen.getByPlaceholderText("changedetection.api-key.placeholder"));
+			expect(row).not.toContainElement(screen.getByPlaceholderText("changedetection.base-url.placeholder"));
+		});
+
+		it("should not show the clear hint before the key is cleared", () => {
+			renderWithProviders(
+				<Harness
+					bggStatus={createBggStatus()}
+					changeDetectionStatus={cdConfigured}
+					initialChangeDetectionApiKey="existing-key"
+				/>,
+			);
+			expect(screen.queryByText("changedetection.api-key.clear-hint")).not.toBeInTheDocument();
+		});
+
+		it("should not show the clear hint when nothing is configured", () => {
+			renderWithProviders(<Harness bggStatus={createBggStatus()} changeDetectionStatus={cdNotConfigured} />);
+			expect(screen.queryByText("changedetection.api-key.clear-hint")).not.toBeInTheDocument();
+			expect(screen.queryByText("bgg.api-key.clear-hint")).not.toBeInTheDocument();
 		});
 	});
 
@@ -213,6 +247,17 @@ describe("BggSettings", () => {
 					messageKey: "not-configured",
 				},
 			]);
+		});
+
+		it("should show the status and test button in each card header", async () => {
+			renderWithProviders(<Harness bggStatus={createBggStatus({ isConfigured: true })} />);
+			await screen.findByText("integrations.status.ok");
+
+			const header = screen.getByRole("heading", { name: "bgg.title" }).parentElement?.parentElement;
+			expect(header).toContainElement(screen.getByText("bgg.description"));
+			expect(header).toContainElement(screen.getByText("integrations.status.ok"));
+			expect(header).toContainElement(screen.getAllByRole("button", { name: "integrations.test" })[0]);
+			expect(header).not.toContainElement(screen.getByText("bgg.api-key.label"));
 		});
 
 		it("should show a status badge per integration when the tab opens", async () => {

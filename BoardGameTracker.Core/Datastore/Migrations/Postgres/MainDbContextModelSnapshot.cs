@@ -215,10 +215,6 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<string>("IconUrl")
                         .HasColumnType("text");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("RolesClaimType")
                         .HasColumnType("text");
 
@@ -236,9 +232,6 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.ToTable("OidcProviders", "auth");
                 });

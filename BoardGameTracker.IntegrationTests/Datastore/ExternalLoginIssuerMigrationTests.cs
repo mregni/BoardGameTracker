@@ -27,6 +27,21 @@ public class ExternalLoginIssuerMigrationTests : IAsyncLifetime
                ('orphan-user', 'deleted-provider', 'sub-1', now());
         """;
 
+    private const string BeforeProviderNameDrop = "20261019015719_AddGameNightAttendance";
+
+    private const string SeedNameKeyedRows = """
+        INSERT INTO auth."AspNetUsers" ("Id", "UserName", "CreatedAt", "EmailConfirmed", "PhoneNumberConfirmed", "TwoFactorEnabled", "LockoutEnabled", "AccessFailedCount", "PasswordHash", "RoleManagedByIdentityProvider")
+        VALUES ('sso-user', 'sso', now(), false, false, false, true, 0, NULL, true),
+               ('local-user', 'local', now(), false, false, false, true, 0, 'hash', false),
+               ('orphan-user', 'orphan', now(), false, false, false, true, 0, NULL, true);
+        INSERT INTO auth."OidcProviders" ("Name", "DisplayName", "Enabled", "Authority", "ClientId", "Scopes", "AutoProvisionUsers", "DefaultRole")
+        VALUES ('keycloak', 'Company login', true, 'https://sso.example.com/realms/bgt/', 'bgt', 'openid', true, 'User');
+        INSERT INTO auth."ExternalLogins" ("UserId", "Provider", "Issuer", "ProviderKey", "LinkedAt")
+        VALUES ('sso-user', 'keycloak', NULL, 'sub-1', now()),
+               ('local-user', 'keycloak', 'https://sso.example.com/realms/bgt', 'sub-2', now()),
+               ('orphan-user', 'deleted-provider', NULL, 'sub-3', now());
+        """;
+
     private readonly string _database = "issuer_migration_" + Guid.NewGuid().ToString("N");
     private NpgsqlDataSource _dataSource = null!;
 
@@ -83,6 +98,33 @@ public class ExternalLoginIssuerMigrationTests : IAsyncLifetime
             users["plain-user"].Should().BeFalse();
 
             (await context.OidcProviders.AsNoTracking().SingleAsync(TestContext.Current.CancellationToken)).DefaultRole.Should().Be("User");
+        }
+    }
+
+    [Fact]
+    public async Task DroppingTheProviderName_ShouldKeyLegacyLinksOnTheAuthority_AndLabelLinksWithTheDisplayName()
+    {
+        await using (var context = CreateContext())
+        {
+            await context.GetService<IMigrator>().MigrateAsync(BeforeProviderNameDrop, TestContext.Current.CancellationToken);
+            await context.Database.ExecuteSqlRawAsync(SeedNameKeyedRows, TestContext.Current.CancellationToken);
+        }
+
+        await using (var context = CreateContext())
+        {
+            await context.Database.MigrateAsync(TestContext.Current.CancellationToken);
+        }
+
+        await using (var context = CreateContext())
+        {
+            var logins = await context.ExternalLogins.AsNoTracking().ToDictionaryAsync(x => x.UserId, TestContext.Current.CancellationToken);
+            logins["sso-user"].Issuer.Should().Be("https://sso.example.com/realms/bgt");
+            logins["sso-user"].Provider.Should().Be("Company login");
+            logins["local-user"].Issuer.Should().Be("https://sso.example.com/realms/bgt");
+            logins["local-user"].Provider.Should().Be("Company login");
+            logins["orphan-user"].Issuer.Should().BeNull();
+            logins["orphan-user"].Provider.Should().Be("deleted-provider");
+            (await context.OidcProviders.AsNoTracking().SingleAsync(TestContext.Current.CancellationToken)).DisplayName.Should().Be("Company login");
         }
     }
 

@@ -3231,7 +3231,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/auth/oidc/{provider}/login": {
+    "/api/auth/oidc/login": {
         parameters: {
             query?: never;
             header?: never;
@@ -3244,9 +3244,7 @@ export interface paths {
                     redirect?: string;
                 };
                 header?: never;
-                path: {
-                    provider: string;
-                };
+                path?: never;
                 cookie?: never;
             };
             requestBody?: never;
@@ -3268,7 +3266,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/auth/oidc/{provider}/callback": {
+    "/api/auth/oidc/callback": {
         parameters: {
             query?: never;
             header?: never;
@@ -3284,9 +3282,7 @@ export interface paths {
                     iss?: string;
                 };
                 header?: never;
-                path: {
-                    provider: string;
-                };
+                path?: never;
                 cookie?: never;
             };
             requestBody?: never;
@@ -3345,7 +3341,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/auth/oidc/{provider}/link": {
+    "/api/auth/oidc/link": {
         parameters: {
             query?: never;
             header?: never;
@@ -3356,9 +3352,7 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: never;
-                path: {
-                    provider: string;
-                };
+                path?: never;
                 cookie?: never;
             };
             requestBody?: never;
@@ -3384,7 +3378,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/auth/oidc/{provider}/link-callback": {
+    "/api/auth/oidc/link-callback": {
         parameters: {
             query?: never;
             header?: never;
@@ -3400,9 +3394,7 @@ export interface paths {
                     iss?: string;
                 };
                 header?: never;
-                path: {
-                    provider: string;
-                };
+                path?: never;
                 cookie?: never;
             };
             requestBody?: never;
@@ -5114,7 +5106,6 @@ export interface components {
             name: string;
         };
         CreateOidcProviderRequest: {
-            name: string;
             displayName: string;
             authority: string;
             clientId: string;
@@ -5828,7 +5819,6 @@ export interface components {
         OidcProviderDto: {
             /** Format: int32 */
             id: number;
-            name: string;
             displayName: string;
             enabled: boolean;
             authority: string;
@@ -5849,7 +5839,6 @@ export interface components {
             defaultRole: string;
         };
         OidcProviderInfo: {
-            name: string;
             displayName: string;
             iconUrl: string | null;
             buttonColor: string | null;
@@ -5858,15 +5847,14 @@ export interface components {
         OidcProviderListDto: {
             /** Format: int32 */
             id: number;
-            name: string;
             displayName: string;
             enabled: boolean;
         };
         OidcSetupDto: {
             publicBaseUrl: string;
             publicUrlConfigured: boolean;
-            callbackUriTemplate: string;
-            linkCallbackUriTemplate: string;
+            callbackUri: string;
+            linkCallbackUri: string;
             postLogoutRedirectUri: string;
             httpsRequired: boolean;
         };
@@ -6310,7 +6298,6 @@ export interface components {
             iconUrl: string | null;
             buttonColor: string | null;
             defaultRole: string | null;
-            name: string | null;
         };
         UpdatePlayerCommand: {
             name: string;

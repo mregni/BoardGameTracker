@@ -334,11 +334,6 @@
 		},
 		"https-required": "El inicio de sesión único requiere HTTPS. Pon BoardGameTracker detrás de un proxy inverso con TLS y configura una URL pública https.",
 		"fields": {
-			"name": {
-				"label": "Nombre corto",
-				"placeholder": "keycloak",
-				"rename-warning": "Cambiar el nombre corto cambia las URI de redirección de abajo. Registra las nuevas en tu proveedor; las cuentas vinculadas siguen funcionando."
-			},
 			"display-name": {
 				"label": "Texto del botón",
 				"placeholder": "Acceso de la empresa"
@@ -414,7 +409,6 @@
 			"https-pending": "Disponible cuando la URL pública use https."
 		},
 		"validation": {
-			"name": "Usa letras minúsculas, dígitos y guiones (1–100 caracteres)",
 			"display-name": "El texto del botón es obligatorio",
 			"authority": "Introduce la URL https del proveedor",
 			"client-id": "El ID de cliente es obligatorio",

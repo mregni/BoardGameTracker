@@ -334,11 +334,6 @@
 		},
 		"https-required": "Single sign-on requires HTTPS. Put BoardGameTracker behind a reverse proxy with TLS and set an https public URL.",
 		"fields": {
-			"name": {
-				"label": "Short name",
-				"placeholder": "keycloak",
-				"rename-warning": "Changing the short name changes the redirect URIs below. Register the new ones at your provider; linked accounts keep working."
-			},
 			"display-name": {
 				"label": "Button label",
 				"placeholder": "Company login"
@@ -414,7 +409,6 @@
 			"https-pending": "Available once the public URL uses https."
 		},
 		"validation": {
-			"name": "Use lowercase letters, digits and dashes (1–100 characters)",
 			"display-name": "A button label is required",
 			"authority": "Enter the provider's https URL",
 			"client-id": "The client ID is required",

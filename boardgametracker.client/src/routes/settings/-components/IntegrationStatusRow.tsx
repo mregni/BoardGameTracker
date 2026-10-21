@@ -29,9 +29,9 @@ export const IntegrationStatusRow = ({
 	const hintId = useId();
 
 	return (
-		<div className="flex flex-row flex-wrap items-start justify-between gap-3">
+		<div className="flex flex-row flex-wrap items-center gap-3 @2xl:flex-nowrap @2xl:justify-end">
 			<IntegrationStatusBadge status={status} isChecking={isChecking || isTesting} timeFormat={timeFormat} />
-			<div className="flex flex-col items-end gap-1">
+			<div className="flex flex-col items-start gap-1 @2xl:items-end">
 				<BgtButton
 					variant="cancel"
 					type="button"

@@ -55,8 +55,8 @@ export const IntegrationStatusBadge = ({ status, isChecking, timeFormat }: Props
 	const Icon = tone === "ok" ? Check : AlertTriangle;
 
 	return (
-		<div className="flex flex-col gap-1" role="status" aria-busy={isChecking}>
-			<div className="flex flex-row flex-wrap items-center gap-2">
+		<div className="flex flex-col gap-1 @2xl:items-end @2xl:text-right" role="status" aria-busy={isChecking}>
+			<div className="flex flex-row flex-wrap items-center gap-2 @2xl:justify-end">
 				<span className={badgeVariants({ tone })} data-tone={tone}>
 					{tone !== "muted" && <Icon className="size-3.5" aria-hidden="true" />}
 					{t(`integrations.status.${status.status}`)}

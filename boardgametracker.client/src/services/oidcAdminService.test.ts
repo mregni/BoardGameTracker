@@ -8,7 +8,6 @@ vi.mock("../utils/axiosInstance", () => ({ axiosInstance: axiosMock }));
 import { createOidcProviderCall, updateOidcProviderCall } from "./oidcAdminService";
 
 const request: OidcProviderRequest = {
-	name: "keycloak",
 	displayName: "Company login",
 	authority: "https://sso.example.com/realms/games",
 	clientId: "bgt",

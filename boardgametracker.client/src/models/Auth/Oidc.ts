@@ -6,7 +6,6 @@ export type OidcDefaultRole = (typeof OIDC_DEFAULT_ROLES)[number];
 
 export interface OidcProviderSummary {
 	id: number;
-	name: string;
 	displayName: string;
 	enabled: boolean;
 }
@@ -33,8 +32,8 @@ export interface OidcProviderConfig extends OidcProviderSummary {
 export interface OidcSetup {
 	publicBaseUrl: string;
 	publicUrlConfigured: boolean;
-	callbackUriTemplate: string;
-	linkCallbackUriTemplate: string;
+	callbackUri: string;
+	linkCallbackUri: string;
 	postLogoutRedirectUri: string;
 	httpsRequired: boolean;
 }
@@ -66,12 +65,6 @@ const optionalText = z
 	.transform((value) => (value === "" ? null : value));
 
 export const OidcProviderSchema = z.object({
-	name: z
-		.string()
-		.trim()
-		.min(1, { message: "settings:sso.validation.name" })
-		.max(100, { message: "settings:sso.validation.name" })
-		.regex(/^[a-z0-9][a-z0-9-]*$/, { message: "settings:sso.validation.name" }),
 	displayName: z.string().trim().min(1, { message: "settings:sso.validation.display-name" }).max(200),
 	authority: z
 		.string()
@@ -91,14 +84,6 @@ export const OidcProviderSchema = z.object({
 	displayNameClaimType: optionalText,
 	rolesClaimType: optionalText,
 	adminGroupValue: optionalText,
-});
-
-export const OidcProviderUpdateSchema = OidcProviderSchema.extend({
-	name: z
-		.string()
-		.trim()
-		.min(1, { message: "settings:sso.validation.name" })
-		.max(100, { message: "settings:sso.validation.name" }),
 });
 
 export type OidcProviderForm = z.input<typeof OidcProviderSchema>;
