@@ -91,6 +91,23 @@ describe("useAuth", () => {
 		expect(sessionSync.announceSessionChange).toHaveBeenCalledWith("logout");
 	});
 
+	it("updateUser merges changes into the signed-in user", () => {
+		useAuth.getState().setSession("access", user);
+
+		useAuth.getState().updateUser({ displayName: "Reggi" });
+
+		expect(useAuth.getState().user).toEqual({ ...user, displayName: "Reggi" });
+		expect(useAuth.getState().accessToken).toBe("access");
+	});
+
+	it("updateUser does nothing while signed out", () => {
+		useAuth.getState().clearAuth();
+
+		useAuth.getState().updateUser({ displayName: "Reggi" });
+
+		expect(useAuth.getState().user).toBeNull();
+	});
+
 	it("logout always calls the server because only the server can see the cookie", async () => {
 		authService.logoutCall.mockResolvedValue(undefined);
 
