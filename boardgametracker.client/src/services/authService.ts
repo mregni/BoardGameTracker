@@ -55,10 +55,8 @@ export const unlinkExternalLoginCall = (id: number): Promise<void> => {
 	return axiosInstance.delete(`${domain}/external-logins/${id}`);
 };
 
-export const startOidcLinkCall = (provider: string): Promise<string> => {
-	return axiosInstance
-		.get<{ url: string }>(`${domain}/oidc/${encodeURIComponent(provider)}/link`)
-		.then((response) => response.data.url);
+export const startOidcLinkCall = (): Promise<string> => {
+	return axiosInstance.get<{ url: string }>(`${domain}/oidc/link`).then((response) => response.data.url);
 };
 
 export const endOidcSessionCall = (): Promise<string | null> => {

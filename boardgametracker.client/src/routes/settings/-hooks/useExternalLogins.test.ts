@@ -91,17 +91,17 @@ describe("useExternalLogins", () => {
 		vi.mocked(startOidcLinkCall).mockResolvedValue("https://sso.example.com/authorize?state=abc");
 		const { result } = await renderUseExternalLogins();
 
-		act(() => result.current.link("keycloak"));
+		act(() => result.current.link());
 
 		await waitFor(() => expect(location.href).toBe("https://sso.example.com/authorize?state=abc"));
-		expect(startOidcLinkCall).toHaveBeenCalledWith("keycloak");
+		expect(startOidcLinkCall).toHaveBeenCalledWith();
 	});
 
 	it("shows the failure when linking cannot start", async () => {
 		vi.mocked(startOidcLinkCall).mockRejectedValue(new Error("provider down"));
 		const { result } = await renderUseExternalLogins();
 
-		act(() => result.current.link("keycloak"));
+		act(() => result.current.link());
 
 		await waitFor(() =>
 			expect(errorToast).toHaveBeenCalledWith("settings:account.external-logins.notifications.link-failed"),

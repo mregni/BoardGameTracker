@@ -334,11 +334,6 @@
 		},
 		"https-required": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL.",
 		"fields": {
-			"name": {
-				"label": "Korte naam",
-				"placeholder": "keycloak",
-				"rename-warning": "Als je de korte naam wijzigt, veranderen de redirect-URI's hieronder. Registreer de nieuwe bij je provider; gekoppelde accounts blijven werken."
-			},
 			"display-name": {
 				"label": "Knoptekst",
 				"placeholder": "Bedrijfslogin"
@@ -411,7 +406,6 @@
 			"https-pending": "Beschikbaar zodra de publieke URL https gebruikt."
 		},
 		"validation": {
-			"name": "Gebruik kleine letters, cijfers en streepjes (1–100 tekens)",
 			"display-name": "Een knoptekst is verplicht",
 			"authority": "Geef de https-URL van de provider op",
 			"client-id": "De client-ID is verplicht",

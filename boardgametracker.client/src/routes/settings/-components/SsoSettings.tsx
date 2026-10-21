@@ -14,7 +14,6 @@ import {
 	type OidcProviderConfig,
 	type OidcProviderForm,
 	OidcProviderSchema,
-	OidcProviderUpdateSchema,
 	type OidcSetup,
 } from "@/models";
 import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
@@ -25,7 +24,6 @@ import { SettingsSection } from "./SettingsSection";
 import { SettingsToggle } from "./SettingsToggle";
 
 const toForm = (provider: OidcProviderConfig | null, httpsRequired: boolean): OidcProviderForm => ({
-	name: provider?.name ?? "",
 	displayName: provider?.displayName ?? "",
 	authority: provider?.authority ?? "",
 	clientId: provider?.clientId ?? "",
@@ -60,9 +58,8 @@ const CopyValue = ({ label, value, disabled = false }: { label: string; value: s
 	);
 };
 
-const SetupPanel = ({ setup, name }: { setup: OidcSetup; name: string }) => {
+const SetupPanel = ({ setup }: { setup: OidcSetup }) => {
 	const { t } = useTranslation("settings");
-	const providerName = name.trim() || "provider";
 	const pending = setup.httpsRequired;
 	return (
 		<SettingsSection
@@ -75,16 +72,8 @@ const SetupPanel = ({ setup, name }: { setup: OidcSetup; name: string }) => {
 				</BgtText>
 			)}
 			<div className={cx("flex flex-col gap-3", pending && "opacity-50")} data-testid="sso-redirect-uris">
-				<CopyValue
-					label={t("sso.setup.redirect-uri")}
-					value={setup.callbackUriTemplate.replace("{name}", providerName)}
-					disabled={pending}
-				/>
-				<CopyValue
-					label={t("sso.setup.link-redirect-uri")}
-					value={setup.linkCallbackUriTemplate.replace("{name}", providerName)}
-					disabled={pending}
-				/>
+				<CopyValue label={t("sso.setup.redirect-uri")} value={setup.callbackUri} disabled={pending} />
+				<CopyValue label={t("sso.setup.link-redirect-uri")} value={setup.linkCallbackUri} disabled={pending} />
 				<CopyValue
 					label={t("sso.setup.post-logout-redirect-uri")}
 					value={setup.postLogoutRedirectUri}
@@ -100,8 +89,8 @@ const statusLine = (provider: OidcProviderConfig | null, httpsRequired: boolean,
 		return t("sso.description.empty");
 	}
 	return httpsRequired && provider.enabled
-		? t("sso.description.inactive", { name: provider.name })
-		: t("sso.description.configured", { name: provider.name });
+		? t("sso.description.inactive", { name: provider.displayName })
+		: t("sso.description.configured", { name: provider.displayName });
 };
 
 const normalizeAuthority = (authority: string) => authority.trim().replace(/\/+$/, "").toLowerCase();
@@ -127,14 +116,13 @@ export const SsoSettings = () => {
 		label: t(`account.users.roles.${role.toLowerCase()}`),
 	}));
 
-	const schema = provider === null ? OidcProviderSchema : OidcProviderUpdateSchema;
 	const httpsRequired = setup?.httpsRequired ?? false;
 	const lockedByHttps = httpsRequired && provider?.enabled === true;
 
 	const form = useAppForm({
 		defaultValues: toForm(provider, httpsRequired),
 		onSubmit: async ({ value }) => {
-			await save(schema.parse(value));
+			await save(OidcProviderSchema.parse(value));
 		},
 	});
 
@@ -155,30 +143,17 @@ export const SsoSettings = () => {
 					</div>
 				)}
 				<form onSubmit={handleFormSubmit(form)} className="flex flex-col gap-3">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-						<form.Field name="name" validators={zodValidator(schema, "name")}>
-							{(field: AnyFieldApi) => (
-								<BgtInputField
-									field={field}
-									type="text"
-									label={t("sso.fields.name.label")}
-									placeholder={t("sso.fields.name.placeholder")}
-									disabled={busy}
-								/>
-							)}
-						</form.Field>
-						<form.Field name="displayName" validators={zodValidator(OidcProviderSchema, "displayName")}>
-							{(field: AnyFieldApi) => (
-								<BgtInputField
-									field={field}
-									type="text"
-									label={t("sso.fields.display-name.label")}
-									placeholder={t("sso.fields.display-name.placeholder")}
-									disabled={busy}
-								/>
-							)}
-						</form.Field>
-					</div>
+					<form.Field name="displayName" validators={zodValidator(OidcProviderSchema, "displayName")}>
+						{(field: AnyFieldApi) => (
+							<BgtInputField
+								field={field}
+								type="text"
+								label={t("sso.fields.display-name.label")}
+								placeholder={t("sso.fields.display-name.placeholder")}
+								disabled={busy}
+							/>
+						)}
+					</form.Field>
 					<form.Field name="authority" validators={zodValidator(OidcProviderSchema, "authority")}>
 						{(field: AnyFieldApi) => (
 							<div className="flex flex-col md:flex-row gap-2 md:items-end">
@@ -201,17 +176,6 @@ export const SsoSettings = () => {
 							</div>
 						)}
 					</form.Field>
-					{provider && (
-						<form.Subscribe selector={(state) => state.values.name}>
-							{(name) =>
-								name.trim() !== provider.name && (
-									<BgtText size="2" color="amber">
-										{t("sso.fields.name.rename-warning")}
-									</BgtText>
-								)
-							}
-						</form.Subscribe>
-					)}
 					{provider && (
 						<form.Subscribe selector={(state) => state.values.authority}>
 							{(authority) =>
@@ -379,9 +343,7 @@ export const SsoSettings = () => {
 					</div>
 				</form>
 			</SettingsSection>
-			<form.Subscribe selector={(state) => state.values.name}>
-				{(name) => <SetupPanel setup={setup} name={name} />}
-			</form.Subscribe>
+			<SetupPanel setup={setup} />
 			{provider && (
 				<BgtDeleteModal
 					title={provider.displayName}

@@ -27,15 +27,14 @@ import { SsoSettings } from "./SsoSettings";
 const setup: OidcSetup = {
 	publicBaseUrl: "https://games.example.com",
 	publicUrlConfigured: true,
-	callbackUriTemplate: "https://games.example.com/api/auth/oidc/{name}/callback",
-	linkCallbackUriTemplate: "https://games.example.com/api/auth/oidc/{name}/link-callback",
+	callbackUri: "https://games.example.com/api/auth/oidc/callback",
+	linkCallbackUri: "https://games.example.com/api/auth/oidc/link-callback",
 	postLogoutRedirectUri: "https://games.example.com/login",
 	httpsRequired: false,
 };
 
 const provider: OidcProviderConfig = {
 	id: 3,
-	name: "keycloak",
 	displayName: "Company login",
 	enabled: true,
 	authority: "https://sso.example.com/realms/games",
@@ -73,14 +72,12 @@ describe("SsoSettings", () => {
 		};
 	});
 
-	it("shows the redirect URIs for the name being typed", async () => {
-		const user = userEvent.setup();
+	it("shows the fixed redirect URIs before anything is typed", () => {
 		renderWithProviders(<SsoSettings />);
 
-		await user.type(screen.getByLabelText("sso.fields.name.label"), "authentik");
-
-		expect(screen.getByText("https://games.example.com/api/auth/oidc/authentik/callback")).toBeInTheDocument();
-		expect(screen.getByText("https://games.example.com/api/auth/oidc/authentik/link-callback")).toBeInTheDocument();
+		expect(screen.queryByLabelText("sso.fields.name.label")).not.toBeInTheDocument();
+		expect(screen.getByText("https://games.example.com/api/auth/oidc/callback")).toBeInTheDocument();
+		expect(screen.getByText("https://games.example.com/api/auth/oidc/link-callback")).toBeInTheDocument();
 		expect(screen.getByText("https://games.example.com/login")).toBeInTheDocument();
 		expect(screen.getByText("sso.setup.post-logout-redirect-uri")).toBeInTheDocument();
 		expect(screen.queryByText("sso.setup.public-url-warning")).not.toBeInTheDocument();
@@ -95,11 +92,12 @@ describe("SsoSettings", () => {
 		expect(screen.getByText("sso.fields.enabled.description")).toBeInTheDocument();
 	});
 
-	it("names the provider by its short name once it is configured", () => {
+	it("names the provider by its button label once it is configured", () => {
 		mocks.state.provider = provider;
 		renderWithProviders(<SsoSettings />);
 
 		expect(screen.getByText("sso.description.configured")).toBeInTheDocument();
+		expect(screen.queryByLabelText("sso.fields.name.label")).not.toBeInTheDocument();
 		expect(screen.queryByText("sso.description.inactive")).not.toBeInTheDocument();
 	});
 
@@ -163,14 +161,13 @@ describe("SsoSettings", () => {
 		renderWithProviders(<SsoSettings />);
 
 		expect(screen.getByRole("alert")).toHaveTextContent("sso.https-required");
-		await user.type(screen.getByLabelText("sso.fields.name.label"), "keycloak");
 		await user.type(screen.getByLabelText("sso.fields.display-name.label"), "Company login");
 		await user.type(screen.getByLabelText("sso.fields.authority.label"), "https://sso.example.com/realms/games");
 		await user.type(screen.getByLabelText("sso.fields.client-id.label"), "bgt");
 		await user.click(screen.getByRole("button", { name: "sso.create" }));
 
 		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
-		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ name: "keycloak", enabled: false });
+		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ displayName: "Company login", enabled: false });
 	});
 
 	it("warns when the public URL is derived from the request", () => {
@@ -191,8 +188,8 @@ describe("SsoSettings", () => {
 		await user.click(screen.getByRole("button", { name: "sso.save" }));
 
 		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
+		expect(mocks.state.save.mock.calls[0][0]).not.toHaveProperty("name");
 		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({
-			name: "keycloak",
 			displayName: "Work login",
 			clientSecret: "",
 			rolesClaimType: "groups",
@@ -201,29 +198,10 @@ describe("SsoSettings", () => {
 		});
 	});
 
-	it("lets a configured provider be renamed and warns that the redirect URIs change", async () => {
-		const user = userEvent.setup();
-		mocks.state.provider = provider;
-		renderWithProviders(<SsoSettings />);
-
-		const name = screen.getByLabelText("sso.fields.name.label");
-		expect(name).toBeEnabled();
-		expect(screen.queryByText("sso.fields.name.rename-warning")).not.toBeInTheDocument();
-		await user.clear(name);
-		await user.type(name, "kc");
-
-		expect(screen.getByText("sso.fields.name.rename-warning")).toBeInTheDocument();
-		expect(screen.getByText("https://games.example.com/api/auth/oidc/kc/callback")).toBeInTheDocument();
-		await user.click(screen.getByRole("button", { name: "sso.save" }));
-		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
-		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ name: "kc" });
-	});
-
 	it("creates a provider with the User role as default", async () => {
 		const user = userEvent.setup();
 		renderWithProviders(<SsoSettings />);
 
-		await user.type(screen.getByLabelText("sso.fields.name.label"), "idp");
 		await user.type(screen.getByLabelText("sso.fields.display-name.label"), "IdP");
 		await user.type(screen.getByLabelText("sso.fields.authority.label"), "https://idp.example.com");
 		await user.type(screen.getByLabelText("sso.fields.client-id.label"), "bgt");
@@ -231,17 +209,6 @@ describe("SsoSettings", () => {
 
 		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
 		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ defaultRole: "User" });
-	});
-
-	it("saves a provider whose name was created through the API with other characters", async () => {
-		const user = userEvent.setup();
-		mocks.state.provider = { ...provider, name: "My_IdP" };
-		renderWithProviders(<SsoSettings />);
-
-		await user.click(screen.getByRole("button", { name: "sso.save" }));
-
-		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
-		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ name: "My_IdP" });
 	});
 
 	it("warns that linked accounts must link again when the authority of a provider changes", async () => {
@@ -263,7 +230,6 @@ describe("SsoSettings", () => {
 		const user = userEvent.setup();
 		renderWithProviders(<SsoSettings />);
 
-		await user.type(screen.getByLabelText("sso.fields.name.label"), "idp");
 		await user.type(screen.getByLabelText("sso.fields.display-name.label"), "IdP");
 		await user.type(screen.getByLabelText("sso.fields.authority.label"), "not a url");
 		await user.type(screen.getByLabelText("sso.fields.client-id.label"), "bgt");
@@ -277,7 +243,6 @@ describe("SsoSettings", () => {
 		const user = userEvent.setup();
 		renderWithProviders(<SsoSettings />);
 
-		await user.type(screen.getByLabelText("sso.fields.name.label"), "idp");
 		await user.type(screen.getByLabelText("sso.fields.display-name.label"), "IdP");
 		await user.type(screen.getByLabelText("sso.fields.authority.label"), "http://idp.example.com");
 		await user.type(screen.getByLabelText("sso.fields.client-id.label"), "bgt");

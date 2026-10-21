@@ -24,6 +24,8 @@ public class OidcController : ControllerBase
     public const string HandoffCookieName = "bgt_oidc_handoff";
     public const string SessionCookieName = "bgt_oidc_session";
     public const string CallbackPage = "/auth-callback";
+    public const string LoginRoute = "/api/auth/oidc/login";
+    public const string LinkedPage = CallbackPage + "?linked=true";
     private const string CookiePath = "/api/auth/oidc";
 
     private readonly IOidcService _oidcService;
@@ -56,53 +58,61 @@ public class OidcController : ControllerBase
         return Ok(provider with { HttpsRequired = !await OidcTransportPolicy.IsAllowedAsync(Request, _publicUrlBuilder) });
     }
 
-    [HttpGet("{provider}/login")]
+    [HttpGet("login")]
     [AllowAnonymous]
     [EnableRateLimiting(RateLimitPolicies.Oidc)]
     [RequireOidcHttps(OidcHttpsRefusal.LoginPage)]
     [ProducesResponseType(StatusCodes.Status302Found)]
-    public async Task<IActionResult> Login(string provider, [FromQuery] string? redirect)
+    public async Task<IActionResult> Login([FromQuery] string? redirect)
     {
-        _logger.LogInformation("OIDC login initiated for provider {Provider}", provider);
+        _logger.LogInformation("OIDC login initiated");
         try
         {
-            var request = await _oidcService.StartLoginAsync(provider, await PublicBaseUrlAsync(), redirect);
+            var request = await _oidcService.StartLoginAsync(await PublicBaseUrlAsync(), redirect);
             SetCookie(StateCookieName, request.State, OidcService.PendingAuthorizationLifetime);
             return Redirect(request.Url);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "OIDC login via {Provider} could not start", provider);
+            _logger.LogWarning(ex, "OIDC login at the identity provider could not start");
             return Fail(ex is EntityNotFoundException ? Constants.Errors.OidcProviderUnavailable : ErrorKey(ex));
         }
     }
 
-    [HttpGet("{provider}/callback")]
+    [HttpGet("{provider}/login")]
+    [AllowAnonymous]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public IActionResult LegacyLogin()
+    {
+        return LocalRedirect(LoginRoute);
+    }
+
+    [HttpGet("callback")]
     [AllowAnonymous]
     [EnableRateLimiting(RateLimitPolicies.Oidc)]
     [RequireOidcHttps(OidcHttpsRefusal.CallbackPage)]
     [ProducesResponseType(StatusCodes.Status302Found)]
-    public async Task<IActionResult> Callback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error, [FromQuery] string? iss)
+    public async Task<IActionResult> Callback([FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error, [FromQuery] string? iss)
     {
         var browserState = Request.Cookies[StateCookieName];
         DeleteCookie(StateCookieName);
 
         if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
         {
-            _logger.LogWarning("OIDC provider {Provider} returned to the callback with error {Error}", provider, error ?? "missing code");
+            _logger.LogWarning("The identity provider returned to the callback with error {Error}", error ?? "missing code");
             return Fail(Constants.Errors.OidcProviderRejected);
         }
 
         try
         {
-            var result = await _oidcService.CompleteLoginAsync(provider, code, state, browserState, iss);
+            var result = await _oidcService.CompleteLoginAsync(code, state, browserState, iss);
             SetCookie(HandoffCookieName, _oidcService.CreateHandoff(result.Login), OidcService.HandoffLifetime);
             SetSessionCookie(result.SessionKey);
             return LocalRedirect($"{CallbackPage}?redirect={Uri.EscapeDataString(result.RedirectPath)}");
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "OIDC login via {Provider} failed", provider);
+            _logger.LogWarning(ex, "OIDC login at the identity provider failed");
             return Fail(ErrorKey(ex));
         }
     }
@@ -124,43 +134,43 @@ public class OidcController : ControllerBase
         return Ok(login);
     }
 
-    [HttpGet("{provider}/link")]
+    [HttpGet("link")]
     [Authorize]
     [RequireOidcHttps(OidcHttpsRefusal.BadRequest)]
     [ProducesResponseType<AuthorizationUrlResponse>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> LinkLogin(string provider)
+    public async Task<IActionResult> LinkLogin()
     {
         var userId = GetCurrentUserId();
-        _logger.LogInformation("OIDC link initiated for provider {Provider} by user {UserId}", provider, userId);
-        var request = await _oidcService.StartLinkAsync(userId, provider, await PublicBaseUrlAsync());
+        _logger.LogInformation("OIDC link initiated by user {UserId}", userId);
+        var request = await _oidcService.StartLinkAsync(userId, await PublicBaseUrlAsync());
         SetCookie(StateCookieName, request.State, OidcService.PendingAuthorizationLifetime);
         return Ok(new AuthorizationUrlResponse(request.Url));
     }
 
-    [HttpGet("{provider}/link-callback")]
+    [HttpGet("link-callback")]
     [AllowAnonymous]
     [EnableRateLimiting(RateLimitPolicies.Oidc)]
     [RequireOidcHttps(OidcHttpsRefusal.CallbackPage)]
     [ProducesResponseType(StatusCodes.Status302Found)]
-    public async Task<IActionResult> LinkCallback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error, [FromQuery] string? iss)
+    public async Task<IActionResult> LinkCallback([FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error, [FromQuery] string? iss)
     {
         var browserState = Request.Cookies[StateCookieName];
         DeleteCookie(StateCookieName);
 
         if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
         {
-            _logger.LogWarning("OIDC provider {Provider} returned to the link callback with error {Error}", provider, error ?? "missing code");
+            _logger.LogWarning("The identity provider returned to the link callback with error {Error}", error ?? "missing code");
             return Fail(Constants.Errors.OidcProviderRejected);
         }
 
         try
         {
-            var result = await _oidcService.CompleteLinkAsync(provider, code, state, browserState, iss);
-            return LocalRedirect($"{CallbackPage}?linked={Uri.EscapeDataString(result.ProviderName)}");
+            await _oidcService.CompleteLinkAsync(code, state, browserState, iss);
+            return LocalRedirect(LinkedPage);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "OIDC link via {Provider} failed", provider);
+            _logger.LogWarning(ex, "OIDC link at the identity provider failed");
             return Fail(ErrorKey(ex));
         }
     }

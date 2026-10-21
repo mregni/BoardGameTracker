@@ -9,8 +9,8 @@ describe("sentryScrub", () => {
 	describe("scrubUrl", () => {
 		it.each([
 			[
-				"https://bgt.example.com/api/auth/oidc/authelia/callback?code=abc&state=xyz",
-				"https://bgt.example.com/api/auth/oidc/authelia/callback?code=[Filtered]&state=[Filtered]",
+				"https://bgt.example.com/api/auth/oidc/callback?code=abc&state=xyz",
+				"https://bgt.example.com/api/auth/oidc/callback?code=[Filtered]&state=[Filtered]",
 			],
 			["/auth-callback?code=abc&state=def&page=2", "/auth-callback?code=[Filtered]&state=[Filtered]&page=2"],
 			[`/rsvp?linkId=${LINK_ID}`, "/rsvp?linkId=[Filtered]"],

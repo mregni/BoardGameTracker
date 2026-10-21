@@ -37,8 +37,8 @@ public class OidcProvidersController : ControllerBase
         return Ok(new OidcSetupDto(
             baseUrl,
             configured,
-            $"{baseUrl}/api/auth/oidc/{{name}}/callback",
-            $"{baseUrl}/api/auth/oidc/{{name}}/link-callback",
+            OidcService.CallbackUri(baseUrl),
+            OidcService.LinkCallbackUri(baseUrl),
             OidcLogoutUrl.PostLogoutRedirectUri(baseUrl),
             !OidcTransportPolicy.IsAllowed(baseUrl)));
     }
@@ -72,7 +72,7 @@ public class OidcProvidersController : ControllerBase
     {
         await EnsureEnableAllowedAsync(request.Enabled);
         var provider = await _service.CreateAsync(
-            request.Name, request.DisplayName, request.Authority, request.ClientId,
+            request.DisplayName, request.Authority, request.ClientId,
             request.ClientSecret, request.Scopes, request.AutoProvisionUsers,
             request.AuthorizationEndpoint, request.TokenEndpoint, request.UserInfoEndpoint,
             request.UsernameClaimType, request.EmailClaimType, request.DisplayNameClaimType,
@@ -93,7 +93,7 @@ public class OidcProvidersController : ControllerBase
             request.AuthorizationEndpoint, request.TokenEndpoint, request.UserInfoEndpoint,
             request.UsernameClaimType, request.EmailClaimType, request.DisplayNameClaimType,
             request.RolesClaimType, request.AdminGroupValue,
-            request.IconUrl, request.ButtonColor, request.DefaultRole, request.Name);
+            request.IconUrl, request.ButtonColor, request.DefaultRole);
 
         return Ok(provider.ToDto());
     }

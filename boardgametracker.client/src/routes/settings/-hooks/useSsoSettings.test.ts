@@ -27,8 +27,8 @@ vi.mock("@/services/oidcAdminService", () => ({
 		Promise.resolve({
 			publicBaseUrl: "https://games.example.com",
 			publicUrlConfigured: true,
-			callbackUriTemplate: "https://games.example.com/api/auth/oidc/{name}/callback",
-			linkCallbackUriTemplate: "https://games.example.com/api/auth/oidc/{name}/link-callback",
+			callbackUri: "https://games.example.com/api/auth/oidc/callback",
+			linkCallbackUri: "https://games.example.com/api/auth/oidc/link-callback",
 			postLogoutRedirectUri: "https://games.example.com/login",
 		}),
 	),
@@ -57,7 +57,6 @@ const createWrapper = () => {
 };
 
 const request = {
-	name: "idp",
 	displayName: "IdP",
 	authority: "http://idp.example.com",
 	clientId: "bgt",

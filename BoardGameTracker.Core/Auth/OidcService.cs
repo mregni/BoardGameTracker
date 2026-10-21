@@ -22,6 +22,9 @@ namespace BoardGameTracker.Core.Auth;
 public class OidcService : IOidcService
 {
     public const string HttpClientName = "oidc";
+    public const string CallbackPath = "/api/auth/oidc/callback";
+    public const string LinkCallbackPath = "/api/auth/oidc/link-callback";
+    private const string ExternalAccountPrefix = "sso";
     public static readonly TimeSpan PendingAuthorizationLifetime = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan HandoffLifetime = TimeSpan.FromMinutes(1);
 
@@ -68,7 +71,7 @@ public class OidcService : IOidcService
         return await _context.OidcProviders
             .Where(p => p.Enabled)
             .OrderBy(p => p.Id)
-            .Select(p => new OidcProviderInfo(p.Name, p.DisplayName, p.IconUrl, p.ButtonColor))
+            .Select(p => new OidcProviderInfo(p.DisplayName, p.IconUrl, p.ButtonColor))
             .FirstOrDefaultAsync();
     }
 
@@ -77,29 +80,33 @@ public class OidcService : IOidcService
         return await _context.OidcProviders.AnyAsync(p => p.Enabled);
     }
 
-    public Task<OidcAuthorizationRequest> StartLoginAsync(string providerName, string publicBaseUrl, string? redirectPath)
+    public Task<OidcAuthorizationRequest> StartLoginAsync(string publicBaseUrl, string? redirectPath)
     {
-        return StartAsync(providerName, publicBaseUrl, OidcFlow.Login, null, LocalPath.Normalize(redirectPath));
+        return StartAsync(publicBaseUrl, OidcFlow.Login, null, LocalPath.Normalize(redirectPath));
     }
 
-    public Task<OidcAuthorizationRequest> StartLinkAsync(string userId, string providerName, string publicBaseUrl)
+    public Task<OidcAuthorizationRequest> StartLinkAsync(string userId, string publicBaseUrl)
     {
-        return StartAsync(providerName, publicBaseUrl, OidcFlow.Link, userId, "/");
+        return StartAsync(publicBaseUrl, OidcFlow.Link, userId, "/");
     }
 
-    private async Task<OidcAuthorizationRequest> StartAsync(string providerName, string publicBaseUrl, OidcFlow flow, string? userId, string redirectPath)
+    public static string CallbackUri(string publicBaseUrl) => publicBaseUrl.TrimEnd('/') + CallbackPath;
+
+    public static string LinkCallbackUri(string publicBaseUrl) => publicBaseUrl.TrimEnd('/') + LinkCallbackPath;
+
+    private async Task<OidcAuthorizationRequest> StartAsync(string publicBaseUrl, OidcFlow flow, string? userId, string redirectPath)
     {
-        var provider = await GetProviderOrThrow(providerName);
+        var provider = await GetProviderOrThrow();
         var metadata = await GetMetadataAsync(provider);
         var authorizationEndpoint = SecureEndpoint(provider.AuthorizationEndpoint ?? RequiredEndpoint(metadata.AuthorizationEndpoint));
-        var redirectUri = CallbackUri(publicBaseUrl, providerName, flow);
+        var redirectUri = flow == OidcFlow.Link ? LinkCallbackUri(publicBaseUrl) : CallbackUri(publicBaseUrl);
 
         var codeVerifier = GenerateToken();
         var state = GenerateToken();
         var nonce = GenerateToken();
         SetSingleUse(
             PendingKey(state),
-            new PendingAuthorization(codeVerifier, nonce, flow, userId, providerName, redirectUri, redirectPath),
+            new PendingAuthorization(codeVerifier, nonce, flow, userId, provider.Id, redirectUri, redirectPath),
             PendingAuthorizationLifetime);
 
         var query = new Dictionary<string, string>
@@ -115,7 +122,7 @@ public class OidcService : IOidcService
         };
 
         var url = AuthorizationUrl(authorizationEndpoint, query);
-        _logger.LogInformation("Started OIDC {Flow} flow for provider {Provider}", flow, providerName);
+        _logger.LogInformation("Started OIDC {Flow} flow at {Provider}", flow, provider.DisplayName);
 
         return new OidcAuthorizationRequest(url, state);
     }
@@ -140,10 +147,10 @@ public class OidcService : IOidcService
         return target.AbsoluteUri;
     }
 
-    public async Task<OidcLoginResult> CompleteLoginAsync(string providerName, string code, string? state, string? browserState, string? issuer)
+    public async Task<OidcLoginResult> CompleteLoginAsync(string code, string? state, string? browserState, string? issuer)
     {
-        var provider = await GetProviderOrThrow(providerName);
-        var pending = TakePendingAuthorization(state, browserState, OidcFlow.Login, providerName);
+        var provider = await GetProviderOrThrow();
+        var pending = TakePendingAuthorization(state, browserState, OidcFlow.Login, provider);
         var identity = await AuthenticateAsync(provider, code, issuer, pending);
 
         var email = identity.Claims.GetValue(provider.EmailClaimType ?? "email");
@@ -158,18 +165,18 @@ public class OidcService : IOidcService
             user = externalLogin.User!;
             if (user.IsDisabled)
             {
-                _logger.LogWarning("Disabled user {UserId} tried to sign in via {Provider}", user.Id, providerName);
+                _logger.LogWarning("Disabled user {UserId} tried to sign in via {Provider}", user.Id, provider.DisplayName);
                 throw new DomainException(Constants.Errors.AccountDisabled);
             }
 
             externalLogin.UpdateLastUsed();
-            if (externalLogin.Provider != provider.Name)
+            if (externalLogin.Provider != provider.DisplayName)
             {
-                externalLogin.UpdateProvider(provider.Name);
+                externalLogin.UpdateProvider(provider.DisplayName);
             }
 
             await _roleReconciler.ReconcileAsync(user, provider, identity.Claims);
-            _logger.LogInformation("Existing OIDC user {UserId} logged in via {Provider}", user.Id, providerName);
+            _logger.LogInformation("Existing OIDC user {UserId} logged in via {Provider}", user.Id, provider.DisplayName);
         }
         else if (provider.AutoProvisionUsers)
         {
@@ -177,7 +184,7 @@ public class OidcService : IOidcService
         }
         else
         {
-            _logger.LogWarning("OIDC login failed for {Provider}: user not found and auto-provisioning is disabled", providerName);
+            _logger.LogWarning("OIDC login failed at {Provider}: user not found and auto-provisioning is disabled", provider.DisplayName);
             throw new DomainException(Constants.Errors.OidcProvisioningDisabled);
         }
 
@@ -189,10 +196,10 @@ public class OidcService : IOidcService
         return new OidcLoginResult(await IssueTokensAsync(user), pending.RedirectPath, sessionKey);
     }
 
-    public async Task<OidcLinkResult> CompleteLinkAsync(string providerName, string code, string? state, string? browserState, string? issuer)
+    public async Task<OidcLinkResult> CompleteLinkAsync(string code, string? state, string? browserState, string? issuer)
     {
-        var provider = await GetProviderOrThrow(providerName);
-        var pending = TakePendingAuthorization(state, browserState, OidcFlow.Link, providerName);
+        var provider = await GetProviderOrThrow();
+        var pending = TakePendingAuthorization(state, browserState, OidcFlow.Link, provider);
         var user = await _userManager.FindByIdAsync(pending.UserId!)
             ?? throw new EntityNotFoundException(nameof(ApplicationUser), pending.UserId!);
         var identity = await AuthenticateAsync(provider, code, issuer, pending);
@@ -203,11 +210,11 @@ public class OidcService : IOidcService
             throw new DomainException(Constants.Errors.OidcAlreadyLinked);
         }
 
-        _context.ExternalLogins.Add(new ExternalLogin(user.Id, providerName, identity.Issuer, identity.Subject, displayName));
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, provider.DisplayName, identity.Issuer, identity.Subject, displayName));
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Linked OIDC provider {Provider} to user {UserId}", providerName, user.Id);
-        return new OidcLinkResult(user.Id, providerName);
+        _logger.LogInformation("Linked OIDC provider {Provider} to user {UserId}", provider.DisplayName, user.Id);
+        return new OidcLinkResult(user.Id);
     }
 
     public async Task<OidcDiscoveryResultDto> TestDiscoveryAsync(string authority)
@@ -312,12 +319,12 @@ public class OidcService : IOidcService
             }
 
             var idToken = _secretProtector.Unprotect(session.IdToken);
-            _logger.LogInformation("Ending the identity provider session of user {UserId} at {Provider}", session.UserId, provider.Name);
+            _logger.LogInformation("Ending the identity provider session of user {UserId} at {Provider}", session.UserId, provider.DisplayName);
             return OidcLogoutUrl.Build(metadata.EndSessionEndpoint, idToken, provider.ClientId, publicBaseUrl);
         }
         catch (Exception ex) when (ex is DomainException or ValidationException or CryptographicException)
         {
-            _logger.LogWarning(ex, "Could not build the identity provider sign-out address for {Provider}", provider.Name);
+            _logger.LogWarning(ex, "Could not build the identity provider sign-out address for {Provider}", provider.DisplayName);
             return null;
         }
     }
@@ -335,35 +342,35 @@ public class OidcService : IOidcService
 
     private async Task<ApplicationUser> ProvisionAsync(OidcProvider provider, OidcIdentity identity, string? username, string? email, string? displayName)
     {
-        var userName = username ?? $"{provider.Name}_{identity.Subject}";
+        var userName = username ?? $"{ExternalAccountPrefix}_{identity.Subject}";
         if (await _userManager.FindByNameAsync(userName) != null)
         {
-            _logger.LogWarning("A new user from {Provider} has the username of an existing account that is not linked; manual linking required", provider.Name);
+            _logger.LogWarning("A new user from {Provider} has the username of an existing account that is not linked; manual linking required", provider.DisplayName);
             throw new DomainException(Constants.Errors.OidcUsernameTaken);
         }
 
         var existingUser = email != null ? await FindLocalUserByEmailAsync(email) : null;
         if (existingUser != null)
         {
-            _logger.LogWarning("A new user from {Provider} shares the email of existing user {UserId}; manual linking required", provider.Name, existingUser.Id);
+            _logger.LogWarning("A new user from {Provider} shares the email of existing user {UserId}; manual linking required", provider.DisplayName, existingUser.Id);
             throw new DomainException(Constants.Errors.OidcEmailAlreadyRegistered);
         }
 
         var user = new ApplicationUser(
             userName,
-            email ?? $"{identity.Subject}@{provider.Name}.external",
+            email ?? $"{identity.Subject}@{ExternalAccountPrefix}.external",
             displayName);
 
         var result = await _userManager.CreateAsync(user);
         if (!result.Succeeded)
         {
-            _logger.LogError("Failed to auto-provision a user from {Provider}: {Errors}", provider.Name, string.Join(", ", result.Errors.Select(e => e.Code)));
+            _logger.LogError("Failed to auto-provision a user from {Provider}: {Errors}", provider.DisplayName, string.Join(", ", result.Errors.Select(e => e.Code)));
             throw new DomainException(Constants.Errors.OidcProvisioningFailed);
         }
 
         await _roleReconciler.AssignInitialRoleAsync(user, provider, identity.Claims);
-        _context.ExternalLogins.Add(new ExternalLogin(user.Id, provider.Name, identity.Issuer, identity.Subject, displayName));
-        _logger.LogInformation("Auto-provisioned user {UserId} from {Provider}", user.Id, provider.Name);
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, provider.DisplayName, identity.Issuer, identity.Subject, displayName));
+        _logger.LogInformation("Auto-provisioned user {UserId} from {Provider}", user.Id, provider.DisplayName);
         return user;
     }
 
@@ -389,7 +396,7 @@ public class OidcService : IOidcService
         if (login != null)
         {
             login.UpdateIssuer(identity.Issuer);
-            _logger.LogInformation("Re-keyed external login {LoginId} on the issuer reported by {Provider}", login.Id, provider.Name);
+            _logger.LogInformation("Re-keyed external login {LoginId} on the issuer reported by {Provider}", login.Id, provider.DisplayName);
         }
 
         return login;
@@ -425,7 +432,7 @@ public class OidcService : IOidcService
             user.ToUserInfo(roles));
     }
 
-    private PendingAuthorization TakePendingAuthorization(string? state, string? browserState, OidcFlow flow, string providerName)
+    private PendingAuthorization TakePendingAuthorization(string? state, string? browserState, OidcFlow flow, OidcProvider provider)
     {
         if (string.IsNullOrWhiteSpace(state))
         {
@@ -436,11 +443,11 @@ public class OidcService : IOidcService
 
         if (pending == null
             || pending.Flow != flow
-            || pending.Provider != providerName
+            || pending.ProviderId != provider.Id
             || browserState == null
             || !CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(browserState), Encoding.UTF8.GetBytes(state)))
         {
-            _logger.LogWarning("OIDC state for provider {Provider} did not match the pending {Flow} flow", providerName, flow);
+            _logger.LogWarning("OIDC state for {Provider} did not match the pending {Flow} flow", provider.DisplayName, flow);
             throw new ValidationException(Constants.Errors.InvalidAuthSession);
         }
 
@@ -456,7 +463,7 @@ public class OidcService : IOidcService
     private async Task<OidcIdentity> AuthenticateAsync(OidcProvider provider, string code, string? issuer, PendingAuthorization pending)
     {
         var metadata = await GetMetadataAsync(provider);
-        EnsureIssuerParameter(metadata, issuer, provider.Name);
+        EnsureIssuerParameter(metadata, issuer, provider.DisplayName);
         var tokenEndpoint = SecureEndpoint(provider.TokenEndpoint ?? RequiredEndpoint(metadata.TokenEndpoint));
 
         var tokenRequest = new Dictionary<string, string>
@@ -477,14 +484,14 @@ public class OidcService : IOidcService
         using var response = await client.PostAsync(tokenEndpoint, new FormUrlEncodedContent(tokenRequest));
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogError("OIDC token exchange failed for {Provider}: {StatusCode} {Error}", provider.Name, response.StatusCode, await response.Content.ReadAsStringAsync());
+            _logger.LogError("OIDC token exchange failed for {Provider}: {StatusCode} {Error}", provider.DisplayName, response.StatusCode, await response.Content.ReadAsStringAsync());
             throw new DomainException(Constants.Errors.OidcExchangeFailed);
         }
 
         var tokenResponse = await JsonSerializer.DeserializeAsync<JsonElement>(await response.Content.ReadAsStreamAsync());
         if (TokenValue(tokenResponse, "id_token") is not { } idToken)
         {
-            _logger.LogError("OIDC token response from {Provider} carried no id_token", provider.Name);
+            _logger.LogError("OIDC token response from {Provider} carried no id_token", provider.DisplayName);
             throw new DomainException(Constants.Errors.OidcIdTokenInvalid);
         }
 
@@ -497,7 +504,7 @@ public class OidcService : IOidcService
             var userInfo = await FetchUserInfoAsync(client, provider, SecureEndpoint(userInfoEndpoint), accessToken);
             if (!string.Equals(userInfo.Subject, validated.Subject, StringComparison.Ordinal))
             {
-                _logger.LogError("User info from {Provider} describes a different subject than the id_token", provider.Name);
+                _logger.LogError("User info from {Provider} describes a different subject than the id_token", provider.DisplayName);
                 throw new DomainException(Constants.Errors.OidcIdTokenInvalid);
             }
 
@@ -514,27 +521,27 @@ public class OidcService : IOidcService
         using var userInfoResponse = await client.SendAsync(userInfoRequest);
         if (!userInfoResponse.IsSuccessStatusCode)
         {
-            _logger.LogError("Failed to fetch user info from {Provider}: {StatusCode} {Error}", provider.Name, userInfoResponse.StatusCode, await userInfoResponse.Content.ReadAsStringAsync());
+            _logger.LogError("Failed to fetch user info from {Provider}: {StatusCode} {Error}", provider.DisplayName, userInfoResponse.StatusCode, await userInfoResponse.Content.ReadAsStringAsync());
             throw new DomainException(Constants.Errors.OidcUserInfoFailed);
         }
 
         var userInfo = OidcClaims.From(await JsonSerializer.DeserializeAsync<JsonElement>(await userInfoResponse.Content.ReadAsStreamAsync()));
         if (userInfo.Subject is not { Length: > 0 })
         {
-            _logger.LogError("User info from {Provider} carried no sub claim", provider.Name);
+            _logger.LogError("User info from {Provider} carried no sub claim", provider.DisplayName);
             throw new DomainException(Constants.Errors.OidcUserInfoFailed);
         }
 
         return userInfo;
     }
 
-    private void EnsureIssuerParameter(OpenIdConnectConfiguration metadata, string? issuer, string providerName)
+    private void EnsureIssuerParameter(OpenIdConnectConfiguration metadata, string? issuer, string providerLabel)
     {
         if (issuer == null)
         {
             if (metadata.AuthorizationResponseIssParameterSupported)
             {
-                _logger.LogWarning("The callback from {Provider} carried no iss parameter although the provider advertises it", providerName);
+                _logger.LogWarning("The callback from {Provider} carried no iss parameter although the provider advertises it", providerLabel);
                 throw new DomainException(Constants.Errors.OidcIssuerMismatch);
             }
 
@@ -543,7 +550,7 @@ public class OidcService : IOidcService
 
         if (!string.Equals(issuer, metadata.Issuer, StringComparison.Ordinal))
         {
-            _logger.LogWarning("The callback for {Provider} carried the iss parameter {Issuer}, which is not the provider's issuer", providerName, issuer);
+            _logger.LogWarning("The callback for {Provider} carried the iss parameter {Issuer}, which is not the provider's issuer", providerLabel, issuer);
             throw new DomainException(Constants.Errors.OidcIssuerMismatch);
         }
     }
@@ -558,12 +565,14 @@ public class OidcService : IOidcService
             : null;
     }
 
-    private async Task<OidcProvider> GetProviderOrThrow(string providerName)
+    private async Task<OidcProvider> GetProviderOrThrow()
     {
         var provider = await _context.OidcProviders
-            .FirstOrDefaultAsync(p => p.Name == providerName && p.Enabled);
+            .Where(p => p.Enabled)
+            .OrderBy(p => p.Id)
+            .FirstOrDefaultAsync();
 
-        return provider ?? throw new EntityNotFoundException(nameof(OidcProvider), providerName);
+        return provider ?? throw new EntityNotFoundException(nameof(OidcProvider), "enabled");
     }
 
     private async Task<OpenIdConnectConfiguration> GetMetadataAsync(OidcProvider provider)
@@ -581,7 +590,7 @@ public class OidcService : IOidcService
 
         if (!OidcIssuer.Matches(metadata.Issuer, provider.Authority))
         {
-            _logger.LogError("OIDC discovery for {Provider} reports issuer {Issuer}, which does not match the configured authority", provider.Name, metadata.Issuer);
+            _logger.LogError("OIDC discovery for {Provider} reports issuer {Issuer}, which does not match the configured authority", provider.DisplayName, metadata.Issuer);
             throw new DomainException(Constants.Errors.OidcIssuerMismatch);
         }
 
@@ -668,12 +677,6 @@ public class OidcService : IOidcService
         return string.Join(' ', parts);
     }
 
-    private static string CallbackUri(string publicBaseUrl, string providerName, OidcFlow flow)
-    {
-        var action = flow == OidcFlow.Link ? "link-callback" : "callback";
-        return $"{publicBaseUrl.TrimEnd('/')}/api/auth/oidc/{Uri.EscapeDataString(providerName)}/{action}";
-    }
-
     private void SetSingleUse<T>(string key, T value, TimeSpan lifetime) where T : class
     {
         _cache.Set(key, new SingleUse<T>(value), lifetime);
@@ -730,7 +733,7 @@ public class OidcService : IOidcService
         string Nonce,
         OidcFlow Flow,
         string? UserId,
-        string Provider,
+        int ProviderId,
         string RedirectUri,
         string RedirectPath);
 

@@ -6,7 +6,7 @@ public interface IOidcProviderService
 {
     Task<List<OidcProvider>> GetAllAsync();
     Task<OidcProvider> GetByIdAsync(int id);
-    Task<OidcProvider> CreateAsync(string name, string displayName, string authority, string clientId,
+    Task<OidcProvider> CreateAsync(string displayName, string authority, string clientId,
         string? clientSecret, string scopes, bool autoProvisionUsers,
         string? authorizationEndpoint, string? tokenEndpoint, string? userInfoEndpoint,
         string? usernameClaimType, string? emailClaimType, string? displayNameClaimType,
@@ -17,6 +17,6 @@ public interface IOidcProviderService
         string? authorizationEndpoint, string? tokenEndpoint, string? userInfoEndpoint,
         string? usernameClaimType, string? emailClaimType, string? displayNameClaimType,
         string? rolesClaimType, string? adminGroupValue,
-        string? iconUrl, string? buttonColor, string? defaultRole = null, string? name = null);
+        string? iconUrl, string? buttonColor, string? defaultRole = null);
     Task DeleteAsync(int id);
 }

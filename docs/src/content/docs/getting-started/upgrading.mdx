@@ -99,6 +99,10 @@ Forwarded headers are only honoured when `TRUSTED_PROXIES` names your proxy (an 
 
 Single sign-on only works over HTTPS, `localhost` excepted. Over plain HTTP on another address the sign-in button disappears and a provider cannot be enabled. Behind a proxy, set `TRUSTED_PROXIES` and an `https` Public URL; see [Behind a reverse proxy](/BoardGameTracker/getting-started/proxy/#https). Local password login keeps working over HTTP.
 
+### Single sign-on redirect URIs changed (beta)
+
+This only affects `beta` images on which single sign-on was already set up. The provider no longer has a short name, so the redirect URIs no longer contain it: register `<PUBLIC_URL>/api/auth/oidc/callback` and `<PUBLIC_URL>/api/auth/oidc/link-callback` at your identity provider, in place of the old `/api/auth/oidc/<name>/callback` and `/api/auth/oidc/<name>/link-callback`. **Settings → Single sign-on → Register at the provider** shows both. Until then, signing in through the provider fails with a redirect URI error at the provider. Linked accounts keep working, and old bookmarks to `/api/auth/oidc/<name>/login` still start the sign-in.
+
 ## Rolling back
 
 Pin the previous image tag in your compose file and start again. Migrations are forward-only, so restore the database dump you took before upgrading if the previous version fails to start on the newer schema.

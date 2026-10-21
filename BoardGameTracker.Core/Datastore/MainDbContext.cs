@@ -421,9 +421,6 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
         // OidcProvider
         builder.Entity<OidcProvider>().ToTable("OidcProviders", "auth");
         builder.Entity<OidcProvider>().HasKey(x => x.Id);
-        builder.Entity<OidcProvider>()
-            .HasIndex(x => x.Name)
-            .IsUnique();
 
         builder.Entity<OidcSession>().ToTable("OidcSessions", "auth");
         builder.Entity<OidcSession>().HasKey(x => x.Id);

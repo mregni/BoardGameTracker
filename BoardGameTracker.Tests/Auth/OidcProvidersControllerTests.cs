@@ -44,7 +44,7 @@ public class OidcProvidersControllerTests
         null, null, null, null, null, null, "groups", "bgt-admins", null, null);
 
     private static CreateOidcProviderRequest CreateRequest(bool enabled) => new(
-        "keycloak", "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null, "openid profile email", true,
+        "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null, "openid profile email", true,
         null, null, null, null, null, null, null, null, null, null, null, enabled);
 
     private void VerifyNoOtherCalls()
@@ -57,7 +57,7 @@ public class OidcProvidersControllerTests
     [Fact]
     public async Task UpdateProvider_ShouldReturnOkWithTheUpdatedProvider()
     {
-        var provider = new OidcProvider("keycloak", "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt");
+        var provider = new OidcProvider("Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt");
         var request = new UpdateOidcProviderRequest(
             1, "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null, true, "openid profile email", false,
             null, null, null, null, null, null, "groups", "bgt-admins", null, null);
@@ -71,7 +71,6 @@ public class OidcProvidersControllerTests
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
         var dto = ok.Value.Should().BeOfType<OidcProviderDto>().Subject;
-        dto.Name.Should().Be("keycloak");
         dto.DisplayName.Should().Be("Keycloak SSO");
         _providerServiceMock.Verify(x => x.UpdateAsync(1, "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null, true,
             "openid profile email", false, null, null, null, null, null, null, "groups", "bgt-admins", null, null), Times.Once);
@@ -109,7 +108,7 @@ public class OidcProvidersControllerTests
     [Fact]
     public async Task UpdateProvider_ShouldAllowEnabling_WhenThePublicUrlIsHttps_EvenOverALanHttpRequest()
     {
-        var provider = new OidcProvider("keycloak", "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt");
+        var provider = new OidcProvider("Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt");
         _publicUrlBuilderMock.Setup(x => x.GetConfiguredBaseUrlAsync()).ReturnsAsync("https://games.example.com");
         _providerServiceMock
             .Setup(x => x.UpdateAsync(1, "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null, true,
@@ -129,7 +128,7 @@ public class OidcProvidersControllerTests
     [Fact]
     public async Task UpdateProvider_ShouldSaveADisabledProvider_OverPlainHttp()
     {
-        var provider = new OidcProvider("keycloak", "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt");
+        var provider = new OidcProvider("Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt");
         _providerServiceMock
             .Setup(x => x.UpdateAsync(1, "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null, false,
                 "openid profile email", false, null, null, null, null, null, null, "groups", "bgt-admins", null, null))
@@ -162,10 +161,10 @@ public class OidcProvidersControllerTests
     [InlineData(true, "http://localhost:5444")]
     public async Task CreateProvider_ShouldPassTheEnabledFlag_WhenItIsAllowed(bool enabled, string publicUrl)
     {
-        var provider = new OidcProvider("keycloak", "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt");
+        var provider = new OidcProvider("Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt");
         _publicUrlBuilderMock.Setup(x => x.GetConfiguredBaseUrlAsync()).ReturnsAsync(publicUrl);
         _providerServiceMock
-            .Setup(x => x.CreateAsync("keycloak", "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null,
+            .Setup(x => x.CreateAsync("Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null,
                 "openid profile email", true, null, null, null, null, null, null, null, null, null, null, null, enabled))
             .ReturnsAsync(provider);
 
@@ -173,7 +172,7 @@ public class OidcProvidersControllerTests
 
         result.Should().BeOfType<CreatedAtActionResult>();
         _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Exactly(enabled ? 1 : 0));
-        _providerServiceMock.Verify(x => x.CreateAsync("keycloak", "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null,
+        _providerServiceMock.Verify(x => x.CreateAsync("Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null,
             "openid profile email", true, null, null, null, null, null, null, null, null, null, null, null, enabled), Times.Once);
         VerifyNoOtherCalls();
     }
