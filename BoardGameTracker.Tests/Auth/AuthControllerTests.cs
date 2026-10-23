@@ -25,6 +25,7 @@ public class AuthControllerTests
     private readonly Mock<IProfileImageTicketService> _imageTicketsMock;
     private readonly Mock<ILogger<AuthController>> _loggerMock;
     private readonly Mock<IUserProfileImageService> _profileImagesMock = new();
+    private readonly Mock<IPlayerLinkPromptService> _playerLinkPromptMock = new();
     private readonly AuthController _controller;
 
     public AuthControllerTests()
@@ -36,7 +37,7 @@ public class AuthControllerTests
         _imageTicketsMock.Setup(x => x.Lifetime).Returns(TimeSpan.FromDays(7));
         _loggerMock = new Mock<ILogger<AuthController>>();
         var sessionCookies = new AuthSessionCookies(_imageTicketsMock.Object, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }));
-        _controller = new AuthController(_authServiceMock.Object, _oidcServiceMock.Object, sessionCookies, _profileImagesMock.Object, _loggerMock.Object);
+        _controller = new AuthController(_authServiceMock.Object, _oidcServiceMock.Object, sessionCookies, _profileImagesMock.Object, _playerLinkPromptMock.Object, _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -44,6 +45,7 @@ public class AuthControllerTests
         _authServiceMock.VerifyNoOtherCalls();
         _oidcServiceMock.VerifyNoOtherCalls();
         _profileImagesMock.VerifyNoOtherCalls();
+        _playerLinkPromptMock.VerifyNoOtherCalls();
     }
 
     private string SetCookie(string name) =>
@@ -513,6 +515,80 @@ public class AuthControllerTests
         okResult.Value.Should().BeSameAs(expectedPlayers);
 
         _authServiceMock.Verify(x => x.GetLinkablePlayersAsync("user-id"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region PlayerLink
+
+    private static ProfileResponse LinkedProfile() =>
+        new("user-id", "alice", "alice@test.com", "Alice", [Constants.AuthRoles.User], DateTime.UtcNow, null, 4);
+
+    [Fact]
+    public async Task GetPlayerLinkSuggestions_ShouldReturnTheSuggestionsOfTheCurrentUser()
+    {
+        SetupAuthenticatedUser("user-id");
+        var expected = new PlayerLinkSuggestionsResponse([], [new PlayerLinkCandidateDto(4, "Alice", null)], true);
+        _playerLinkPromptMock.Setup(x => x.GetSuggestionsAsync("user-id")).ReturnsAsync(expected);
+
+        var result = await _controller.GetPlayerLinkSuggestions();
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(expected);
+        _playerLinkPromptMock.Verify(x => x.GetSuggestionsAsync("user-id"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkOwnPlayer_ShouldLinkTheCurrentUserToThePlayer()
+    {
+        SetupAuthenticatedUser("user-id");
+        var profile = LinkedProfile();
+        _playerLinkPromptMock.Setup(x => x.LinkAsync("user-id", 4)).ReturnsAsync(profile);
+
+        var result = await _controller.LinkOwnPlayer(new LinkOwnPlayerRequest { PlayerId = 4 });
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(profile);
+        _playerLinkPromptMock.Verify(x => x.LinkAsync("user-id", 4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateOwnPlayer_ShouldCreateAPlayerForTheCurrentUser()
+    {
+        SetupAuthenticatedUser("user-id");
+        var profile = LinkedProfile();
+        _playerLinkPromptMock.Setup(x => x.CreatePlayerAsync("user-id")).ReturnsAsync(profile);
+
+        var result = await _controller.CreateOwnPlayer();
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(profile);
+        _playerLinkPromptMock.Verify(x => x.CreatePlayerAsync("user-id"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void CreateOwnPlayer_ShouldOnlyBeAllowedForRolesThatMayCreatePlayers()
+    {
+        var attribute = typeof(AuthController).GetMethod(nameof(AuthController.CreateOwnPlayer))!
+            .GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), false)
+            .Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>()
+            .Single();
+
+        attribute.Roles.Should().Be(Constants.AuthRoles.UserOrAdmin);
+    }
+
+    [Fact]
+    public async Task SkipPlayerLink_ShouldSkipForTheCurrentUser()
+    {
+        SetupAuthenticatedUser("user-id");
+        var profile = LinkedProfile();
+        _playerLinkPromptMock.Setup(x => x.SkipAsync("user-id")).ReturnsAsync(profile);
+
+        var result = await _controller.SkipPlayerLink();
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(profile);
+        _playerLinkPromptMock.Verify(x => x.SkipAsync("user-id"), Times.Once);
         VerifyNoOtherCalls();
     }
 

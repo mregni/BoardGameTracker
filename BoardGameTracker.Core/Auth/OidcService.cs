@@ -28,6 +28,7 @@ public class OidcService : IOidcService
     public const string CallbackPath = "/api/auth/oidc/callback";
     public const string LinkCallbackPath = "/api/auth/oidc/link-callback";
     private const string ExternalAccountPrefix = "sso";
+    public const string PlaceholderEmailDomain = $"@{ExternalAccountPrefix}.external";
     public static readonly TimeSpan PendingAuthorizationLifetime = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan HandoffLifetime = TimeSpan.FromMinutes(1);
 
@@ -370,8 +371,9 @@ public class OidcService : IOidcService
 
         var user = new ApplicationUser(
             userName,
-            email ?? $"{identity.Subject}@{ExternalAccountPrefix}.external",
+            email ?? $"{identity.Subject}{PlaceholderEmailDomain}",
             displayName);
+        user.AwaitPlayerLink();
 
         var result = await _userManager.CreateAsync(user);
         if (!result.Succeeded)

@@ -17,6 +17,8 @@ interface BgtDialogFooterProps {
 	onCancel?: () => void;
 	cancelLabel?: ReactNode;
 	cancelDisabled?: boolean;
+	secondaryLabel?: ReactNode;
+	onSecondary?: () => void;
 	className?: string;
 }
 
@@ -32,6 +34,8 @@ export const BgtDialogFooter = (props: BgtDialogFooterProps) => {
 		onCancel,
 		cancelLabel,
 		cancelDisabled = false,
+		secondaryLabel,
+		onSecondary,
 		className,
 	} = props;
 	const { t } = useTranslation();
@@ -47,6 +51,17 @@ export const BgtDialogFooter = (props: BgtDialogFooterProps) => {
 					disabled={cancelDisabled || loading}
 				>
 					{cancelLabel ?? t("common:cancel")}
+				</BgtButton>
+			)}
+			{secondaryLabel && onSecondary && (
+				<BgtButton
+					type="button"
+					variant="text"
+					className={footerButton}
+					onClick={onSecondary}
+					disabled={disabled || loading}
+				>
+					{secondaryLabel}
 				</BgtButton>
 			)}
 			{confirmLabel && (

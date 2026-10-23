@@ -13,7 +13,14 @@ vi.mock("./tokenRefresh", () => ({
 
 import { axiosInstance } from "./axiosInstance";
 
-const user: User = { id: "u1", username: "alice", displayName: null, roles: ["User"], profileImage: null };
+const user: User = {
+	id: "u1",
+	username: "alice",
+	displayName: null,
+	roles: ["User"],
+	profileImage: null,
+	needsPlayerLink: false,
+};
 
 type Handler = (config: InternalAxiosRequestConfig) => AxiosResponse | number;
 

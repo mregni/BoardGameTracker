@@ -13,4 +13,5 @@ public record UserInfo(
     string Username,
     string? DisplayName,
     IEnumerable<string> Roles,
-    string? ProfileImage = null);
+    string? ProfileImage = null,
+    bool NeedsPlayerLink = false);

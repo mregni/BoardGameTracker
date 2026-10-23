@@ -232,6 +232,7 @@ public class OidcFlowTests : IDisposable
         result.RedirectPath.Should().Be("/players");
         result.Login.AccessToken.Should().Be("access-token");
         result.Login.User.Username.Should().Be(user.UserName);
+        result.Login.User.NeedsPlayerLink.Should().BeFalse();
         _idp.TokenRequest!["redirect_uri"].Should().Be($"{PublicBase}/api/auth/oidc/callback");
         _idp.TokenRequest["code_verifier"].Should().NotBeNullOrEmpty();
         _idp.TokenRequest["grant_type"].Should().Be("authorization_code");
@@ -376,7 +377,8 @@ public class OidcFlowTests : IDisposable
         var result = await LoginAsync();
 
         result.Login.User.Username.Should().Be("jane");
-        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "jane" && u.Email == "jane@example.com")), Times.Once);
+        result.Login.User.NeedsPlayerLink.Should().BeTrue();
+        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "jane" && u.Email == "jane@example.com" && u.PlayerLinkPending)), Times.Once);
         _userManagerMock.Verify(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.RoleManagedByIdentityProvider), "User"), Times.Once);
         var login = await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken);
         login.ProviderKey.Should().Be("sub-new");

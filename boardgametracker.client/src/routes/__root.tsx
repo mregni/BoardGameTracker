@@ -18,6 +18,7 @@ import { getSettings } from "@/services/queries/settings";
 import { initSentry } from "@/utils/sentry";
 import { restoreSession, startSessionSync } from "@/utils/tokenRefresh";
 import { BottomNav } from "./-components/BottomNav";
+import { PlayerLinkPrompt } from "./-components/PlayerLinkPrompt";
 import { Sidebar } from "./-components/Sidebar";
 
 interface RouterContext {
@@ -117,6 +118,7 @@ function RootComponent() {
 			</main>
 
 			<BottomNav />
+			{isAuthenticated && <PlayerLinkPrompt />}
 		</div>
 	);
 }

@@ -47,7 +47,14 @@ import {
 } from "@/services/authService";
 import { useAccountData } from "./useAccountData";
 
-const signedIn = { id: "u1", username: "admin", displayName: "Administrator", roles: ["Admin"], profileImage: null };
+const signedIn = {
+	id: "u1",
+	username: "admin",
+	displayName: "Administrator",
+	roles: ["Admin"],
+	profileImage: null,
+	needsPlayerLink: true,
+};
 
 const userDto = (overrides: { id?: string; username?: string; roles?: string[] }) => ({
 	id: "u1",
@@ -89,6 +96,7 @@ describe("useAccountData", () => {
 			lastLoginAt: null,
 			playerId: null,
 			profileImage: null,
+			needsPlayerLink: false,
 		});
 		const { result } = renderHook(() => useAccountData(), { wrapper: createWrapper() });
 
@@ -97,6 +105,7 @@ describe("useAccountData", () => {
 		);
 
 		expect(useAuth.getState().user?.displayName).toBe("Reggi");
+		expect(useAuth.getState().user?.needsPlayerLink).toBe(false);
 		expect(successToast).toHaveBeenCalledWith("settings:account.notifications.profile-updated");
 	});
 
@@ -133,6 +142,7 @@ const profile = (profileImage: string | null) => ({
 	lastLoginAt: null,
 	playerId: null,
 	profileImage,
+	needsPlayerLink: false,
 });
 
 describe("useAccountData profile picture", () => {

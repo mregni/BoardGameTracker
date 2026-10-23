@@ -49,7 +49,17 @@ import type {
 	StartRunningGame,
 	UpdateAttendance,
 } from "@/models";
-import type { LoginRequest, LoginResponse, OidcProvider, ProfileResponse, User } from "@/models/Auth/Auth";
+import type {
+	LoginRequest,
+	LoginResponse,
+	OidcProvider,
+	PlayerLinkCandidate,
+	PlayerLinkMatchReason,
+	PlayerLinkSuggestion,
+	PlayerLinkSuggestions,
+	ProfileResponse,
+	User,
+} from "@/models/Auth/Auth";
 import type { ExternalLogin, OidcDiscoveryResult, OidcProviderConfig, OidcSetup } from "@/models/Auth/Oidc";
 import type { Loan } from "@/models/Loan/Loan";
 import type { IntegrationStatus } from "@/models/Settings/IntegrationStatus";
@@ -124,6 +134,10 @@ describe("API contract", () => {
 		sameKeys<User, Schemas["UserInfo"]>(true);
 		sameKeys<LoginResponse, Schemas["LoginResponse"]>(true);
 		sameKeys<ProfileResponse, Schemas["ProfileResponse"]>(true);
+		sameKeys<PlayerLinkSuggestions, Schemas["PlayerLinkSuggestionsResponse"]>(true);
+		sameKeys<PlayerLinkSuggestion, Schemas["PlayerLinkSuggestionDto"]>(true);
+		sameKeys<PlayerLinkCandidate, Schemas["PlayerLinkCandidateDto"]>(true);
+		sameValues<Schemas["PlayerLinkMatchReason"], PlayerLinkMatchReason>(true);
 		sameKeys<OidcProvider, Schemas["OidcProviderInfo"]>(true);
 		sameKeys<OidcProviderConfig, Schemas["OidcProviderDto"]>(true);
 		sameKeys<OidcSetup, Schemas["OidcSetupDto"]>(true);

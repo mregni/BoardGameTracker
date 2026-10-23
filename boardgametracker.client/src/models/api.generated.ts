@@ -359,6 +359,193 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/player-link/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PlayerLinkSuggestionsResponse"];
+                        "application/json": components["schemas"]["PlayerLinkSuggestionsResponse"];
+                        "text/json": components["schemas"]["PlayerLinkSuggestionsResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/player-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["LinkOwnPlayerRequest"];
+                    "text/json": components["schemas"]["LinkOwnPlayerRequest"];
+                    "application/*+json": components["schemas"]["LinkOwnPlayerRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProfileResponse"];
+                        "application/json": components["schemas"]["ProfileResponse"];
+                        "text/json": components["schemas"]["ProfileResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/player-link/new": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProfileResponse"];
+                        "application/json": components["schemas"]["ProfileResponse"];
+                        "text/json": components["schemas"]["ProfileResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/player-link/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProfileResponse"];
+                        "application/json": components["schemas"]["ProfileResponse"];
+                        "text/json": components["schemas"]["ProfileResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/change-password": {
         parameters: {
             query?: never;
@@ -5779,6 +5966,10 @@ export interface components {
         };
         /** @enum {string} */
         LeaderboardRankBy: "wins" | "winRate" | "sessions";
+        LinkOwnPlayerRequest: {
+            /** Format: int32 */
+            playerId: number;
+        };
         LinkPlayerAccountRequest: {
             userId: string | null;
         };
@@ -6017,10 +6208,30 @@ export interface components {
         };
         /** @enum {string} */
         PlayerImageSource: "none" | "upload" | "account";
+        PlayerLinkCandidateDto: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            image: string | null;
+        };
         PlayerLinkDto: {
             /** Format: int32 */
             id: number;
             name: string;
+        };
+        /** @enum {string} */
+        PlayerLinkMatchReason: "email" | "name" | "partial";
+        PlayerLinkSuggestionDto: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            image: string | null;
+            reason: components["schemas"]["PlayerLinkMatchReason"];
+        };
+        PlayerLinkSuggestionsResponse: {
+            suggestions: components["schemas"]["PlayerLinkSuggestionDto"][];
+            players: components["schemas"]["PlayerLinkCandidateDto"][];
+            canCreatePlayer: boolean;
         };
         PlayerLinkedAccountDto: {
             id: string;
@@ -6107,6 +6318,7 @@ export interface components {
             /** Format: int32 */
             playerId: number | null;
             profileImage: string | null;
+            needsPlayerLink: boolean;
         };
         RagAnswerDto: {
             answer: string;
@@ -6521,6 +6733,7 @@ export interface components {
             displayName: string | null;
             roles: string[];
             profileImage: string | null;
+            needsPlayerLink: boolean;
         };
         /** @enum {string} */
         VersionTrack: "stable" | "beta";

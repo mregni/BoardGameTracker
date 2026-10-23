@@ -36,6 +36,8 @@ public sealed class IdentityTestScope : IDisposable
 
     public RoleManager<IdentityRole> RoleManager => _scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
+    public MainDbContext Context => _scope.ServiceProvider.GetRequiredService<MainDbContext>();
+
     public void Dispose()
     {
         _scope.Dispose();

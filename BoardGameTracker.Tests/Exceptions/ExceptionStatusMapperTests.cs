@@ -47,6 +47,26 @@ public class ExceptionStatusMapperTests
     }
 
     [Fact]
+    public void Map_ShouldTurnAConflictIntoA409WithTheTranslationKey()
+    {
+        var (status, message) = ExceptionStatusMapper.Map(new ConflictException("error.x"));
+
+        status.Should().Be(409);
+        message.Should().Be("error.x");
+        ExceptionStatusMapper.ShouldReport(new ConflictException("error.x")).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Map_ShouldTurnAForbiddenActionIntoA403WithTheTranslationKey()
+    {
+        var (status, message) = ExceptionStatusMapper.Map(new ForbiddenException("error.x"));
+
+        status.Should().Be(403);
+        message.Should().Be("error.x");
+        ExceptionStatusMapper.ShouldReport(new ForbiddenException("error.x")).Should().BeFalse();
+    }
+
+    [Fact]
     public void Map_ShouldTurnADisabledFeatureIntoANotFoundWithTheTranslationKey()
     {
         var (status, message) = ExceptionStatusMapper.Map(new FeatureDisabledException("game_nights_enabled"));
