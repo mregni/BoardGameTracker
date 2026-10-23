@@ -7,6 +7,7 @@ import type {
 	LoginResponse,
 	OidcProvider,
 	PlayerLink,
+	PlayerLinkSuggestions,
 	ProfileResponse,
 	RegisterRequest,
 	ResetPasswordConfirmRequest,
@@ -99,6 +100,24 @@ export const changePasswordCall = (request: ChangePasswordRequest): Promise<void
 
 export const getLinkablePlayersCall = (): Promise<PlayerLink[]> => {
 	return axiosInstance.get<PlayerLink[]>(`${domain}/linkable-players`).then((response) => response.data);
+};
+
+export const getPlayerLinkSuggestionsCall = (): Promise<PlayerLinkSuggestions> => {
+	return axiosInstance
+		.get<PlayerLinkSuggestions>(`${domain}/player-link/suggestions`)
+		.then((response) => response.data);
+};
+
+export const linkOwnPlayerCall = (playerId: number): Promise<ProfileResponse> => {
+	return axiosInstance.post<ProfileResponse>(`${domain}/player-link`, { playerId }).then((response) => response.data);
+};
+
+export const createOwnPlayerCall = (): Promise<ProfileResponse> => {
+	return axiosInstance.post<ProfileResponse>(`${domain}/player-link/new`).then((response) => response.data);
+};
+
+export const skipPlayerLinkCall = (): Promise<ProfileResponse> => {
+	return axiosInstance.post<ProfileResponse>(`${domain}/player-link/skip`).then((response) => response.data);
 };
 
 export const registerUserCall = (request: RegisterRequest): Promise<UserDto> => {

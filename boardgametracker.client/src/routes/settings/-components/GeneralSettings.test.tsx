@@ -74,7 +74,14 @@ describe("GeneralSettings", () => {
 		beforeEach(() => {
 			useAuth.setState({
 				authStatus: { authEnabled: true },
-				user: { id: "1", username: "admin", displayName: null, roles: ["Admin"], profileImage: null },
+				user: {
+					id: "1",
+					username: "admin",
+					displayName: null,
+					roles: ["Admin"],
+					profileImage: null,
+					needsPlayerLink: false,
+				},
 			});
 			mocks.providers = [{ id: 1, name: "keycloak", displayName: "Company login", enabled: true }];
 		});

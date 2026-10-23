@@ -6,13 +6,17 @@ const axiosMock = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn(),
 vi.mock("../utils/axiosInstance", () => ({ axiosInstance: axiosMock }));
 
 import {
+	createOwnPlayerCall,
 	disableUserCall,
 	enableUserCall,
 	endOidcSessionCall,
 	getOidcProviderCall,
+	getPlayerLinkSuggestionsCall,
 	getUserExternalLoginsCall,
+	linkOwnPlayerCall,
 	manageRoleByIdentityProviderCall,
 	removeProfileImageCall,
+	skipPlayerLinkCall,
 	startOidcLinkCall,
 	unlinkUserExternalLoginCall,
 	uploadProfileImageCall,
@@ -136,5 +140,32 @@ describe("profile picture calls", () => {
 
 		await expect(removeProfileImageCall()).resolves.toEqual({ id: "u1", profileImage: null });
 		expect(axiosMock.delete).toHaveBeenCalledWith("auth/profile/image");
+	});
+});
+
+describe("player link calls", () => {
+	beforeEach(() => {
+		axiosMock.get.mockReset();
+		axiosMock.post.mockReset();
+	});
+
+	it("loads the suggestions of the signed-in user", async () => {
+		const suggestions = { suggestions: [], players: [], canCreatePlayer: true };
+		axiosMock.get.mockResolvedValue({ data: suggestions });
+
+		await expect(getPlayerLinkSuggestionsCall()).resolves.toEqual(suggestions);
+		expect(axiosMock.get).toHaveBeenCalledWith("auth/player-link/suggestions");
+	});
+
+	it("links, creates and skips", async () => {
+		axiosMock.post.mockResolvedValue({ data: { id: "u1", playerId: 3 } });
+
+		await expect(linkOwnPlayerCall(3)).resolves.toEqual({ id: "u1", playerId: 3 });
+		await createOwnPlayerCall();
+		await skipPlayerLinkCall();
+
+		expect(axiosMock.post).toHaveBeenNthCalledWith(1, "auth/player-link", { playerId: 3 });
+		expect(axiosMock.post).toHaveBeenNthCalledWith(2, "auth/player-link/new");
+		expect(axiosMock.post).toHaveBeenNthCalledWith(3, "auth/player-link/skip");
 	});
 });

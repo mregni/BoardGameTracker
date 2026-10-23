@@ -75,6 +75,10 @@ vi.mock("./-components/BottomNav", () => ({
 	BottomNav: () => <div data-testid="bottom-nav" />,
 }));
 
+vi.mock("./-components/PlayerLinkPrompt", () => ({
+	PlayerLinkPrompt: () => <div data-testid="player-link-prompt" />,
+}));
+
 import "./__root";
 
 describe("RootComponent", () => {
@@ -118,6 +122,22 @@ describe("RootComponent", () => {
 			await waitFor(() => {
 				expect(screen.getByTestId("sidebar")).toBeInTheDocument();
 			});
+		});
+	});
+
+	describe("Player link prompt", () => {
+		it("is mounted in the layout for a signed-in user", async () => {
+			mocks.authState.isAuthenticated = true;
+			render(<mocks.captured.Root />);
+
+			expect(await screen.findByTestId("player-link-prompt")).toBeInTheDocument();
+		});
+
+		it("is left out while nobody is signed in", async () => {
+			render(<mocks.captured.Root />);
+
+			await screen.findByTestId("sidebar");
+			expect(screen.queryByTestId("player-link-prompt")).not.toBeInTheDocument();
 		});
 	});
 

@@ -27,7 +27,14 @@ const render = () => {
 };
 
 const signIn = (roles: string[], authEnabled = true) => {
-	useAuth.getState().setSession("access", { id: "u1", username: "me", displayName: null, roles, profileImage: null });
+	useAuth.getState().setSession("access", {
+		id: "u1",
+		username: "me",
+		displayName: null,
+		roles,
+		profileImage: null,
+		needsPlayerLink: false,
+	});
 	useAuth.setState({ authStatus: { authEnabled } as never });
 };
 

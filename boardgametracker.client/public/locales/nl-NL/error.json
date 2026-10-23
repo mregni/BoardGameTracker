@@ -27,6 +27,7 @@
     "invalid-redirect-uri": "Ongeldige redirect-URI",
     "player-already-linked": "Deze speler is al gekoppeld aan een ander account",
     "player-link-update-failed": "Het gekoppelde account kon niet worden gewijzigd. Herlaad de pagina en probeer het opnieuw.",
+    "player-create-not-allowed": "Je mag geen spelers aanmaken",
     "invalid-reset-token": "Deze link om je wachtwoord opnieuw in te stellen is ongeldig of verlopen",
     "not-authenticated": "Je moet ingelogd zijn",
     "insecure-authority": "De URL van de provider moet https gebruiken (http is alleen toegestaan voor lokale adressen)",

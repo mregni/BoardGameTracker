@@ -6,7 +6,14 @@ import type { User } from "@/models/Auth/Auth";
 import { useAuth } from "./useAuth";
 import { useResetQueriesOnIdentityChange } from "./useResetQueriesOnIdentityChange";
 
-const admin: User = { id: "u1", username: "admin", displayName: null, roles: ["Admin"], profileImage: null };
+const admin: User = {
+	id: "u1",
+	username: "admin",
+	displayName: null,
+	roles: ["Admin"],
+	profileImage: null,
+	needsPlayerLink: false,
+};
 
 describe("useResetQueriesOnIdentityChange", () => {
 	let queryClient: QueryClient;

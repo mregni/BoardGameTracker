@@ -38,6 +38,26 @@ describe("BgtDialogFooter", () => {
 		expect(remove).not.toHaveClass("bg-primary/60");
 	});
 
+	it("puts a secondary action between cancel and the main action", async () => {
+		const user = userEvent.setup();
+		const onSecondary = vi.fn();
+		renderWithTheme(
+			<BgtDialogFooter onCancel={vi.fn()} secondaryLabel="Other" onSecondary={onSecondary} confirmLabel="Save" />,
+		);
+
+		const buttons = screen.getAllByRole("button");
+		expect(buttons.map((button) => button.textContent)).toEqual(["common:cancel", "Other", "Save"]);
+		expect(screen.getByRole("button", { name: "Other" })).toHaveClass("text-primary-text", "min-h-10");
+		await user.click(screen.getByRole("button", { name: "Other" }));
+		expect(onSecondary).toHaveBeenCalledTimes(1);
+	});
+
+	it("disables the secondary action while loading", () => {
+		renderWithTheme(<BgtDialogFooter secondaryLabel="Other" onSecondary={vi.fn()} confirmLabel="Save" loading />);
+
+		expect(screen.getByRole("button", { name: "Other" })).toBeDisabled();
+	});
+
 	it("calls the handlers", async () => {
 		const user = userEvent.setup();
 		const onCancel = vi.fn();
