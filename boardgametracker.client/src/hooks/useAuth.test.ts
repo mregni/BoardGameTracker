@@ -23,7 +23,14 @@ vi.mock("@/utils/sessionSync", () => sessionSync);
 
 import { LEGACY_AUTH_STORAGE_KEY, removeLegacySession, useAuth } from "./useAuth";
 
-const user: User = { id: "u1", username: "alice", displayName: null, roles: ["User"], profileImage: null };
+const user: User = {
+	id: "u1",
+	username: "alice",
+	displayName: null,
+	roles: ["User"],
+	profileImage: null,
+	needsPlayerLink: false,
+};
 
 const storedValues = () => [
 	...Object.keys(localStorage).map((key) => localStorage.getItem(key) ?? ""),

@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/models";
-import { getLinkablePlayersCall, getProfileCall, getUsersCall } from "../authService";
+import { getLinkablePlayersCall, getPlayerLinkSuggestionsCall, getProfileCall, getUsersCall } from "../authService";
 import { createListQuery, createSingletonQuery } from "./queryFactory";
 
 export const getProfile = createSingletonQuery(QUERY_KEYS.profile, getProfileCall);
@@ -10,4 +10,11 @@ export const getLinkablePlayers = () =>
 	queryOptions({
 		queryKey: [QUERY_KEYS.players, "linkable"],
 		queryFn: getLinkablePlayersCall,
+	});
+
+export const getPlayerLinkSuggestions = () =>
+	queryOptions({
+		queryKey: [QUERY_KEYS.players, "link-suggestions"],
+		queryFn: getPlayerLinkSuggestionsCall,
+		staleTime: 0,
 	});

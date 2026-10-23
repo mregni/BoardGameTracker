@@ -22,7 +22,14 @@ describe("DangerZoneSection", () => {
 	beforeEach(() => {
 		useAuth.setState({
 			authStatus: { authEnabled: true },
-			user: { id: "1", username: "admin", displayName: null, roles: ["Admin"], profileImage: null },
+			user: {
+				id: "1",
+				username: "admin",
+				displayName: null,
+				roles: ["Admin"],
+				profileImage: null,
+				needsPlayerLink: false,
+			},
 		});
 	});
 
@@ -60,7 +67,16 @@ describe("DangerZoneSection", () => {
 	});
 
 	it("is hidden from non-admins", () => {
-		useAuth.setState({ user: { id: "2", username: "jane", displayName: null, roles: ["User"], profileImage: null } });
+		useAuth.setState({
+			user: {
+				id: "2",
+				username: "jane",
+				displayName: null,
+				roles: ["User"],
+				profileImage: null,
+				needsPlayerLink: false,
+			},
+		});
 		const { container } = renderWithProviders(<DangerZoneSection />);
 
 		expect(container).toBeEmptyDOMElement();

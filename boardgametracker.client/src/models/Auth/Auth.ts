@@ -6,6 +6,7 @@ export interface User {
 	displayName: string | null;
 	roles: string[];
 	profileImage: string | null;
+	needsPlayerLink: boolean;
 }
 
 export interface LoginRequest {
@@ -40,6 +41,7 @@ export interface ProfileResponse {
 	lastLoginAt: Date | null;
 	playerId: number | null;
 	profileImage: string | null;
+	needsPlayerLink: boolean;
 }
 
 export interface UpdateProfileRequest {
@@ -52,6 +54,24 @@ export interface UpdateProfileRequest {
 export interface PlayerLink {
 	id: number;
 	name: string;
+}
+
+export type PlayerLinkMatchReason = "email" | "name" | "partial";
+
+export interface PlayerLinkCandidate {
+	id: number;
+	name: string;
+	image: string | null;
+}
+
+export interface PlayerLinkSuggestion extends PlayerLinkCandidate {
+	reason: PlayerLinkMatchReason;
+}
+
+export interface PlayerLinkSuggestions {
+	suggestions: PlayerLinkSuggestion[];
+	players: PlayerLinkCandidate[];
+	canCreatePlayer: boolean;
 }
 
 export interface ChangePasswordRequest {

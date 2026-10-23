@@ -617,6 +617,7 @@ public class UserAdminServiceTests : IDisposable
         var currentUserId = "admin-1";
         var targetUserId = "user-2";
         var targetUser = new ApplicationUser("bob", "b@test.com");
+        targetUser.AwaitPlayerLink();
         var roles = new List<string> { Constants.AuthRoles.User };
 
         _userManagerMock.Setup(x => x.FindByIdAsync(targetUserId)).ReturnsAsync(targetUser);
@@ -627,6 +628,7 @@ public class UserAdminServiceTests : IDisposable
 
         result.PlayerId.Should().Be(5);
         targetUser.PlayerId.Should().Be(5);
+        targetUser.PlayerLinkPending.Should().BeFalse();
         _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, targetUser), Times.Once);
 
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
@@ -971,6 +973,7 @@ public class UserAdminServiceTests : IDisposable
     {
         await AddPlayerAsync(5);
         var target = new ApplicationUser("bob", "b@test.com") { Id = "user-2" };
+        target.AwaitPlayerLink();
         _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(target);
         _userManagerMock.Setup(x => x.UpdateAsync(target)).ReturnsAsync(IdentityResult.Success);
         _playerAccountImageServiceMock.Setup(x => x.ApplyAccountImageAsync(target)).ReturnsAsync(true);
@@ -978,6 +981,8 @@ public class UserAdminServiceTests : IDisposable
         await _service.LinkPlayerAccountAsync(5, "user-2");
 
         target.PlayerId.Should().Be(5);
+        target.PlayerLinkPending.Should().BeFalse();
+        target.NeedsPlayerLink.Should().BeFalse();
         _userManagerMock.Verify(x => x.FindByIdAsync("user-2"), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(target), Times.Once);
         _playerAccountImageServiceMock.Verify(x => x.ReleaseAsync(null), Times.Once);

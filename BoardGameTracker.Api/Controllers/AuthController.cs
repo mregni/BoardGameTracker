@@ -25,10 +25,12 @@ public class AuthController : ControllerBase
     private readonly IOidcService _oidcService;
     private readonly AuthSessionCookies _sessionCookies;
     private readonly IUserProfileImageService _profileImages;
+    private readonly IPlayerLinkPromptService _playerLinkPrompt;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService, IOidcService oidcService, AuthSessionCookies sessionCookies, IUserProfileImageService profileImages, ILogger<AuthController> logger)
+    public AuthController(IAuthService authService, IOidcService oidcService, AuthSessionCookies sessionCookies, IUserProfileImageService profileImages, IPlayerLinkPromptService playerLinkPrompt, ILogger<AuthController> logger)
     {
+        _playerLinkPrompt = playerLinkPrompt;
         _authService = authService;
         _sessionCookies = sessionCookies;
         _profileImages = profileImages;
@@ -140,6 +142,42 @@ public class AuthController : ControllerBase
     {
         var players = await _authService.GetLinkablePlayersAsync(GetCurrentUserId());
         return Ok(players);
+    }
+
+    [HttpGet("player-link/suggestions")]
+    [ProducesResponseType<PlayerLinkSuggestionsResponse>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPlayerLinkSuggestions()
+    {
+        var suggestions = await _playerLinkPrompt.GetSuggestionsAsync(GetCurrentUserId());
+        return Ok(suggestions);
+    }
+
+    [HttpPost("player-link")]
+    [ProducesResponseType<ProfileResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> LinkOwnPlayer([FromBody] LinkOwnPlayerRequest request)
+    {
+        var profile = await _playerLinkPrompt.LinkAsync(GetCurrentUserId(), request.PlayerId);
+        return Ok(profile);
+    }
+
+    [HttpPost("player-link/new")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<ProfileResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> CreateOwnPlayer()
+    {
+        var profile = await _playerLinkPrompt.CreatePlayerAsync(GetCurrentUserId());
+        return Ok(profile);
+    }
+
+    [HttpPost("player-link/skip")]
+    [ProducesResponseType<ProfileResponse>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> SkipPlayerLink()
+    {
+        var profile = await _playerLinkPrompt.SkipAsync(GetCurrentUserId());
+        return Ok(profile);
     }
 
     [HttpPost("change-password")]

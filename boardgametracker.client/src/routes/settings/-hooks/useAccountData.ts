@@ -36,7 +36,7 @@ export const useAccountData = () => {
 	const updateProfileMutation = useMutation({
 		mutationFn: updateProfileCall,
 		onSuccess: (profile) => {
-			updateCurrentUser({ displayName: profile.displayName });
+			updateCurrentUser({ displayName: profile.displayName, needsPlayerLink: profile.needsPlayerLink });
 			successToast("settings:account.notifications.profile-updated");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
 			invalidatePlayers();

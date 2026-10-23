@@ -25,10 +25,10 @@ public static class AuthDtoExtensions
 
     public static ProfileResponse ToProfileDto(this ApplicationUser user, IEnumerable<string>  roles) =>
         new(user.Id, user.UserName ?? "", user.Email, user.DisplayName,
-            roles, user.CreatedAt, user.LastLoginAt, user.PlayerId, user.ProfileImage);
+            roles, user.CreatedAt, user.LastLoginAt, user.PlayerId, user.ProfileImage, user.NeedsPlayerLink);
 
     public static UserInfo ToUserInfo(this ApplicationUser user, IEnumerable<string> roles) =>
-        new(user.Id, user.UserName ?? "", user.DisplayName, roles, user.ProfileImage);
+        new(user.Id, user.UserName ?? "", user.DisplayName, roles, user.ProfileImage, user.NeedsPlayerLink);
 
     public static OidcProviderListDto ToListDto(this OidcProvider provider) =>
         new(provider.Id, provider.DisplayName, provider.Enabled);
