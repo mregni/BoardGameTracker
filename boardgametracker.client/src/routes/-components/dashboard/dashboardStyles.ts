@@ -29,6 +29,7 @@ export const pillVariants = cva(
 				warn: "border-warn/50 bg-warn/10 text-warn",
 				bad: "border-bad/50 bg-bad/10 text-bad",
 				neutral: "border-white/15 bg-white/5 text-white/70",
+				winner: "border-yellow-400/50 bg-yellow-400/10 text-white",
 			},
 		},
 		defaultVariants: {
