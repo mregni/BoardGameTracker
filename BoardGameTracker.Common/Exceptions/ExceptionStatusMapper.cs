@@ -25,6 +25,8 @@ public static class ExceptionStatusMapper
         BadHttpRequestException badRequest => (badRequest.StatusCode, badRequest.Message),
         ValidationException or DomainException => (StatusCodes.Status400BadRequest, exception.Message),
         AuthenticationFailedException => (StatusCodes.Status401Unauthorized, exception.Message),
+        ForbiddenException => (StatusCodes.Status403Forbidden, exception.Message),
+        ConflictException => (StatusCodes.Status409Conflict, exception.Message),
         EntityNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),
         FeatureDisabledException => (StatusCodes.Status404NotFound, exception.Message),
         KeyNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),

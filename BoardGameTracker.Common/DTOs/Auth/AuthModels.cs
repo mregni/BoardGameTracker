@@ -13,7 +13,8 @@ public record ProfileResponse(
     DateTime CreatedAt,
     DateTime? LastLoginAt,
     int? PlayerId,
-    string? ProfileImage = null);
+    string? ProfileImage = null,
+    bool NeedsPlayerLink = false);
 
 public record AuthStatusResponse(bool AuthEnabled);
 

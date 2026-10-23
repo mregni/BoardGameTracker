@@ -78,6 +78,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<int?>("PlayerId")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("PlayerLinkPending")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("ProfileImage")
                         .HasColumnType("text");
 

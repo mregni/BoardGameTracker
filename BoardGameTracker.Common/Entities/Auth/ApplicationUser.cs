@@ -14,6 +14,7 @@ public class ApplicationUser : IdentityUser
     public string? ProfileImage { get; private set; }
     public ProfileImageSource ProfileImageSource { get; private set; }
     public string? ProfileImageSourceUrl { get; private set; }
+    public bool PlayerLinkPending { get; private set; }
 
     private ApplicationUser() { }
 
@@ -52,9 +53,22 @@ public class ApplicationUser : IdentityUser
 
     public bool IsDisabled => LockoutEnd.HasValue && LockoutEnd.Value > DateTimeOffset.UtcNow;
 
+    public bool NeedsPlayerLink => PlayerLinkPending && PlayerId == null;
+
     public void LinkPlayer(int playerId)
     {
         PlayerId = playerId;
+        PlayerLinkPending = false;
+    }
+
+    public void AwaitPlayerLink()
+    {
+        PlayerLinkPending = true;
+    }
+
+    public void SkipPlayerLink()
+    {
+        PlayerLinkPending = false;
     }
 
     public void UnlinkPlayer()

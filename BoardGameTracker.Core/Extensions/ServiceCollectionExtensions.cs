@@ -146,6 +146,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IBackgroundEmailSender, BackgroundEmailSender>();
         serviceCollection.AddScoped<IOidcProviderService, OidcProviderService>();
         serviceCollection.AddScoped<IUserAdminService, UserAdminService>();
+        serviceCollection.AddScoped<IPlayerLinkPromptService, PlayerLinkPromptService>();
         serviceCollection.AddScoped<IUserAccessCheck, UserAccessCheck>();
         serviceCollection.AddSingleton<IHostedService, RefreshTokenCleanupService>();
         serviceCollection.AddSingleton<IHostAddressResolver, DnsHostAddressResolver>();
