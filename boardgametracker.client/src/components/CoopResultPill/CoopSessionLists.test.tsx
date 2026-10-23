@@ -84,8 +84,9 @@ describe("co-op sessions in session lists", () => {
 			/>,
 		);
 
-		expect(screen.getByText("coop.won")).toBeInTheDocument();
-		expect(screen.queryByText("won")).not.toBeInTheDocument();
+		expect(screen.getByText("won")).toBeInTheDocument();
+		expect(screen.getByText(/coop\.label/)).toBeInTheDocument();
+		expect(screen.queryByText("coop.won")).not.toBeInTheDocument();
 	});
 
 	it("shows the team result in the last sessions", () => {
