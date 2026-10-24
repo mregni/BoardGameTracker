@@ -83,6 +83,24 @@ public class UserAdminService : IUserAdminService
         _logger.LogInformation("Linked player {PlayerId} to user {UserId}", playerId, target.Id);
     }
 
+    private async Task DetachFromOtherAccountAsync(int playerId, string userId)
+    {
+        if (!await _context.Players.AnyAsync(p => p.Id == playerId))
+        {
+            throw new EntityNotFoundException(nameof(Player), playerId);
+        }
+
+        var other = await _context.Users.FirstOrDefaultAsync(u => u.PlayerId == playerId && u.Id != userId);
+        if (other == null)
+        {
+            return;
+        }
+
+        other.UnlinkPlayer();
+        await SaveLinkAsync(other);
+        _logger.LogInformation("Moved player {PlayerId} from user {OtherUserId} to user {UserId}", playerId, other.Id, userId);
+    }
+
     private async Task SaveLinkAsync(ApplicationUser user)
     {
         var result = await _userManager.UpdateAsync(user);
@@ -214,7 +232,7 @@ public class UserAdminService : IUserAdminService
         {
             if (playerId.HasValue)
             {
-                await PlayerLinkGuard.EnsureLinkableAsync(_context, playerId.Value, userId);
+                await DetachFromOtherAccountAsync(playerId.Value, userId);
                 user.LinkPlayer(playerId.Value);
             }
             else

@@ -1,4 +1,5 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Badge } from "@/models";
 
@@ -9,12 +10,28 @@ interface Props {
 export const BgtAchievementIcon = (props: Props) => {
 	const { badge } = props;
 	const { t } = useTranslation("badges");
+	const [open, setOpen] = useState(false);
+	const openAtPress = useRef<boolean | null>(null);
 
 	return (
 		<Tooltip.Provider>
-			<Tooltip.Root>
+			<Tooltip.Root open={open} onOpenChange={setOpen}>
 				<Tooltip.Trigger asChild>
-					<img src={`/images/badges/${badge.image}`} alt={t(badge.titleKey)} className="h-10 aspect-square" />
+					<button
+						type="button"
+						className="block rounded-md focus-visible:outline-2 focus-visible:outline-primary"
+						onPointerDown={() => {
+							openAtPress.current = open;
+						}}
+						onClick={(event) => {
+							event.preventDefault();
+							const wasOpen = openAtPress.current ?? open;
+							openAtPress.current = null;
+							setOpen(!wasOpen);
+						}}
+					>
+						<img src={`/images/badges/${badge.image}`} alt={t(badge.titleKey)} className="h-10 aspect-square" />
+					</button>
 				</Tooltip.Trigger>
 				<Tooltip.Portal>
 					<Tooltip.Content

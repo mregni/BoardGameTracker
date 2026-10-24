@@ -41,11 +41,11 @@ describe("PlayerAchievementsSummary", () => {
 		expect(progress).toHaveAttribute("value", "2");
 		expect(progress).toHaveAttribute("max", "4");
 		expect(within(progress.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({ width: "50%" });
-		expect(within(screen.getByRole("list")).getAllByRole("img")).toHaveLength(3);
+		expect(within(screen.getByRole("list")).getAllByRole("img")).toHaveLength(2);
 		expect(screen.getByRole("link", { name: "achievements.see-all" })).toHaveAttribute("href", "#player-achievements");
 	});
 
-	it("shows only the five most recently earned badges, newest first", () => {
+	it("shows the highest earned level of each badge type, newest first", () => {
 		const playerBadges = allBadges.map((badge, index) => ({
 			...badge,
 			awardedAt: index === 0 ? null : `2026-01-${String(index + 1).padStart(2, "0")}T10:00:00Z`,
@@ -57,8 +57,7 @@ describe("PlayerAchievementsSummary", () => {
 			"/images/badges/marathonRunner.png",
 			"/images/badges/firstTry.png",
 			"/images/badges/wins-gold.png",
-			"/images/badges/wins-red.png",
-			"/images/badges/wins-blue.png",
+			"/images/badges/sessions-gold.png",
 		]);
 	});
 

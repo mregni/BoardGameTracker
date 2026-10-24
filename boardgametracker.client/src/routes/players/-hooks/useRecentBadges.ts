@@ -17,5 +17,16 @@ const rank = (badge: Badge) => (badge.level ? levelRank[badge.level] : 0);
 export const sortByRecency = (badges: Badge[]): Badge[] =>
 	[...badges].sort((a, b) => awardedTime(b) - awardedTime(a) || rank(b) - rank(a));
 
+export const highestPerType = (badges: Badge[]): Badge[] => {
+	const best = new Map<Badge["type"], Badge>();
+	for (const badge of badges) {
+		const current = best.get(badge.type);
+		if (!current || rank(badge) > rank(current)) {
+			best.set(badge.type, badge);
+		}
+	}
+	return [...best.values()];
+};
+
 export const useRecentBadges = (playerBadges: Badge[], limit = RECENT_BADGE_LIMIT): Badge[] =>
-	useMemo(() => sortByRecency(playerBadges).slice(0, limit), [playerBadges, limit]);
+	useMemo(() => sortByRecency(highestPerType(playerBadges)).slice(0, limit), [playerBadges, limit]);

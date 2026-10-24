@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Player, UserDto } from "@/models";
-import { buildLinkablePlayerItems } from "./playerLinkOptions";
+import { buildLinkablePlayerItems, buildPlayerLinkItems } from "./playerLinkOptions";
 
 const player = (id: number, name: string): Player => ({ id, name, image: null, email: null, badges: [] });
 
@@ -58,5 +58,18 @@ describe("buildLinkablePlayerItems", () => {
 		const result = buildLinkablePlayerItems([player(7, "Dana")], []);
 
 		expect(result).toEqual([{ value: 7, label: "Dana" }]);
+	});
+
+	it("lists every player and hints at the account of players linked elsewhere", () => {
+		const players = [player(1, "Alice"), player(2, "Bob"), player(3, "Cara")];
+		const users = [user("u1", 2), user("u2", 3)];
+
+		const result = buildPlayerLinkItems(players, users, "u2", (name) => `linked to ${name}`);
+
+		expect(result).toEqual([
+			{ value: 1, label: "Alice" },
+			{ value: 2, label: "Bob", hint: "linked to u1" },
+			{ value: 3, label: "Cara" },
+		]);
 	});
 });

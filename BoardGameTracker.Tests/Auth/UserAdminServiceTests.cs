@@ -671,7 +671,7 @@ public class UserAdminServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task UpdateUserAsync_ShouldThrowDomainException_WhenPlayerLinkedToAnotherUser()
+    public async Task UpdateUserAsync_ShouldMoveThePlayer_WhenItIsLinkedToAnotherUser()
     {
         _context.Players.Add(new Player("Target") { Id = 5 });
         var otherUser = new ApplicationUser("other", "o@test.com");
@@ -682,12 +682,56 @@ public class UserAdminServiceTests : IDisposable
         var currentUserId = "admin-1";
         var targetUserId = "user-2";
         var targetUser = new ApplicationUser("bob", "b@test.com");
+        var roles = new List<string> { Constants.AuthRoles.User };
+        _userManagerMock.Setup(x => x.FindByIdAsync(targetUserId)).ReturnsAsync(targetUser);
+        _userManagerMock.Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.SetupSequence(x => x.GetRolesAsync(targetUser)).ReturnsAsync(roles).ReturnsAsync(roles);
+
+        var result = await _service.UpdateUserAsync(targetUserId, "bob", "b@test.com", Constants.AuthRoles.User, 5, currentUserId);
+
+        result.PlayerId.Should().Be(5);
+        otherUser.PlayerId.Should().BeNull();
+        _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(otherUser), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, targetUser), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
+        VerifyInformationLogged();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateUserAsync_ShouldThrowDomainException_WhenTheMovedLinkCannotBeSaved()
+    {
+        _context.Players.Add(new Player("Target") { Id = 5 });
+        var otherUser = new ApplicationUser("other", "o@test.com");
+        otherUser.LinkPlayer(5);
+        _context.Users.Add(otherUser);
+        await _context.SaveChangesAsync();
+
+        var targetUserId = "user-2";
+        var targetUser = new ApplicationUser("bob", "b@test.com");
+        _userManagerMock.Setup(x => x.FindByIdAsync(targetUserId)).ReturnsAsync(targetUser);
+        _userManagerMock.Setup(x => x.UpdateAsync(otherUser)).ReturnsAsync(IdentityResult.Failed());
+
+        var act = () => _service.UpdateUserAsync(targetUserId, "bob", "b@test.com", Constants.AuthRoles.User, 5, "admin-1");
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.PlayerLinkUpdateFailed);
+        _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(otherUser), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateUserAsync_ShouldThrow_WhenThePlayerDoesNotExist()
+    {
+        var targetUserId = "user-2";
+        var targetUser = new ApplicationUser("bob", "b@test.com");
         _userManagerMock.Setup(x => x.FindByIdAsync(targetUserId)).ReturnsAsync(targetUser);
 
-        var act = () => _service.UpdateUserAsync(targetUserId, "bob", "b@test.com", Constants.AuthRoles.User, 5, currentUserId);
+        var act = () => _service.UpdateUserAsync(targetUserId, "bob", "b@test.com", Constants.AuthRoles.User, 99, "admin-1");
 
-        await act.Should().ThrowAsync<DomainException>();
-
+        await act.Should().ThrowAsync<EntityNotFoundException>();
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         VerifyNoOtherCalls();
     }
