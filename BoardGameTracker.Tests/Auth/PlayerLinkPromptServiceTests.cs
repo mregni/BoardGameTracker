@@ -121,6 +121,34 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetSuggestionsAsync_ShouldLeaveOutPlayersWithADifferentEmail()
+    {
+        var user = await CreateUserAsync(Constants.AuthRoles.User);
+        var same = await AddPlayerAsync("Mikhaël", " Mikhael@Example.com ");
+        var noEmail = await AddPlayerAsync("Anna");
+        await AddPlayerAsync("Mikhael R", "someone@example.com");
+
+        var result = await _service.GetSuggestionsAsync(user.Id);
+
+        result.Players.Select(p => p.Id).Should().BeEquivalentTo([same.Id, noEmail.Id]);
+        result.Suggestions.Select(s => s.Id).Should().Equal(same.Id);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetSuggestionsAsync_ShouldOnlyOfferPlayersWithoutAnEmail_WhenTheAccountHasNone()
+    {
+        var user = await CreateUserAsync(Constants.AuthRoles.User, "sso_123", "123" + OidcService.PlaceholderEmailDomain, null);
+        var noEmail = await AddPlayerAsync("Anna");
+        await AddPlayerAsync("Bert", "bert@example.com");
+
+        var result = await _service.GetSuggestionsAsync(user.Id);
+
+        result.Players.Select(p => p.Id).Should().Equal(noEmail.Id);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task GetSuggestionsAsync_ShouldTellAReaderThatTheyCannotCreateAPlayer()
     {
         var user = await CreateUserAsync(Constants.AuthRoles.Reader);
@@ -174,6 +202,21 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
         (await act.Should().ThrowAsync<ConflictException>()).WithMessage(Constants.Errors.PlayerAlreadyLinked);
         (await ReloadAsync(user.Id)).PlayerLinkPending.Should().BeTrue();
         (await ReloadAsync(other.Id)).PlayerId.Should().Be(player.Id);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkAsync_ShouldRefuseAPlayerWithADifferentEmail()
+    {
+        var user = await CreateUserAsync(Constants.AuthRoles.User);
+        var player = await AddPlayerAsync("Mikhaël", "someone@example.com");
+
+        var act = () => _service.LinkAsync(user.Id, player.Id);
+
+        (await act.Should().ThrowAsync<ForbiddenException>()).WithMessage(Constants.Errors.PlayerEmailMismatch);
+        var stored = await ReloadAsync(user.Id);
+        stored.PlayerLinkPending.Should().BeTrue();
+        stored.PlayerId.Should().BeNull();
         VerifyNoOtherCalls();
     }
 

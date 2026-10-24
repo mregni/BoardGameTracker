@@ -51,6 +51,7 @@ public class PlayerLinkPromptService : IPlayerLinkPromptService
             .Where(p => !linkedPlayerIds.Contains(p.Id))
             .Select(p => new PlayerLinkCandidate(p.Id, p.Name, p.Image, p.Email))
             .ToListAsync();
+        candidates.RemoveAll(p => !PlayerLinkMatcher.EmailAllowsLink(user.Email, p.Email));
         candidates.Sort((left, right) => StringComparer.InvariantCultureIgnoreCase.Compare(left.Name, right.Name));
 
         var suggestions = PlayerLinkMatcher.Suggest(candidates, user.Email, user.DisplayName, user.UserName);
@@ -61,14 +62,22 @@ public class PlayerLinkPromptService : IPlayerLinkPromptService
     public async Task<ProfileResponse> LinkAsync(string userId, int playerId)
     {
         var user = await FindUserAsync(userId);
-        if (!await _context.Players.AnyAsync(p => p.Id == playerId))
-        {
-            throw new EntityNotFoundException(nameof(Player), playerId);
-        }
+        var player = await _context.Players
+            .AsNoTracking()
+            .Where(p => p.Id == playerId)
+            .Select(p => new { p.Email })
+            .FirstOrDefaultAsync()
+            ?? throw new EntityNotFoundException(nameof(Player), playerId);
 
         if (await _context.Users.AnyAsync(u => u.PlayerId == playerId && u.Id != userId))
         {
             throw new ConflictException(Constants.Errors.PlayerAlreadyLinked);
+        }
+
+        if (!PlayerLinkMatcher.EmailAllowsLink(user.Email, player.Email))
+        {
+            _logger.LogWarning("User {UserId} tried to link player {PlayerId} with a different email", userId, playerId);
+            throw new ForbiddenException(Constants.Errors.PlayerEmailMismatch);
         }
 
         await _userAdminService.LinkPlayerAccountAsync(playerId, userId);

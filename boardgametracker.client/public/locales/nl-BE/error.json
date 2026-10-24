@@ -28,6 +28,7 @@
     "player-already-linked": "Deze speler is al gekoppeld aan een ander account",
     "player-link-update-failed": "Het gekoppelde account kon niet worden gewijzigd. Herlaad de pagina en probeer het opnieuw.",
     "player-create-not-allowed": "Je mag geen spelers aanmaken",
+    "player-email-mismatch": "Deze speler heeft een ander e-mailadres. Vraag een admin om hem te koppelen.",
     "invalid-reset-token": "Deze link om je wachtwoord opnieuw in te stellen is ongeldig of verlopen",
     "not-authenticated": "Je moet aangemeld zijn",
     "insecure-authority": "De URL van de provider moet https gebruiken (http mag enkel voor lokale adressen)",

@@ -104,13 +104,30 @@ describe("PlayerLinkPrompt", () => {
 		expect(await screen.findByRole("dialog")).toBeInTheDocument();
 		expect(screen.getByText("player-link.title", { selector: "h2" })).toBeInTheDocument();
 		const options = radios();
-		expect(options).toHaveLength(2);
+		expect(options).toHaveLength(3);
 		expect(options[0]).toHaveAccessibleName(/Mikhaël R.*player-link\.reason\.email/);
 		expect(options[1]).toHaveAccessibleName(/Mikhaël.*player-link\.reason\.partial/);
+		expect(options[2]).toHaveAccessibleName(/player-link\.new\.title.*player-link\.new\.hint/);
 		expect(options[0]).toBeChecked();
+		await waitFor(() => expect(options[0]).toHaveFocus());
 		expect(screen.getByRole("img", { name: "Mikhaël R" })).toHaveClass("rounded-lg");
-		expect(screen.getByRole("combobox", { name: "player-link.someone-else" })).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "player-link.create" })).toBeInTheDocument();
+		expect(screen.getByRole("combobox", { name: "player-link.someone-else" })).toHaveTextContent(
+			"player-link.search-players",
+		);
+		expect(screen.getByText("player-link.later-hint")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "player-link.skip" })).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "player-link.create" })).not.toBeInTheDocument();
+	});
+
+	it("asks whether the one suggestion is you", async () => {
+		mocks.suggestions.mockResolvedValue(
+			suggestions({ suggestions: [{ id: 3, name: "Mikhaël R", image: null, reason: "email" }] }),
+		);
+		useAuth.getState().setSession("access", signedIn(true));
+
+		renderWithProviders(<PlayerLinkPrompt />);
+
+		expect(await screen.findByText("player-link.title-one", { selector: "h2" })).toBeInTheDocument();
 	});
 
 	it("links the chosen suggestion, clears the flag and confirms it", async () => {
@@ -146,13 +163,14 @@ describe("PlayerLinkPrompt", () => {
 		await waitFor(() => expect(mocks.link).toHaveBeenCalledWith(5));
 	});
 
-	it("creates a new player instead", async () => {
+	it("creates a new player when the new card is chosen", async () => {
 		const user = userEvent.setup();
 		mocks.suggestions.mockResolvedValue(suggestions());
 		useAuth.getState().setSession("access", signedIn(true));
 		renderWithProviders(<PlayerLinkPrompt />);
 		await screen.findByRole("dialog");
 
+		await user.click(screen.getByRole("radio", { name: /player-link\.new\.title/ }));
 		await user.click(screen.getByRole("button", { name: "player-link.create" }));
 
 		await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
@@ -176,7 +194,7 @@ describe("PlayerLinkPrompt", () => {
 		expect(mocks.link).not.toHaveBeenCalled();
 	});
 
-	it("closes for this session only when dismissed", async () => {
+	it("skips as well when dismissed with Escape", async () => {
 		const user = userEvent.setup();
 		mocks.suggestions.mockResolvedValue(suggestions());
 		useAuth.getState().setSession("access", signedIn(true));
@@ -185,8 +203,26 @@ describe("PlayerLinkPrompt", () => {
 
 		await user.keyboard("{Escape}");
 
+		await waitFor(() => expect(mocks.skip).toHaveBeenCalledTimes(1));
 		await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+		expect(useAuth.getState().user?.needsPlayerLink).toBe(false);
+	});
+
+	it("ignores a dismiss while a request is running", async () => {
+		const user = userEvent.setup();
+		mocks.suggestions.mockResolvedValue(suggestions());
+		mocks.link.mockReturnValue(new Promise(() => {}));
+		useAuth.getState().setSession("access", signedIn(true));
+		renderWithProviders(<PlayerLinkPrompt />);
+		await screen.findByRole("dialog");
+
+		await user.click(screen.getByRole("button", { name: "player-link.confirm" }));
+		await waitFor(() => expect(mocks.link).toHaveBeenCalledWith(3));
+		await waitFor(() => expect(screen.getByRole("radio", { name: /player-link\.new\.title/ })).toBeDisabled());
+		await user.keyboard("{Escape}");
+
 		expect(mocks.skip).not.toHaveBeenCalled();
+		expect(screen.getByRole("dialog")).toBeInTheDocument();
 	});
 
 	it("shows the error and keeps the dialog open when the player was taken meanwhile", async () => {
@@ -212,20 +248,40 @@ describe("PlayerLinkPrompt", () => {
 		renderWithProviders(<PlayerLinkPrompt />);
 
 		await screen.findByRole("dialog");
-		expect(screen.queryByRole("button", { name: "player-link.create" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("radio", { name: /player-link\.new\.title/ })).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "player-link.confirm" })).toBeEnabled();
 		expect(screen.getByRole("button", { name: "player-link.skip" })).toBeInTheDocument();
 	});
 
-	it("lets the user pick from all players when nothing matches", async () => {
+	it("lets the user pick from all players or create one right away when nothing matches", async () => {
+		const user = userEvent.setup();
 		mocks.suggestions.mockResolvedValue(suggestions({ suggestions: [] }));
 		useAuth.getState().setSession("access", signedIn(true));
 
 		renderWithProviders(<PlayerLinkPrompt />);
 
 		await screen.findByRole("dialog");
-		expect(screen.queryAllByRole("radio")).toHaveLength(0);
 		expect(screen.getByRole("combobox", { name: "player-link.pick-player" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "player-link.confirm" })).toBeDisabled();
+		const fresh = screen.getByRole("radio", { name: /player-link\.new\.title/ });
+		expect(fresh).toBeEnabled();
+		await waitFor(() => expect(fresh).toHaveFocus());
+
+		await user.click(fresh);
+		await user.click(screen.getByRole("button", { name: "player-link.create" }));
+
+		await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
+		expect(mocks.link).not.toHaveBeenCalled();
+	});
+
+	it("has no choice cards for a reader without suggestions", async () => {
+		mocks.suggestions.mockResolvedValue(suggestions({ suggestions: [], canCreatePlayer: false }));
+		useAuth.getState().setSession("access", signedIn(true, ["Reader"]));
+
+		renderWithProviders(<PlayerLinkPrompt />);
+
+		await screen.findByRole("dialog");
+		expect(screen.queryAllByRole("radio")).toHaveLength(0);
 		expect(screen.getByRole("button", { name: "player-link.confirm" })).toBeDisabled();
 	});
 

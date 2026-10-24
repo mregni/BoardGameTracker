@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { cx } from "class-variance-authority";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import PlusIcon from "@/assets/icons/plus.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtSelect } from "@/components/BgtForm/BgtSelect";
@@ -19,6 +20,9 @@ const REASON_KEYS: Record<PlayerLinkMatchReason, string> = {
 	partial: "player-link.reason.partial",
 };
 
+const NEW_PLAYER = "new";
+type Choice = number | typeof NEW_PLAYER;
+
 export const PlayerLinkPrompt = () => {
 	const needsPlayerLink = useAuth((s) => s.user?.needsPlayerLink === true);
 	return needsPlayerLink ? <PlayerLinkDialog /> : null;
@@ -26,14 +30,55 @@ export const PlayerLinkPrompt = () => {
 
 const hasNothingToOffer = (data: PlayerLinkSuggestions) => data.players.length === 0 && !data.canCreatePlayer;
 
+const titleKey = (data: PlayerLinkSuggestions) => {
+	if (data.players.length === 0) return "player-link.title-new";
+	return data.suggestions.length === 1 ? "player-link.title-one" : "player-link.title";
+};
+
+interface ChoiceCardProps {
+	checked: boolean;
+	disabled: boolean;
+	onSelect: () => void;
+	icon: ReactNode;
+	title: string;
+	hint: string;
+}
+
+const ChoiceCard = (props: ChoiceCardProps) => {
+	const { checked, disabled, onSelect, icon, title, hint } = props;
+	return (
+		<label
+			className={cx(
+				"flex items-center gap-3 rounded-lg border p-3 transition-colors cursor-pointer has-focus-visible:outline-2 has-focus-visible:outline-primary has-disabled:cursor-default has-disabled:opacity-60",
+				checked ? "border-primary bg-primary/20" : "border-white/10 hover:bg-white/5",
+			)}
+		>
+			<input
+				type="radio"
+				name="player-link-choice"
+				className="sr-only"
+				checked={checked}
+				disabled={disabled}
+				onChange={onSelect}
+			/>
+			{icon}
+			<span className="flex min-w-0 flex-col">
+				<span className="truncate font-semibold">{title}</span>
+				<span className="text-xs text-white/60">{hint}</span>
+			</span>
+		</label>
+	);
+};
+
 const PlayerLinkDialog = () => {
 	const { t } = useTranslation("auth");
 	const queryClient = useQueryClient();
 	const { successToast, errorToast } = useToasts();
 	const updateUser = useAuth((s) => s.updateUser);
 	const { data, refetch } = useQuery(getPlayerLinkSuggestions());
-	const [selectedId, setSelectedId] = useState<number | null>(null);
+	const [selected, setSelected] = useState<Choice | null>(null);
 	const autoSkipped = useRef(false);
+	const choicesRef = useRef<HTMLFieldSetElement>(null);
 
 	const close = () => updateUser({ needsPlayerLink: false });
 
@@ -89,72 +134,88 @@ const PlayerLinkDialog = () => {
 	}
 
 	const hasPlayers = data.players.length > 0;
+	const offerNew = hasPlayers && data.canCreatePlayer;
 	const suggestedIds = new Set(data.suggestions.map((s) => s.id));
 	const others = data.players.filter((p) => !suggestedIds.has(p.id));
-	const chosenId = selectedId ?? data.suggestions[0]?.id ?? null;
+	const chosen: Choice | null = hasPlayers ? (selected ?? data.suggestions[0]?.id ?? null) : NEW_PLAYER;
 	const busy = linkMutation.isPending || createMutation.isPending || skipMutation.isPending;
 
-	const link = () => {
-		if (chosenId !== null) {
-			linkMutation.mutate(chosenId);
+	const confirm = () => {
+		if (chosen === NEW_PLAYER) {
+			createMutation.mutate();
+		} else if (chosen !== null) {
+			linkMutation.mutate(chosen);
 		}
 	};
 
-	const create = () => createMutation.mutate();
+	const dismiss = () => {
+		if (!busy) {
+			skip();
+		}
+	};
+
+	const focusChoice = (event: Event) => {
+		const root = choicesRef.current;
+		const target = root?.querySelector<HTMLInputElement>("input:checked") ?? root?.querySelector<HTMLInputElement>("input");
+		if (target) {
+			event.preventDefault();
+			target.focus();
+		}
+	};
 
 	return (
-		<BgtDialog open onClose={close}>
-			<BgtDialogContent aria-describedby={undefined}>
-				<BgtDialogTitle>{t(hasPlayers ? "player-link.title" : "player-link.title-new")}</BgtDialogTitle>
-				{data.suggestions.length > 0 && (
-					<fieldset className="flex flex-col gap-2">
-						<legend className="sr-only">{t("player-link.title")}</legend>
-						{data.suggestions.map((suggestion) => {
-							const checked = chosenId === suggestion.id;
-							return (
-								<label
-									key={suggestion.id}
-									className={cx(
-										"flex items-center gap-3 rounded-lg border p-3 transition-colors cursor-pointer has-focus-visible:outline-2 has-focus-visible:outline-primary",
-										checked ? "border-primary bg-primary/20" : "border-white/10 hover:bg-white/5",
-									)}
-								>
-									<input
-										type="radio"
-										name="player-link-suggestion"
-										className="sr-only"
-										checked={checked}
-										onChange={() => setSelectedId(suggestion.id)}
-									/>
-									<BgtAvatar image={suggestion.image} title={suggestion.name} size="large" />
-									<span className="flex min-w-0 flex-col">
-										<span className="truncate font-semibold">{suggestion.name}</span>
-										<span className="text-xs text-white/60">{t(REASON_KEYS[suggestion.reason])}</span>
+		<BgtDialog open onClose={dismiss}>
+			<BgtDialogContent aria-describedby={undefined} onOpenAutoFocus={focusChoice}>
+				<BgtDialogTitle>{t(titleKey(data))}</BgtDialogTitle>
+				{(data.suggestions.length > 0 || offerNew) && (
+					<fieldset ref={choicesRef} className="flex flex-col gap-2">
+						<legend className="sr-only">{t(titleKey(data))}</legend>
+						{data.suggestions.map((suggestion) => (
+							<ChoiceCard
+								key={suggestion.id}
+								checked={chosen === suggestion.id}
+								disabled={busy}
+								onSelect={() => setSelected(suggestion.id)}
+								icon={<BgtAvatar image={suggestion.image} title={suggestion.name} size="large" />}
+								title={suggestion.name}
+								hint={t(REASON_KEYS[suggestion.reason])}
+							/>
+						))}
+						{offerNew && (
+							<ChoiceCard
+								checked={chosen === NEW_PLAYER}
+								disabled={busy}
+								onSelect={() => setSelected(NEW_PLAYER)}
+								icon={
+									<span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-white/10">
+										<PlusIcon className="size-5" aria-hidden />
 									</span>
-								</label>
-							);
-						})}
+								}
+								title={t("player-link.new.title")}
+								hint={t("player-link.new.hint")}
+							/>
+						)}
 					</fieldset>
 				)}
 				{others.length > 0 && (
 					<BgtSelect
 						label={t(data.suggestions.length > 0 ? "player-link.someone-else" : "player-link.pick-player")}
 						items={others.map((p) => ({ value: p.id, label: p.name, image: p.image }))}
-						value={others.some((p) => p.id === chosenId) ? chosenId : null}
-						onValueChange={(value) => setSelectedId(Number(value))}
-						placeholder={t("player-link.pick-player")}
+						value={typeof chosen === "number" && others.some((p) => p.id === chosen) ? chosen : null}
+						onValueChange={(value) => setSelected(Number(value))}
+						placeholder={t("player-link.search-players")}
+						disabled={busy}
 						hasSearch
 						showAvatars
 					/>
 				)}
+				<p className="text-xs text-white/60">{t("player-link.later-hint")}</p>
 				<BgtDialogFooter
-					onCancel={() => skip()}
+					onCancel={dismiss}
 					cancelLabel={t("player-link.skip")}
-					secondaryLabel={hasPlayers && data.canCreatePlayer ? t("player-link.create") : undefined}
-					onSecondary={create}
-					confirmLabel={t(hasPlayers ? "player-link.confirm" : "player-link.create")}
-					onConfirm={hasPlayers ? link : create}
-					disabled={hasPlayers && chosenId === null}
+					confirmLabel={t(chosen === NEW_PLAYER ? "player-link.create" : "player-link.confirm")}
+					onConfirm={confirm}
+					disabled={chosen === null}
 					loading={busy}
 				/>
 			</BgtDialogContent>
