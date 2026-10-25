@@ -30,6 +30,12 @@ public static class PlayerLinkMatcher
             .ToList();
     }
 
+    public static bool EmailAllowsLink(string? accountEmail, string? playerEmail)
+    {
+        var player = NormalizeEmail(playerEmail);
+        return player == null || player == NormalizeEmail(accountEmail);
+    }
+
     private static (int Score, PlayerLinkMatchReason Reason)? Rank(PlayerLinkCandidate player, string? accountEmail, string[] displayWords, string[] userWords)
     {
         if (accountEmail != null && accountEmail == NormalizeEmail(player.Email))

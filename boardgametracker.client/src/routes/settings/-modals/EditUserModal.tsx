@@ -6,7 +6,7 @@ import { useAppForm } from "@/hooks/form";
 import { type BgtSelectItem, isApiError, type Player, type UserDto } from "@/models";
 import { translateApiError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
-import { buildLinkablePlayerItems } from "../-utils/playerLinkOptions";
+import { buildPlayerLinkItems } from "../-utils/playerLinkOptions";
 
 interface Props {
 	open: boolean;
@@ -38,7 +38,10 @@ export const EditUserModal = ({ open, close, user, players, users, onSubmit, isL
 	);
 
 	const playerItems: BgtSelectItem[] = useMemo(
-		() => [{ value: 0, label: t("account.users.player.none") }, ...buildLinkablePlayerItems(players, users, user.id)],
+		() => [
+			{ value: 0, label: t("account.users.player.none") },
+			...buildPlayerLinkItems(players, users, user.id, (name) => t("account.users.player.linked-to", { name })),
+		],
 		[players, users, user.id, t],
 	);
 

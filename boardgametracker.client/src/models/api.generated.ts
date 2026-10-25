@@ -431,6 +431,17 @@ export interface paths {
                         "text/json": components["schemas"]["ProfileResponse"];
                     };
                 };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
                 /** @description Not Found */
                 404: {
                     headers: {
@@ -5283,6 +5294,8 @@ export interface components {
             playerOneAverageScore: number | null;
             /** Format: double */
             playerTwoAverageScore: number | null;
+            /** Format: int32 */
+            scoredSessionCount: number;
             /** Format: date-time */
             lastPlayed: string;
             lastOutcome: components["schemas"]["CompareOutcome"];
@@ -5546,7 +5559,8 @@ export interface components {
             recentActivities: components["schemas"]["RecentActivityDto"][];
             collection: components["schemas"]["GameStateChart"][];
             mostPlayedGames: components["schemas"]["MostPlayedGameDto"][];
-            mostPlayedGamesThisMonth: components["schemas"]["MostPlayedGameDto"][];
+            mostPlayedGamesThisYear: components["schemas"]["MostPlayedGameDto"][];
+            mostPlayedGamesLast12Months: components["schemas"]["MostPlayedGameDto"][];
             topPlayers: components["schemas"]["DashboardTopPlayerDto"][];
             topPlayersIncludeCoopWins: boolean;
             recentAddedGames: components["schemas"]["RecentGameDto"][];
@@ -5846,6 +5860,8 @@ export interface components {
             highScore: number | null;
             /** Format: double */
             averageScore: number | null;
+            /** Format: int32 */
+            scoredSessionCount: number;
             mostWinsPlayer: components["schemas"]["MostWinningPlayer"];
             /** Format: double */
             averagePlayTime: number;

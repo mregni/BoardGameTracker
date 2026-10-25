@@ -25,9 +25,13 @@ describe("useDurationRange", () => {
 		expect(range()(30, 45)).toBe("30–45 min");
 	});
 
-	it("writes mixed ranges as two durations", () => {
+	it("keeps a range that starts below an hour in minutes", () => {
+		expect(range()(45, 60)).toBe("45–60 min");
+		expect(range()(30, 90)).toBe("30–90 min");
+	});
+
+	it("writes mixed ranges above an hour as two durations", () => {
 		expect(range()(90, 120)).toBe("1h 30m–2h");
-		expect(range()(45, 60)).toBe("45 min–1h");
 	});
 
 	it("writes a single duration when both ends match or one is missing", () => {

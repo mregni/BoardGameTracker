@@ -9,7 +9,7 @@ import type { BgtSelectItem, Game, GameState } from "@/models";
 import type { GamePrice } from "@/models/Games/GamePrice";
 import { toDisplay } from "@/utils/dateUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
-import { formatDecimal, formatPrice } from "@/utils/numberUtils";
+import { formatDecimal, formatPriceOrEmpty } from "@/utils/numberUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./EditableNumberCell";
 import { EditableSelectCell } from "./EditableSelectCell";
@@ -141,7 +141,7 @@ export const GameTableCards = (props: Props) => {
 								value={game.buyingPrice}
 								min={0}
 								prefix={currency}
-								format={(price) => formatPrice(price, currency, uiLanguage)}
+								format={(price) => formatPriceOrEmpty(price, currency, uiLanguage)}
 								editing={isEditing(game.id, "buyingPrice")}
 								onStartEdit={() => startEdit(game.id, "buyingPrice")}
 								onStopEdit={stopEdit}

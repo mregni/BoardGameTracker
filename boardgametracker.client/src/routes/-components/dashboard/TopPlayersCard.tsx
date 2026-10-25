@@ -70,7 +70,12 @@ export const TopPlayersCard = (props: Props) => {
 												aria-label={t("top-players.won", { percent: percent(winRate) })}
 											/>
 											<span className="flex flex-col items-end">
-												<span className="font-bold tabular-nums text-white">{integer(player.winCount)}</span>
+												<span className="font-bold tabular-nums text-white">
+													{integer(player.winCount)}{" "}
+													<span className="text-xs font-normal text-white/60">
+														{t("top-players.wins", { count: player.winCount })}
+													</span>
+												</span>
 												<span className="text-xs text-white/60">
 													{t("top-players.won", { percent: percent(winRate) })}
 												</span>

@@ -77,11 +77,11 @@ export const BestWorstCards = ({ compare, playerOne, playerTwo }: Props) => {
 			<section aria-label={heading} data-testid={`best-worst-${side}`} className={cardVariants({ side })}>
 				<strong>{heading}</strong>
 				<div className="flex flex-col gap-1.5">
-					<span className="text-[11px] uppercase tracking-wider text-white/60">{t("best-worst.best")}</span>
+					<span className="text-xs text-white/60">{t("best-worst.best")}</span>
 					{list(side, gamesFor(best), "best")}
 				</div>
 				<div className="flex flex-col gap-1.5">
-					<span className="text-[11px] uppercase tracking-wider text-white/60">{t("best-worst.worst")}</span>
+					<span className="text-xs text-white/60">{t("best-worst.worst")}</span>
 					{list(side, gamesFor(worst), "worst")}
 				</div>
 			</section>

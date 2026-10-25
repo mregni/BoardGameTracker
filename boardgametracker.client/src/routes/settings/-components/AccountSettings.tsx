@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useModalState } from "@/hooks/useModalState";
 import type {
 	BgtSelectItem,
+	Player,
 	PlayerLink,
 	ProfileResponse,
 	ResetPasswordResponse,
@@ -32,6 +33,7 @@ import { getSettings } from "@/services/queries/settings";
 import { toDisplayDateTime } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { useAccountData } from "../-hooks/useAccountData";
+import { useExternalLogins } from "../-hooks/useExternalLogins";
 import { ChangePasswordModal } from "../-modals/ChangePasswordModal";
 import { CreateUserModal } from "../-modals/CreateUserModal";
 import { EditUserModal } from "../-modals/EditUserModal";
@@ -107,6 +109,7 @@ export const AccountSettings = () => {
 			{isAdmin && (
 				<UserManagementSection
 					users={users}
+					players={players}
 					currentUserId={currentUser?.id ?? ""}
 					onCreateUser={createUserModal.show}
 					onEditUser={(user) => setEditTarget(user)}
@@ -219,6 +222,8 @@ interface ProfilePictureSectionProps {
 const ProfilePictureSection = ({ profile, onUpload, onRemove, isBusy }: ProfilePictureSectionProps) => {
 	const { t } = useTranslation("settings");
 	const fileInput = useRef<HTMLInputElement>(null);
+	const { logins, provider } = useExternalLogins();
+	const showSsoHint = provider !== null && logins.length > 0;
 
 	const onFileChosen = async (event: ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
@@ -229,7 +234,10 @@ const ProfilePictureSection = ({ profile, onUpload, onRemove, isBusy }: ProfileP
 	};
 
 	return (
-		<SettingsSection title={t("account.profile.picture.label")} description={t("account.profile.picture.hint")}>
+		<SettingsSection
+			title={t("account.profile.picture.label")}
+			description={showSsoHint ? t("account.profile.picture.hint") : undefined}
+		>
 			<div className="flex items-center gap-4">
 				<BgtAvatar
 					image={profile.profileImage}
@@ -373,6 +381,7 @@ const ProfileSection = ({
 
 interface UserManagementSectionProps {
 	users: UserDto[];
+	players: Player[];
 	currentUserId: string;
 	onCreateUser: () => void;
 	onEditUser: (user: UserDto) => void;
@@ -383,6 +392,7 @@ interface UserManagementSectionProps {
 
 const UserManagementSection = ({
 	users,
+	players,
 	currentUserId,
 	onCreateUser,
 	onEditUser,
@@ -427,6 +437,21 @@ const UserManagementSection = ({
 		[t],
 	);
 
+	const playerChip = useCallback(
+		(user: UserDto) => {
+			const player = user.playerId == null ? undefined : players.find((p) => p.id === user.playerId);
+			return player ? (
+				<span className="inline-flex items-center gap-2">
+					<BgtAvatar image={player.image} title={player.name} size="small" />
+					<span>{player.name}</span>
+				</span>
+			) : (
+				"—"
+			);
+		},
+		[players],
+	);
+
 	const columns: ColumnDef<UserDto>[] = useMemo(
 		() => [
 			{
@@ -444,6 +469,11 @@ const UserManagementSection = ({
 				accessorKey: "roles",
 				header: t("account.users.role"),
 				cell: ({ row }) => <div className="text-white/70">{roleNames(row.original)}</div>,
+			},
+			{
+				id: "player",
+				header: t("account.users.player-column"),
+				cell: ({ row }) => <div className="text-white/70">{playerChip(row.original)}</div>,
 			},
 			{
 				accessorKey: "lastLoginAt",
@@ -473,7 +503,18 @@ const UserManagementSection = ({
 				),
 			},
 		],
-		[t, currentUserId, onEditUser, onManageAccess, onResetPassword, onDeleteUser, lastLogin, badges, roleNames],
+		[
+			t,
+			currentUserId,
+			onEditUser,
+			onManageAccess,
+			onResetPassword,
+			onDeleteUser,
+			lastLogin,
+			badges,
+			roleNames,
+			playerChip,
+		],
 	);
 
 	return (
@@ -499,6 +540,9 @@ const UserManagementSection = ({
 								{badges(user)}
 							</div>
 							<span className="text-sm text-white/70">{roleNames(user)}</span>
+							<span className="text-sm text-white/70">
+								{t("account.users.player-column")}: {playerChip(user)}
+							</span>
 							<span className="text-xs text-white/50">
 								{t("account.users.last-login")}: {lastLogin(user)}
 							</span>

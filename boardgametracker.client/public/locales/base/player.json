@@ -26,7 +26,7 @@
   },
   "new": {
     "button": "Add player",
-    "save": "Add",
+    "save": "Add player",
     "title": "Add player",
     "players": {
       "none": "No players in this session yet"
@@ -61,8 +61,9 @@
     "label": "Linked account",
     "none": "Not linked",
     "moves": "Currently linked to {{player}}; saving moves the link here",
-    "uses-picture": "Uses the profile picture of account {{username}}",
-    "own-picture": "Has its own picture; remove it to use the profile picture of account {{username}}",
-    "link-failed": "Failed changing the linked account"
+    "linked-to": "Linked to {{name}}",
+    "uses-picture": "Uses {{username}}'s profile picture.",
+    "own-picture": "Uses its own picture. Remove it to show {{username}}'s profile picture.",
+    "link-failed": "Couldn't change the linked account"
   }
 }

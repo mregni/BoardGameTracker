@@ -63,6 +63,7 @@ export interface CompareGame {
 	sameTeamWins: number;
 	playerOneAverageScore: number | null;
 	playerTwoAverageScore: number | null;
+	scoredSessionCount: number;
 	lastPlayed: Date;
 	lastOutcome: CompareOutcome;
 	lastTeamWon: boolean | null;

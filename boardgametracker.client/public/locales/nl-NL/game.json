@@ -1,9 +1,11 @@
 {
   "add": "Sessie registreren",
+  "mark-owned": "Markeren als in bezit",
   "sessions": "Sessies bekijken",
   "no-sessions": {
     "title": "Nog geen sessies geregistreerd",
-    "description": "Registreer een sessie van dit spel om de statistieken te zien."
+    "description": "Registreer een sessie van dit spel om de statistieken te zien.",
+    "not-played": "Nog niet gespeeld"
   },
   "notifications": {
     "created": "Spel toegevoegd",
@@ -23,6 +25,9 @@
     "placeholder": "Spel-id op BoardGameGeek",
     "required": "BGG-id is verplicht",
     "external-page": "BoardGameGeek-website openen"
+  },
+  "links": {
+    "title": "Koppelingen"
   },
   "language": {
     "label": "Taal",
@@ -73,8 +78,8 @@
       "failed": "Mislukt"
     },
     "reindex": "Opnieuw indexeren",
-    "reindex-success": "Opnieuw indexeren gestart.",
-    "reindex-failed": "Opnieuw indexeren mislukt, controleer de logs voor meer details.",
+    "reindex-success": "Opnieuw indexeren gestart",
+    "reindex-failed": "Kon niet opnieuw indexeren",
     "download": "Downloaden"
   },
   "new": {

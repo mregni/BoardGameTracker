@@ -66,6 +66,8 @@ public class DashboardService : IDashboardService
         _logger.LogDebug("Calculating dashboard statistics");
         var localNow = _dateTimeProvider.Now;
         var monthStart = _dateTimeProvider.ConvertToUtc(new DateTime(localNow.Year, localNow.Month, 1, 0, 0, 0, DateTimeKind.Unspecified));
+        var yearStart = _dateTimeProvider.ConvertToUtc(new DateTime(localNow.Year, 1, 1, 0, 0, 0, DateTimeKind.Unspecified));
+        var twelveMonthsAgo = _dateTimeProvider.UtcNow.AddMonths(-12);
 
         var totalGames = await _gameRepository.CountAsync(cancellationToken);
         var activePlayers = await _playerRepository.CountAsync(cancellationToken);
@@ -81,7 +83,8 @@ public class DashboardService : IDashboardService
         var recentSessions = await _sessionRepository.GetRecentSessions(RecentSessionCount, cancellationToken);
         var gameStates = await _gameStatisticsRepository.GetGameStateCounts(cancellationToken);
         var mostPlayedGames = await _gameStatisticsRepository.GetMostPlayedGames(MostPlayedCount, cancellationToken);
-        var mostPlayedThisMonth = await _gameStatisticsRepository.GetMostPlayedGamesSince(MostPlayedCount, monthStart, cancellationToken);
+        var mostPlayedThisYear = await _gameStatisticsRepository.GetMostPlayedGamesSince(MostPlayedCount, yearStart, cancellationToken);
+        var mostPlayedLast12Months = await _gameStatisticsRepository.GetMostPlayedGamesSince(MostPlayedCount, twelveMonthsAgo, cancellationToken);
         var winTotals = await _playerRepository.GetWinTotals(cancellationToken);
         var hasCoopWins = await _sessionRepository.AnyAsync(new WonCoopSessionsSpec(), cancellationToken);
         var recentlyAddedGames = await _gameRepository.GetRecentlyAddedGames(RecentlyAddedCount, cancellationToken);
@@ -110,7 +113,8 @@ public class DashboardService : IDashboardService
             RecentActivities = recentSessions.ToRecentActivityListDto(),
             Collection = gameStates,
             MostPlayedGames = mostPlayedGames.ToListDto(),
-            MostPlayedGamesThisMonth = mostPlayedThisMonth.ToListDto(),
+            MostPlayedGamesThisYear = mostPlayedThisYear.ToListDto(),
+            MostPlayedGamesLast12Months = mostPlayedLast12Months.ToListDto(),
             TopPlayers = RankTopPlayers(winTotals),
             TopPlayersIncludeCoopWins = hasCoopWins,
             RecentAddedGames = recentlyAddedGames.ToRecentAddedGameListDto()

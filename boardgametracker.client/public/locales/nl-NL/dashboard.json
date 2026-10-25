@@ -35,8 +35,8 @@
   },
   "tiles": {
     "games": "Spellen",
-    "games-detail_one": "{{owned}} in bezit · {{expansions}} uitbreiding",
-    "games-detail_other": "{{owned}} in bezit · {{expansions}} uitbreidingen",
+    "games-expansions_one": "{{expansions}} uitbreiding",
+    "games-expansions_other": "{{expansions}} uitbreidingen",
     "players": "Spelers",
     "players-detail_one": "{{value}} speelde deze maand",
     "players-detail_other": "{{value}} speelden deze maand",
@@ -44,8 +44,7 @@
     "sessions-detail_one": "{{value}} deze maand",
     "sessions-detail_other": "{{value}} deze maand",
     "play-time": "Speeltijd",
-    "play-time-detail": "gem. {{duration}} per sessie",
-    "games-owned": "{{owned}} in bezit"
+    "play-time-detail": "gem. {{duration}} per sessie"
   },
   "last-sessions": {
     "title": "Laatste sessies",
@@ -67,10 +66,12 @@
     "sessions_one": "{{value}} sessie",
     "sessions_other": "{{value}} sessies",
     "won": "{{percent}} gewonnen",
+    "wins_one": "winst",
+    "wins_other": "winsten",
     "row_one": "{{name}}: {{wins}} keer gewonnen in {{total}} sessie",
     "row_other": "{{name}}: {{wins}} keer gewonnen in {{total}} sessies",
-    "hint": "Gerangschikt op overwinningen, dan winstpercentage, dan sessies. De balk is het winstpercentage.",
-    "hint-coop": "Gerangschikt op overwinningen (co-op inbegrepen), dan winstpercentage, dan sessies. De balk is het winstpercentage.",
+    "hint": "Gerangschikt op overwinningen, dan winstpercentage, dan sessies.",
+    "hint-coop": "Gerangschikt op overwinningen (co-op inbegrepen), dan winstpercentage, dan sessies.",
     "empty": "Nog geen sessies gespeeld"
   },
   "most-played": {
@@ -78,7 +79,7 @@
     "period": "Periode",
     "times": "{{value}}×",
     "empty": "Nog geen sessies gespeeld",
-    "empty-month": "Deze maand nog niets gespeeld"
+    "empty-period": "Niets gespeeld in deze periode"
   },
   "collection": {
     "title": "Collectie",

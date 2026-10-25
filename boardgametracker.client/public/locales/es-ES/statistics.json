@@ -1,6 +1,6 @@
 {
   "average-abreviation": "media",
-  "average-score": "Puntuación media",
+  "average-score": "Media (todos los jugadores)",
   "high-score": "Puntuación máxima",
   "most-wins": "Más victorias",
   "play-count": "Partidas",
@@ -28,8 +28,8 @@
   "collection-value": "Valor de la colección",
   "average-price-paid-priced_one": "Precio medio pagado · {{count}} juego con precio",
   "average-price-paid-priced_other": "Precio medio pagado · {{count}} juegos con precio",
-  "coop-won-lost": "Cooperativo ganado · perdido",
-  "coop-results": "{{won}} · {{lost}}",
+  "coop-record": "Cooperativo",
+  "coop-results": "{{won}} ganadas · {{lost}} perdidas",
   "team-win-rate": "Porcentaje de victorias del equipo",
   "added": "Añadido",
   "team-win-rate-count_one": "{{won}} de {{count}} partida cooperativa",

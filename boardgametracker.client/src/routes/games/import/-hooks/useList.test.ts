@@ -205,7 +205,7 @@ describe("useList", () => {
 		expect(message).toBe("games:import.failed-unauthorized");
 		expect(action.label).toBe("common:open-integration-settings");
 		action.onClick();
-		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/settings", search: { tab: "bgg" } });
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/settings", search: { tab: "integrations" } });
 	});
 
 	it("shows a plain error toast for a generic import failure", async () => {

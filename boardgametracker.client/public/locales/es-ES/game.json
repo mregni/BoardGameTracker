@@ -1,9 +1,11 @@
 {
   "add": "Registrar partida",
+  "mark-owned": "Marcar como en propiedad",
   "sessions": "Ver partidas",
   "no-sessions": {
     "title": "Aún no hay partidas registradas",
-    "description": "Registra una partida de este juego para ver sus estadísticas."
+    "description": "Registra una partida de este juego para ver sus estadísticas.",
+    "not-played": "Aún sin jugar"
   },
   "notifications": {
     "created": "Juego añadido",
@@ -23,6 +25,9 @@
     "placeholder": "ID del juego en BoardGameGeek",
     "required": "El ID de BGG es obligatorio",
     "external-page": "Abrir el sitio web de BoardGameGeek"
+  },
+  "links": {
+    "title": "Enlaces"
   },
   "language": {
     "label": "Idioma",
@@ -73,8 +78,8 @@
       "failed": "Fallido"
     },
     "reindex": "Reindexar",
-    "reindex-success": "Reindexación iniciada.",
-    "reindex-failed": "La reindexación falló, revisa los registros para más detalles.",
+    "reindex-success": "Reindexación iniciada",
+    "reindex-failed": "No se ha podido reindexar",
     "download": "Descargar"
   },
   "new": {

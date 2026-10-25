@@ -1,6 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Game } from "@/models";
-import { renderWithProviders, screen, userEvent } from "@/test/test-utils";
+import { renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
 import type { LeaderboardSearch } from "../-utils/leaderboardSearch";
 import { LeaderboardFilters } from "./LeaderboardFilters";
 
@@ -40,6 +40,8 @@ describe("LeaderboardFilters", () => {
 		expect(screen.getByRole("group", { name: "common:period.label" })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "common:period.all-time" })).toHaveAttribute("aria-pressed", "true");
 		expect(screen.getByRole("button", { name: "common:period.this-year" })).toHaveAttribute("aria-pressed", "false");
+		const twelve = screen.getByRole("button", { name: "common:period.last-12-months" });
+		expect(within(twelve).getByText("common:period.last-12-months-short")).toHaveClass("sm:hidden");
 		expect(screen.queryByText("filters.from")).not.toBeInTheDocument();
 	});
 

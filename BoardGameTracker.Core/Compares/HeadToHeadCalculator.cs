@@ -66,6 +66,7 @@ public static class HeadToHeadCalculator
                     SameTeamWins = group.Count(s => s.IsCoop && s.TeamWon == true),
                     PlayerOneAverageScore = AverageScore(group, s => s.PlayerOneScore),
                     PlayerTwoAverageScore = AverageScore(group, s => s.PlayerTwoScore),
+                    ScoredSessionCount = group.Count(s => s.HasScoring && !s.IsCoop && (s.PlayerOneScore != null || s.PlayerTwoScore != null)),
                     LastPlayed = last.Start,
                     LastOutcome = Outcome(last),
                     LastTeamWon = last.IsCoop ? last.TeamWon == true : null

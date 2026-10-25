@@ -69,7 +69,12 @@ export const NightSidePanel = (props: Props) => {
 									tone={played ? "coming" : "neutral"}
 									onClick={() => navigate({ to: `/games/${game.id}` })}
 								>
-									{played && <CheckIcon className="size-3.5 text-green-300" aria-label={t("planned.played")} />}
+									{played && (
+										<span className="inline-flex items-center gap-1 text-gray-400">
+											<CheckIcon className="size-3.5 text-green-300" aria-hidden="true" />
+											{t("planned.played")}
+										</span>
+									)}
 									{playing && <span className="text-gray-400">{t("planned.playing")}</span>}
 								</AvatarChip>
 							);

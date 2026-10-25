@@ -205,7 +205,7 @@ describe("GameNightDetailView", () => {
 
 		expect(screen.getByText("table.host")).toBeInTheDocument();
 		expect(screen.queryByText("Reggi")).not.toBeInTheDocument();
-		expect(screen.getAllByLabelText("planned.played")).toHaveLength(1);
+		expect(screen.getAllByText("planned.played")).toHaveLength(1);
 		await user.click(screen.getByRole("button", { name: "table.edit" }));
 
 		expect(props.onEditAttendees).toHaveBeenCalled();
@@ -218,7 +218,7 @@ describe("GameNightDetailView", () => {
 
 		const planned = screen.getByRole("region", { name: "planned.title" });
 		expect(within(planned).getByText("planned.playing")).toBeInTheDocument();
-		expect(within(planned).queryByLabelText("planned.played")).not.toBeInTheDocument();
+		expect(within(planned).queryByText("planned.played")).not.toBeInTheDocument();
 	});
 
 	it("shows the night winner and only keeps logging once the night is over by time", () => {

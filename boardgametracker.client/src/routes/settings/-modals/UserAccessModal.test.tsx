@@ -13,6 +13,14 @@ const mocks = vi.hoisted(() => ({
 		manageRoleByIdentityProvider: ReturnType<typeof vi.fn>;
 		isBusy: boolean;
 	},
+	provider: null as { id: number; displayName: string } | null,
+}));
+
+vi.mock("@/services/queries/oidc", () => ({
+	getPublicOidcProvider: () => ({
+		queryKey: ["oidcProvider", mocks.provider?.id ?? 0],
+		queryFn: () => Promise.resolve(mocks.provider),
+	}),
 }));
 
 vi.mock("../-hooks/useUserAccess", () => ({
@@ -65,6 +73,7 @@ describe("UserAccessModal", () => {
 			manageRoleByIdentityProvider: vi.fn(),
 			isBusy: false,
 		};
+		mocks.provider = { id: 1, displayName: "Keycloak" };
 	});
 
 	it("shows the avatar of the user", () => {
@@ -87,13 +96,23 @@ describe("UserAccessModal", () => {
 		expect(mocks.state.unlink).toHaveBeenCalledWith(9);
 	});
 
-	it("says so when nothing is linked and hides the role controls", () => {
+	it("says so when nothing is linked and hides the role controls", async () => {
 		mocks.state.logins = [];
 		renderModal();
 
-		expect(screen.getByText("account.users.access.sso-none")).toBeInTheDocument();
+		expect(await screen.findByText("account.users.access.sso-none")).toBeInTheDocument();
 		expect(screen.queryByText("account.users.access.role-local")).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "account.users.access.manage-role" })).not.toBeInTheDocument();
+	});
+
+	it("leaves single sign-on out when no identity provider is set up", async () => {
+		mocks.state.logins = [];
+		mocks.provider = null;
+		renderModal();
+
+		expect(await screen.findByText("account.users.access.disable-hint")).toBeInTheDocument();
+		expect(screen.queryByText("account.users.access.sso-title")).not.toBeInTheDocument();
+		expect(screen.queryByText("account.users.access.disable-hint-sso")).not.toBeInTheDocument();
 	});
 
 	it("has no subtitle repeating the title", () => {
@@ -107,7 +126,7 @@ describe("UserAccessModal", () => {
 		renderModal();
 
 		expect(screen.getByText("account.users.access.enabled")).toBeInTheDocument();
-		expect(screen.getByText("account.users.access.disable-hint")).toBeInTheDocument();
+		expect(screen.getByText("account.users.access.disable-hint-sso")).toBeInTheDocument();
 		await pointer.click(screen.getByRole("button", { name: "account.users.access.disable" }));
 
 		expect(mocks.state.disable).not.toHaveBeenCalled();
@@ -136,7 +155,7 @@ describe("UserAccessModal", () => {
 		renderModal({ user: { ...user, isDisabled: true } });
 
 		expect(screen.getByText("account.users.access.disabled")).toBeInTheDocument();
-		expect(screen.queryByText("account.users.access.disable-hint")).not.toBeInTheDocument();
+		expect(screen.queryByText("account.users.access.disable-hint-sso")).not.toBeInTheDocument();
 		await pointer.click(screen.getByRole("button", { name: "account.users.access.enable" }));
 
 		expect(mocks.state.enable).toHaveBeenCalledTimes(1);
@@ -146,7 +165,7 @@ describe("UserAccessModal", () => {
 		renderModal({ isCurrentUser: true });
 
 		expect(screen.queryByRole("button", { name: "account.users.access.disable" })).not.toBeInTheDocument();
-		expect(screen.queryByText("account.users.access.disable-hint")).not.toBeInTheDocument();
+		expect(screen.queryByText("account.users.access.disable-hint-sso")).not.toBeInTheDocument();
 	});
 
 	it("hands a locally set role back to the identity provider", async () => {

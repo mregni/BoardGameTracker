@@ -8,11 +8,20 @@ import { BgtProgressBar } from "@/components/BgtProgressBar/BgtProgressBar";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { DashboardMostPlayedGame } from "@/models";
 
-type Period = "month" | "all";
+type Period = "all" | "year" | "12m";
+
+const PERIODS: Period[] = ["all", "year", "12m"];
+
+const PERIOD_KEYS: Record<Period, string> = {
+	all: "common:period.all-time",
+	year: "common:period.this-year",
+	"12m": "common:period.last-12-months",
+};
 
 interface Props {
 	allTime: DashboardMostPlayedGame[];
-	thisMonth: DashboardMostPlayedGame[];
+	thisYear: DashboardMostPlayedGame[];
+	last12Months: DashboardMostPlayedGame[];
 }
 
 const periodButton = (active: boolean) =>
@@ -22,12 +31,12 @@ const periodButton = (active: boolean) =>
 	);
 
 export const MostPlayedCard = (props: Props) => {
-	const { allTime, thisMonth } = props;
+	const { allTime, thisYear, last12Months } = props;
 	const { t } = useTranslation("dashboard");
 	const { integer } = useNumberFormat();
 	const [period, setPeriod] = useState<Period>("all");
 
-	const games = period === "month" ? thisMonth : allTime;
+	const games = { all: allTime, year: thisYear, "12m": last12Months }[period];
 	const top = games[0]?.totalSessions ?? 0;
 
 	return (
@@ -39,27 +48,22 @@ export const MostPlayedCard = (props: Props) => {
 					</h2>
 					<fieldset className="flex gap-0.5 rounded-md border border-primary/30 p-0.5">
 						<legend className="sr-only">{t("most-played.period")}</legend>
-						<button
-							type="button"
-							aria-pressed={period === "month"}
-							className={periodButton(period === "month")}
-							onClick={() => setPeriod("month")}
-						>
-							{t("common:period.this-month")}
-						</button>
-						<button
-							type="button"
-							aria-pressed={period === "all"}
-							className={periodButton(period === "all")}
-							onClick={() => setPeriod("all")}
-						>
-							{t("common:period.all-time")}
-						</button>
+						{PERIODS.map((option) => (
+							<button
+								key={option}
+								type="button"
+								aria-pressed={period === option}
+								className={periodButton(period === option)}
+								onClick={() => setPeriod(option)}
+							>
+								{t(PERIOD_KEYS[option])}
+							</button>
+						))}
 					</fieldset>
 				</div>
 				{games.length === 0 ? (
 					<p className="py-2 text-sm text-white/60">
-						{period === "month" ? t("most-played.empty-month") : t("most-played.empty")}
+						{period === "all" ? t("most-played.empty") : t("most-played.empty-period")}
 					</p>
 				) : (
 					<ol className="flex flex-col gap-1.5">

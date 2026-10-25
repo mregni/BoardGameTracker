@@ -2,10 +2,10 @@
   "label": "Expansions",
   "delete": {
     "successfull": "Expansion deleted",
-    "failed": "Expansion deletion failed, check logs for more details."
+    "failed": "Couldn't delete the expansion"
   },
   "manual": {
-    "successfull": "Expansion added.",
-    "failed": "The expansion could not be added."
+    "successfull": "Expansion added",
+    "failed": "Couldn't add the expansion"
   }
 }

@@ -3,7 +3,11 @@ import Gamepad from "@/assets/icons/gamepad.svg?react";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
 
-export const GameDetailEmptyState = () => {
+interface Props {
+	wanted?: boolean;
+}
+
+export const GameDetailEmptyState = ({ wanted = false }: Props) => {
 	const { t } = useTranslation("game");
 
 	return (
@@ -15,11 +19,13 @@ export const GameDetailEmptyState = () => {
 					</div>
 				</div>
 
-				<BgtHeading className="mb-3">{t("no-sessions.title")}</BgtHeading>
+				<BgtHeading className="mb-3">{t(wanted ? "no-sessions.not-played" : "no-sessions.title")}</BgtHeading>
 
-				<BgtText color="white" opacity={60} className="leading-relaxed">
-					{t("no-sessions.description")}
-				</BgtText>
+				{!wanted && (
+					<BgtText color="white" opacity={60} className="leading-relaxed">
+						{t("no-sessions.description")}
+					</BgtText>
+				)}
 			</div>
 		</div>
 	);

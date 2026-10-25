@@ -75,11 +75,11 @@
   },
   "money": {
     "title": "Dinero en la estantería",
-    "subtitle": "solo juegos en propiedad con precio",
+    "subtitle": "Juegos en propiedad con precio",
     "never-played": "Nunca jugados",
     "not-played_one": "Sin jugar en {{count}}+ mes",
     "not-played_other": "Sin jugar en {{count}}+ meses",
-    "rest": "Jugados o comprados hace poco",
+    "rest": "Fuera de la estantería",
     "label": "De {{total}} pagados por juegos en propiedad: {{parts}}",
     "unpriced-one": "{{title}} no tiene precio, así que no cuenta.",
     "unpriced_one": "{{count}} juego de la estantería no tiene precio, así que no cuenta.",

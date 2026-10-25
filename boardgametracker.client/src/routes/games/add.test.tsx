@@ -68,7 +68,7 @@ describe("Add game page", () => {
 		expect(screen.getByText(/game:new.bgg-missing.description/)).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: "game:new.bgg-missing.link" })).toHaveAttribute(
 			"href",
-			"/settings?tab=bgg",
+			"/settings?tab=integrations",
 		);
 		expect(screen.queryByText("settings:bgg.status.not-configured-description")).not.toBeInTheDocument();
 	});
@@ -98,7 +98,7 @@ describe("Add game page", () => {
 		expect(screen.getByText(/settings:integrations.reason.unauthorized/)).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: "game:new.bgg-missing.link" })).toHaveAttribute(
 			"href",
-			"/settings?tab=bgg",
+			"/settings?tab=integrations",
 		);
 	});
 

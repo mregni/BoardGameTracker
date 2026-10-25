@@ -73,6 +73,13 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .AverageAsync(x => x.Score, cancellationToken);
     }
 
+    public Task<int> CountScoredSessions(int gameId, CancellationToken cancellationToken = default)
+    {
+        return _context.Sessions
+            .AsNoTracking()
+            .CountAsync(x => x.GameId == gameId && x.PlayerSessions.Any(p => p.Score != null), cancellationToken);
+    }
+
     public async Task<(int Won, int Lost)> GetCoopResults(int gameId, CancellationToken cancellationToken = default)
     {
         var results = await _context.Sessions

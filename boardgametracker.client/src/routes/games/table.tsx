@@ -25,7 +25,7 @@ import { getSettings } from "@/services/queries/settings";
 import { toDisplay } from "@/utils/dateUtils";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
-import { EMPTY_PRICE, formatDecimal, formatPrice } from "@/utils/numberUtils";
+import { EMPTY_PRICE, formatDecimal, formatPrice, formatPriceOrEmpty } from "@/utils/numberUtils";
 import { formatRange as formatValueRange } from "@/utils/rangeUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./-components/EditableNumberCell";
@@ -270,7 +270,7 @@ function RouteComponent() {
 						value={row.original.buyingPrice}
 						min={0}
 						prefix={currency}
-						format={(price) => formatPrice(price, currency, uiLanguage)}
+						format={(price) => formatPriceOrEmpty(price, currency, uiLanguage)}
 						editing={isEditing(row.original.id, "buyingPrice")}
 						onStartEdit={() => startEdit(row.original.id, "buyingPrice")}
 						onStopEdit={stopEdit}

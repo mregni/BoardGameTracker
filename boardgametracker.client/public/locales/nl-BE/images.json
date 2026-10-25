@@ -1,6 +1,6 @@
 {
-  "types": "png of jpg",
-  "upload": "Klik of sleep om een afbeelding toe te voegen",
+  "types": "PNG of JPG",
+  "upload": "Afbeelding toevoegen",
   "selected-image": "Geselecteerde afbeelding",
   "remove": "Afbeelding verwijderen"
 }

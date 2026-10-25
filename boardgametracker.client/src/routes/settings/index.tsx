@@ -2,7 +2,6 @@ import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 import CogIcon from "@/assets/icons/cog.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -28,14 +27,8 @@ import { useRefreshIntegrationStatus } from "./-hooks/useIntegrationStatus";
 import { useSettingsData } from "./-hooks/useSettingsData";
 import { useSingleSignOnEnabled } from "./-hooks/useSingleSignOnEnabled";
 import { stopsSingleSignOn } from "./-utils/publicUrlWarning";
-import { resolveSettingsCategory } from "./-utils/settingsCategory";
+import { resolveSettingsCategory, settingsSearchSchema } from "./-utils/settingsCategory";
 import { settingsFormOpts } from "./-utils/settingsFormOpts";
-
-const settingsCategories = ["general", "shelf-of-shame", "game-nights", "bgg", "advanced", "account", "sso"] as const;
-
-const settingsSearchSchema = z.object({
-	tab: z.enum(settingsCategories).optional().catch(undefined),
-});
 
 export const Route = createFileRoute("/settings/")({
 	component: RouteComponent,
@@ -108,7 +101,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 				ragEnabled: settings.ragEnabled,
 				environmentOverrides: settings.environmentOverrides,
 			});
-			if (activeCategory === "bgg") {
+			if (activeCategory === "integrations") {
 				void refreshIntegrationStatus();
 			}
 		},
@@ -136,7 +129,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 				return <ShelfOfShameSettings form={form} disabled={isSaving} overrides={overrides} />;
 			case "game-nights":
 				return <GameNightsSettings form={form} disabled={isSaving} overrides={overrides} />;
-			case "bgg":
+			case "integrations":
 				return (
 					<BggSettings
 						form={form}

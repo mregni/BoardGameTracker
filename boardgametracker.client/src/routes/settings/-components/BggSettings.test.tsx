@@ -323,12 +323,14 @@ describe("BggSettings", () => {
 			await screen.findByText("integrations.status.ok");
 
 			const buttons = screen.getAllByRole("button", { name: "integrations.test" });
-			const hints = screen.getAllByText("integrations.test-hint");
-			expect(hints).toHaveLength(2);
-			buttons.forEach((button, index) => {
+			expect(screen.queryByText("integrations.test-hint")).not.toBeInTheDocument();
+			expect(buttons.map((button) => button.getAttribute("title"))).toEqual([
+				"integrations.test-hint",
+				"integrations.test-hint-change-detection",
+			]);
+			for (const button of buttons) {
 				expect(button).toBeDisabled();
-				expect(button).toHaveAttribute("aria-describedby", hints[index].id);
-			});
+			}
 		});
 
 		it("should not show the test hint once a key is saved", async () => {
@@ -340,7 +342,7 @@ describe("BggSettings", () => {
 			expect(screen.queryByText("integrations.test-hint")).not.toBeInTheDocument();
 			for (const button of screen.getAllByRole("button", { name: "integrations.test" })) {
 				expect(button).toBeEnabled();
-				expect(button).not.toHaveAttribute("aria-describedby");
+				expect(button).not.toHaveAttribute("title");
 			}
 		});
 

@@ -49,7 +49,6 @@ export const FormStrip = ({ sessions, streak, playerOne, playerTwo }: Props) => 
 			sameTeam: session.teamWon ? t("form.same-team-won") : t("form.same-team-lost"),
 		})[session.outcome];
 	const streakPlayer = streak?.side === "playerOne" ? playerOne : streak?.side === "playerTwo" ? playerTwo : null;
-	const hasBoth = sessions.some((session) => session.outcome === "both");
 	const hasSameTeam = sessions.some((session) => session.outcome === "sameTeam");
 
 	return (
@@ -82,11 +81,7 @@ export const FormStrip = ({ sessions, streak, playerOne, playerTwo }: Props) => 
 					</span>
 				)}
 			</div>
-			<span className="text-xs text-white/60">
-				{t("form.legend", { one: initialOf(playerOne.name), two: initialOf(playerTwo.name) })}
-				{hasSameTeam && ` · ${t("form.legend-same-team")}`}
-				{hasBoth && ` · ${t("form.legend-both")}`}
-			</span>
+			{hasSameTeam && <span className="text-xs text-white/60">{t("form.legend-coop")}</span>}
 		</div>
 	);
 };

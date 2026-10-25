@@ -9,6 +9,7 @@ import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { CompareGame, CompareOutcome, Player } from "@/models";
 import { useGameById } from "@/routes/-hooks/useGameById";
 import { toDisplay } from "@/utils/dateUtils";
+import { MIN_SESSIONS_FOR_AVERAGE } from "@/utils/numberUtils";
 import { type GameSort, initialOf, sortGames } from "../-utils/compareUtils";
 
 export const VISIBLE_GAMES = 5;
@@ -42,6 +43,12 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 			sameTeam: "=",
 		})[outcome];
 	const average = (value: number | null) => (value === null ? "–" : decimal(value, 1));
+	const scoreDetail = (game: CompareGame) => {
+		const scores = { one: average(game.playerOneAverageScore), two: average(game.playerTwoAverageScore) };
+		if (game.scoredSessionCount >= MIN_SESSIONS_FOR_AVERAGE) return t("per-game.average", scores);
+		if (game.scoredSessionCount === 1) return t("per-game.scores", scores);
+		return game.scoredSessionCount === 0 ? t("per-game.no-scores") : null;
+	};
 
 	if (games.length === 0) {
 		return null;
@@ -82,7 +89,7 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 			</div>
 			<div
 				aria-hidden="true"
-				className="hidden grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)_auto] gap-3 px-2 text-[11px] uppercase tracking-wider text-white/60 sm:grid"
+				className="hidden grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)_auto] gap-3 px-2 text-xs text-white/60 sm:grid"
 			>
 				<span />
 				<span>{t("per-game.game")}</span>
@@ -93,7 +100,6 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 				{visible.map((game) => {
 					const details = gameById(game.gameId);
 					const title = details?.title ?? "";
-					const hasScores = game.playerOneAverageScore !== null || game.playerTwoAverageScore !== null;
 					const coopOnly = game.sameTeamCount > 0 && game.sameTeamCount === game.sessionCount;
 					const teamText = t("per-game.same-team", { won: game.sameTeamWins, count: game.sameTeamCount });
 					return (
@@ -108,15 +114,9 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 							<span className="flex min-w-0 flex-col">
 								<strong className="truncate">{title}</strong>
 								<small className="truncate text-[11px] text-white/60">
-									{t("games", { count: game.sessionCount })} ·{" "}
-									{coopOnly
-										? t("per-game.coop")
-										: hasScores
-											? t(game.sessionCount === 1 ? "per-game.scores" : "per-game.average", {
-													one: average(game.playerOneAverageScore),
-													two: average(game.playerTwoAverageScore),
-												})
-											: t("per-game.no-scores")}
+									{[t("games", { count: game.sessionCount }), coopOnly ? t("per-game.coop") : scoreDetail(game)]
+										.filter(Boolean)
+										.join(" · ")}
 								</small>
 							</span>
 							<span className="col-span-2 col-start-2 row-start-2 flex min-w-0 flex-col gap-1 sm:col-span-1 sm:col-start-3 sm:row-start-1">

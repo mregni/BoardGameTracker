@@ -35,8 +35,8 @@
   },
   "tiles": {
     "games": "Games",
-    "games-detail_one": "{{owned}} owned · {{expansions}} expansion",
-    "games-detail_other": "{{owned}} owned · {{expansions}} expansions",
+    "games-expansions_one": "{{expansions}} expansion",
+    "games-expansions_other": "{{expansions}} expansions",
     "players": "Players",
     "players-detail_one": "{{value}} played this month",
     "players-detail_other": "{{value}} played this month",
@@ -44,8 +44,7 @@
     "sessions-detail_one": "{{value}} this month",
     "sessions-detail_other": "{{value}} this month",
     "play-time": "Play time",
-    "play-time-detail": "avg {{duration}} a session",
-    "games-owned": "{{owned}} owned"
+    "play-time-detail": "avg {{duration}} a session"
   },
   "last-sessions": {
     "title": "Last sessions",
@@ -67,10 +66,12 @@
     "sessions_one": "{{value}} session",
     "sessions_other": "{{value}} sessions",
     "won": "{{percent}} won",
+    "wins_one": "win",
+    "wins_other": "wins",
     "row_one": "{{name}}: {{wins}} wins of {{total}} session",
     "row_other": "{{name}}: {{wins}} wins of {{total}} sessions",
-    "hint": "Ranked by wins, then win rate, then sessions. The bar is the win rate.",
-    "hint-coop": "Ranked by wins (co-op included), then win rate, then sessions. The bar is the win rate.",
+    "hint": "Ranked by wins, then win rate, then sessions.",
+    "hint-coop": "Ranked by wins (co-op included), then win rate, then sessions.",
     "empty": "No sessions played yet"
   },
   "most-played": {
@@ -78,7 +79,7 @@
     "period": "Period",
     "times": "{{value}}×",
     "empty": "No sessions played yet",
-    "empty-month": "Nothing played this month yet"
+    "empty-period": "Nothing played in this period"
   },
   "collection": {
     "title": "Collection",

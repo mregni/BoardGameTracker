@@ -2,10 +2,10 @@
   "label": "Expansiones",
   "delete": {
     "successfull": "Expansión eliminada",
-    "failed": "Error al eliminar la expansión, revisa los registros para más detalles."
+    "failed": "No se ha podido eliminar la expansión"
   },
   "manual": {
-    "successfull": "Expansión añadida.",
-    "failed": "No se pudo añadir la expansión."
+    "successfull": "Expansión añadida",
+    "failed": "No se ha podido añadir la expansión"
   }
 }

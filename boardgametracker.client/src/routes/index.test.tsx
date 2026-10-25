@@ -60,7 +60,8 @@ const statistics: DashboardStatistics = {
 	recentActivities: [],
 	collection: [{ type: GameState.Owned, gameCount: 41 }],
 	mostPlayedGames: [],
-	mostPlayedGamesThisMonth: [],
+	mostPlayedGamesThisYear: [],
+	mostPlayedGamesLast12Months: [],
 	topPlayers: [],
 	topPlayersIncludeCoopWins: false,
 	recentAddedGames: [],
@@ -125,13 +126,12 @@ describe("Dashboard page", () => {
 
 	it("names expansions in the games tile only when there are any", () => {
 		const { unmount } = renderWithProviders(<mocks.captured.Page />);
-		expect(screen.getByText("tiles.games-detail")).toBeInTheDocument();
+		expect(screen.getByText("tiles.games-expansions")).toBeInTheDocument();
 		unmount();
 
 		mocks.data = { statistics: { ...statistics, expansionsOwned: 0 }, settings };
 		renderWithProviders(<mocks.captured.Page />);
-		expect(screen.getByText("tiles.games-owned")).toBeInTheDocument();
-		expect(screen.queryByText("tiles.games-detail")).not.toBeInTheDocument();
+		expect(screen.queryByText("tiles.games-expansions")).not.toBeInTheDocument();
 	});
 
 	it("leaves out the average session time before the first session", () => {

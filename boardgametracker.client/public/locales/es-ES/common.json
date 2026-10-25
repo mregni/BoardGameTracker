@@ -149,7 +149,7 @@
     "all-time": "Siempre",
     "this-year": "Este año",
     "last-12-months": "Últimos 12 meses",
-    "this-month": "Este mes",
+    "last-12-months-short": "12 meses",
     "custom": "Personalizado"
   }
 }
