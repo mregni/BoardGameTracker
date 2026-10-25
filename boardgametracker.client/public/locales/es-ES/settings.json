@@ -187,7 +187,7 @@
         "label": "Foto de perfil",
         "upload": "Subir foto",
         "remove": "Quitar foto",
-        "hint": "Cuando inicias sesión con inicio de sesión único, se usa la foto de tu proveedor de identidad hasta que subas la tuya. Una foto quitada solo vuelve cuando tu proveedor de identidad muestra otra distinta."
+        "hint": "Se usa tu foto del inicio de sesión único hasta que subas una."
       },
       "player": {
         "label": "Jugador vinculado",
@@ -219,6 +219,7 @@
     "users": {
       "title": "Gestión de usuarios",
       "last-login": "Último inicio de sesión",
+      "player-column": "Jugador",
       "role": "Rol",
       "roles": {
         "user": "Usuario",
@@ -280,7 +281,8 @@
         "disabled": "Desactivado",
         "enable": "Activar",
         "disable": "Desactivar",
-        "disable-hint": "Desactivar termina todas las sesiones y bloquea el inicio de sesión con contraseña y con inicio de sesión único. Eliminar a alguien en el proveedor de identidad no lo hace por ti.",
+        "disable-hint-sso": "Desactivar termina todas las sesiones y bloquea el inicio de sesión con contraseña y con inicio de sesión único. Eliminar a alguien en el proveedor de identidad no lo hace por ti.",
+        "disable-hint": "Desactivar termina todas las sesiones y bloquea el inicio de sesión.",
         "sso-title": "Inicio de sesión único",
         "sso-none": "No hay ninguna cuenta del proveedor de identidad vinculada.",
         "sso-linked": "sujeto {{subject}} · vinculado el {{date}}",

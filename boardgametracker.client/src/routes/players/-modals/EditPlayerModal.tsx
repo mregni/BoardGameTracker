@@ -73,7 +73,9 @@ export const EditPlayerModal = (props: Props) => {
 			{ value: NOT_LINKED, label: t("account.none") },
 			...users.map((user: UserDto) => {
 				const otherPlayer =
-					user.playerId != null && user.playerId !== player.id ? players.find((p) => p.id === user.playerId) : undefined;
+					user.playerId != null && user.playerId !== player.id
+						? players.find((p) => p.id === user.playerId)
+						: undefined;
 				return {
 					value: user.id,
 					label: accountLabel(user),

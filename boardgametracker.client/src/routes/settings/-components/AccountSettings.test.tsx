@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { UserDto } from "@/models";
+import type { Player, UserDto } from "@/models";
 import { fireEvent, renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
 
 const mocks = vi.hoisted(() => ({
@@ -10,6 +10,12 @@ const mocks = vi.hoisted(() => ({
 	profileImage: null as string | null,
 	uploadProfileImage: vi.fn(),
 	removeProfileImage: vi.fn(),
+	players: [] as Player[],
+	externalLogins: { logins: [] as unknown[], provider: null as { id: number } | null },
+}));
+
+vi.mock("../-hooks/useExternalLogins", () => ({
+	useExternalLogins: () => mocks.externalLogins,
 }));
 
 vi.mock("@/routes/-hooks/useToasts", () => ({
@@ -40,7 +46,7 @@ vi.mock("../-hooks/useAccountData", () => ({
 		isProfileLoading: false,
 		users: mocks.users,
 		linkablePlayers: [],
-		players: [],
+		players: mocks.players,
 		isAdmin: true,
 		updateProfile: vi.fn(),
 		isUpdatingProfile: false,
@@ -116,6 +122,39 @@ describe("AccountSettings user management", () => {
 			user({ id: "admin-1", username: "admin", roles: ["Admin"] }),
 			user({ id: "user-2", username: "jane", isDisabled: true, externalLoginCount: 1 }),
 		];
+		mocks.players = [];
+		mocks.externalLogins = { logins: [], provider: null };
+	});
+
+	it("shows the linked player of each user in the table and the cards", () => {
+		mocks.players = [{ id: 4, name: "Jane Doe", image: null, email: null, badges: [] }];
+		mocks.users = [
+			user({ id: "admin-1", username: "admin", roles: ["Admin"] }),
+			user({ id: "user-2", username: "jane", playerId: 4 }),
+		];
+		renderWithProviders(<AccountSettings />);
+
+		expect(
+			within(screen.getByRole("table")).getByRole("columnheader", { name: "account.users.player-column" }),
+		).toBeInTheDocument();
+		const jane = within(screen.getByRole("table")).getByText("jane").closest("tr") as HTMLElement;
+		expect(within(jane).getByText("Jane Doe")).toBeInTheDocument();
+		const admin = within(screen.getByRole("table"))
+			.getByText("admin", { selector: "span" })
+			.closest("tr") as HTMLElement;
+		expect(within(admin).getByText("—")).toBeInTheDocument();
+		const janeCard = screen.getAllByTestId("user-card")[1] as HTMLElement;
+		expect(janeCard).toHaveTextContent(/account.users.player-column: .*Jane Doe/);
+	});
+
+	it("only explains the sign-on picture to users who sign in with single sign-on", () => {
+		const { unmount } = renderWithProviders(<AccountSettings />);
+		expect(screen.queryByText("account.profile.picture.hint")).not.toBeInTheDocument();
+		unmount();
+
+		mocks.externalLogins = { logins: [{ id: 1 }], provider: { id: 1 } };
+		renderWithProviders(<AccountSettings />);
+		expect(screen.getByText("account.profile.picture.hint")).toBeInTheDocument();
 	});
 
 	it("shows each user's avatar in the table and the cards, with the initial as fallback", () => {

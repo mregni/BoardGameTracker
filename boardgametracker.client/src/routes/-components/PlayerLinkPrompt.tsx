@@ -156,7 +156,8 @@ const PlayerLinkDialog = () => {
 
 	const focusChoice = (event: Event) => {
 		const root = choicesRef.current;
-		const target = root?.querySelector<HTMLInputElement>("input:checked") ?? root?.querySelector<HTMLInputElement>("input");
+		const target =
+			root?.querySelector<HTMLInputElement>("input:checked") ?? root?.querySelector<HTMLInputElement>("input");
 		if (target) {
 			event.preventDefault();
 			target.focus();

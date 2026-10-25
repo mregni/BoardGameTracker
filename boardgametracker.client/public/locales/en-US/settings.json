@@ -187,7 +187,7 @@
         "label": "Profile picture",
         "upload": "Upload picture",
         "remove": "Remove picture",
-        "hint": "When you sign in with single sign-on, the picture from your identity provider is used until you upload your own. A removed picture only comes back when your identity provider shows a different one."
+        "hint": "Your sign-on picture is used until you upload one."
       },
       "player": {
         "label": "Linked player",
@@ -219,6 +219,7 @@
     "users": {
       "title": "User management",
       "last-login": "Last login",
+      "player-column": "Player",
       "role": "Role",
       "roles": {
         "user": "User",
@@ -280,7 +281,8 @@
         "disabled": "Disabled",
         "enable": "Enable",
         "disable": "Disable",
-        "disable-hint": "Disabling ends every session and blocks sign-in with a password and with single sign-on. Removing someone at the identity provider does not do this for you.",
+        "disable-hint-sso": "Disabling ends every session and blocks sign-in with a password and with single sign-on. Removing someone at the identity provider does not do this for you.",
+        "disable-hint": "Disabling ends every session and blocks sign-in.",
         "sso-title": "Single sign-on",
         "sso-none": "No identity provider account is linked.",
         "sso-linked": "subject {{subject}} · linked on {{date}}",

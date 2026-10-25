@@ -187,7 +187,7 @@
         "label": "Profielfoto",
         "upload": "Foto uploaden",
         "remove": "Foto verwijderen",
-        "hint": "Wanneer je aanmeldt met single sign-on, wordt de foto van je identiteitsprovider gebruikt tot je zelf een foto uploadt. Een verwijderde foto komt pas terug wanneer je identiteitsprovider een andere foto toont."
+        "hint": "Je single sign-on-foto wordt gebruikt tot je er zelf een uploadt."
       },
       "player": {
         "label": "Gekoppelde speler",
@@ -219,6 +219,7 @@
     "users": {
       "title": "Gebruikersbeheer",
       "last-login": "Laatst ingelogd",
+      "player-column": "Speler",
       "role": "Rol",
       "roles": {
         "user": "Gebruiker",
@@ -280,7 +281,8 @@
         "disabled": "Uitgeschakeld",
         "enable": "Inschakelen",
         "disable": "Uitschakelen",
-        "disable-hint": "Uitschakelen beëindigt elke sessie en blokkeert inloggen met een wachtwoord en via single sign-on. Iemand verwijderen bij de identiteitsprovider doet dit niet voor jou.",
+        "disable-hint-sso": "Uitschakelen beëindigt elke sessie en blokkeert inloggen met een wachtwoord en via single sign-on. Iemand verwijderen bij de identiteitsprovider doet dit niet voor jou.",
+        "disable-hint": "Uitschakelen beëindigt elke sessie en blokkeert inloggen.",
         "sso-title": "Single sign-on",
         "sso-none": "Er is geen account van de identiteitsprovider gekoppeld.",
         "sso-linked": "subject {{subject}} · gekoppeld op {{date}}",
