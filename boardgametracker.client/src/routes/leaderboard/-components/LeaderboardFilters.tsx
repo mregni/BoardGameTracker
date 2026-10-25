@@ -39,6 +39,10 @@ export const LeaderboardFilters = ({ search, games, onChange }: Props) => {
 		custom: t("common:period.custom"),
 	};
 
+	const shortLabels: Partial<Record<LeaderboardPeriod, string>> = {
+		"12m": t("common:period.last-12-months-short"),
+	};
+
 	const gameItems = useMemo<(BgtSelectItem | BgtSelectImageItem)[]>(
 		() => [
 			{ value: ALL_GAMES, label: t("filters.all-games") },
@@ -76,12 +80,24 @@ export const LeaderboardFilters = ({ search, games, onChange }: Props) => {
 								type="button"
 								aria-pressed={period === option}
 								onClick={() => selectPeriod(option)}
+								aria-label={periodLabels[option]}
 								className={cx(
 									"min-w-0 truncate rounded-md px-1 text-sm transition-colors sm:px-3",
 									period === option ? "bg-primary text-white" : "text-white/70 hover:bg-primary/20 hover:text-white",
 								)}
 							>
-								{periodLabels[option]}
+								{shortLabels[option] ? (
+									<>
+										<span aria-hidden="true" className="sm:hidden">
+											{shortLabels[option]}
+										</span>
+										<span aria-hidden="true" className="hidden sm:inline">
+											{periodLabels[option]}
+										</span>
+									</>
+								) : (
+									periodLabels[option]
+								)}
 							</button>
 						))}
 					</div>

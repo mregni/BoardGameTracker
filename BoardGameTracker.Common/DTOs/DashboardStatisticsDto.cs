@@ -24,7 +24,8 @@ public class DashboardStatisticsDto
     public List<RecentActivityDto> RecentActivities { get; set; } = [];
     public List<GameStateChart> Collection { get; set; } = [];
     public List<MostPlayedGameDto> MostPlayedGames { get; set; } = [];
-    public List<MostPlayedGameDto> MostPlayedGamesThisMonth { get; set; } = [];
+    public List<MostPlayedGameDto> MostPlayedGamesThisYear { get; set; } = [];
+    public List<MostPlayedGameDto> MostPlayedGamesLast12Months { get; set; } = [];
     public List<DashboardTopPlayerDto> TopPlayers { get; set; } = [];
     public bool TopPlayersIncludeCoopWins { get; set; }
     public List<RecentGameDto> RecentAddedGames { get; set; } = [];
