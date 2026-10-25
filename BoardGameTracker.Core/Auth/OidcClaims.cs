@@ -35,6 +35,8 @@ public sealed class OidcClaims
 
     public string? Subject => GetValue(SubjectClaim);
 
+    public IReadOnlyCollection<string> Names => _claims.Keys;
+
     public OidcClaims MergeWith(OidcClaims other)
     {
         var merged = new Dictionary<string, JsonElement>(_claims, StringComparer.Ordinal);

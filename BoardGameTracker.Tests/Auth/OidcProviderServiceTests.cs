@@ -226,7 +226,7 @@ public class OidcProviderServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateAsync_ShouldSetNullOptionalFields_WhenNotProvided()
+    public async Task CreateAsync_ShouldSetNullOptionalFields_AndTheDefaultClaimMapping_WhenNotProvided()
     {
         var result = await _service.CreateAsync(
             displayName: "Minimal",
@@ -250,11 +250,28 @@ public class OidcProviderServiceTests : IDisposable
         result.AuthorizationEndpoint.Should().BeNull();
         result.TokenEndpoint.Should().BeNull();
         result.UserInfoEndpoint.Should().BeNull();
-        result.UsernameClaimType.Should().BeNull();
-        result.EmailClaimType.Should().BeNull();
-        result.DisplayNameClaimType.Should().BeNull();
+        result.UsernameClaimType.Should().Be("preferred_username");
+        result.EmailClaimType.Should().Be("email");
+        result.DisplayNameClaimType.Should().Be("name");
+        result.RolesClaimType.Should().Be("groups");
+        result.AdminGroupValue.Should().Be("bgt-admins");
+        result.PictureClaimType.Should().Be("picture");
         result.IconUrl.Should().BeNull();
         result.ButtonColor.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldStoreTheDefaultClaimMapping_ForWhitespaceValues_AndKeepConfiguredOnes()
+    {
+        var result = await _service.CreateAsync("Minimal", "https://idp.example.com", "client-id", null, "openid", true,
+            null, null, null, " ", "", " mail ", "roles", "  ", null, null, pictureClaimType: " ");
+
+        result.UsernameClaimType.Should().Be("preferred_username");
+        result.EmailClaimType.Should().Be("email");
+        result.DisplayNameClaimType.Should().Be("mail");
+        result.RolesClaimType.Should().Be("roles");
+        result.AdminGroupValue.Should().Be("bgt-admins");
+        result.PictureClaimType.Should().Be("picture");
     }
 
     #endregion

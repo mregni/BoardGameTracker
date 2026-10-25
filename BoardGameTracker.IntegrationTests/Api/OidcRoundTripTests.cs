@@ -455,6 +455,68 @@ public class OidcRoundTripTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Login_ShouldUseTheUsernameAsDisplayName_AndFillTheProfileOnceTheProviderSendsIt()
+    {
+        UseIdentity("profile");
+        var username = (string)_idp.User["preferred_username"];
+        var email = (string)_idp.User["email"];
+        _idp.User.Remove("name");
+        _idp.User.Remove("email");
+
+        LoginResponse first;
+        using (var browser = _fixture.CreateBrowserClient(Https))
+        {
+            await SignInAsync(browser);
+            first = await AdoptAsync(browser);
+        }
+
+        first.User.DisplayName.Should().Be(username);
+        var placeholder = await ProfileAsync(first.AccessToken);
+        placeholder.Email.Should().EndWith("@sso.external");
+
+        _idp.User["name"] = "Profile Person";
+        _idp.User["email"] = email;
+        LoginResponse second;
+        using (var browser = _fixture.CreateBrowserClient(Https))
+        {
+            await SignInAsync(browser);
+            second = await AdoptAsync(browser);
+        }
+
+        second.User.Id.Should().Be(first.User.Id);
+        second.User.DisplayName.Should().Be(username, "a display name that is already set is never overwritten");
+        (await ProfileAsync(second.AccessToken)).Email.Should().Be(email);
+    }
+
+    [Fact]
+    public async Task Login_ShouldFillAnEmptyDisplayName_OnALaterLogin()
+    {
+        UseIdentity("emptyname");
+        var username = (string)_idp.User["preferred_username"];
+        _idp.User["name"] = "";
+        LoginResponse first;
+        using (var browser = _fixture.CreateBrowserClient(Https))
+        {
+            await SignInAsync(browser);
+            first = await AdoptAsync(browser);
+        }
+
+        first.User.DisplayName.Should().Be(username);
+        using (var api = _fixture.CreateClient())
+        {
+            api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", first.AccessToken);
+            var clear = await api.PutAsJsonAsync("/api/auth/profile", new UpdateProfileRequest(null, null, null));
+            clear.StatusCode.Should().Be(HttpStatusCode.OK, await clear.Content.ReadAsStringAsync());
+        }
+
+        _idp.User["name"] = "Named Later";
+        using var again = _fixture.CreateBrowserClient(Https);
+        await SignInAsync(again);
+
+        (await AdoptAsync(again)).User.DisplayName.Should().Be("Named Later");
+    }
+
+    [Fact]
     public async Task Login_ShouldNotDeadEnd_WhenALocalAccountHasTheSameUsername()
     {
         UseIdentity("clash");
@@ -699,6 +761,13 @@ public class OidcRoundTripTests : IAsyncLifetime
         var response = await admin.PostAsJsonAsync("/api/admin/oidc-providers/test-discovery", new TestOidcDiscoveryRequest(_idp.Authority));
         response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
         return (await response.Content.ReadFromJsonAsync<OidcDiscoveryResultDto>(IntegrationFixture.Json))!;
+    }
+
+    private async Task<ProfileResponse> ProfileAsync(string accessToken)
+    {
+        using var api = _fixture.CreateClient();
+        api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        return (await api.GetFromJsonAsync<ProfileResponse>("/api/auth/profile", IntegrationFixture.Json))!;
     }
 
     private static async Task<LoginResponse> AdoptAsync(HttpClient browser)
