@@ -15,7 +15,10 @@ const tabAliases: Record<string, SettingsCategory> = { bgg: "integrations" };
 
 export const settingsSearchSchema = z.object({
 	tab: z
-		.preprocess((tab) => (typeof tab === "string" ? (tabAliases[tab] ?? tab) : tab), z.enum(settingsCategories).optional())
+		.preprocess(
+			(tab) => (typeof tab === "string" ? (tabAliases[tab] ?? tab) : tab),
+			z.enum(settingsCategories).optional(),
+		)
 		.catch(undefined),
 });
 

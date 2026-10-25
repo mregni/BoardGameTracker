@@ -1,9 +1,11 @@
 {
   "add": "Registrar partida",
+  "mark-owned": "Marcar como en propiedad",
   "sessions": "Ver partidas",
   "no-sessions": {
     "title": "Aún no hay partidas registradas",
-    "description": "Registra una partida de este juego para ver sus estadísticas."
+    "description": "Registra una partida de este juego para ver sus estadísticas.",
+    "not-played": "Aún sin jugar"
   },
   "notifications": {
     "created": "Juego añadido",

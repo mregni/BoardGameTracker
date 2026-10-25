@@ -1,9 +1,11 @@
 {
   "add": "Sessie registreren",
+  "mark-owned": "Markeren als in bezit",
   "sessions": "Sessies bekijken",
   "no-sessions": {
     "title": "Nog geen sessies geregistreerd",
-    "description": "Registreer een sessie van dit spel om de statistieken te zien."
+    "description": "Registreer een sessie van dit spel om de statistieken te zien.",
+    "not-played": "Nog niet gespeeld"
   },
   "notifications": {
     "created": "Spel toegevoegd",

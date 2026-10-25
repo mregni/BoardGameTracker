@@ -31,7 +31,7 @@ describe("EditableNumberCell", () => {
 	it("shows a dash for an empty value", () => {
 		renderCell({ value: null });
 
-		expect(screen.getByRole("button", { name: "-" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "–" })).toBeInTheDocument();
 	});
 
 	it("focuses the input and commits the new value on Enter", async () => {

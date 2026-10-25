@@ -1,9 +1,11 @@
 {
   "add": "Log session",
+  "mark-owned": "Mark as owned",
   "sessions": "View sessions",
   "no-sessions": {
     "title": "No sessions logged yet",
-    "description": "Log a session of this game to see its statistics."
+    "description": "Log a session of this game to see its statistics.",
+    "not-played": "Not played yet"
   },
   "notifications": {
     "created": "Game added",

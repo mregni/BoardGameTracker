@@ -88,6 +88,12 @@ export const toIsoCurrency = (currency: string | null | undefined): string | nul
 	return /^[A-Za-z]{3}$/.test(value) ? value.toUpperCase() : null;
 };
 
+export const formatPriceOrEmpty = (
+	amount: NumberValue,
+	currency: string | null | undefined,
+	locale?: string | null,
+): string => (isMissing(amount) || amount === 0 ? EMPTY_PRICE : formatPrice(amount, currency, locale));
+
 export const formatPrice = (
 	amount: NumberValue,
 	currency: string | null | undefined,

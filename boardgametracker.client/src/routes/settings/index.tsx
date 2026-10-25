@@ -30,7 +30,6 @@ import { stopsSingleSignOn } from "./-utils/publicUrlWarning";
 import { resolveSettingsCategory, settingsSearchSchema } from "./-utils/settingsCategory";
 import { settingsFormOpts } from "./-utils/settingsFormOpts";
 
-
 export const Route = createFileRoute("/settings/")({
 	component: RouteComponent,
 	validateSearch: settingsSearchSchema,

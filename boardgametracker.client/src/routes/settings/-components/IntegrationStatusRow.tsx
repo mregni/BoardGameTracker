@@ -24,7 +24,9 @@ export const IntegrationStatusRow = ({
 	onTest,
 }: Props) => {
 	const { t } = useTranslation("settings");
-	const hint = t(integration === "changeDetection" ? "integrations.test-hint-change-detection" : "integrations.test-hint");
+	const hint = t(
+		integration === "changeDetection" ? "integrations.test-hint-change-detection" : "integrations.test-hint",
+	);
 
 	return (
 		<div className="flex flex-row flex-wrap items-center gap-3 @2xl:flex-nowrap @2xl:justify-end">
