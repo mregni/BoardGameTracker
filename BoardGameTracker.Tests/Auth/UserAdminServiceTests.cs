@@ -696,7 +696,14 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
         _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, targetUser), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
-        VerifyInformationLogged();
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception?>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Exactly(2));
         VerifyNoOtherCalls();
     }
 

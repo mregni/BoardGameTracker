@@ -97,6 +97,7 @@ public class CompareTests : IAsyncLifetime
             OtherWins = 0,
             PlayerOneAverageScore = 67.8,
             PlayerTwoAverageScore = 64.5,
+            ScoredSessionCount = 4,
             LastPlayed = Day.AddDays(3),
             LastOutcome = CompareOutcome.Both
         });

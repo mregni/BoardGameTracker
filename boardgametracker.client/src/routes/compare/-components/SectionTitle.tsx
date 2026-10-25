@@ -6,10 +6,7 @@ interface Props {
 }
 
 export const SectionTitle = ({ id, children }: Props) => (
-	<h2
-		id={id}
-		className="flex items-center gap-2.5 font-bold after:h-px after:flex-1 after:bg-card-border"
-	>
+	<h2 id={id} className="flex items-center gap-2.5 font-bold after:h-px after:flex-1 after:bg-card-border">
 		{children}
 	</h2>
 );

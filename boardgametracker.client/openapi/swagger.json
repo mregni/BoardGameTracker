@@ -466,6 +466,26 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -6200,6 +6220,10 @@
             "format": "double",
             "nullable": true
           },
+          "scoredSessionCount": {
+            "type": "integer",
+            "format": "int32"
+          },
           "lastPlayed": {
             "type": "string",
             "format": "date-time"
@@ -7003,7 +7027,13 @@
               "$ref": "#/components/schemas/MostPlayedGameDto"
             }
           },
-          "mostPlayedGamesThisMonth": {
+          "mostPlayedGamesThisYear": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MostPlayedGameDto"
+            }
+          },
+          "mostPlayedGamesLast12Months": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MostPlayedGameDto"
@@ -7885,6 +7915,10 @@
             "type": "number",
             "format": "double",
             "nullable": true
+          },
+          "scoredSessionCount": {
+            "type": "integer",
+            "format": "int32"
           },
           "mostWinsPlayer": {
             "$ref": "#/components/schemas/MostWinningPlayer"

@@ -251,6 +251,7 @@ public class HeadToHeadCalculatorTests
             OtherWins = 1,
             PlayerOneAverageScore = 79.5,
             PlayerTwoAverageScore = 77.7,
+            ScoredSessionCount = 4,
             LastPlayed = Day,
             LastOutcome = CompareOutcome.PlayerTwo
         });
