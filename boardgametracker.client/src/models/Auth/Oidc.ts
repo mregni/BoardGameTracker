@@ -60,6 +60,15 @@ export interface ExternalLogin {
 	lastUsedAt: Date | null;
 }
 
+export const OIDC_CLAIM_DEFAULTS = {
+	usernameClaimType: "preferred_username",
+	emailClaimType: "email",
+	displayNameClaimType: "name",
+	pictureClaimType: "picture",
+	rolesClaimType: "groups",
+	adminGroupValue: "bgt-admins",
+} as const;
+
 const optionalText = z
 	.string()
 	.trim()

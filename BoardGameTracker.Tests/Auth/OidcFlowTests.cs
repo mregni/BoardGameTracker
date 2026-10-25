@@ -440,6 +440,145 @@ public class OidcFlowTests : IDisposable
     }
 
     [Fact]
+    public async Task CompleteLoginAsync_ShouldMakeAnIdentityProviderManagedUserAdmin_WithTheDefaultAdminGroup()
+    {
+        var user = LinkedUser();
+        user.ManageRoleByIdentityProvider();
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-1"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _idp.User = KnownUser("sub-1");
+        _idp.User["groups"] = new[] { "bgt-admins" };
+        _userManagerMock.Setup(x => x.AddToRoleAsync(user, "Admin")).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.RemoveFromRolesAsync(user, It.IsAny<IEnumerable<string>>())).ReturnsAsync(IdentityResult.Success);
+
+        await LoginAsync();
+
+        _userManagerMock.Verify(x => x.AddToRoleAsync(user, "Admin"), Times.Once);
+        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(user, It.Is<IEnumerable<string>>(r => r.SequenceEqual(new[] { "User" }))), Times.Once);
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldProvisionWithTheUsernameAsDisplayName_WhenTheProviderSendsNoNameOrEmail()
+    {
+        _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna", ["name"] = "", ["email"] = " " };
+        SetUpProvisioning();
+
+        var result = await LoginAsync();
+
+        result.Login.User.Username.Should().Be("anna");
+        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "anna" && u.DisplayName == "anna" && u.Email == "sub-anna" + OidcService.PlaceholderEmailDomain)), Times.Once);
+        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("anna");
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldReadTheDefaultClaims_WhenTheClaimTypesAreEmptyStrings()
+    {
+        await UpdateProviderAsync(p => p.Update(p.DisplayName, p.Authority, p.ClientId, null, true, p.Scopes, true,
+            null, null, null, "", " ", "", "", " ", null, null));
+        _idp.User = KnownUser("sub-new");
+        SetUpProvisioning();
+
+        await LoginAsync();
+
+        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "jane" && u.Email == "jane@example.com" && u.DisplayName == "Jane Doe")), Times.Once);
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldFillTheEmptyDisplayNameAndPlaceholderEmail_OnALaterSignIn()
+    {
+        var user = SsoUser("anna", "sub-anna" + OidcService.PlaceholderEmailDomain, null);
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-anna"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna", ["name"] = "Anna Smith", ["email"] = "anna@example.com" };
+        SetUpProvisioning();
+
+        var result = await LoginAsync();
+
+        result.Login.User.DisplayName.Should().Be("Anna Smith");
+        user.DisplayName.Should().Be("Anna Smith");
+        user.Email.Should().Be("anna@example.com");
+        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("Anna Smith");
+        _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldFillAnEmptyDisplayNameWithTheUsername_WhenTheProviderStillSendsNoName()
+    {
+        var user = SsoUser("anna", "sub-anna" + OidcService.PlaceholderEmailDomain, " ");
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-anna"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna" };
+
+        await LoginAsync();
+
+        user.DisplayName.Should().Be("anna");
+        user.Email.Should().Be("sub-anna" + OidcService.PlaceholderEmailDomain);
+        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("anna");
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldNeverOverwriteADisplayNameOrEmailThatIsAlreadySet()
+    {
+        var user = SsoUser("anna", "anna@home.example.com", "Annie");
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-anna", "Old name"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna", ["name"] = "Anna Smith", ["email"] = "anna@example.com" };
+        SetUpProvisioning();
+
+        await LoginAsync();
+
+        user.DisplayName.Should().Be("Annie");
+        user.Email.Should().Be("anna@home.example.com");
+        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("Old name");
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldNotFillTheProfileOfALinkedLocalAccount()
+    {
+        var user = new ApplicationUser("local-anna", "local@example.com") { PasswordHash = "hash" };
+        _context.Users.Add(user);
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-anna"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna", ["name"] = "Anna Smith", ["email"] = "anna@example.com" };
+
+        await LoginAsync();
+
+        user.DisplayName.Should().BeNull();
+        user.Email.Should().Be("local@example.com");
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldKeepThePlaceholderEmail_WhenAnotherAccountUsesTheProviderEmail()
+    {
+        var user = SsoUser("anna", "sub-anna" + OidcService.PlaceholderEmailDomain, "Anna");
+        _context.Users.Add(new ApplicationUser("other", "anna@example.com") { NormalizedEmail = "ANNA@EXAMPLE.COM" });
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-anna"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna", ["email"] = "anna@example.com" };
+        SetUpProvisioning();
+
+        await LoginAsync();
+
+        user.Email.Should().Be("sub-anna" + OidcService.PlaceholderEmailDomain);
+        user.DisplayName.Should().Be("Anna");
+    }
+
+    [Fact]
+    public async Task CompleteLinkAsync_ShouldLabelTheLinkWithTheUsername_WhenTheProviderSendsNoName()
+    {
+        var user = LinkedUser();
+        _idp.User = new Dictionary<string, object> { ["sub"] = "sub-9", ["preferred_username"] = "anna" };
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id)).ReturnsAsync(user);
+
+        var request = await _service.StartLinkAsync(user.Id, PublicBase);
+        await _service.CompleteLinkAsync(await _idp.AuthorizeAsync(request.Url), request.State, request.State, Authority);
+
+        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("anna");
+        user.DisplayName.Should().Be("Jane");
+        user.Email.Should().Be("linked@example.com");
+    }
+
+    [Fact]
     public async Task CompleteLoginAsync_ShouldNotTouchTheRoleOfALocallyManagedUser()
     {
         await ConfigureAdminGroupAsync();
@@ -964,6 +1103,14 @@ public class OidcFlowTests : IDisposable
     private ApplicationUser LinkedUser()
     {
         var user = new ApplicationUser("jane-linked", "linked@example.com", "Jane");
+        _context.Users.Add(user);
+        _context.SaveChanges();
+        return user;
+    }
+
+    private ApplicationUser SsoUser(string userName, string email, string? displayName)
+    {
+        var user = new ApplicationUser(userName, email, displayName);
         _context.Users.Add(user);
         _context.SaveChanges();
         return user;

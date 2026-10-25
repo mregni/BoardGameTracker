@@ -51,10 +51,13 @@ public class OidcProviderService : IOidcProviderService
         var provider = new OidcProvider(displayName, authority, clientId);
         provider.Update(displayName, authority, clientId, ProtectSecret(clientSecret), enabled, scopes, autoProvisionUsers,
             authorizationEndpoint, tokenEndpoint, userInfoEndpoint,
-            usernameClaimType, emailClaimType, displayNameClaimType,
-            rolesClaimType, adminGroupValue,
+            OrDefault(usernameClaimType, OidcClaimTypes.DefaultUsername),
+            OrDefault(emailClaimType, OidcClaimTypes.DefaultEmail),
+            OrDefault(displayNameClaimType, OidcClaimTypes.DefaultDisplayName),
+            OrDefault(rolesClaimType, OidcClaimTypes.DefaultRoles),
+            OrDefault(adminGroupValue, OidcClaimTypes.DefaultAdminGroup),
             iconUrl, buttonColor);
-        provider.SetPictureClaimType(pictureClaimType);
+        provider.SetPictureClaimType(OrDefault(pictureClaimType, OidcClaimTypes.DefaultPicture));
         provider.SetDefaultRole(ValidDefaultRole(defaultRole) ?? Constants.AuthRoles.User);
 
         _context.OidcProviders.Add(provider);
@@ -157,6 +160,8 @@ public class OidcProviderService : IOidcProviderService
             ? defaultRole
             : throw new ValidationException(Constants.Errors.InvalidRole);
     }
+
+    private static string OrDefault(string? value, string fallback) => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
 
     private static string NormalizeAuthority(string authority) => authority.Trim().TrimEnd('/');
 

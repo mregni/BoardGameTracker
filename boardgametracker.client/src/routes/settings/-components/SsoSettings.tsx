@@ -10,6 +10,7 @@ import { useAppForm } from "@/hooks/form";
 import { useModalState } from "@/hooks/useModalState";
 import {
 	type BgtSelectItem,
+	OIDC_CLAIM_DEFAULTS,
 	OIDC_DEFAULT_ROLES,
 	type OidcProviderConfig,
 	type OidcProviderForm,
@@ -24,6 +25,20 @@ import { useSsoSettings } from "../-hooks/useSsoSettings";
 import { SettingsSection } from "./SettingsSection";
 import { SettingsToggle } from "./SettingsToggle";
 
+type ClaimField = keyof typeof OIDC_CLAIM_DEFAULTS;
+
+const claimValue = (provider: OidcProviderConfig | null, field: ClaimField) =>
+	provider?.[field]?.trim() || OIDC_CLAIM_DEFAULTS[field];
+
+const CLAIM_FIELDS: { name: ClaimField; label: string }[] = [
+	{ name: "usernameClaimType", label: "sso.fields.username-claim.label" },
+	{ name: "emailClaimType", label: "sso.fields.email-claim.label" },
+	{ name: "displayNameClaimType", label: "sso.fields.display-name-claim.label" },
+	{ name: "pictureClaimType", label: "sso.fields.picture-claim.label" },
+	{ name: "rolesClaimType", label: "sso.fields.roles-claim.label" },
+	{ name: "adminGroupValue", label: "sso.fields.admin-group.label" },
+];
+
 const toForm = (provider: OidcProviderConfig | null, httpsRequired: boolean): OidcProviderForm => ({
 	displayName: provider?.displayName ?? "",
 	authority: provider?.authority ?? "",
@@ -33,12 +48,12 @@ const toForm = (provider: OidcProviderConfig | null, httpsRequired: boolean): Oi
 	enabled: provider ? provider.enabled : !httpsRequired,
 	autoProvisionUsers: provider?.autoProvisionUsers ?? true,
 	defaultRole: provider?.defaultRole ?? "User",
-	usernameClaimType: provider?.usernameClaimType ?? "",
-	emailClaimType: provider?.emailClaimType ?? "",
-	displayNameClaimType: provider?.displayNameClaimType ?? "",
-	pictureClaimType: provider?.pictureClaimType ?? "",
-	rolesClaimType: provider?.rolesClaimType ?? "",
-	adminGroupValue: provider?.adminGroupValue ?? "",
+	usernameClaimType: claimValue(provider, "usernameClaimType"),
+	emailClaimType: claimValue(provider, "emailClaimType"),
+	displayNameClaimType: claimValue(provider, "displayNameClaimType"),
+	pictureClaimType: claimValue(provider, "pictureClaimType"),
+	rolesClaimType: claimValue(provider, "rolesClaimType"),
+	adminGroupValue: claimValue(provider, "adminGroupValue"),
 });
 
 const CopyValue = ({ label, value, disabled = false }: { label: string; value: string; disabled?: boolean }) => {
@@ -268,72 +283,19 @@ export const SsoSettings = ({ dateFormat = DEFAULT_DATE_FORMAT, uiLanguage = "en
 						)}
 					</form.Field>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-						<form.Field name="usernameClaimType">
-							{(field: AnyFieldApi) => (
-								<BgtInputField
-									field={field}
-									type="text"
-									label={t("sso.fields.username-claim.label")}
-									placeholder="preferred_username"
-									disabled={busy}
-								/>
-							)}
-						</form.Field>
-						<form.Field name="emailClaimType">
-							{(field: AnyFieldApi) => (
-								<BgtInputField
-									field={field}
-									type="text"
-									label={t("sso.fields.email-claim.label")}
-									placeholder="email"
-									disabled={busy}
-								/>
-							)}
-						</form.Field>
-						<form.Field name="displayNameClaimType">
-							{(field: AnyFieldApi) => (
-								<BgtInputField
-									field={field}
-									type="text"
-									label={t("sso.fields.display-name-claim.label")}
-									placeholder="name"
-									disabled={busy}
-								/>
-							)}
-						</form.Field>
-						<form.Field name="pictureClaimType">
-							{(field: AnyFieldApi) => (
-								<BgtInputField
-									field={field}
-									type="text"
-									label={t("sso.fields.picture-claim.label")}
-									placeholder="picture"
-									disabled={busy}
-								/>
-							)}
-						</form.Field>
-						<form.Field name="rolesClaimType">
-							{(field: AnyFieldApi) => (
-								<BgtInputField
-									field={field}
-									type="text"
-									label={t("sso.fields.roles-claim.label")}
-									placeholder="groups"
-									disabled={busy}
-								/>
-							)}
-						</form.Field>
-						<form.Field name="adminGroupValue">
-							{(field: AnyFieldApi) => (
-								<BgtInputField
-									field={field}
-									type="text"
-									label={t("sso.fields.admin-group.label")}
-									placeholder={t("sso.fields.admin-group.placeholder")}
-									disabled={busy}
-								/>
-							)}
-						</form.Field>
+						{CLAIM_FIELDS.map(({ name, label }) => (
+							<form.Field key={name} name={name}>
+								{(field: AnyFieldApi) => (
+									<BgtInputField
+										field={field}
+										type="text"
+										label={t(label)}
+										placeholder={t("sso.fields.default-value", { value: OIDC_CLAIM_DEFAULTS[name] })}
+										disabled={busy}
+									/>
+								)}
+							</form.Field>
+						))}
 						<form.Field name="defaultRole">
 							{(field: AnyFieldApi) => (
 								<BgtSelect field={field} label={t("sso.fields.default-role.label")} items={roleItems} disabled={busy} />
@@ -343,6 +305,20 @@ export const SsoSettings = ({ dateFormat = DEFAULT_DATE_FORMAT, uiLanguage = "en
 					<BgtText size="2" color="gray">
 						{t("sso.fields.role-sync")}
 					</BgtText>
+					<form.Subscribe
+						selector={(state) => !state.values.rolesClaimType.trim() || !state.values.adminGroupValue.trim()}
+					>
+						{(usesRoleDefaults) =>
+							usesRoleDefaults && (
+								<BgtText size="2" color="amber" data-testid="sso-role-sync-defaults">
+									{t("sso.fields.role-sync-defaults", {
+										claim: OIDC_CLAIM_DEFAULTS.rolesClaimType,
+										group: OIDC_CLAIM_DEFAULTS.adminGroupValue,
+									})}
+								</BgtText>
+							)
+						}
+					</form.Subscribe>
 					<BgtText size="2" color="gray">
 						{t("sso.fields.picture-claim.hint")}
 					</BgtText>

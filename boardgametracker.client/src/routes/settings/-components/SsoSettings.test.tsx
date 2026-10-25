@@ -194,28 +194,96 @@ describe("SsoSettings", () => {
 			displayName: "Work login",
 			clientSecret: "",
 			rolesClaimType: "groups",
-			usernameClaimType: null,
+			usernameClaimType: "preferred_username",
 			defaultRole: "Reader",
 		});
 	});
 
-	it("submits the avatar claim, or nothing when it is left empty", async () => {
+	it("submits the avatar claim, and shows its default as placeholder once cleared", async () => {
 		const user = userEvent.setup();
 		mocks.state.provider = provider;
 		renderWithProviders(<SsoSettings />);
 
-		expect(screen.getByLabelText("sso.fields.picture-claim.label")).toHaveAttribute("placeholder", "picture");
+		const picture = screen.getByLabelText("sso.fields.picture-claim.label");
+		expect(picture).toHaveValue("picture");
+		expect(picture).toHaveAttribute("placeholder", "sso.fields.default-value");
 		expect(screen.getByText("sso.fields.picture-claim.hint")).toBeInTheDocument();
 		await user.click(screen.getByRole("button", { name: "sso.save" }));
 		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
-		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ pictureClaimType: null });
+		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ pictureClaimType: "picture" });
 
-		await user.type(screen.getByLabelText("sso.fields.picture-claim.label"), " avatar_url ");
+		await user.clear(picture);
+		await user.type(picture, " avatar_url ");
 		await user.click(screen.getByRole("button", { name: "sso.save" }));
 		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(2));
 		expect(mocks.state.save.mock.calls[1][0]).toMatchObject({ pictureClaimType: "avatar_url" });
+
+		await user.clear(picture);
+		await user.click(screen.getByRole("button", { name: "sso.save" }));
+		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(3));
+		expect(mocks.state.save.mock.calls[2][0]).toMatchObject({ pictureClaimType: null });
 	});
 
+	it("prefills a new provider with the default claim mapping and admin group", async () => {
+		const user = userEvent.setup();
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.getByLabelText("sso.fields.username-claim.label")).toHaveValue("preferred_username");
+		expect(screen.getByLabelText("sso.fields.email-claim.label")).toHaveValue("email");
+		expect(screen.getByLabelText("sso.fields.display-name-claim.label")).toHaveValue("name");
+		expect(screen.getByLabelText("sso.fields.picture-claim.label")).toHaveValue("picture");
+		expect(screen.getByLabelText("sso.fields.roles-claim.label")).toHaveValue("groups");
+		expect(screen.getByLabelText("sso.fields.admin-group.label")).toHaveValue("bgt-admins");
+		expect(screen.queryByTestId("sso-role-sync-defaults")).not.toBeInTheDocument();
+
+		await user.type(screen.getByLabelText("sso.fields.display-name.label"), "IdP");
+		await user.type(screen.getByLabelText("sso.fields.authority.label"), "https://idp.example.com");
+		await user.type(screen.getByLabelText("sso.fields.client-id.label"), "bgt");
+		await user.click(screen.getByRole("button", { name: "sso.create" }));
+
+		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
+		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({
+			usernameClaimType: "preferred_username",
+			emailClaimType: "email",
+			displayNameClaimType: "name",
+			pictureClaimType: "picture",
+			rolesClaimType: "groups",
+			adminGroupValue: "bgt-admins",
+		});
+	});
+
+	it("shows the effective defaults for an existing provider with empty claim fields", () => {
+		mocks.state.provider = {
+			...provider,
+			usernameClaimType: " ",
+			rolesClaimType: null,
+			adminGroupValue: "",
+			emailClaimType: "mail",
+		};
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.getByLabelText("sso.fields.username-claim.label")).toHaveValue("preferred_username");
+		expect(screen.getByLabelText("sso.fields.email-claim.label")).toHaveValue("mail");
+		expect(screen.getByLabelText("sso.fields.roles-claim.label")).toHaveValue("groups");
+		expect(screen.getByLabelText("sso.fields.admin-group.label")).toHaveValue("bgt-admins");
+		expect(screen.queryByTestId("sso-role-sync-defaults")).not.toBeInTheDocument();
+	});
+
+	it("explains that role sync falls back to the defaults when the groups claim or admin group is cleared", async () => {
+		const user = userEvent.setup();
+		mocks.state.provider = provider;
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.queryByTestId("sso-role-sync-defaults")).not.toBeInTheDocument();
+		await user.clear(screen.getByLabelText("sso.fields.admin-group.label"));
+		expect(screen.getByTestId("sso-role-sync-defaults")).toHaveTextContent("sso.fields.role-sync-defaults");
+
+		await user.type(screen.getByLabelText("sso.fields.admin-group.label"), "game-admins");
+		expect(screen.queryByTestId("sso-role-sync-defaults")).not.toBeInTheDocument();
+
+		await user.clear(screen.getByLabelText("sso.fields.roles-claim.label"));
+		expect(screen.getByTestId("sso-role-sync-defaults")).toBeInTheDocument();
+	});
 	it("creates a provider with the User role as default", async () => {
 		const user = userEvent.setup();
 		renderWithProviders(<SsoSettings />);

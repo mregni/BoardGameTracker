@@ -383,8 +383,7 @@
         "label": "Claim de grupos/roles"
       },
       "admin-group": {
-        "label": "Valor del grupo de administradores",
-        "placeholder": "bgt-admins"
+        "label": "Valor del grupo de administradores"
       },
       "auto-provision": {
         "label": "Crear cuentas en el primer inicio de sesión",
@@ -397,7 +396,9 @@
       "default-role": {
         "label": "Rol predeterminado"
       },
-      "role-sync": "Con un claim de grupos y un grupo de administradores configurados, las cuentas creadas a través del proveedor reciben Administrador si están en ese grupo y, si no, el rol predeterminado, en cada inicio de sesión. El último administrador nunca pierde su rol."
+      "role-sync": "Con un claim de grupos y un grupo de administradores configurados, las cuentas creadas a través del proveedor reciben Administrador si están en ese grupo y, si no, el rol predeterminado, en cada inicio de sesión. El último administrador nunca pierde su rol.",
+      "role-sync-defaults": "Un claim de grupos o un grupo de administradores vacío usa el valor predeterminado ({{claim}} y {{group}}), así que la sincronización de roles sigue activa.",
+      "default-value": "Predeterminado: {{value}}"
     },
     "discovery": {
       "button": "Probar descubrimiento",
