@@ -50,9 +50,6 @@ export const NotFound = () => {
 				<BgtText size="6" weight="bold" color="white">
 					{t("title")}
 				</BgtText>
-				<BgtText color="white" opacity={70}>
-					{t("subtitle")}
-				</BgtText>
 			</div>
 
 			<BgtButton variant="primary" size="3" onClick={() => router.history.back()}>

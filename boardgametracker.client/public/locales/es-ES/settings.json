@@ -31,7 +31,7 @@
       "sso-warning": "El inicio de sesión único deja de funcionar con una dirección http.",
       "sso-confirm": {
         "title": "¿Detener el inicio de sesión único?",
-        "description": "Con esta URL pública el inicio de sesión único deja de funcionar para todos, también por https, hasta que la URL pública vuelva a usar https.",
+        "description": "El inicio de sesión único se detiene para todos, en cualquier dirección, hasta que la URL pública vuelva a ser https.",
         "confirm": "Guardar y detener el inicio de sesión único"
       }
     },
@@ -435,10 +435,10 @@
     "delete": "Eliminar proveedor",
     "delete-description": "Al eliminar el proveedor también se desvinculan todas las cuentas del proveedor de identidad. Las personas conservan su contraseña local si tienen una.",
     "notifications": {
-      "saved": "Proveedor guardado.",
-      "save-failed": "No se pudo guardar el proveedor.",
-      "deleted": "Proveedor eliminado.",
-      "delete-failed": "No se pudo eliminar el proveedor."
+      "saved": "Proveedor guardado",
+      "save-failed": "No se ha podido guardar el proveedor",
+      "deleted": "Proveedor eliminado",
+      "delete-failed": "No se ha podido eliminar el proveedor"
     },
     "https-required-locked": "El inicio de sesión único requiere HTTPS. Pon BoardGameTracker detrás de un proxy inverso con TLS y configura una URL pública https. Hasta entonces solo puedes desactivar el proveedor."
   },
@@ -464,11 +464,11 @@
       "changeDetection": "changedetection.io"
     },
     "status": {
-      "ok": "Conectado",
+      "ok": "Conectada",
       "unauthorized": "Rechazada",
       "unreachable": "Inaccesible",
       "rateLimited": "Límite de solicitudes",
-      "notConfigured": "No configurado"
+      "notConfigured": "No configurada"
     },
     "checked-at": "comprobado a las {{time}}",
     "checking": "Comprobando…",
@@ -486,6 +486,7 @@
       "misconfigured": "La URL base o la clave API no son válidas",
       "unexpected-response": "El servicio envió una respuesta inesperada"
     },
-    "test-hint": "Guarda una clave API para probar la conexión."
+    "test-hint": "Guarda una clave API para probar la conexión",
+    "test-hint-change-detection": "Guarda la URL base y una clave API para probar la conexión"
   }
 }

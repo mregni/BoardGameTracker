@@ -5,7 +5,7 @@ import { BgtSimpleSelect } from "@/components/BgtForm/BgtSimpleSelect";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
 
-export type SettingsCategory = "general" | "shelf-of-shame" | "game-nights" | "bgg" | "advanced" | "account" | "sso";
+export type SettingsCategory = "general" | "shelf-of-shame" | "game-nights" | "integrations" | "advanced" | "account" | "sso";
 
 interface CategoryItem {
 	id: SettingsCategory;
@@ -25,7 +25,7 @@ const CATEGORIES: CategoryItem[] = [
 		description: "settings:sidebar.account.description",
 	},
 	{
-		id: "bgg",
+		id: "integrations",
 		label: "settings:sidebar.bgg.title",
 		description: "settings:sidebar.bgg.description",
 	},

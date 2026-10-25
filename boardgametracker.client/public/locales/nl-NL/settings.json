@@ -31,7 +31,7 @@
       "sso-warning": "Single sign-on werkt niet meer met een http-adres.",
       "sso-confirm": {
         "title": "Single sign-on stoppen?",
-        "description": "Met deze publieke URL werkt single sign-on voor niemand meer, ook niet via https, totdat de publieke URL weer https gebruikt.",
+        "description": "Single sign-on stopt voor iedereen, op elk adres, tot de publieke URL weer https is.",
         "confirm": "Opslaan en single sign-on stoppen"
       }
     },
@@ -435,10 +435,10 @@
     "delete": "Provider verwijderen",
     "delete-description": "Als je de provider verwijdert, worden ook alle accounts van de identiteitsprovider ontkoppeld. Mensen behouden hun lokale wachtwoord als ze er een hebben.",
     "notifications": {
-      "saved": "Provider opgeslagen.",
-      "save-failed": "De provider kon niet worden opgeslagen.",
-      "deleted": "Provider verwijderd.",
-      "delete-failed": "De provider kon niet worden verwijderd."
+      "saved": "Provider opgeslagen",
+      "save-failed": "Kon de provider niet opslaan",
+      "deleted": "Provider verwijderd",
+      "delete-failed": "Kon de provider niet verwijderen"
     },
     "https-required-locked": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL. Tot dan kun je de provider alleen uitschakelen."
   },
@@ -486,6 +486,7 @@
       "misconfigured": "De basis-URL of API-sleutel is ongeldig",
       "unexpected-response": "De dienst gaf een onverwacht antwoord"
     },
-    "test-hint": "Sla een API-sleutel op om de verbinding te testen."
+    "test-hint": "Sla een API-sleutel op om de verbinding te testen",
+    "test-hint-change-detection": "Sla de basis-URL en een API-sleutel op om de verbinding te testen"
   }
 }

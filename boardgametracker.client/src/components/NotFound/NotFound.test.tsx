@@ -12,7 +12,7 @@ describe("NotFound", () => {
 	it("says plainly that the page does not exist and offers the main pages", () => {
 		renderWithTheme(<NotFound />);
 
-		expect(screen.getByText("subtitle")).toBeInTheDocument();
+		expect(screen.queryByText("subtitle")).not.toBeInTheDocument();
 		expect(screen.queryByText("description")).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "go-back" })).toBeInTheDocument();
 		expect(screen.getByText("quick-nav")).toBeInTheDocument();

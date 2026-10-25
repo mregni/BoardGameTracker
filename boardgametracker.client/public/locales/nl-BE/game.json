@@ -24,6 +24,9 @@
     "required": "BGG-id is verplicht",
     "external-page": "BoardGameGeek-website openen"
   },
+  "links": {
+    "title": "Koppelingen"
+  },
   "language": {
     "label": "Taal",
     "none": "Niet ingesteld"
@@ -73,8 +76,8 @@
       "failed": "Mislukt"
     },
     "reindex": "Opnieuw indexeren",
-    "reindex-success": "Opnieuw indexeren gestart.",
-    "reindex-failed": "Opnieuw indexeren mislukt, controleer de logs voor meer details.",
+    "reindex-success": "Opnieuw indexeren gestart",
+    "reindex-failed": "Kon niet opnieuw indexeren",
     "download": "Downloaden"
   },
   "new": {

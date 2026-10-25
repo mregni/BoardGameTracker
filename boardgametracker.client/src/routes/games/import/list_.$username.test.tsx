@@ -83,7 +83,7 @@ describe("BGG import list", () => {
 			expect(screen.getByRole("button", { name: "common:retry" })).toBeInTheDocument();
 			await user.click(screen.getByRole("button", { name: "common:open-integration-settings" }));
 
-			expect(mocks.navigate).toHaveBeenCalledWith({ to: "/settings", search: { tab: "bgg" } });
+			expect(mocks.navigate).toHaveBeenCalledWith({ to: "/settings", search: { tab: "integrations" } });
 		},
 	);
 

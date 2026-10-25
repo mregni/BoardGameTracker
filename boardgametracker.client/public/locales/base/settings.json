@@ -31,7 +31,7 @@
       "sso-warning": "Single sign-on stops working with an http address.",
       "sso-confirm": {
         "title": "Stop single sign-on?",
-        "description": "With this public URL single sign-on stops working for everyone, also over https, until the public URL uses https again.",
+        "description": "Single sign-on stops for everyone, on every address, until the public URL is https again.",
         "confirm": "Save and stop single sign-on"
       }
     },
@@ -435,10 +435,10 @@
     "delete": "Remove provider",
     "delete-description": "Removing the provider also unlinks every identity provider account. People keep their local password if they have one.",
     "notifications": {
-      "saved": "Provider saved.",
-      "save-failed": "The provider could not be saved.",
-      "deleted": "Provider removed.",
-      "delete-failed": "The provider could not be removed."
+      "saved": "Provider saved",
+      "save-failed": "Couldn't save the provider",
+      "deleted": "Provider removed",
+      "delete-failed": "Couldn't remove the provider"
     },
     "https-required-locked": "Single sign-on requires HTTPS. Put BoardGameTracker behind a reverse proxy with TLS and set an https public URL. Until then you can only switch the provider off."
   },
@@ -486,6 +486,7 @@
       "misconfigured": "The base URL or API key is not valid",
       "unexpected-response": "The service sent an unexpected response"
     },
-    "test-hint": "Save an API key to test the connection."
+    "test-hint": "Save an API key to test the connection",
+    "test-hint-change-detection": "Save the base URL and an API key to test the connection"
   }
 }

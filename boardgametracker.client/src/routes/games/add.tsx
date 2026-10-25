@@ -52,7 +52,7 @@ function RouteComponent() {
 										{t("game:new.bgg-missing.description")}{" "}
 										<Link
 											to="/settings"
-											search={{ tab: "bgg" }}
+											search={{ tab: "integrations" }}
 											className="font-medium text-white underline hover:text-orange-300"
 										>
 											{t("game:new.bgg-missing.link")}
@@ -71,7 +71,7 @@ function RouteComponent() {
 										{t(`settings:integrations.reason.${bggConnection.messageKey}`)}{" "}
 										<Link
 											to="/settings"
-											search={{ tab: "bgg" }}
+											search={{ tab: "integrations" }}
 											className="font-medium text-white underline hover:text-orange-300"
 										>
 											{t("game:new.bgg-missing.link")}

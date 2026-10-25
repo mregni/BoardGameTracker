@@ -20,6 +20,7 @@ import { useImageUpload } from "../-hooks/useImageUpload";
 import { gameFormOpts } from "../-utils/gameFormOpts";
 import { GameFormBasicFields } from "./GameFormBasicFields";
 import { GameFormCoopFields } from "./GameFormCoopFields";
+import { GameFormLinkFields } from "./GameFormLinkFields";
 import { GameFormPlayerFields } from "./GameFormPlayerFields";
 import { GameFormTimeFields } from "./GameFormTimeFields";
 import { GameFormUpdateFields } from "./GameFormUpdateFields";
@@ -109,6 +110,11 @@ export const GameForm = (props: Props) => {
 										)}
 									</form.Field>
 								</div>
+								<GameFormLinkFields
+									form={form}
+									disabled={disabled}
+									defaultOpen={Boolean(game?.bggId || game?.changeDetectionWatchId)}
+								/>
 							</div>
 
 							<div className="flex flex-col gap-3 pt-3">

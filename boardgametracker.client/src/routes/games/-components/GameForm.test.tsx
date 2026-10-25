@@ -7,6 +7,14 @@ const mocks = vi.hoisted(() => ({
 	language: "nl-BE",
 	back: vi.fn(),
 	navigate: vi.fn(),
+	watchConfigured: false,
+}));
+
+vi.mock("@/services/queries/settings", () => ({
+	getSettings: () => ({
+		queryKey: ["settings", mocks.watchConfigured],
+		queryFn: () => Promise.resolve({ changeDetectionStatus: { isConfigured: mocks.watchConfigured } }),
+	}),
 }));
 
 vi.mock("react-i18next", () => ({
@@ -75,6 +83,36 @@ const replace = async (input: HTMLElement, value: string) => {
 };
 
 describe("GameForm", () => {
+	beforeEach(() => {
+		mocks.watchConfigured = false;
+	});
+
+	it("keeps the integration ids in a Links section that starts open when the game has one", () => {
+		renderForm();
+
+		const links = screen.getByText("links.title").closest("details") as HTMLDetailsElement;
+		expect(links.open).toBe(true);
+		expect(screen.getByRole("spinbutton", { name: "bgg.placeholder" })).toBeInTheDocument();
+	});
+
+	it("starts the Links section closed for a game without ids", () => {
+		renderForm(createGame({ bggId: null }));
+
+		expect((screen.getByText("links.title").closest("details") as HTMLDetailsElement).open).toBe(false);
+	});
+
+	it("only asks for a watch id when changedetection.io is configured", async () => {
+		const { unmount } = renderWithProviders(
+			<GameForm onClick={vi.fn()} buttonText="Save" disabled={false} game={createGame()} title="Edit" backTo="/" />,
+		);
+		await waitFor(() => expect(screen.queryByText("watch-id.label")).not.toBeInTheDocument());
+		unmount();
+
+		mocks.watchConfigured = true;
+		renderForm();
+		expect(await screen.findByText("watch-id.label")).toBeInTheDocument();
+	});
+
 	it("shows the page title and a back link above the form", async () => {
 		const user = userEvent.setup();
 		renderWithProviders(

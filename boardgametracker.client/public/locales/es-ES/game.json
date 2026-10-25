@@ -24,6 +24,9 @@
     "required": "El ID de BGG es obligatorio",
     "external-page": "Abrir el sitio web de BoardGameGeek"
   },
+  "links": {
+    "title": "Enlaces"
+  },
   "language": {
     "label": "Idioma",
     "none": "Sin definir"
@@ -73,8 +76,8 @@
       "failed": "Fallido"
     },
     "reindex": "Reindexar",
-    "reindex-success": "Reindexación iniciada.",
-    "reindex-failed": "La reindexación falló, revisa los registros para más detalles.",
+    "reindex-success": "Reindexación iniciada",
+    "reindex-failed": "No se ha podido reindexar",
     "download": "Descargar"
   },
   "new": {

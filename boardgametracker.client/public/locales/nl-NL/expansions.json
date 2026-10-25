@@ -2,10 +2,10 @@
   "label": "Uitbreidingen",
   "delete": {
     "successfull": "Uitbreiding verwijderd",
-    "failed": "Uitbreiding verwijderen mislukt, bekijk de logs voor meer details."
+    "failed": "Kon de uitbreiding niet verwijderen"
   },
   "manual": {
-    "successfull": "Uitbreiding toegevoegd.",
-    "failed": "De uitbreiding kon niet worden toegevoegd."
+    "successfull": "Uitbreiding toegevoegd",
+    "failed": "Kon de uitbreiding niet toevoegen"
   }
 }
