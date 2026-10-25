@@ -8,6 +8,7 @@ import { BgtText } from "@/components/BgtText/BgtText";
 import type { UserDto } from "@/models";
 import type { ExternalLogin } from "@/models/Auth/Oidc";
 import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
+import { getPublicOidcProvider } from "@/services/queries/oidc";
 import { getSettings } from "@/services/queries/settings";
 import { toDisplayDateTime } from "@/utils/dateUtils";
 import { useUserAccess } from "../-hooks/useUserAccess";
@@ -23,6 +24,8 @@ export const UserAccessModal = ({ open, close, user, isCurrentUser }: Props) => 
 	const { t } = useTranslation(["settings", "common"]);
 	const { logins, isLoading, disable, enable, unlink, manageRoleByIdentityProvider, isBusy } = useUserAccess(user.id);
 	const { data: settings } = useQuery(getSettings());
+	const { data: provider } = useQuery(getPublicOidcProvider());
+	const showSso = provider != null || logins.length > 0;
 	const [pendingUnlink, setPendingUnlink] = useState<ExternalLogin | null>(null);
 	const [confirmDisable, setConfirmDisable] = useState(false);
 	const canDisable = !user.isDisabled && !isCurrentUser;
@@ -59,68 +62,70 @@ export const UserAccessModal = ({ open, close, user, isCurrentUser }: Props) => 
 						</div>
 						{canDisable && (
 							<BgtText size="1" color="gray">
-								{t("account.users.access.disable-hint")}
+								{t(showSso ? "account.users.access.disable-hint-sso" : "account.users.access.disable-hint")}
 							</BgtText>
 						)}
 					</section>
-					<section className="flex flex-col gap-2">
-						<BgtText color="white" className="font-semibold">
-							{t("account.users.access.sso-title")}
-						</BgtText>
-						{!isLoading && logins.length === 0 && (
-							<BgtText size="2" color="gray">
-								{t("account.users.access.sso-none")}
+					{showSso && (
+						<section className="flex flex-col gap-2">
+							<BgtText color="white" className="font-semibold">
+								{t("account.users.access.sso-title")}
 							</BgtText>
-						)}
-						{logins.length > 0 && (
-							<ul className="flex flex-col gap-2">
-								{logins.map((login) => (
-									<li
-										key={login.id}
-										className="flex items-center justify-between gap-3 p-3 bg-background rounded-lg border border-white/10"
-									>
-										<div className="flex flex-col min-w-0">
-											<BgtText color="white" className="font-semibold truncate">
-												{login.providerDisplayName
-													? `${login.provider} · ${login.providerDisplayName}`
-													: login.provider}
-											</BgtText>
-											<BgtText size="1" color="gray" className="truncate">
-												{t("account.users.access.sso-linked", {
-													subject: login.providerKey,
-													date: toDisplayDateTime(login.linkedAt, dateFormat, timeFormat, uiLanguage),
-												})}
-											</BgtText>
-										</div>
-										<BgtButton size="1" variant="cancel" disabled={isBusy} onClick={() => setPendingUnlink(login)}>
-											{t("account.users.access.unlink")}
-										</BgtButton>
-									</li>
-								))}
-							</ul>
-						)}
-						{logins.length > 0 && (
-							<div className="flex flex-col gap-2">
+							{!isLoading && logins.length === 0 && (
 								<BgtText size="2" color="gray">
-									{user.roleManagedByIdentityProvider
-										? t("account.users.access.role-managed")
-										: t("account.users.access.role-local")}
+									{t("account.users.access.sso-none")}
 								</BgtText>
-								{!user.roleManagedByIdentityProvider && (
-									<div>
-										<BgtButton
-											size="1"
-											variant="cancel"
-											disabled={isBusy}
-											onClick={() => manageRoleByIdentityProvider()}
+							)}
+							{logins.length > 0 && (
+								<ul className="flex flex-col gap-2">
+									{logins.map((login) => (
+										<li
+											key={login.id}
+											className="flex items-center justify-between gap-3 p-3 bg-background rounded-lg border border-white/10"
 										>
-											{t("account.users.access.manage-role")}
-										</BgtButton>
-									</div>
-								)}
-							</div>
-						)}
-					</section>
+											<div className="flex flex-col min-w-0">
+												<BgtText color="white" className="font-semibold truncate">
+													{login.providerDisplayName
+														? `${login.provider} · ${login.providerDisplayName}`
+														: login.provider}
+												</BgtText>
+												<BgtText size="1" color="gray" className="truncate">
+													{t("account.users.access.sso-linked", {
+														subject: login.providerKey,
+														date: toDisplayDateTime(login.linkedAt, dateFormat, timeFormat, uiLanguage),
+													})}
+												</BgtText>
+											</div>
+											<BgtButton size="1" variant="cancel" disabled={isBusy} onClick={() => setPendingUnlink(login)}>
+												{t("account.users.access.unlink")}
+											</BgtButton>
+										</li>
+									))}
+								</ul>
+							)}
+							{logins.length > 0 && (
+								<div className="flex flex-col gap-2">
+									<BgtText size="2" color="gray">
+										{user.roleManagedByIdentityProvider
+											? t("account.users.access.role-managed")
+											: t("account.users.access.role-local")}
+									</BgtText>
+									{!user.roleManagedByIdentityProvider && (
+										<div>
+											<BgtButton
+												size="1"
+												variant="cancel"
+												disabled={isBusy}
+												onClick={() => manageRoleByIdentityProvider()}
+											>
+												{t("account.users.access.manage-role")}
+											</BgtButton>
+										</div>
+									)}
+								</div>
+							)}
+						</section>
+					)}
 				</div>
 				<BgtDialogFooter onCancel={close} cancelLabel={t("common:close")} />
 				{confirmDisable && (

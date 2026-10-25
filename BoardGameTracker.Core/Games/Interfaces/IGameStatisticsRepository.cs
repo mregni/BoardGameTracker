@@ -10,6 +10,7 @@ public interface IGameStatisticsRepository
     Task<double?> GetHighestScore(int gameId, CancellationToken cancellationToken = default);
     Task<(Player? Player, int WinCount)> GetMostWins(int gameId, CancellationToken cancellationToken = default);
     Task<double?> GetAverageScore(int gameId, CancellationToken cancellationToken = default);
+    Task<int> CountScoredSessions(int gameId, CancellationToken cancellationToken = default);
     Task<(int Won, int Lost)> GetCoopResults(int gameId, CancellationToken cancellationToken = default);
     Task<int?> GetExpansionCount(int gameId, CancellationToken cancellationToken = default);
     Task<double> GetAveragePlayTime(int gameId, CancellationToken cancellationToken = default);

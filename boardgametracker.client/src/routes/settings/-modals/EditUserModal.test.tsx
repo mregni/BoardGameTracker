@@ -48,6 +48,29 @@ describe("EditUserModal", () => {
 		expect(buttons[1]).toHaveClass("bg-primary/60");
 	});
 
+	it("lists every player and marks the ones linked to another account", async () => {
+		const user = userEvent.setup();
+		Element.prototype.hasPointerCapture = vi.fn(() => false);
+		Element.prototype.scrollIntoView = vi.fn();
+		const other: UserDto = { ...editedUser, id: "user-2", username: "jules", playerId: 2 };
+		renderModal({
+			players: [
+				{ id: 1, name: "Anna", image: null, email: null, badges: [] },
+				{ id: 2, name: "Jules", image: null, email: null, badges: [] },
+			],
+			users: [editedUser, other],
+		});
+
+		await user.click(screen.getByRole("combobox", { name: "account.users.player.label" }));
+
+		const options = await screen.findAllByRole("option");
+		expect(options.map((option) => option.textContent)).toEqual([
+			"account.users.player.none",
+			"Anna",
+			"Julesaccount.users.player.linked-to",
+		]);
+	});
+
 	it("has no subtitle that repeats the title", () => {
 		renderModal();
 

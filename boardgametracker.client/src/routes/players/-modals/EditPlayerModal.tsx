@@ -71,13 +71,20 @@ export const EditPlayerModal = (props: Props) => {
 	const accountItems: (BgtSelectImageItem | BgtSelectItem)[] = useMemo(
 		() => [
 			{ value: NOT_LINKED, label: t("account.none") },
-			...users.map((user: UserDto) => ({
-				value: user.id,
-				label: accountLabel(user),
-				image: user.profileImage ?? null,
-			})),
+			...users.map((user: UserDto) => {
+				const otherPlayer =
+					user.playerId != null && user.playerId !== player.id
+						? players.find((p) => p.id === user.playerId)
+						: undefined;
+				return {
+					value: user.id,
+					label: accountLabel(user),
+					image: user.profileImage ?? null,
+					hint: otherPlayer ? t("account.linked-to", { name: otherPlayer.name }) : undefined,
+				};
+			}),
 		],
-		[users, t],
+		[users, players, player.id, t],
 	);
 
 	const form = useAppForm({

@@ -7,6 +7,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useModalState } from "@/hooks/useModalState";
 import { usePermissions } from "@/hooks/usePermissions";
+import { GameState } from "@/models";
 import { getGame, getGameSessionsShortList, getGameStatistics } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { gameIdParamSchema } from "@/utils/routeSchemas";
@@ -18,6 +19,7 @@ import { GameFactsCard } from "./-components/GameFactsCard";
 import { GameHeader } from "./-components/GameHeader";
 import { GameStaticSection } from "./-components/GameStaticSection";
 import { GameStatisticsGrid } from "./-components/GameStatisticsGrid";
+import { withStateChange } from "./-components/LivePrice";
 import { ManualsDialog } from "./-components/ManualsDialog";
 import { PlayerCountChartCard } from "./-components/PlayerCountChartCard";
 import { RecentSessionsCard } from "./-components/RecentSessionsCard";
@@ -29,6 +31,7 @@ import { useGameActions } from "./-hooks/useGameActions";
 import { useGameData } from "./-hooks/useGameData";
 import { useGameManuals } from "./-hooks/useGameManuals";
 import { useGameModals } from "./-hooks/useGameModals";
+import { useInlineGameUpdate } from "./-hooks/useInlineGameUpdate";
 import { ExpansionSelectorModal } from "./-modals/ExpansionSelectorModal";
 
 export const Route = createFileRoute("/games/$gameId")({
@@ -70,6 +73,7 @@ function RouteComponent() {
 	const expansionsDialog = useModalState();
 	const trackPriceDialog = useModalState();
 	const { manuals = [] } = useGameManuals(gameId);
+	const { updateGame } = useInlineGameUpdate();
 
 	const actions = useGameActions({
 		gameId,
@@ -134,6 +138,7 @@ function RouteComponent() {
 											livePrice={price}
 											canWrite={canWrite}
 											onAddSession={actions.handleAddSession}
+											onMarkOwned={() => updateGame(withStateChange(game, GameState.Owned, price))}
 											onEdit={actions.handleEdit}
 											onDelete={modals.deleteModal.show}
 										/>
@@ -152,7 +157,7 @@ function RouteComponent() {
 								</div>
 								{!hasPlays && (
 									<div className="max-lg:order-4">
-										<GameDetailEmptyState />
+										<GameDetailEmptyState wanted={game.state === GameState.Wanted} />
 									</div>
 								)}
 								{hasPlays && (

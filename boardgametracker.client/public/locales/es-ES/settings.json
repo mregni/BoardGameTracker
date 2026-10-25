@@ -1,488 +1,492 @@
 {
-	"date-format": {
-		"label": "Formato de fecha",
-		"required": "El formato de fecha es obligatorio",
-		"invalid": "Usa un formato de fecha como dd/MM/yyyy o yyyy-MM-dd"
-	},
-	"time-format": {
-		"label": "Formato de hora",
-		"required": "El formato de hora es obligatorio",
-		"invalid": "Usa un formato de hora como HH:mm o h:mm a"
-	},
-	"currency": {
-		"label": "Moneda",
-		"required": "La moneda es obligatoria"
-	},
-	"save": {
-		"button": "Guardar ajustes",
-		"failed": "Error al guardar los ajustes",
-		"successfull": "Ajustes guardados"
-	},
-	"general": {
-		"public-url": {
-			"title": "Dirección pública",
-			"description": "La dirección con la que la gente accede a BoardGameTracker; los enlaces de los correos y el inicio de sesión único apuntan a ella.",
-			"label": "URL pública",
-			"placeholder": "https://games.example.com",
-			"invalid": "Introduce una URL http(s) válida",
-			"not-set": "Sin configurar. No se envían invitaciones ni correos para restablecer la contraseña, y el inicio de sesión único usa la dirección con la que abres la aplicación.",
-			"insecure-warning": "La URL pública usa http mientras BoardGameTracker se abre por https. Los enlaces de los correos, las invitaciones RSVP y las redirecciones del inicio de sesión único usarán la dirección insegura.",
-			"host-mismatch-warning": "La URL pública apunta a un host distinto de {{host}}. Los enlaces de los correos, las invitaciones RSVP y las redirecciones del inicio de sesión único usarán ese host.",
-			"sso-warning": "El inicio de sesión único deja de funcionar con una dirección http.",
-			"sso-confirm": {
-				"title": "¿Detener el inicio de sesión único?",
-				"description": "Con esta URL pública el inicio de sesión único deja de funcionar para todos, también por https, hasta que la URL pública vuelva a usar https.",
-				"confirm": "Guardar y detener el inicio de sesión único"
-			}
-		},
-		"ui-language": {
-			"label": "Idioma",
-			"required": "El idioma es obligatorio"
-		},
-		"title": "Ajustes generales",
-		"description": "Cambia los ajustes generales de la aplicación.",
-		"regional": {
-			"title": "Idioma y formatos",
-			"language": "Idioma",
-			"currency": "Moneda",
-			"date-format": "Formato de fecha",
-			"time-format": "Formato de hora"
-		}
-	},
-	"shame": {
-		"title": "Estantería de la vergüenza",
-		"enabled": {
-			"label": "Activar la estantería de la vergüenza",
-			"description": "Sigue los juegos a los que no has jugado desde hace tiempo."
-		},
-		"months": {
-			"label": "Umbral de meses"
-		}
-	},
-	"game-nights": {
-		"title": "Noches de juego",
-		"enabled": {
-			"label": "Activar noches de juego",
-			"description": "Planifica noches de juego y recoge las respuestas."
-		},
-		"rsvp-authentication": {
-			"label": "Requerir autenticación para los RSVP",
-			"description": "Solo los usuarios con sesión iniciada pueden responder a las invitaciones."
-		}
-	},
-	"advanced": {
-		"version-track": {
-			"label": "Canal de versiones",
-			"description": "Elige quedarte en las versiones estables o cambiar a las versiones beta para acceder antes a las nuevas funciones.",
-			"stable": {
-				"label": "Estable",
-				"description": "Recibe solo versiones estables."
-			},
-			"beta": {
-				"label": "Beta",
-				"description": "Recibe versiones beta con acceso anticipado a nuevas funciones."
-			}
-		},
-		"updates": {
-			"title": "Comprobación de actualizaciones",
-			"enabled": {
-				"label": "Activar la comprobación de actualizaciones",
-				"description": "Busca nuevas versiones y las muestra en la barra lateral."
-			}
-		},
-		"bug": "Informar de un error",
-		"translate": "Ayúdanos a traducir la aplicación",
-		"danger": {
-			"title": "Zona de peligro",
-			"reset": {
-				"button": "Restablecer datos",
-				"confirm": {
-					"title": "Restablecer datos",
-					"description": "Elimina todos los juegos, partidas, jugadores, ubicaciones, préstamos, noches de juego, insignias, imágenes y manuales subidos. Los ajustes y las cuentas de usuario se mantienen. No se puede deshacer.",
-					"keyword": "RESTABLECER",
-					"input-label": "Escribe RESTABLECER para confirmar",
-					"button": "Restablecer datos"
-				}
-			},
-			"factory-reset": {
-				"button": "Restablecer de fábrica",
-				"confirm": {
-					"title": "Restablecer de fábrica",
-					"description": "Elimina todos los datos, ajustes y cuentas de usuario, y cierra tu sesión. No se puede deshacer.",
-					"keyword": "RESTABLECER DE FÁBRICA",
-					"input-label": "Escribe RESTABLECER DE FÁBRICA para confirmar",
-					"button": "Restablecer todo de fábrica",
-					"admin-account": "La cuenta admin vuelve con la contraseña del primer inicio de sesión.",
-					"admin-account-link": "¿Cómo se configura?"
-				}
-			},
-			"notifications": {
-				"reset-success": "Datos restablecidos",
-				"reset-failed": "No se pudieron restablecer los datos",
-				"factory-reset-failed": "No se pudo restablecer de fábrica"
-			}
-		}
-	},
-	"sidebar": {
-		"general": {
-			"title": "General",
-			"description": "Idioma, formatos, URL pública"
-		},
-		"shelf-of-shame": {
-			"title": "Estantería de la vergüenza",
-			"description": "Cuándo un juego cuenta como sin jugar"
-		},
-		"advanced": {
-			"title": "Avanzado",
-			"description": "Actualizaciones y borrado de datos"
-		},
-		"game-nights": {
-			"title": "Noches de juego",
-			"description": "Planificación y RSVP"
-		},
-		"bgg": {
-			"title": "Integraciones",
-			"description": "BoardGameGeek y seguimiento de precios"
-		},
-		"account": {
-			"title": "Cuenta",
-			"description": "Perfil y gestión de usuarios",
-			"description-user": "Perfil y contraseña"
-		},
-		"sso": {
-			"title": "Inicio de sesión único",
-			"description": "Proveedor de identidad"
-		}
-	},
-	"bgg": {
-		"title": "API de BoardGameGeek",
-		"description": "Con una clave API puedes buscar e importar juegos y tu colección de BoardGameGeek.",
-		"status": {
-			"not-configured": "Clave API no configurada"
-		},
-		"api-key": {
-			"label": "Clave API de BGG",
-			"placeholder": "Introduce tu clave API de BGG",
-			"save": "Guardar clave API",
-			"clear": "Eliminar clave API",
-			"clear-hint": "Guarda los ajustes para aplicar la eliminación.",
-			"read-only": "La clave API es de solo lectura.",
-			"read-only-description": "La clave API se gestiona mediante la variable de entorno BGG_API_KEY y no se puede cambiar aquí.",
-			"help-description": "Consigue una clave en la <requestPage>página de solicitud</requestPage> de BoardGameGeek."
-		}
-	},
-	"account": {
-		"profile": {
-			"title": "Mi cuenta",
-			"display-name": {
-				"label": "Nombre visible"
-			},
-			"email": {
-				"label": "Correo electrónico"
-			},
-			"username": {
-				"label": "Nombre de usuario"
-			},
-			"picture": {
-				"label": "Foto de perfil",
-				"upload": "Subir foto",
-				"remove": "Quitar foto",
-				"hint": "Cuando inicias sesión con inicio de sesión único, se usa la foto de tu proveedor de identidad hasta que subas la tuya. Una foto quitada solo vuelve cuando tu proveedor de identidad muestra otra distinta."
-			},
-			"player": {
-				"label": "Jugador vinculado",
-				"none": "Sin vincular"
-			},
-			"save": "Guardar perfil",
-			"current-password": {
-				"label": "Contraseña actual",
-				"placeholder": "Necesaria para cambiar tu dirección de correo"
-			}
-		},
-		"password": {
-			"change-button": "Cambiar contraseña",
-			"title": "Cambiar contraseña",
-			"description": "Introduce tu contraseña actual y elige una nueva.",
-			"current": {
-				"label": "Contraseña actual"
-			},
-			"new": {
-				"label": "Nueva contraseña"
-			},
-			"confirm": {
-				"label": "Confirmar nueva contraseña"
-			},
-			"min-length": "La contraseña debe tener al menos 4 caracteres",
-			"mismatch": "Las contraseñas no coinciden",
-			"save": "Cambiar contraseña"
-		},
-		"users": {
-			"title": "Gestión de usuarios",
-			"last-login": "Último inicio de sesión",
-			"role": "Rol",
-			"roles": {
-				"user": "Usuario",
-				"reader": "Lector",
-				"admin": "Administrador"
-			},
-			"player": {
-				"label": "Jugador vinculado",
-				"none": "Sin vincular"
-			},
-			"create-button": "Añadir usuario",
-			"create": {
-				"title": "Añadir usuario",
-				"username": {
-					"label": "Nombre de usuario"
-				},
-				"email": {
-					"label": "Correo electrónico"
-				},
-				"password": {
-					"label": "Contraseña"
-				},
-				"display-name": {
-					"label": "Nombre visible"
-				},
-				"player": {
-					"label": "Jugador",
-					"create": "Crear un nuevo jugador",
-					"link": "Vincular un jugador existente",
-					"none": "Sin jugador"
-				},
-				"save": "Añadir"
-			},
-			"edit": {
-				"title": "Editar usuario"
-			},
-			"reset-password": {
-				"button": "Restablecer contraseña",
-				"title": "¿Restablecer la contraseña de {{user}}?",
-				"description": "Su contraseña actual dejará de funcionar."
-			},
-			"temp-password": {
-				"title": "Contraseña temporal",
-				"description": "Contraseña restablecida para \"{{username}}\". Guarda esta contraseña: no se volverá a mostrar.",
-				"copy": "Copiar al portapapeles",
-				"copied": "Copiado"
-			},
-			"delete": {
-				"title": "Eliminar usuario",
-				"description": "¿Seguro que quieres eliminar a \"{{username}}\"? Esta acción no se puede deshacer."
-			},
-			"never-logged-in": "Nunca",
-			"no-users": "Todavía no hay usuarios",
-			"access": {
-				"button": "Acceso",
-				"title": "Acceso de inicio de sesión",
-				"enabled": "Puede iniciar sesión",
-				"disabled": "Desactivado",
-				"enable": "Activar",
-				"disable": "Desactivar",
-				"disable-hint": "Desactivar termina todas las sesiones y bloquea el inicio de sesión con contraseña y con inicio de sesión único. Eliminar a alguien en el proveedor de identidad no lo hace por ti.",
-				"sso-title": "Inicio de sesión único",
-				"sso-none": "No hay ninguna cuenta del proveedor de identidad vinculada.",
-				"sso-linked": "sujeto {{subject}} · vinculado el {{date}}",
-				"unlink": "Desvincular",
-				"unlink-confirm": "Esta cuenta del proveedor de identidad ya no podrá iniciar sesión como “{{username}}” hasta que se vuelva a vincular.",
-				"role-managed": "El rol sigue los grupos del proveedor de identidad en cada inicio de sesión.",
-				"role-local": "El rol se definió aquí y el proveedor de identidad no lo cambia.",
-				"manage-role": "Dejar que el proveedor de identidad gestione el rol",
-				"disabled-badge": "Desactivado",
-				"sso-badge": "SSO",
-				"disable-confirm": {
-					"title": "¿Desactivar a {{username}}?",
-					"description": "Se cerrará su sesión en todos los dispositivos y no podrá iniciar sesión hasta que vuelvas a activarlo."
-				}
-			},
-			"actions": "Acciones para {{username}}"
-		},
-		"notifications": {
-			"profile-updated": "Perfil guardado",
-			"profile-update-failed": "No se pudo actualizar el perfil",
-			"password-changed": "Contraseña cambiada",
-			"password-change-failed": "No se pudo cambiar la contraseña. Comprueba tu contraseña actual.",
-			"user-created": "Usuario creado",
-			"user-create-failed": "No se pudo crear el usuario",
-			"user-deleted": "Usuario eliminado",
-			"user-delete-failed": "No se pudo eliminar el usuario",
-			"user-updated": "Usuario guardado",
-			"user-update-failed": "No se pudo actualizar el usuario",
-			"password-reset-failed": "No se pudo restablecer la contraseña",
-			"user-disable-failed": "No se pudo desactivar el usuario",
-			"user-enable-failed": "No se pudo activar el usuario",
-			"external-login-unlink-failed": "No se pudo desvincular la cuenta del proveedor de identidad",
-			"role-manage-failed": "No se pudo ceder el rol al proveedor de identidad",
-			"picture-updated": "Foto de perfil guardada",
-			"picture-removed": "Foto de perfil quitada",
-			"picture-update-failed": "No se ha podido guardar la foto de perfil"
-		},
-		"external-logins": {
-			"title": "Inicio de sesión único",
-			"description": "Inicia sesión con tu proveedor de identidad en lugar de con una contraseña.",
-			"none": "Aún no hay ninguna cuenta del proveedor de identidad vinculada.",
-			"linked-on": "vinculado el {{date}}",
-			"link": "Vincular {{provider}}",
-			"unlink": "Desvincular",
-			"notifications": {
-				"unlinked": "Cuenta del proveedor de identidad desvinculada",
-				"unlink-failed": "No se pudo desvincular la cuenta del proveedor de identidad.",
-				"link-failed": "No se pudo iniciar la vinculación."
-			},
-			"unlink-confirm": "Ya no podrás iniciar sesión con este proveedor hasta que lo vuelvas a vincular.",
-			"unlink-title": "¿Desvincular {{provider}}?"
-		}
-	},
-	"env-override": "Definido por la variable de entorno {{variable}}. Cámbiala allí para actualizar este ajuste.",
-	"sso": {
-		"title": "Proveedor de identidad",
-		"description": {
-			"empty": "Permite que la gente inicie sesión mediante tu proveedor de identidad (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Primero registra allí un cliente (público, o confidencial con un secreto de cliente) y después rellena los datos de abajo.",
-			"configured": "El proveedor {{name}} está configurado. Los cambios se aplican en el siguiente inicio de sesión.",
-			"inactive": "El proveedor {{name}} está configurado pero inactivo: necesita una URL pública https."
-		},
-		"https-required": "El inicio de sesión único requiere HTTPS. Pon BoardGameTracker detrás de un proxy inverso con TLS y configura una URL pública https.",
-		"fields": {
-			"display-name": {
-				"label": "Texto del botón",
-				"placeholder": "Acceso de la empresa"
-			},
-			"authority": {
-				"label": "Autoridad (URL del emisor)",
-				"placeholder": "https://sso.example.com/realms/games",
-				"relink-warning": "Si cambias la dirección, se desvinculan todas las cuentas vinculadas a este proveedor. Los usuarios inician sesión con su contraseña y lo vuelven a vincular desde su perfil; quienes no tengan contraseña necesitan una primero."
-			},
-			"client-id": {
-				"label": "ID de cliente"
-			},
-			"client-secret": {
-				"label": "Secreto de cliente (opcional)",
-				"placeholder": "Déjalo vacío para un cliente público",
-				"unchanged": "Guardado: déjalo vacío para conservarlo"
-			},
-			"scopes": {
-				"label": "Ámbitos"
-			},
-			"username-claim": {
-				"label": "Claim del nombre de usuario"
-			},
-			"email-claim": {
-				"label": "Claim del correo electrónico"
-			},
-			"display-name-claim": {
-				"label": "Claim del nombre visible"
-			},
-			"picture-claim": {
-				"label": "Claim de avatar",
-				"hint": "La foto de este claim se convierte en el avatar de los usuarios que no han subido la suya. Tu proveedor de identidad debe incluir un claim picture en el token o en la información de usuario."
-			},
-			"roles-claim": {
-				"label": "Claim de grupos/roles"
-			},
-			"admin-group": {
-				"label": "Valor del grupo de administradores",
-				"placeholder": "bgt-admins"
-			},
-			"auto-provision": {
-				"label": "Crear cuentas en el primer inicio de sesión",
-				"description": "Las personas nuevas reciben automáticamente una cuenta con el rol predeterminado. Si se desactiva, solo pueden iniciar sesión las cuentas vinculadas."
-			},
-			"enabled": {
-				"label": "Activado",
-				"description": "Muestra el botón de inicio de sesión en la página de acceso."
-			},
-			"default-role": {
-				"label": "Rol predeterminado"
-			},
-			"role-sync": "Con un claim de grupos y un grupo de administradores configurados, las cuentas creadas a través del proveedor reciben Administrador si están en ese grupo y, si no, el rol predeterminado, en cada inicio de sesión. El último administrador nunca pierde su rol."
-		},
-		"discovery": {
-			"button": "Probar descubrimiento",
-			"testing": "Probando…",
-			"ok": "El proveedor respondió y su emisor coincide con la autoridad.",
-			"issuer-mismatch": "El proveedor respondió, pero indica el emisor {{issuer}}. Usa ese valor como autoridad.",
-			"failed": "No se pudo conectar con el proveedor o no devolvió un documento de descubrimiento.",
-			"authorization": "Autorización",
-			"token": "Token",
-			"userinfo": "Información del usuario",
-			"end-session": "Cierre de sesión",
-			"none": "no disponible",
-			"signing": "Algoritmos de firma",
-			"signing-unsupported": "El proveedor solo firma los tokens con {{algorithms}}, que BoardGameTracker no acepta. Configura una clave de firma RS256 o ES256 para este cliente en tu proveedor de identidad.",
-			"certificate-expired": "El certificado de firma del proveedor caducó el {{date}}. El inicio de sesión sigue funcionando, pero renueva el certificado de firma en tu proveedor de identidad."
-		},
-		"setup": {
-			"title": "Registro en el proveedor",
-			"description": "Permite estas URI de redirección en el cliente que creaste en tu proveedor de identidad.",
-			"public-url-warning": "No hay ninguna URL pública configurada, así que las URI de redirección se obtienen de la petición actual ({{url}}). Configura la URL pública en General si esa no es la dirección que usa la gente.",
-			"redirect-uri": "URI de redirección de inicio de sesión",
-			"link-redirect-uri": "URI de redirección de vinculación de cuentas",
-			"copy": "Copiar",
-			"post-logout-redirect-uri": "URI de redirección tras cerrar sesión",
-			"https-pending": "Disponible cuando la URL pública use https."
-		},
-		"validation": {
-			"display-name": "El texto del botón es obligatorio",
-			"authority": "Introduce la URL https del proveedor",
-			"client-id": "El ID de cliente es obligatorio",
-			"scopes": "Se necesita al menos el ámbito openid"
-		},
-		"create": "Crear proveedor",
-		"save": "Guardar proveedor",
-		"delete": "Eliminar proveedor",
-		"delete-description": "Al eliminar el proveedor también se desvinculan todas las cuentas del proveedor de identidad. Las personas conservan su contraseña local si tienen una.",
-		"notifications": {
-			"saved": "Proveedor guardado.",
-			"save-failed": "No se pudo guardar el proveedor.",
-			"deleted": "Proveedor eliminado.",
-			"delete-failed": "No se pudo eliminar el proveedor."
-		},
-		"https-required-locked": "El inicio de sesión único requiere HTTPS. Pon BoardGameTracker detrás de un proxy inverso con TLS y configura una URL pública https. Hasta entonces solo puedes desactivar el proveedor."
-	},
-	"changedetection": {
-		"title": "changedetection.io",
-		"description": "Muestra el precio y el stock en vivo de los juegos que tienen un id de watch.",
-		"base-url": {
-			"label": "URL base",
-			"placeholder": "https://changes.example.com",
-			"invalid": "Introduce una URL http(s) válida"
-		},
-		"api-key": {
-			"label": "Clave API",
-			"placeholder": "Introduce tu clave API de changedetection.io",
-			"clear": "Eliminar clave API",
-			"clear-hint": "Guarda los ajustes para aplicar la eliminación."
-		},
-		"help-description": "La clave API está en Ajustes de tu instancia de changedetection.io."
-	},
-	"integrations": {
-		"name": {
-			"bgg": "BoardGameGeek",
-			"changeDetection": "changedetection.io"
-		},
-		"status": {
-			"ok": "Conectado",
-			"unauthorized": "Rechazada",
-			"unreachable": "Inaccesible",
-			"rateLimited": "Límite de solicitudes",
-			"notConfigured": "No configurado"
-		},
-		"checked-at": "comprobado a las {{time}}",
-		"checking": "Comprobando…",
-		"test": "Probar conexión",
-		"testing": "Probando…",
-		"test-failed": "No se pudo ejecutar la prueba de conexión",
-		"save-failed": "Ajustes guardados, pero {{name}} no está conectado",
-		"reason": {
-			"ok": "La conexión funciona",
-			"not-configured": "Todavía no hay ninguna clave API guardada",
-			"unauthorized": "La clave API fue rechazada",
-			"unreachable": "No se pudo acceder al servicio",
-			"timeout": "El servicio no respondió en 10 segundos",
-			"rate-limited": "Demasiadas solicitudes, inténtalo de nuevo en unos minutos",
-			"misconfigured": "La URL base o la clave API no son válidas",
-			"unexpected-response": "El servicio envió una respuesta inesperada"
-		},
-		"test-hint": "Guarda una clave API para probar la conexión."
-	}
+  "date-format": {
+    "label": "Formato de fecha",
+    "required": "El formato de fecha es obligatorio",
+    "invalid": "Usa un formato de fecha como dd/MM/yyyy o yyyy-MM-dd"
+  },
+  "time-format": {
+    "label": "Formato de hora",
+    "required": "El formato de hora es obligatorio",
+    "invalid": "Usa un formato de hora como HH:mm o h:mm a"
+  },
+  "currency": {
+    "label": "Moneda",
+    "required": "La moneda es obligatoria"
+  },
+  "save": {
+    "button": "Guardar ajustes",
+    "failed": "Error al guardar los ajustes",
+    "successfull": "Ajustes guardados"
+  },
+  "general": {
+    "public-url": {
+      "title": "Dirección pública",
+      "description": "La dirección con la que la gente accede a BoardGameTracker; los enlaces de los correos y el inicio de sesión único apuntan a ella.",
+      "label": "URL pública",
+      "placeholder": "https://games.example.com",
+      "invalid": "Introduce una URL http(s) válida",
+      "not-set": "Sin configurar. No se envían invitaciones ni correos para restablecer la contraseña, y el inicio de sesión único usa la dirección con la que abres la aplicación.",
+      "insecure-warning": "La URL pública usa http mientras BoardGameTracker se abre por https. Los enlaces de los correos, las invitaciones RSVP y las redirecciones del inicio de sesión único usarán la dirección insegura.",
+      "host-mismatch-warning": "La URL pública apunta a un host distinto de {{host}}. Los enlaces de los correos, las invitaciones RSVP y las redirecciones del inicio de sesión único usarán ese host.",
+      "sso-warning": "El inicio de sesión único deja de funcionar con una dirección http.",
+      "sso-confirm": {
+        "title": "¿Detener el inicio de sesión único?",
+        "description": "El inicio de sesión único se detiene para todos, en cualquier dirección, hasta que la URL pública vuelva a ser https.",
+        "confirm": "Guardar y detener el inicio de sesión único"
+      }
+    },
+    "ui-language": {
+      "label": "Idioma",
+      "required": "El idioma es obligatorio"
+    },
+    "title": "Ajustes generales",
+    "description": "Cambia los ajustes generales de la aplicación.",
+    "regional": {
+      "title": "Idioma y formatos",
+      "language": "Idioma",
+      "currency": "Moneda",
+      "date-format": "Formato de fecha",
+      "time-format": "Formato de hora"
+    }
+  },
+  "shame": {
+    "title": "Estantería de la vergüenza",
+    "enabled": {
+      "label": "Activar la estantería de la vergüenza",
+      "description": "Sigue los juegos a los que no has jugado desde hace tiempo."
+    },
+    "months": {
+      "label": "Umbral de meses"
+    }
+  },
+  "game-nights": {
+    "title": "Noches de juego",
+    "enabled": {
+      "label": "Activar noches de juego",
+      "description": "Planifica noches de juego y recoge las respuestas."
+    },
+    "rsvp-authentication": {
+      "label": "Requerir autenticación para los RSVP",
+      "description": "Solo los usuarios con sesión iniciada pueden responder a las invitaciones."
+    }
+  },
+  "advanced": {
+    "version-track": {
+      "label": "Canal de versiones",
+      "description": "Elige quedarte en las versiones estables o cambiar a las versiones beta para acceder antes a las nuevas funciones.",
+      "stable": {
+        "label": "Estable",
+        "description": "Recibe solo versiones estables."
+      },
+      "beta": {
+        "label": "Beta",
+        "description": "Recibe versiones beta con acceso anticipado a nuevas funciones."
+      }
+    },
+    "updates": {
+      "title": "Comprobación de actualizaciones",
+      "enabled": {
+        "label": "Activar la comprobación de actualizaciones",
+        "description": "Busca nuevas versiones y las muestra en la barra lateral."
+      }
+    },
+    "bug": "Informar de un error",
+    "translate": "Ayúdanos a traducir la aplicación",
+    "danger": {
+      "title": "Zona de peligro",
+      "reset": {
+        "button": "Restablecer datos",
+        "confirm": {
+          "title": "Restablecer datos",
+          "description": "Elimina todos los juegos, partidas, jugadores, ubicaciones, préstamos, noches de juego, insignias, imágenes y manuales subidos. Los ajustes y las cuentas de usuario se mantienen. No se puede deshacer.",
+          "keyword": "RESTABLECER",
+          "input-label": "Escribe RESTABLECER para confirmar",
+          "button": "Restablecer datos"
+        }
+      },
+      "factory-reset": {
+        "button": "Restablecer de fábrica",
+        "confirm": {
+          "title": "Restablecer de fábrica",
+          "description": "Elimina todos los datos, ajustes y cuentas de usuario, y cierra tu sesión. No se puede deshacer.",
+          "keyword": "RESTABLECER DE FÁBRICA",
+          "input-label": "Escribe RESTABLECER DE FÁBRICA para confirmar",
+          "button": "Restablecer todo de fábrica",
+          "admin-account": "La cuenta admin vuelve con la contraseña del primer inicio de sesión.",
+          "admin-account-link": "¿Cómo se configura?"
+        }
+      },
+      "notifications": {
+        "reset-success": "Datos restablecidos",
+        "reset-failed": "No se pudieron restablecer los datos",
+        "factory-reset-failed": "No se pudo restablecer de fábrica"
+      }
+    }
+  },
+  "sidebar": {
+    "general": {
+      "title": "General",
+      "description": "Idioma, formatos, URL pública"
+    },
+    "shelf-of-shame": {
+      "title": "Estantería de la vergüenza",
+      "description": "Cuándo un juego cuenta como sin jugar"
+    },
+    "advanced": {
+      "title": "Avanzado",
+      "description": "Actualizaciones y borrado de datos"
+    },
+    "game-nights": {
+      "title": "Noches de juego",
+      "description": "Planificación y RSVP"
+    },
+    "bgg": {
+      "title": "Integraciones",
+      "description": "BoardGameGeek y seguimiento de precios"
+    },
+    "account": {
+      "title": "Cuenta",
+      "description": "Perfil y gestión de usuarios",
+      "description-user": "Perfil y contraseña"
+    },
+    "sso": {
+      "title": "Inicio de sesión único",
+      "description": "Proveedor de identidad"
+    }
+  },
+  "bgg": {
+    "title": "API de BoardGameGeek",
+    "description": "Con una clave API puedes buscar e importar juegos y tu colección de BoardGameGeek.",
+    "status": {
+      "not-configured": "Clave API no configurada"
+    },
+    "api-key": {
+      "label": "Clave API de BGG",
+      "placeholder": "Introduce tu clave API de BGG",
+      "save": "Guardar clave API",
+      "clear": "Eliminar clave API",
+      "clear-hint": "Guarda los ajustes para aplicar la eliminación.",
+      "read-only": "La clave API es de solo lectura.",
+      "read-only-description": "La clave API se gestiona mediante la variable de entorno BGG_API_KEY y no se puede cambiar aquí.",
+      "help-description": "Consigue una clave en la <requestPage>página de solicitud</requestPage> de BoardGameGeek."
+    }
+  },
+  "account": {
+    "profile": {
+      "title": "Mi cuenta",
+      "display-name": {
+        "label": "Nombre visible"
+      },
+      "email": {
+        "label": "Correo electrónico"
+      },
+      "username": {
+        "label": "Nombre de usuario"
+      },
+      "picture": {
+        "label": "Foto de perfil",
+        "upload": "Subir foto",
+        "remove": "Quitar foto",
+        "hint": "Se usa tu foto del inicio de sesión único hasta que subas una."
+      },
+      "player": {
+        "label": "Jugador vinculado",
+        "none": "Sin vincular"
+      },
+      "save": "Guardar perfil",
+      "current-password": {
+        "label": "Contraseña actual",
+        "placeholder": "Necesaria para cambiar tu dirección de correo"
+      }
+    },
+    "password": {
+      "change-button": "Cambiar contraseña",
+      "title": "Cambiar contraseña",
+      "description": "Introduce tu contraseña actual y elige una nueva.",
+      "current": {
+        "label": "Contraseña actual"
+      },
+      "new": {
+        "label": "Nueva contraseña"
+      },
+      "confirm": {
+        "label": "Confirmar nueva contraseña"
+      },
+      "min-length": "La contraseña debe tener al menos 4 caracteres",
+      "mismatch": "Las contraseñas no coinciden",
+      "save": "Cambiar contraseña"
+    },
+    "users": {
+      "title": "Gestión de usuarios",
+      "last-login": "Último inicio de sesión",
+      "player-column": "Jugador",
+      "role": "Rol",
+      "roles": {
+        "user": "Usuario",
+        "reader": "Lector",
+        "admin": "Administrador"
+      },
+      "player": {
+        "label": "Jugador vinculado",
+        "none": "Sin vincular",
+        "linked-to": "Vinculado a {{name}}"
+      },
+      "create-button": "Añadir usuario",
+      "create": {
+        "title": "Añadir usuario",
+        "username": {
+          "label": "Nombre de usuario"
+        },
+        "email": {
+          "label": "Correo electrónico"
+        },
+        "password": {
+          "label": "Contraseña"
+        },
+        "display-name": {
+          "label": "Nombre visible"
+        },
+        "player": {
+          "label": "Jugador",
+          "create": "Crear un nuevo jugador",
+          "link": "Vincular un jugador existente",
+          "none": "Sin jugador"
+        },
+        "save": "Añadir"
+      },
+      "edit": {
+        "title": "Editar usuario"
+      },
+      "reset-password": {
+        "button": "Restablecer contraseña",
+        "title": "¿Restablecer la contraseña de {{user}}?",
+        "description": "Su contraseña actual dejará de funcionar."
+      },
+      "temp-password": {
+        "title": "Contraseña temporal",
+        "description": "Contraseña restablecida para \"{{username}}\". Guarda esta contraseña: no se volverá a mostrar.",
+        "copy": "Copiar al portapapeles",
+        "copied": "Copiado"
+      },
+      "delete": {
+        "title": "Eliminar usuario",
+        "description": "¿Seguro que quieres eliminar a \"{{username}}\"? Esta acción no se puede deshacer."
+      },
+      "never-logged-in": "Nunca",
+      "no-users": "Todavía no hay usuarios",
+      "access": {
+        "button": "Acceso",
+        "title": "Acceso de inicio de sesión",
+        "enabled": "Puede iniciar sesión",
+        "disabled": "Desactivado",
+        "enable": "Activar",
+        "disable": "Desactivar",
+        "disable-hint-sso": "Desactivar termina todas las sesiones y bloquea el inicio de sesión con contraseña y con inicio de sesión único. Eliminar a alguien en el proveedor de identidad no lo hace por ti.",
+        "disable-hint": "Desactivar termina todas las sesiones y bloquea el inicio de sesión.",
+        "sso-title": "Inicio de sesión único",
+        "sso-none": "No hay ninguna cuenta del proveedor de identidad vinculada.",
+        "sso-linked": "sujeto {{subject}} · vinculado el {{date}}",
+        "unlink": "Desvincular",
+        "unlink-confirm": "Esta cuenta del proveedor de identidad ya no podrá iniciar sesión como “{{username}}” hasta que se vuelva a vincular.",
+        "role-managed": "El rol sigue los grupos del proveedor de identidad en cada inicio de sesión.",
+        "role-local": "El rol se definió aquí y el proveedor de identidad no lo cambia.",
+        "manage-role": "Dejar que el proveedor de identidad gestione el rol",
+        "disabled-badge": "Desactivado",
+        "sso-badge": "SSO",
+        "disable-confirm": {
+          "title": "¿Desactivar a {{username}}?",
+          "description": "Se cerrará su sesión en todos los dispositivos y no podrá iniciar sesión hasta que vuelvas a activarlo."
+        }
+      },
+      "actions": "Acciones para {{username}}"
+    },
+    "notifications": {
+      "profile-updated": "Perfil guardado",
+      "profile-update-failed": "No se pudo actualizar el perfil",
+      "password-changed": "Contraseña cambiada",
+      "password-change-failed": "No se pudo cambiar la contraseña. Comprueba tu contraseña actual.",
+      "user-created": "Usuario creado",
+      "user-create-failed": "No se pudo crear el usuario",
+      "user-deleted": "Usuario eliminado",
+      "user-delete-failed": "No se pudo eliminar el usuario",
+      "user-updated": "Usuario guardado",
+      "user-update-failed": "No se pudo actualizar el usuario",
+      "password-reset-failed": "No se pudo restablecer la contraseña",
+      "user-disable-failed": "No se pudo desactivar el usuario",
+      "user-enable-failed": "No se pudo activar el usuario",
+      "external-login-unlink-failed": "No se pudo desvincular la cuenta del proveedor de identidad",
+      "role-manage-failed": "No se pudo ceder el rol al proveedor de identidad",
+      "picture-updated": "Foto de perfil guardada",
+      "picture-removed": "Foto de perfil quitada",
+      "picture-update-failed": "No se ha podido guardar la foto de perfil"
+    },
+    "external-logins": {
+      "title": "Inicio de sesión único",
+      "description": "Inicia sesión con tu proveedor de identidad en lugar de con una contraseña.",
+      "none": "Aún no hay ninguna cuenta del proveedor de identidad vinculada.",
+      "linked-on": "vinculado el {{date}}",
+      "link": "Vincular {{provider}}",
+      "unlink": "Desvincular",
+      "notifications": {
+        "unlinked": "Cuenta del proveedor de identidad desvinculada",
+        "unlink-failed": "No se pudo desvincular la cuenta del proveedor de identidad.",
+        "link-failed": "No se pudo iniciar la vinculación."
+      },
+      "unlink-confirm": "Ya no podrás iniciar sesión con este proveedor hasta que lo vuelvas a vincular.",
+      "unlink-title": "¿Desvincular {{provider}}?"
+    }
+  },
+  "env-override": "Definido por la variable de entorno {{variable}}. Cámbiala allí para actualizar este ajuste.",
+  "sso": {
+    "title": "Proveedor de identidad",
+    "description": {
+      "empty": "Permite que la gente inicie sesión mediante tu proveedor de identidad (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Primero registra allí un cliente (público, o confidencial con un secreto de cliente) y después rellena los datos de abajo.",
+      "configured": "El proveedor {{name}} está configurado. Los cambios se aplican en el siguiente inicio de sesión.",
+      "inactive": "El proveedor {{name}} está configurado pero inactivo: necesita una URL pública https."
+    },
+    "https-required": "El inicio de sesión único requiere HTTPS. Pon BoardGameTracker detrás de un proxy inverso con TLS y configura una URL pública https.",
+    "fields": {
+      "display-name": {
+        "label": "Texto del botón",
+        "placeholder": "Acceso de la empresa"
+      },
+      "authority": {
+        "label": "Autoridad (URL del emisor)",
+        "placeholder": "https://sso.example.com/realms/games",
+        "relink-warning": "Si cambias la dirección, se desvinculan todas las cuentas vinculadas a este proveedor. Los usuarios inician sesión con su contraseña y lo vuelven a vincular desde su perfil; quienes no tengan contraseña necesitan una primero."
+      },
+      "client-id": {
+        "label": "ID de cliente"
+      },
+      "client-secret": {
+        "label": "Secreto de cliente (opcional)",
+        "placeholder": "Déjalo vacío para un cliente público",
+        "unchanged": "Guardado: déjalo vacío para conservarlo"
+      },
+      "scopes": {
+        "label": "Ámbitos"
+      },
+      "username-claim": {
+        "label": "Claim del nombre de usuario"
+      },
+      "email-claim": {
+        "label": "Claim del correo electrónico"
+      },
+      "display-name-claim": {
+        "label": "Claim del nombre visible"
+      },
+      "picture-claim": {
+        "label": "Claim de avatar",
+        "hint": "La foto de este claim se convierte en el avatar de los usuarios que no han subido la suya. Tu proveedor de identidad debe incluir un claim picture en el token o en la información de usuario."
+      },
+      "roles-claim": {
+        "label": "Claim de grupos/roles"
+      },
+      "admin-group": {
+        "label": "Valor del grupo de administradores",
+        "placeholder": "bgt-admins"
+      },
+      "auto-provision": {
+        "label": "Crear cuentas en el primer inicio de sesión",
+        "description": "Las personas nuevas reciben automáticamente una cuenta con el rol predeterminado. Si se desactiva, solo pueden iniciar sesión las cuentas vinculadas."
+      },
+      "enabled": {
+        "label": "Activado",
+        "description": "Muestra el botón de inicio de sesión en la página de acceso."
+      },
+      "default-role": {
+        "label": "Rol predeterminado"
+      },
+      "role-sync": "Con un claim de grupos y un grupo de administradores configurados, las cuentas creadas a través del proveedor reciben Administrador si están en ese grupo y, si no, el rol predeterminado, en cada inicio de sesión. El último administrador nunca pierde su rol."
+    },
+    "discovery": {
+      "button": "Probar descubrimiento",
+      "testing": "Probando…",
+      "ok": "El proveedor respondió y su emisor coincide con la autoridad.",
+      "issuer-mismatch": "El proveedor respondió, pero indica el emisor {{issuer}}. Usa ese valor como autoridad.",
+      "failed": "No se pudo conectar con el proveedor o no devolvió un documento de descubrimiento.",
+      "authorization": "Autorización",
+      "token": "Token",
+      "userinfo": "Información del usuario",
+      "end-session": "Cierre de sesión",
+      "none": "no disponible",
+      "signing": "Algoritmos de firma",
+      "signing-unsupported": "El proveedor solo firma los tokens con {{algorithms}}, que BoardGameTracker no acepta. Configura una clave de firma RS256 o ES256 para este cliente en tu proveedor de identidad.",
+      "certificate-expired": "El certificado de firma del proveedor caducó el {{date}}. El inicio de sesión sigue funcionando, pero renueva el certificado de firma en tu proveedor de identidad."
+    },
+    "setup": {
+      "title": "Registro en el proveedor",
+      "description": "Permite estas URI de redirección en el cliente que creaste en tu proveedor de identidad.",
+      "public-url-warning": "No hay ninguna URL pública configurada, así que las URI de redirección se obtienen de la petición actual ({{url}}). Configura la URL pública en General si esa no es la dirección que usa la gente.",
+      "redirect-uri": "URI de redirección de inicio de sesión",
+      "link-redirect-uri": "URI de redirección de vinculación de cuentas",
+      "copy": "Copiar",
+      "post-logout-redirect-uri": "URI de redirección tras cerrar sesión",
+      "https-pending": "Disponible cuando la URL pública use https."
+    },
+    "validation": {
+      "display-name": "El texto del botón es obligatorio",
+      "authority": "Introduce la URL https del proveedor",
+      "client-id": "El ID de cliente es obligatorio",
+      "scopes": "Se necesita al menos el ámbito openid"
+    },
+    "create": "Crear proveedor",
+    "save": "Guardar proveedor",
+    "delete": "Eliminar proveedor",
+    "delete-description": "Al eliminar el proveedor también se desvinculan todas las cuentas del proveedor de identidad. Las personas conservan su contraseña local si tienen una.",
+    "notifications": {
+      "saved": "Proveedor guardado",
+      "save-failed": "No se ha podido guardar el proveedor",
+      "deleted": "Proveedor eliminado",
+      "delete-failed": "No se ha podido eliminar el proveedor"
+    },
+    "https-required-locked": "El inicio de sesión único requiere HTTPS. Pon BoardGameTracker detrás de un proxy inverso con TLS y configura una URL pública https. Hasta entonces solo puedes desactivar el proveedor."
+  },
+  "changedetection": {
+    "title": "changedetection.io",
+    "description": "Muestra el precio y el stock en vivo de los juegos que tienen un id de watch.",
+    "base-url": {
+      "label": "URL base",
+      "placeholder": "https://changes.example.com",
+      "invalid": "Introduce una URL http(s) válida"
+    },
+    "api-key": {
+      "label": "Clave API",
+      "placeholder": "Introduce tu clave API de changedetection.io",
+      "clear": "Eliminar clave API",
+      "clear-hint": "Guarda los ajustes para aplicar la eliminación."
+    },
+    "help-description": "La clave API está en Ajustes de tu instancia de changedetection.io."
+  },
+  "integrations": {
+    "name": {
+      "bgg": "BoardGameGeek",
+      "changeDetection": "changedetection.io"
+    },
+    "status": {
+      "ok": "Conectada",
+      "unauthorized": "Rechazada",
+      "unreachable": "Inaccesible",
+      "rateLimited": "Límite de solicitudes",
+      "notConfigured": "No configurada"
+    },
+    "checked-at": "comprobado a las {{time}}",
+    "checking": "Comprobando…",
+    "test": "Probar conexión",
+    "testing": "Probando…",
+    "test-failed": "No se pudo ejecutar la prueba de conexión",
+    "save-failed": "Ajustes guardados, pero {{name}} no está conectado",
+    "reason": {
+      "ok": "La conexión funciona",
+      "not-configured": "Todavía no hay ninguna clave API guardada",
+      "unauthorized": "La clave API fue rechazada",
+      "unreachable": "No se pudo acceder al servicio",
+      "timeout": "El servicio no respondió en 10 segundos",
+      "rate-limited": "Demasiadas solicitudes, inténtalo de nuevo en unos minutos",
+      "misconfigured": "La URL base o la clave API no son válidas",
+      "unexpected-response": "El servicio envió una respuesta inesperada"
+    },
+    "test-hint": "Guarda una clave API para probar la conexión",
+    "test-hint-change-detection": "Guarda la URL base y una clave API para probar la conexión"
+  }
 }

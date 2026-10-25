@@ -32,6 +32,8 @@ public class DashboardServiceTests
     private static readonly DateTime LocalNow = new(2026, 10, 16, 20, 30, 0, DateTimeKind.Unspecified);
     private static readonly DateTime MonthStartUtc = new(2026, 9, 30, 22, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime UtcNow = new(2026, 10, 16, 18, 30, 0, DateTimeKind.Utc);
+    private static readonly DateTime YearStartUtc = new(2025, 12, 31, 22, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime TwelveMonthsAgoUtc = new(2025, 10, 16, 18, 30, 0, DateTimeKind.Utc);
 
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly Mock<IGameStatisticsRepository> _gameStatisticsRepositoryMock;
@@ -110,7 +112,8 @@ public class DashboardServiceTests
         _sessionRepositoryMock.Verify(x => x.GetRecentSessions(5), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetGameStateCounts(), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGames(4), Times.Once);
-        _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGamesSince(4, MonthStartUtc), Times.Once);
+        _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGamesSince(4, YearStartUtc), Times.Once);
+        _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGamesSince(4, TwelveMonthsAgoUtc), Times.Once);
         _playerRepositoryMock.Verify(x => x.GetWinTotals(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<WonCoopSessionsSpec>(), default), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetRecentlyAddedGames(3), Times.Once);
@@ -329,14 +332,17 @@ public class DashboardServiceTests
     }
 
     [Fact]
-    public async Task GetStatistics_ShouldReturnMostPlayedGamesForAllTimeAndThisMonth()
+    public async Task GetStatistics_ShouldReturnMostPlayedGamesForAllTimeThisYearAndTheLast12Months()
     {
         _gameStatisticsRepositoryMock
             .Setup(x => x.GetMostPlayedGames(4))
             .ReturnsAsync(new List<(int GameId, string Title, string? Image, int PlayCount)> { (1, "Catan", "catan.jpg", 20), (2, "Ticket to Ride", "ttr.jpg", 15) });
         _gameStatisticsRepositoryMock
-            .Setup(x => x.GetMostPlayedGamesSince(4, MonthStartUtc))
+            .Setup(x => x.GetMostPlayedGamesSince(4, YearStartUtc))
             .ReturnsAsync(new List<(int GameId, string Title, string? Image, int PlayCount)> { (2, "Ticket to Ride", "ttr.jpg", 3) });
+        _gameStatisticsRepositoryMock
+            .Setup(x => x.GetMostPlayedGamesSince(4, TwelveMonthsAgoUtc))
+            .ReturnsAsync(new List<(int GameId, string Title, string? Image, int PlayCount)> { (1, "Catan", "catan.jpg", 5) });
 
         var result = await _sut.GetStatistics(null);
 
@@ -345,8 +351,10 @@ public class DashboardServiceTests
         result.MostPlayedGames[0].Title.Should().Be("Catan");
         result.MostPlayedGames[0].Image.Should().Be("catan.jpg");
         result.MostPlayedGames[0].TotalSessions.Should().Be(20);
-        result.MostPlayedGamesThisMonth.Should().ContainSingle()
+        result.MostPlayedGamesThisYear.Should().ContainSingle()
             .Which.Should().BeEquivalentTo(new MostPlayedGameDto { Id = 2, Title = "Ticket to Ride", Image = "ttr.jpg", TotalSessions = 3 });
+        result.MostPlayedGamesLast12Months.Should().ContainSingle()
+            .Which.Should().BeEquivalentTo(new MostPlayedGameDto { Id = 1, Title = "Catan", Image = "catan.jpg", TotalSessions = 5 });
 
         VerifyGetStatisticsCalls();
     }
@@ -560,7 +568,7 @@ public class DashboardServiceTests
         _sessionRepositoryMock.Setup(x => x.GetRecentSessions(5)).ReturnsAsync([]);
         _gameStatisticsRepositoryMock.Setup(x => x.GetGameStateCounts()).ReturnsAsync([]);
         _gameStatisticsRepositoryMock.Setup(x => x.GetMostPlayedGames(4)).ReturnsAsync(new List<(int, string, string?, int)>());
-        _gameStatisticsRepositoryMock.Setup(x => x.GetMostPlayedGamesSince(4, MonthStartUtc)).ReturnsAsync(new List<(int, string, string?, int)>());
+        _gameStatisticsRepositoryMock.Setup(x => x.GetMostPlayedGamesSince(4, It.IsAny<DateTime>())).ReturnsAsync(new List<(int, string, string?, int)>());
         _playerRepositoryMock.Setup(x => x.GetWinTotals()).ReturnsAsync(new List<(int, string, string?, int, int)>());
         _sessionRepositoryMock.Setup(x => x.AnyAsync(It.IsAny<WonCoopSessionsSpec>(), default)).ReturnsAsync(false);
         _gameRepositoryMock.Setup(x => x.GetRecentlyAddedGames(3)).ReturnsAsync([]);

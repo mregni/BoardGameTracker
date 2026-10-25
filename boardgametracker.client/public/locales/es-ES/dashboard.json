@@ -35,8 +35,8 @@
   },
   "tiles": {
     "games": "Juegos",
-    "games-detail_one": "{{owned}} en propiedad · {{expansions}} expansión",
-    "games-detail_other": "{{owned}} en propiedad · {{expansions}} expansiones",
+    "games-expansions_one": "{{expansions}} expansión",
+    "games-expansions_other": "{{expansions}} expansiones",
     "players": "Jugadores",
     "players-detail_one": "{{value}} jugó este mes",
     "players-detail_other": "{{value}} jugaron este mes",
@@ -44,8 +44,7 @@
     "sessions-detail_one": "{{value}} este mes",
     "sessions-detail_other": "{{value}} este mes",
     "play-time": "Tiempo de juego",
-    "play-time-detail": "media de {{duration}} por partida",
-    "games-owned": "{{owned}} en propiedad"
+    "play-time-detail": "media de {{duration}} por partida"
   },
   "last-sessions": {
     "title": "Últimas partidas",
@@ -67,10 +66,12 @@
     "sessions_one": "{{value}} partida",
     "sessions_other": "{{value}} partidas",
     "won": "{{percent}} ganadas",
+    "wins_one": "victoria",
+    "wins_other": "victorias",
     "row_one": "{{name}}: {{wins}} victorias en {{total}} partida",
     "row_other": "{{name}}: {{wins}} victorias en {{total}} partidas",
-    "hint": "Ordenado por victorias, luego porcentaje de victorias y luego partidas. La barra es el porcentaje de victorias.",
-    "hint-coop": "Ordenado por victorias (cooperativas incluidas), luego porcentaje de victorias y luego partidas. La barra es el porcentaje de victorias.",
+    "hint": "Ordenado por victorias, luego porcentaje de victorias y luego partidas.",
+    "hint-coop": "Ordenado por victorias (cooperativas incluidas), luego porcentaje de victorias y luego partidas.",
     "empty": "Aún no se han jugado partidas"
   },
   "most-played": {
@@ -78,7 +79,7 @@
     "period": "Periodo",
     "times": "{{value}}×",
     "empty": "Aún no se han jugado partidas",
-    "empty-month": "Aún no se ha jugado nada este mes"
+    "empty-period": "No se ha jugado nada en este periodo"
   },
   "collection": {
     "title": "Colección",

@@ -8,7 +8,7 @@ export const useIntegrationSettings = () => {
 	const navigate = useNavigate();
 
 	const openIntegrationSettings = useCallback(() => {
-		void navigate({ to: "/settings", search: { tab: "bgg" } });
+		void navigate({ to: "/settings", search: { tab: "integrations" } });
 	}, [navigate]);
 
 	const integrationSettingsAction: ToastAction = {

@@ -59,6 +59,7 @@ public class PlayerLinkPromptTests : IAsyncLifetime
         using var admin = await _fixture.CreateAdminClientAsync();
         var player = await CreatePlayerAsync(admin, $"Someone {_suffix}", $"LINA-{_suffix}@example.com");
         var partly = await CreatePlayerAsync(admin, $"Lina Link {_suffix} Junior", null);
+        var stranger = await CreatePlayerAsync(admin, $"Lina Link {_suffix} Senior", $"senior-{_suffix}@example.com");
         using var browser = _fixture.CreateBrowserClient(Https);
 
         var first = await SignInAsync(browser);
@@ -72,7 +73,12 @@ public class PlayerLinkPromptTests : IAsyncLifetime
         suggestions.Suggestions[0].Reason.Should().Be(PlayerLinkMatchReason.Email);
         suggestions.Suggestions.Select(s => s.Id).Should().Contain(partly.Id);
         suggestions.Players.Select(p => p.Id).Should().Contain([player.Id, partly.Id]);
+        suggestions.Players.Select(p => p.Id).Should().NotContain(stranger.Id);
         suggestions.CanCreatePlayer.Should().BeTrue();
+
+        var forced = await api.PostAsJsonAsync("/api/auth/player-link", new LinkOwnPlayerRequest { PlayerId = stranger.Id }, ct);
+        forced.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await forced.Content.ReadAsStringAsync(ct)).Should().Contain("error.auth.player-email-mismatch");
 
         var linked = await api.PostAsJsonAsync("/api/auth/player-link", new LinkOwnPlayerRequest { PlayerId = player.Id }, ct);
 
@@ -94,6 +100,7 @@ public class PlayerLinkPromptTests : IAsyncLifetime
 
         await admin.DeleteAsync($"/api/player/{player.Id}", ct);
         await admin.DeleteAsync($"/api/player/{partly.Id}", ct);
+        await admin.DeleteAsync($"/api/player/{stranger.Id}", ct);
     }
 
     [Fact]

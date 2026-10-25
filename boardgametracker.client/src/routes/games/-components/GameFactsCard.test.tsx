@@ -83,7 +83,7 @@ describe("GameFactsCard", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} />);
 
 			expect(screen.getByText("duration")).toBeInTheDocument();
-			expect(screen.getByText("short-duration.minutes–short-duration.hours")).toBeInTheDocument();
+			expect(screen.getByText("short-duration.minutes")).toBeInTheDocument();
 			expect(screen.queryByText(/minutes-abbreviation/)).not.toBeInTheDocument();
 		});
 
@@ -106,6 +106,13 @@ describe("GameFactsCard", () => {
 
 			expect(screen.getByText("statistics:buy-price")).toBeInTheDocument();
 			expect(screen.getByText(/45(?![.,]\d)/)).toBeInTheDocument();
+		});
+
+		it("should show a dash instead of a zero price", () => {
+			renderWithTheme(<GameFactsCard {...defaultProps} game={createGame({ buyingPrice: 0 })} />);
+
+			expect(screen.getByText("statistics:buy-price").parentElement?.parentElement).toHaveTextContent("–");
+			expect(screen.queryByText(/0[.,]00/)).not.toBeInTheDocument();
 		});
 
 		it("should hide the price paid when it is unknown", () => {

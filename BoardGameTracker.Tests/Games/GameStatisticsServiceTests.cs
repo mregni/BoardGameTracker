@@ -87,6 +87,7 @@ public class GameStatisticsServiceTests
         _gameStatisticsRepositoryMock.Setup(x => x.GetHighestScore(gameId)).ReturnsAsync(250.0);
         _gameStatisticsRepositoryMock.Setup(x => x.GetAveragePlayTime(gameId)).ReturnsAsync(60.0);
         _gameStatisticsRepositoryMock.Setup(x => x.GetAverageScore(gameId)).ReturnsAsync(150.0);
+        _gameStatisticsRepositoryMock.Setup(x => x.CountScoredSessions(gameId, It.IsAny<CancellationToken>())).ReturnsAsync(4);
         _gameStatisticsRepositoryMock.Setup(x => x.GetExpansionCount(gameId)).ReturnsAsync(5);
         _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync((player, 20));
 
@@ -101,6 +102,7 @@ public class GameStatisticsServiceTests
         result.HighScore.Should().Be(250.0);
         result.AveragePlayTime.Should().Be(60.0);
         result.AverageScore.Should().Be(150.0);
+        result.ScoredSessionCount.Should().Be(4);
         result.ExpansionCount.Should().Be(5);
         result.MostWinsPlayer.Should().NotBeNull();
         result.MostWinsPlayer!.Id.Should().Be(10);

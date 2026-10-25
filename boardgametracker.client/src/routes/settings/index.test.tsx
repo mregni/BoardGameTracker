@@ -87,7 +87,7 @@ describe("Settings page save flow", () => {
 
 	it("saves first and then re-tests the integrations on the integrations tab", async () => {
 		const user = userEvent.setup();
-		mocks.search = { tab: "bgg" };
+		mocks.search = { tab: "integrations" };
 		renderPage();
 
 		await user.click(screen.getByRole("button", { name: "save.button" }));

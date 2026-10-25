@@ -13,6 +13,7 @@ public class CompareGame
     public int SameTeamWins { get; set; }
     public double? PlayerOneAverageScore { get; set; }
     public double? PlayerTwoAverageScore { get; set; }
+    public int ScoredSessionCount { get; set; }
     public DateTime LastPlayed { get; set; }
     public CompareOutcome LastOutcome { get; set; }
     public bool? LastTeamWon { get; set; }

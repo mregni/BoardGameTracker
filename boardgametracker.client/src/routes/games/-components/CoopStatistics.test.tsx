@@ -13,6 +13,7 @@ const gameStats = (coopWinCount: number, coopLossCount: number) => ({
 	pricePerPlay: null,
 	highScore: null,
 	averageScore: null,
+	scoredSessionCount: 0,
 	averagePlayTime: 60,
 	lastPlayed: null,
 	coopWinCount,
@@ -64,7 +65,7 @@ describe("co-op statistics", () => {
 	});
 
 	it("leaves the high and average score to the scoring results card when it is shown", () => {
-		const scored = { ...gameStats(0, 0), highScore: 104, averageScore: 71.2 };
+		const scored = { ...gameStats(0, 0), highScore: 104, averageScore: 71.2, scoredSessionCount: 3 };
 		const { unmount } = renderWithProviders(<GameStatisticsGrid gameStats={scored} currency="EUR" hasScoringResults />);
 
 		expect(screen.queryByText("high-score")).not.toBeInTheDocument();
@@ -76,6 +77,14 @@ describe("co-op statistics", () => {
 		expect(screen.getByText("average-score")).toBeInTheDocument();
 	});
 
+	it("hides the high and average score below three scored sessions", () => {
+		const scored = { ...gameStats(0, 0), highScore: 72, averageScore: 68.5, scoredSessionCount: 2 };
+		renderWithProviders(<GameStatisticsGrid gameStats={scored} currency="EUR" />);
+
+		expect(screen.queryByText("high-score")).not.toBeInTheDocument();
+		expect(screen.queryByText("average-score")).not.toBeInTheDocument();
+	});
+
 	it("leaves the team win rate out for a game without co-op sessions", () => {
 		renderWithProviders(<GameStatisticsGrid gameStats={gameStats(0, 0)} currency="EUR" />);
 
@@ -85,13 +94,13 @@ describe("co-op statistics", () => {
 	it("shows the co-op wins and losses of a player who played co-op", () => {
 		renderWithProviders(<PlayerStatisticsGrid statistics={playerStats(2, 1)} />);
 
-		expect(screen.getByText("coop-won-lost")).toBeInTheDocument();
+		expect(screen.getByText("coop-record")).toBeInTheDocument();
 		expect(screen.getByText("coop-results")).toBeInTheDocument();
 	});
 
 	it("leaves the co-op stat out for a player who never played co-op", () => {
 		renderWithProviders(<PlayerStatisticsGrid statistics={playerStats(0, 0)} />);
 
-		expect(screen.queryByText("coop-won-lost")).not.toBeInTheDocument();
+		expect(screen.queryByText("coop-record")).not.toBeInTheDocument();
 	});
 });

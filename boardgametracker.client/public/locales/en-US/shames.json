@@ -75,11 +75,11 @@
   },
   "money": {
     "title": "Money on the shelf",
-    "subtitle": "owned games only, priced ones",
+    "subtitle": "Priced owned games",
     "never-played": "Never played",
     "not-played_one": "Not played in {{count}}+ month",
     "not-played_other": "Not played in {{count}}+ months",
-    "rest": "Played or added recently",
+    "rest": "Not on the shelf",
     "label": "Of {{total}} paid for owned games: {{parts}}",
     "unpriced-one": "{{title}} has no price, so it isn't in the money.",
     "unpriced_one": "{{count}} game on the shelf has no price, so it isn't in the money.",

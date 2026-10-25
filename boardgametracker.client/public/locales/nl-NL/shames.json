@@ -75,11 +75,11 @@
   },
   "money": {
     "title": "Geld op de plank",
-    "subtitle": "alleen spellen in bezit, met prijs",
+    "subtitle": "Spellen in bezit met prijs",
     "never-played": "Nooit gespeeld",
     "not-played_one": "Niet gespeeld in {{count}}+ maand",
     "not-played_other": "Niet gespeeld in {{count}}+ maanden",
-    "rest": "Recent gespeeld of gekocht",
+    "rest": "Niet op de plank",
     "label": "Van {{total}} betaald voor spellen in bezit: {{parts}}",
     "unpriced-one": "{{title}} heeft geen prijs en telt dus niet mee.",
     "unpriced_one": "{{count}} spel op de plank heeft geen prijs en telt dus niet mee.",

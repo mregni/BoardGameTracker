@@ -1,6 +1,6 @@
 {
   "average-abreviation": "avg",
-  "average-score": "Average score",
+  "average-score": "Average (all players)",
   "high-score": "High score",
   "most-wins": "Most wins",
   "play-count": "Sessions",
@@ -28,8 +28,8 @@
   "collection-value": "Collection value",
   "average-price-paid-priced_one": "Avg. price paid · {{count}} priced game",
   "average-price-paid-priced_other": "Avg. price paid · {{count}} priced games",
-  "coop-won-lost": "Co-op won · lost",
-  "coop-results": "{{won}} · {{lost}}",
+  "coop-record": "Co-op",
+  "coop-results": "{{won}} won · {{lost}} lost",
   "team-win-rate": "Team win rate",
   "added": "Added",
   "team-win-rate-count_one": "{{won}} of {{count}} co-op session",

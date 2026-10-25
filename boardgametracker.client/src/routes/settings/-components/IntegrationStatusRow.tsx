@@ -1,8 +1,6 @@
-import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import Refresh from "@/assets/icons/refresh.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtText } from "@/components/BgtText/BgtText";
 import type { IntegrationKind, IntegrationStatus } from "@/models/Settings/IntegrationStatus";
 import { IntegrationStatusBadge } from "./IntegrationStatusBadge";
 
@@ -26,7 +24,9 @@ export const IntegrationStatusRow = ({
 	onTest,
 }: Props) => {
 	const { t } = useTranslation("settings");
-	const hintId = useId();
+	const hint = t(
+		integration === "changeDetection" ? "integrations.test-hint-change-detection" : "integrations.test-hint",
+	);
 
 	return (
 		<div className="flex flex-row flex-wrap items-center gap-3 @2xl:flex-nowrap @2xl:justify-end">
@@ -37,17 +37,12 @@ export const IntegrationStatusRow = ({
 					type="button"
 					disabled={!canTest || isTesting}
 					aria-busy={isTesting}
-					aria-describedby={canTest ? undefined : hintId}
+					title={canTest ? undefined : hint}
 					onClick={() => onTest(integration)}
 				>
 					<Refresh className={isTesting ? "size-4 animate-spin" : "size-4"} aria-hidden="true" />
 					{isTesting ? t("integrations.testing") : t("integrations.test")}
 				</BgtButton>
-				{!canTest && (
-					<BgtText id={hintId} size="1" color="white" opacity={50}>
-						{t("integrations.test-hint")}
-					</BgtText>
-				)}
 			</div>
 		</div>
 	);

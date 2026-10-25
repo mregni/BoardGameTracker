@@ -8,6 +8,7 @@ import {
 	formatNumber,
 	formatPercent,
 	formatPrice,
+	formatPriceOrEmpty,
 	formatRatio,
 	getIntegerTicks,
 	parseDecimal,
@@ -111,6 +112,14 @@ describe("numberUtils", () => {
 
 		it("falls back to en-US for an invalid locale", () => {
 			expect(formatNumber(1.5, "not a locale")).toBe("1.5");
+		});
+	});
+
+	describe("formatPriceOrEmpty", () => {
+		it("gives a dash for a missing or zero price and the price otherwise", () => {
+			expect(formatPriceOrEmpty(null, "EUR", "en-US")).toBe("–");
+			expect(formatPriceOrEmpty(0, "EUR", "en-US")).toBe("–");
+			expect(formatPriceOrEmpty(12, "EUR", "en-US")).toBe(formatPrice(12, "EUR", "en-US"));
 		});
 	});
 

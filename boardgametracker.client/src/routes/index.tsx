@@ -64,12 +64,11 @@ function RouteComponent() {
 						link="/games"
 						caption={
 							statistics.expansionsOwned > 0
-								? t("tiles.games-detail", {
-										owned: integer(statistics.ownedGames),
+								? t("tiles.games-expansions", {
 										expansions: integer(statistics.expansionsOwned),
 										count: statistics.expansionsOwned,
 									})
-								: t("tiles.games-owned", { owned: integer(statistics.ownedGames) })
+								: undefined
 						}
 					/>
 					<BgtTextStatistic
@@ -115,7 +114,11 @@ function RouteComponent() {
 					</div>
 					<div className="flex flex-col gap-4">
 						<TopPlayersCard players={statistics.topPlayers} includesCoopWins={statistics.topPlayersIncludeCoopWins} />
-						<MostPlayedCard allTime={statistics.mostPlayedGames} thisMonth={statistics.mostPlayedGamesThisMonth} />
+						<MostPlayedCard
+							allTime={statistics.mostPlayedGames}
+							thisYear={statistics.mostPlayedGamesThisYear}
+							last12Months={statistics.mostPlayedGamesLast12Months}
+						/>
 						<CollectionCard
 							collection={statistics.collection}
 							ownedGames={statistics.ownedGames}

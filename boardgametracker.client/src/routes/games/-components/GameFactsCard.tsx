@@ -15,7 +15,7 @@ import Users from "@/assets/icons/users.svg?react";
 import { useDurationRange } from "@/hooks/useDurationRange";
 import { type Game, type GamePrice, GameState } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
-import { formatDecimal, formatPrice } from "@/utils/numberUtils";
+import { formatDecimal, formatPriceOrEmpty } from "@/utils/numberUtils";
 import { formatRange } from "@/utils/rangeUtils";
 import { LivePrice } from "./LivePrice";
 import { PriceRefreshButton } from "./PriceRefreshButton";
@@ -125,7 +125,7 @@ export const GameFactsCard = (props: Props) => {
 			)}
 			{game.buyingPrice != null && (
 				<FactRow icon={Coins} label={t("statistics:buy-price")}>
-					{formatPrice(game.buyingPrice, currency, uiLanguage)}
+					{formatPriceOrEmpty(game.buyingPrice, currency, uiLanguage)}
 				</FactRow>
 			)}
 			{game.changeDetectionWatchId && (

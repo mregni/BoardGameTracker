@@ -51,6 +51,7 @@ export const gameRow = (overrides: Partial<CompareGame> & { gameId: number }): C
 	lastTeamWon: null,
 	playerOneAverageScore: null,
 	playerTwoAverageScore: null,
+	scoredSessionCount: 0,
 	lastPlayed: new Date(2026, 9, 10),
 	lastOutcome: "other",
 	...overrides,

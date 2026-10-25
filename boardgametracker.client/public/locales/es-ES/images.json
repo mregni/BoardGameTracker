@@ -1,6 +1,6 @@
 {
-  "types": "png o jpg",
-  "upload": "Haz clic o arrastra para añadir una imagen",
+  "types": "PNG o JPG",
+  "upload": "Añadir imagen",
   "selected-image": "Imagen seleccionada",
   "remove": "Quitar imagen"
 }

@@ -1,9 +1,11 @@
 {
   "add": "Log session",
+  "mark-owned": "Mark as owned",
   "sessions": "View sessions",
   "no-sessions": {
     "title": "No sessions logged yet",
-    "description": "Log a session of this game to see its statistics."
+    "description": "Log a session of this game to see its statistics.",
+    "not-played": "Not played yet"
   },
   "notifications": {
     "created": "Game added",
@@ -23,6 +25,9 @@
     "placeholder": "BoardGameGeek game id",
     "required": "BGG id is required",
     "external-page": "Open BoardGameGeek website"
+  },
+  "links": {
+    "title": "Links"
   },
   "language": {
     "label": "Language",
@@ -73,8 +78,8 @@
       "failed": "Failed"
     },
     "reindex": "Re-index",
-    "reindex-success": "Re-indexing started.",
-    "reindex-failed": "Re-index failed, check logs for more details.",
+    "reindex-success": "Re-indexing started",
+    "reindex-failed": "Couldn't start re-indexing",
     "download": "Download"
   },
   "new": {

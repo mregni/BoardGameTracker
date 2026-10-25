@@ -1,7 +1,7 @@
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { BgtInputContainer } from "@/components/BgtForm";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
-import { parseDecimal } from "@/utils/numberUtils";
+import { EMPTY_PRICE, parseDecimal } from "@/utils/numberUtils";
 import { EditableCellButton } from "./EditableCellButton";
 
 interface Props {
@@ -79,7 +79,7 @@ export const EditableNumberCell = (props: Props) => {
 		return (
 			<EditableCellButton onClick={onStartEdit} className={className} align={align} readOnly={readOnly} size={size}>
 				{value == null
-					? "-"
+					? EMPTY_PRICE
 					: format
 						? format(value)
 						: [prefix, decimal(value, 2), suffix].filter((part) => part != null && part !== "").join(" ")}

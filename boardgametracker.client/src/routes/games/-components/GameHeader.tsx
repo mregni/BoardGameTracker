@@ -3,7 +3,7 @@ import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
-import type { GamePrice, GameState } from "@/models";
+import { type GamePrice, GameState } from "@/models";
 import { getColorFromGameState, getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { TrackedPriceIcon } from "./TrackedPriceIcon";
 
@@ -15,6 +15,7 @@ interface Props {
 	livePrice?: GamePrice;
 	canWrite: boolean;
 	onAddSession: () => void;
+	onMarkOwned?: () => void;
 	onEdit: () => void;
 	onDelete: () => void;
 }
@@ -28,10 +29,12 @@ export const GameHeader = (props: Props) => {
 		livePrice,
 		canWrite,
 		onAddSession,
+		onMarkOwned,
 		onEdit,
 		onDelete,
 	} = props;
 	const { t } = useTranslation("game");
+	const offerMarkOwned = gameState === GameState.Wanted && onMarkOwned !== undefined;
 
 	return (
 		<div className="flex md:flex-row flex-col justify-between">
@@ -46,9 +49,15 @@ export const GameHeader = (props: Props) => {
 			</div>
 			{canWrite && (
 				<div className="flex gap-3 justify-between md:justify-start items-center pt-2 md:pt-0">
-					<BgtButton variant="primary" onClick={onAddSession}>
-						{t("add")}
-					</BgtButton>
+					{offerMarkOwned ? (
+						<BgtButton variant="primary" onClick={onMarkOwned}>
+							{t("mark-owned")}
+						</BgtButton>
+					) : (
+						<BgtButton variant="primary" onClick={onAddSession}>
+							{t("add")}
+						</BgtButton>
+					)}
 					<BgtEditDeleteButtons onDelete={onDelete} onEdit={onEdit} />
 				</div>
 			)}

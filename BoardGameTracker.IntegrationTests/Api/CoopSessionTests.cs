@@ -48,6 +48,7 @@ public class CoopSessionTests
         gameStats.GameStats.CoopWinCount.Should().Be(1);
         gameStats.GameStats.CoopLossCount.Should().Be(1);
         gameStats.GameStats.HighScore.Should().BeNull();
+        gameStats.GameStats.ScoredSessionCount.Should().Be(0);
 
         var aliceStats = await user.GetFromJsonAsync<PlayerStatistics>($"/api/player/{aliceId}/statistics", IntegrationFixture.Json);
         aliceStats!.PlayCount.Should().Be(2);

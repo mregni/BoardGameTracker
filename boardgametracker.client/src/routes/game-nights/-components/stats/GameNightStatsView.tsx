@@ -67,7 +67,7 @@ export const GameNightStatsView = (props: Props) => {
 					onChange={onPeriodChange}
 					options={PERIODS.map((value) => ({ value, label: t(PERIOD_LABELS[value]) }))}
 				/>
-				{statistics && statistics.totalNights > 0 && (
+				{statistics && statistics.nightsWithSessions < statistics.totalNights && (
 					<span className="text-xs text-gray-400">
 						{t("stats.logged", { count: statistics.nightsWithSessions, total: statistics.totalNights })}
 					</span>

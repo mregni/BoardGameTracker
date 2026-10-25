@@ -16,7 +16,7 @@ export const useDurationRange = () => {
 			const high = max ?? min;
 			if (low == null || high == null) return null;
 			if (low === high) return shortDuration(low);
-			if (high < MINUTES_PER_HOUR) {
+			if (low < MINUTES_PER_HOUR) {
 				return t("short-duration.minutes", { minutes: `${integer(low)}–${integer(high)}` });
 			}
 			if (low % MINUTES_PER_HOUR === 0 && high % MINUTES_PER_HOUR === 0) {

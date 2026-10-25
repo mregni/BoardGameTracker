@@ -1,488 +1,492 @@
 {
-	"date-format": {
-		"label": "Datumnotatie",
-		"required": "Datumnotatie is verplicht",
-		"invalid": "Gebruik een datumpatroon zoals dd/MM/yyyy of yyyy-MM-dd"
-	},
-	"time-format": {
-		"label": "Tijdnotatie",
-		"required": "Tijdnotatie is verplicht",
-		"invalid": "Gebruik een tijdpatroon zoals HH:mm of h:mm a"
-	},
-	"currency": {
-		"label": "Valuta",
-		"required": "Valuta is verplicht"
-	},
-	"save": {
-		"button": "Instellingen opslaan",
-		"failed": "Instellingen opslaan mislukt",
-		"successfull": "Instellingen opgeslagen"
-	},
-	"general": {
-		"public-url": {
-			"title": "Publiek adres",
-			"description": "Het adres waarop mensen BoardGameTracker bereiken; links in e-mails en single sign-on verwijzen ernaar.",
-			"label": "Publieke URL",
-			"placeholder": "https://games.example.com",
-			"invalid": "Geef een geldige http(s)-URL op",
-			"not-set": "Niet ingesteld. Uitnodigingen en e-mails om je wachtwoord te herstellen worden niet verstuurd, en single sign-on gebruikt het adres waarop je de app opent.",
-			"insecure-warning": "De publieke URL gebruikt http terwijl BoardGameTracker via https geopend is. Links in e-mails, RSVP-uitnodigingen en single sign-on-redirects gebruiken het onveilige adres.",
-			"host-mismatch-warning": "De publieke URL verwijst naar een andere host dan {{host}}. Links in e-mails, RSVP-uitnodigingen en single sign-on-redirects gebruiken die host.",
-			"sso-warning": "Single sign-on werkt niet meer met een http-adres.",
-			"sso-confirm": {
-				"title": "Single sign-on stoppen?",
-				"description": "Met deze publieke URL werkt single sign-on voor niemand meer, ook niet via https, totdat de publieke URL weer https gebruikt.",
-				"confirm": "Opslaan en single sign-on stoppen"
-			}
-		},
-		"ui-language": {
-			"label": "Taal",
-			"required": "Taal is verplicht"
-		},
-		"title": "Algemene instellingen",
-		"description": "Wijzig de algemene instellingen van de applicatie.",
-		"regional": {
-			"title": "Taal en notaties",
-			"language": "Taal",
-			"currency": "Valuta",
-			"date-format": "Datumnotatie",
-			"time-format": "Tijdnotatie"
-		}
-	},
-	"shame": {
-		"title": "Shelf of Shame",
-		"enabled": {
-			"label": "Shelf of Shame inschakelen",
-			"description": "Houd spellen bij die al een tijd niet meer gespeeld zijn."
-		},
-		"months": {
-			"label": "Drempel in maanden"
-		}
-	},
-	"game-nights": {
-		"title": "Spelavonden",
-		"enabled": {
-			"label": "Spelavonden inschakelen",
-			"description": "Plan spelavonden en verzamel RSVP's."
-		},
-		"rsvp-authentication": {
-			"label": "Inloggen vereisen voor RSVP's",
-			"description": "Alleen ingelogde gebruikers kunnen op uitnodigingen reageren."
-		}
-	},
-	"advanced": {
-		"version-track": {
-			"label": "Releasekanaal",
-			"description": "Kies of je bij stabiele releases blijft of overschakelt naar bètareleases voor vroege toegang tot nieuwe functies.",
-			"stable": {
-				"label": "Stabiel",
-				"description": "Ontvang alleen stabiele releases."
-			},
-			"beta": {
-				"label": "Bèta",
-				"description": "Ontvang bètareleases met vroege toegang tot nieuwe functies."
-			}
-		},
-		"updates": {
-			"title": "Updatecontrole",
-			"enabled": {
-				"label": "Updatecontrole inschakelen",
-				"description": "Controleert op nieuwe versies en toont ze in de zijbalk."
-			}
-		},
-		"bug": "Een bug melden",
-		"translate": "Help de app te vertalen",
-		"danger": {
-			"title": "Gevarenzone",
-			"reset": {
-				"button": "Gegevens resetten",
-				"confirm": {
-					"title": "Gegevens resetten",
-					"description": "Verwijdert alle spellen, sessies, spelers, locaties, uitleen, spelavonden, badges, afbeeldingen en geüploade handleidingen. Instellingen en gebruikersaccounts blijven. Dit kan niet ongedaan worden gemaakt.",
-					"keyword": "RESET",
-					"input-label": "Typ RESET om te bevestigen",
-					"button": "Gegevens resetten"
-				}
-			},
-			"factory-reset": {
-				"button": "Fabrieksreset",
-				"confirm": {
-					"title": "Fabrieksreset",
-					"description": "Verwijdert alle gegevens, instellingen en gebruikersaccounts en logt je uit. Dit kan niet ongedaan worden gemaakt.",
-					"keyword": "FABRIEKSRESET",
-					"input-label": "Typ FABRIEKSRESET om te bevestigen",
-					"button": "Alles terugzetten naar fabrieksinstellingen",
-					"admin-account": "Het account admin komt terug met het wachtwoord van de eerste keer inloggen.",
-					"admin-account-link": "Hoe wordt dat ingesteld?"
-				}
-			},
-			"notifications": {
-				"reset-success": "Gegevens gereset",
-				"reset-failed": "Gegevens resetten mislukt",
-				"factory-reset-failed": "Fabrieksreset mislukt"
-			}
-		}
-	},
-	"sidebar": {
-		"general": {
-			"title": "Algemeen",
-			"description": "Taal, notaties, publieke URL"
-		},
-		"shelf-of-shame": {
-			"title": "Shelf of Shame",
-			"description": "Wanneer een spel als ongespeeld telt"
-		},
-		"advanced": {
-			"title": "Geavanceerd",
-			"description": "Updates en gegevens wissen"
-		},
-		"game-nights": {
-			"title": "Spelavonden",
-			"description": "Planning en RSVP's"
-		},
-		"bgg": {
-			"title": "Integraties",
-			"description": "BoardGameGeek & prijswatch"
-		},
-		"account": {
-			"title": "Account",
-			"description": "Profiel en gebruikersbeheer",
-			"description-user": "Profiel en wachtwoord"
-		},
-		"sso": {
-			"title": "Single sign-on",
-			"description": "Identiteitsprovider"
-		}
-	},
-	"bgg": {
-		"title": "BoardGameGeek-API",
-		"description": "Met een API-sleutel kun je spellen en je collectie zoeken en importeren van BoardGameGeek.",
-		"status": {
-			"not-configured": "API-sleutel niet geconfigureerd"
-		},
-		"api-key": {
-			"label": "BGG-API-sleutel",
-			"placeholder": "Voer je BGG-API-sleutel in",
-			"save": "API-sleutel opslaan",
-			"clear": "API-sleutel verwijderen",
-			"clear-hint": "Sla instellingen op om de verwijdering toe te passen.",
-			"read-only": "De API-sleutel is alleen-lezen.",
-			"read-only-description": "De API-sleutel wordt beheerd via de omgevingsvariabele BGG_API_KEY en kan hier niet worden gewijzigd.",
-			"help-description": "Vraag een sleutel aan op de <requestPage>aanvraagpagina</requestPage> van BoardGameGeek."
-		}
-	},
-	"account": {
-		"profile": {
-			"title": "Mijn account",
-			"display-name": {
-				"label": "Weergavenaam"
-			},
-			"email": {
-				"label": "E-mail"
-			},
-			"username": {
-				"label": "Gebruikersnaam"
-			},
-			"picture": {
-				"label": "Profielfoto",
-				"upload": "Foto uploaden",
-				"remove": "Foto verwijderen",
-				"hint": "Wanneer je aanmeldt met single sign-on, wordt de foto van je identiteitsprovider gebruikt tot je zelf een foto uploadt. Een verwijderde foto komt pas terug wanneer je identiteitsprovider een andere foto toont."
-			},
-			"player": {
-				"label": "Gekoppelde speler",
-				"none": "Niet gekoppeld"
-			},
-			"save": "Profiel opslaan",
-			"current-password": {
-				"label": "Huidig wachtwoord",
-				"placeholder": "Nodig om je e-mailadres te wijzigen"
-			}
-		},
-		"password": {
-			"change-button": "Wachtwoord wijzigen",
-			"title": "Wachtwoord wijzigen",
-			"description": "Voer je huidige wachtwoord in en kies een nieuw wachtwoord.",
-			"current": {
-				"label": "Huidig wachtwoord"
-			},
-			"new": {
-				"label": "Nieuw wachtwoord"
-			},
-			"confirm": {
-				"label": "Bevestig nieuw wachtwoord"
-			},
-			"min-length": "Het wachtwoord moet minstens 4 tekens lang zijn",
-			"mismatch": "De wachtwoorden komen niet overeen",
-			"save": "Wachtwoord wijzigen"
-		},
-		"users": {
-			"title": "Gebruikersbeheer",
-			"last-login": "Laatst ingelogd",
-			"role": "Rol",
-			"roles": {
-				"user": "Gebruiker",
-				"reader": "Lezer",
-				"admin": "Beheerder"
-			},
-			"player": {
-				"label": "Gekoppelde speler",
-				"none": "Niet gekoppeld"
-			},
-			"create-button": "Gebruiker toevoegen",
-			"create": {
-				"title": "Gebruiker toevoegen",
-				"username": {
-					"label": "Gebruikersnaam"
-				},
-				"email": {
-					"label": "E-mail"
-				},
-				"password": {
-					"label": "Wachtwoord"
-				},
-				"display-name": {
-					"label": "Weergavenaam"
-				},
-				"player": {
-					"label": "Speler",
-					"create": "Een nieuwe speler aanmaken",
-					"link": "Een bestaande speler koppelen",
-					"none": "Geen speler"
-				},
-				"save": "Toevoegen"
-			},
-			"edit": {
-				"title": "Gebruiker bewerken"
-			},
-			"reset-password": {
-				"button": "Wachtwoord resetten",
-				"title": "Wachtwoord van {{user}} resetten?",
-				"description": "Het huidige wachtwoord werkt dan niet meer."
-			},
-			"temp-password": {
-				"title": "Tijdelijk wachtwoord",
-				"description": "Wachtwoord gereset voor \"{{username}}\". Bewaar dit wachtwoord — het wordt niet opnieuw getoond.",
-				"copy": "Naar klembord kopiëren",
-				"copied": "Gekopieerd"
-			},
-			"delete": {
-				"title": "Gebruiker verwijderen",
-				"description": "Weet je zeker dat je \"{{username}}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
-			},
-			"never-logged-in": "Nooit",
-			"no-users": "Nog geen gebruikers",
-			"access": {
-				"button": "Toegang",
-				"title": "Toegang tot inloggen",
-				"enabled": "Kan inloggen",
-				"disabled": "Uitgeschakeld",
-				"enable": "Inschakelen",
-				"disable": "Uitschakelen",
-				"disable-hint": "Uitschakelen beëindigt elke sessie en blokkeert inloggen met een wachtwoord en via single sign-on. Iemand verwijderen bij de identiteitsprovider doet dit niet voor jou.",
-				"sso-title": "Single sign-on",
-				"sso-none": "Er is geen account van de identiteitsprovider gekoppeld.",
-				"sso-linked": "subject {{subject}} · gekoppeld op {{date}}",
-				"unlink": "Ontkoppelen",
-				"unlink-confirm": "Dit account van de identiteitsprovider kan niet meer als “{{username}}” inloggen tot het opnieuw gekoppeld wordt.",
-				"role-managed": "De rol volgt bij elke login de groepen van de identiteitsprovider.",
-				"role-local": "De rol is hier ingesteld en de identiteitsprovider wijzigt die niet.",
-				"manage-role": "Laat de identiteitsprovider de rol beheren",
-				"disabled-badge": "Uitgeschakeld",
-				"sso-badge": "SSO",
-				"disable-confirm": {
-					"title": "{{username}} uitschakelen?",
-					"description": "Die persoon wordt op elk apparaat uitgelogd en kan pas weer inloggen als je het account opnieuw inschakelt."
-				}
-			},
-			"actions": "Acties voor {{username}}"
-		},
-		"notifications": {
-			"profile-updated": "Profiel opgeslagen",
-			"profile-update-failed": "Profiel bijwerken mislukt",
-			"password-changed": "Wachtwoord gewijzigd",
-			"password-change-failed": "Wachtwoord wijzigen mislukt. Controleer je huidige wachtwoord.",
-			"user-created": "Gebruiker aangemaakt",
-			"user-create-failed": "Gebruiker aanmaken mislukt",
-			"user-deleted": "Gebruiker verwijderd",
-			"user-delete-failed": "Gebruiker verwijderen mislukt",
-			"user-updated": "Gebruiker opgeslagen",
-			"user-update-failed": "Gebruiker bijwerken mislukt",
-			"password-reset-failed": "Wachtwoord resetten mislukt",
-			"user-disable-failed": "Gebruiker uitschakelen is mislukt",
-			"user-enable-failed": "Gebruiker inschakelen is mislukt",
-			"external-login-unlink-failed": "Account van de identiteitsprovider ontkoppelen is mislukt",
-			"role-manage-failed": "De rol aan de identiteitsprovider overdragen is mislukt",
-			"picture-updated": "Profielfoto opgeslagen",
-			"picture-removed": "Profielfoto verwijderd",
-			"picture-update-failed": "De profielfoto kon niet worden opgeslagen"
-		},
-		"external-logins": {
-			"title": "Single sign-on",
-			"description": "Log in via je identiteitsprovider in plaats van met een wachtwoord.",
-			"none": "Nog geen account van de identiteitsprovider gekoppeld.",
-			"linked-on": "gekoppeld op {{date}}",
-			"link": "{{provider}} koppelen",
-			"unlink": "Ontkoppelen",
-			"notifications": {
-				"unlinked": "Account van de identiteitsprovider ontkoppeld",
-				"unlink-failed": "Het account van de identiteitsprovider kon niet worden ontkoppeld.",
-				"link-failed": "Het koppelen kon niet worden gestart."
-			},
-			"unlink-confirm": "Je kunt dan niet meer inloggen met deze provider tot je hem opnieuw koppelt.",
-			"unlink-title": "{{provider}} ontkoppelen?"
-		}
-	},
-	"env-override": "Ingesteld via de omgevingsvariabele {{variable}}. Pas die daar aan om deze instelling te wijzigen.",
-	"sso": {
-		"title": "Identiteitsprovider",
-		"description": {
-			"empty": "Laat mensen inloggen via je identiteitsprovider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Registreer daar eerst een client (publiek, of vertrouwelijk met een clientgeheim) en vul daarna de gegevens hieronder in.",
-			"configured": "Provider {{name}} is ingesteld. Wijzigingen gelden vanaf de volgende keer dat iemand inlogt.",
-			"inactive": "Provider {{name}} is ingesteld maar niet actief: er is een https-adres als publieke URL nodig."
-		},
-		"https-required": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL.",
-		"fields": {
-			"display-name": {
-				"label": "Knoptekst",
-				"placeholder": "Bedrijfslogin"
-			},
-			"authority": {
-				"label": "Authority (issuer-URL)",
-				"placeholder": "https://sso.example.com/realms/games",
-				"relink-warning": "Als je het adres wijzigt, worden alle accounts die aan deze provider gekoppeld zijn ontkoppeld. Gebruikers melden zich dan aan met hun wachtwoord en koppelen de provider opnieuw via hun profiel; gebruikers zonder wachtwoord hebben er eerst een nodig."
-			},
-			"client-id": {
-				"label": "Client-ID"
-			},
-			"client-secret": {
-				"label": "Client secret (optioneel)",
-				"placeholder": "Laat leeg voor een publieke client",
-				"unchanged": "Opgeslagen — laat leeg om te behouden"
-			},
-			"scopes": {
-				"label": "Scopes"
-			},
-			"username-claim": {
-				"label": "Claim voor gebruikersnaam"
-			},
-			"email-claim": {
-				"label": "Claim voor e-mail"
-			},
-			"display-name-claim": {
-				"label": "Claim voor weergavenaam"
-			},
-			"picture-claim": {
-				"label": "Avatarclaim",
-				"hint": "De foto in deze claim wordt de avatar van gebruikers die zelf geen foto hebben geüpload. Je identiteitsprovider moet een picture-claim meesturen in het token of in de gebruikersinfo."
-			},
-			"roles-claim": {
-				"label": "Claim voor groepen/rollen"
-			},
-			"admin-group": {
-				"label": "Waarde voor beheerdersgroep",
-				"placeholder": "bgt-admins"
-			},
-			"auto-provision": {
-				"label": "Accounts aanmaken bij eerste keer inloggen",
-				"description": "Nieuwe mensen krijgen automatisch een account met de standaardrol. Als dit uit staat, kunnen alleen gekoppelde accounts inloggen."
-			},
-			"enabled": {
-				"label": "Ingeschakeld",
-				"description": "Toon de inlogknop op de inlogpagina."
-			},
-			"default-role": {
-				"label": "Standaardrol"
-			},
-			"role-sync": "Met een groepen-claim en beheerdersgroep krijgen accounts die via de provider zijn aangemaakt bij elke login de rol Beheerder als ze in die groep zitten, en anders de standaardrol. De laatste beheerder verliest die rol nooit."
-		},
-		"discovery": {
-			"button": "Discovery testen",
-			"testing": "Testen…",
-			"ok": "De provider antwoordde en de issuer komt overeen met de authority.",
-			"issuer-mismatch": "De provider antwoordde, maar meldt issuer {{issuer}}. Gebruik die waarde als authority.",
-			"failed": "De provider is niet bereikbaar of gaf geen discovery-document terug.",
-			"authorization": "Autorisatie",
-			"token": "Token",
-			"userinfo": "Gebruikersinfo",
-			"end-session": "Uitloggen",
-			"none": "niet aangeboden",
-			"signing": "Ondertekeningsalgoritmen",
-			"signing-unsupported": "De provider ondertekent tokens alleen met {{algorithms}}, wat BoardGameTracker niet accepteert. Stel bij je identiteitsprovider een RS256- of ES256-ondertekeningssleutel in voor deze client.",
-			"certificate-expired": "Het ondertekeningscertificaat van de provider is verlopen op {{date}}. Inloggen werkt nog, maar vernieuw het ondertekeningscertificaat bij je identiteitsprovider."
-		},
-		"setup": {
-			"title": "Registreren bij de provider",
-			"description": "Sta deze redirect-URI's toe op de client die je bij je identiteitsprovider hebt aangemaakt.",
-			"public-url-warning": "Er is geen publieke URL ingesteld, dus de redirect-URI's worden afgeleid van de huidige aanvraag ({{url}}). Stel de publieke URL in onder Algemeen als dat niet het adres is dat mensen gebruiken.",
-			"redirect-uri": "Redirect-URI voor inloggen",
-			"link-redirect-uri": "Redirect-URI voor accountkoppeling",
-			"copy": "Kopiëren",
-			"post-logout-redirect-uri": "Redirect-URI na uitloggen",
-			"https-pending": "Beschikbaar zodra de publieke URL https gebruikt."
-		},
-		"validation": {
-			"display-name": "Een knoptekst is verplicht",
-			"authority": "Geef de https-URL van de provider op",
-			"client-id": "De client-ID is verplicht",
-			"scopes": "Minstens de scope openid is verplicht"
-		},
-		"create": "Provider aanmaken",
-		"save": "Provider opslaan",
-		"delete": "Provider verwijderen",
-		"delete-description": "Als je de provider verwijdert, worden ook alle accounts van de identiteitsprovider ontkoppeld. Mensen behouden hun lokale wachtwoord als ze er een hebben.",
-		"notifications": {
-			"saved": "Provider opgeslagen.",
-			"save-failed": "De provider kon niet worden opgeslagen.",
-			"deleted": "Provider verwijderd.",
-			"delete-failed": "De provider kon niet worden verwijderd."
-		},
-		"https-required-locked": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL. Tot dan kun je de provider alleen uitschakelen."
-	},
-	"changedetection": {
-		"title": "changedetection.io",
-		"description": "Toont live prijs en voorraad voor spellen met een watch-id.",
-		"base-url": {
-			"label": "Basis-URL",
-			"placeholder": "https://changes.example.com",
-			"invalid": "Geef een geldige http(s)-URL op"
-		},
-		"api-key": {
-			"label": "API-sleutel",
-			"placeholder": "Voer je changedetection.io API-sleutel in",
-			"clear": "API-sleutel verwijderen",
-			"clear-hint": "Sla instellingen op om de verwijdering toe te passen."
-		},
-		"help-description": "De API-sleutel vind je onder Instellingen in je changedetection.io-instantie."
-	},
-	"integrations": {
-		"name": {
-			"bgg": "BoardGameGeek",
-			"changeDetection": "changedetection.io"
-		},
-		"status": {
-			"ok": "Verbonden",
-			"unauthorized": "Geweigerd",
-			"unreachable": "Onbereikbaar",
-			"rateLimited": "Te veel verzoeken",
-			"notConfigured": "Niet geconfigureerd"
-		},
-		"checked-at": "gecontroleerd om {{time}}",
-		"checking": "Controleren…",
-		"test": "Verbinding testen",
-		"testing": "Testen…",
-		"test-failed": "De verbindingstest kon niet worden uitgevoerd",
-		"save-failed": "Instellingen opgeslagen, maar {{name}} is niet verbonden",
-		"reason": {
-			"ok": "De verbinding werkt",
-			"not-configured": "Nog geen API-sleutel opgeslagen",
-			"unauthorized": "De API-sleutel werd geweigerd",
-			"unreachable": "De dienst kon niet worden bereikt",
-			"timeout": "De dienst antwoordde niet binnen 10 seconden",
-			"rate-limited": "Te veel verzoeken, probeer het over enkele minuten opnieuw",
-			"misconfigured": "De basis-URL of API-sleutel is ongeldig",
-			"unexpected-response": "De dienst gaf een onverwacht antwoord"
-		},
-		"test-hint": "Sla een API-sleutel op om de verbinding te testen."
-	}
+  "date-format": {
+    "label": "Datumnotatie",
+    "required": "Datumnotatie is verplicht",
+    "invalid": "Gebruik een datumpatroon zoals dd/MM/yyyy of yyyy-MM-dd"
+  },
+  "time-format": {
+    "label": "Tijdnotatie",
+    "required": "Tijdnotatie is verplicht",
+    "invalid": "Gebruik een tijdpatroon zoals HH:mm of h:mm a"
+  },
+  "currency": {
+    "label": "Valuta",
+    "required": "Valuta is verplicht"
+  },
+  "save": {
+    "button": "Instellingen opslaan",
+    "failed": "Instellingen opslaan mislukt",
+    "successfull": "Instellingen opgeslagen"
+  },
+  "general": {
+    "public-url": {
+      "title": "Publiek adres",
+      "description": "Het adres waarop mensen BoardGameTracker bereiken; links in e-mails en single sign-on verwijzen ernaar.",
+      "label": "Publieke URL",
+      "placeholder": "https://games.example.com",
+      "invalid": "Geef een geldige http(s)-URL op",
+      "not-set": "Niet ingesteld. Uitnodigingen en e-mails om je wachtwoord te herstellen worden niet verstuurd, en single sign-on gebruikt het adres waarop je de app opent.",
+      "insecure-warning": "De publieke URL gebruikt http terwijl BoardGameTracker via https geopend is. Links in e-mails, RSVP-uitnodigingen en single sign-on-redirects gebruiken het onveilige adres.",
+      "host-mismatch-warning": "De publieke URL verwijst naar een andere host dan {{host}}. Links in e-mails, RSVP-uitnodigingen en single sign-on-redirects gebruiken die host.",
+      "sso-warning": "Single sign-on werkt niet meer met een http-adres.",
+      "sso-confirm": {
+        "title": "Single sign-on stoppen?",
+        "description": "Single sign-on stopt voor iedereen, op elk adres, tot de publieke URL weer https is.",
+        "confirm": "Opslaan en single sign-on stoppen"
+      }
+    },
+    "ui-language": {
+      "label": "Taal",
+      "required": "Taal is verplicht"
+    },
+    "title": "Algemene instellingen",
+    "description": "Wijzig de algemene instellingen van de applicatie.",
+    "regional": {
+      "title": "Taal en notaties",
+      "language": "Taal",
+      "currency": "Valuta",
+      "date-format": "Datumnotatie",
+      "time-format": "Tijdnotatie"
+    }
+  },
+  "shame": {
+    "title": "Shelf of Shame",
+    "enabled": {
+      "label": "Shelf of Shame inschakelen",
+      "description": "Houd spellen bij die al een tijd niet meer gespeeld zijn."
+    },
+    "months": {
+      "label": "Drempel in maanden"
+    }
+  },
+  "game-nights": {
+    "title": "Spelavonden",
+    "enabled": {
+      "label": "Spelavonden inschakelen",
+      "description": "Plan spelavonden en verzamel RSVP's."
+    },
+    "rsvp-authentication": {
+      "label": "Inloggen vereisen voor RSVP's",
+      "description": "Alleen ingelogde gebruikers kunnen op uitnodigingen reageren."
+    }
+  },
+  "advanced": {
+    "version-track": {
+      "label": "Releasekanaal",
+      "description": "Kies of je bij stabiele releases blijft of overschakelt naar bètareleases voor vroege toegang tot nieuwe functies.",
+      "stable": {
+        "label": "Stabiel",
+        "description": "Ontvang alleen stabiele releases."
+      },
+      "beta": {
+        "label": "Bèta",
+        "description": "Ontvang bètareleases met vroege toegang tot nieuwe functies."
+      }
+    },
+    "updates": {
+      "title": "Updatecontrole",
+      "enabled": {
+        "label": "Updatecontrole inschakelen",
+        "description": "Controleert op nieuwe versies en toont ze in de zijbalk."
+      }
+    },
+    "bug": "Een bug melden",
+    "translate": "Help de app te vertalen",
+    "danger": {
+      "title": "Gevarenzone",
+      "reset": {
+        "button": "Gegevens resetten",
+        "confirm": {
+          "title": "Gegevens resetten",
+          "description": "Verwijdert alle spellen, sessies, spelers, locaties, uitleen, spelavonden, badges, afbeeldingen en geüploade handleidingen. Instellingen en gebruikersaccounts blijven. Dit kan niet ongedaan worden gemaakt.",
+          "keyword": "RESET",
+          "input-label": "Typ RESET om te bevestigen",
+          "button": "Gegevens resetten"
+        }
+      },
+      "factory-reset": {
+        "button": "Fabrieksreset",
+        "confirm": {
+          "title": "Fabrieksreset",
+          "description": "Verwijdert alle gegevens, instellingen en gebruikersaccounts en logt je uit. Dit kan niet ongedaan worden gemaakt.",
+          "keyword": "FABRIEKSRESET",
+          "input-label": "Typ FABRIEKSRESET om te bevestigen",
+          "button": "Alles terugzetten naar fabrieksinstellingen",
+          "admin-account": "Het account admin komt terug met het wachtwoord van de eerste keer inloggen.",
+          "admin-account-link": "Hoe wordt dat ingesteld?"
+        }
+      },
+      "notifications": {
+        "reset-success": "Gegevens gereset",
+        "reset-failed": "Gegevens resetten mislukt",
+        "factory-reset-failed": "Fabrieksreset mislukt"
+      }
+    }
+  },
+  "sidebar": {
+    "general": {
+      "title": "Algemeen",
+      "description": "Taal, notaties, publieke URL"
+    },
+    "shelf-of-shame": {
+      "title": "Shelf of Shame",
+      "description": "Wanneer een spel als ongespeeld telt"
+    },
+    "advanced": {
+      "title": "Geavanceerd",
+      "description": "Updates en gegevens wissen"
+    },
+    "game-nights": {
+      "title": "Spelavonden",
+      "description": "Planning en RSVP's"
+    },
+    "bgg": {
+      "title": "Integraties",
+      "description": "BoardGameGeek & prijswatch"
+    },
+    "account": {
+      "title": "Account",
+      "description": "Profiel en gebruikersbeheer",
+      "description-user": "Profiel en wachtwoord"
+    },
+    "sso": {
+      "title": "Single sign-on",
+      "description": "Identiteitsprovider"
+    }
+  },
+  "bgg": {
+    "title": "BoardGameGeek-API",
+    "description": "Met een API-sleutel kun je spellen en je collectie zoeken en importeren van BoardGameGeek.",
+    "status": {
+      "not-configured": "API-sleutel niet geconfigureerd"
+    },
+    "api-key": {
+      "label": "BGG-API-sleutel",
+      "placeholder": "Voer je BGG-API-sleutel in",
+      "save": "API-sleutel opslaan",
+      "clear": "API-sleutel verwijderen",
+      "clear-hint": "Sla instellingen op om de verwijdering toe te passen.",
+      "read-only": "De API-sleutel is alleen-lezen.",
+      "read-only-description": "De API-sleutel wordt beheerd via de omgevingsvariabele BGG_API_KEY en kan hier niet worden gewijzigd.",
+      "help-description": "Vraag een sleutel aan op de <requestPage>aanvraagpagina</requestPage> van BoardGameGeek."
+    }
+  },
+  "account": {
+    "profile": {
+      "title": "Mijn account",
+      "display-name": {
+        "label": "Weergavenaam"
+      },
+      "email": {
+        "label": "E-mail"
+      },
+      "username": {
+        "label": "Gebruikersnaam"
+      },
+      "picture": {
+        "label": "Profielfoto",
+        "upload": "Foto uploaden",
+        "remove": "Foto verwijderen",
+        "hint": "Je single sign-on-foto wordt gebruikt tot je er zelf een uploadt."
+      },
+      "player": {
+        "label": "Gekoppelde speler",
+        "none": "Niet gekoppeld"
+      },
+      "save": "Profiel opslaan",
+      "current-password": {
+        "label": "Huidig wachtwoord",
+        "placeholder": "Nodig om je e-mailadres te wijzigen"
+      }
+    },
+    "password": {
+      "change-button": "Wachtwoord wijzigen",
+      "title": "Wachtwoord wijzigen",
+      "description": "Voer je huidige wachtwoord in en kies een nieuw wachtwoord.",
+      "current": {
+        "label": "Huidig wachtwoord"
+      },
+      "new": {
+        "label": "Nieuw wachtwoord"
+      },
+      "confirm": {
+        "label": "Bevestig nieuw wachtwoord"
+      },
+      "min-length": "Het wachtwoord moet minstens 4 tekens lang zijn",
+      "mismatch": "De wachtwoorden komen niet overeen",
+      "save": "Wachtwoord wijzigen"
+    },
+    "users": {
+      "title": "Gebruikersbeheer",
+      "last-login": "Laatst ingelogd",
+      "player-column": "Speler",
+      "role": "Rol",
+      "roles": {
+        "user": "Gebruiker",
+        "reader": "Lezer",
+        "admin": "Beheerder"
+      },
+      "player": {
+        "label": "Gekoppelde speler",
+        "none": "Niet gekoppeld",
+        "linked-to": "Gekoppeld aan {{name}}"
+      },
+      "create-button": "Gebruiker toevoegen",
+      "create": {
+        "title": "Gebruiker toevoegen",
+        "username": {
+          "label": "Gebruikersnaam"
+        },
+        "email": {
+          "label": "E-mail"
+        },
+        "password": {
+          "label": "Wachtwoord"
+        },
+        "display-name": {
+          "label": "Weergavenaam"
+        },
+        "player": {
+          "label": "Speler",
+          "create": "Een nieuwe speler aanmaken",
+          "link": "Een bestaande speler koppelen",
+          "none": "Geen speler"
+        },
+        "save": "Toevoegen"
+      },
+      "edit": {
+        "title": "Gebruiker bewerken"
+      },
+      "reset-password": {
+        "button": "Wachtwoord resetten",
+        "title": "Wachtwoord van {{user}} resetten?",
+        "description": "Het huidige wachtwoord werkt dan niet meer."
+      },
+      "temp-password": {
+        "title": "Tijdelijk wachtwoord",
+        "description": "Wachtwoord gereset voor \"{{username}}\". Bewaar dit wachtwoord — het wordt niet opnieuw getoond.",
+        "copy": "Naar klembord kopiëren",
+        "copied": "Gekopieerd"
+      },
+      "delete": {
+        "title": "Gebruiker verwijderen",
+        "description": "Weet je zeker dat je \"{{username}}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+      },
+      "never-logged-in": "Nooit",
+      "no-users": "Nog geen gebruikers",
+      "access": {
+        "button": "Toegang",
+        "title": "Toegang tot inloggen",
+        "enabled": "Kan inloggen",
+        "disabled": "Uitgeschakeld",
+        "enable": "Inschakelen",
+        "disable": "Uitschakelen",
+        "disable-hint-sso": "Uitschakelen beëindigt elke sessie en blokkeert inloggen met een wachtwoord en via single sign-on. Iemand verwijderen bij de identiteitsprovider doet dit niet voor jou.",
+        "disable-hint": "Uitschakelen beëindigt elke sessie en blokkeert inloggen.",
+        "sso-title": "Single sign-on",
+        "sso-none": "Er is geen account van de identiteitsprovider gekoppeld.",
+        "sso-linked": "subject {{subject}} · gekoppeld op {{date}}",
+        "unlink": "Ontkoppelen",
+        "unlink-confirm": "Dit account van de identiteitsprovider kan niet meer als “{{username}}” inloggen tot het opnieuw gekoppeld wordt.",
+        "role-managed": "De rol volgt bij elke login de groepen van de identiteitsprovider.",
+        "role-local": "De rol is hier ingesteld en de identiteitsprovider wijzigt die niet.",
+        "manage-role": "Laat de identiteitsprovider de rol beheren",
+        "disabled-badge": "Uitgeschakeld",
+        "sso-badge": "SSO",
+        "disable-confirm": {
+          "title": "{{username}} uitschakelen?",
+          "description": "Die persoon wordt op elk apparaat uitgelogd en kan pas weer inloggen als je het account opnieuw inschakelt."
+        }
+      },
+      "actions": "Acties voor {{username}}"
+    },
+    "notifications": {
+      "profile-updated": "Profiel opgeslagen",
+      "profile-update-failed": "Profiel bijwerken mislukt",
+      "password-changed": "Wachtwoord gewijzigd",
+      "password-change-failed": "Wachtwoord wijzigen mislukt. Controleer je huidige wachtwoord.",
+      "user-created": "Gebruiker aangemaakt",
+      "user-create-failed": "Gebruiker aanmaken mislukt",
+      "user-deleted": "Gebruiker verwijderd",
+      "user-delete-failed": "Gebruiker verwijderen mislukt",
+      "user-updated": "Gebruiker opgeslagen",
+      "user-update-failed": "Gebruiker bijwerken mislukt",
+      "password-reset-failed": "Wachtwoord resetten mislukt",
+      "user-disable-failed": "Gebruiker uitschakelen is mislukt",
+      "user-enable-failed": "Gebruiker inschakelen is mislukt",
+      "external-login-unlink-failed": "Account van de identiteitsprovider ontkoppelen is mislukt",
+      "role-manage-failed": "De rol aan de identiteitsprovider overdragen is mislukt",
+      "picture-updated": "Profielfoto opgeslagen",
+      "picture-removed": "Profielfoto verwijderd",
+      "picture-update-failed": "De profielfoto kon niet worden opgeslagen"
+    },
+    "external-logins": {
+      "title": "Single sign-on",
+      "description": "Log in via je identiteitsprovider in plaats van met een wachtwoord.",
+      "none": "Nog geen account van de identiteitsprovider gekoppeld.",
+      "linked-on": "gekoppeld op {{date}}",
+      "link": "{{provider}} koppelen",
+      "unlink": "Ontkoppelen",
+      "notifications": {
+        "unlinked": "Account van de identiteitsprovider ontkoppeld",
+        "unlink-failed": "Het account van de identiteitsprovider kon niet worden ontkoppeld.",
+        "link-failed": "Het koppelen kon niet worden gestart."
+      },
+      "unlink-confirm": "Je kunt dan niet meer inloggen met deze provider tot je hem opnieuw koppelt.",
+      "unlink-title": "{{provider}} ontkoppelen?"
+    }
+  },
+  "env-override": "Ingesteld via de omgevingsvariabele {{variable}}. Pas die daar aan om deze instelling te wijzigen.",
+  "sso": {
+    "title": "Identiteitsprovider",
+    "description": {
+      "empty": "Laat mensen inloggen via je identiteitsprovider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Registreer daar eerst een client (publiek, of vertrouwelijk met een clientgeheim) en vul daarna de gegevens hieronder in.",
+      "configured": "Provider {{name}} is ingesteld. Wijzigingen gelden vanaf de volgende keer dat iemand inlogt.",
+      "inactive": "Provider {{name}} is ingesteld maar niet actief: er is een https-adres als publieke URL nodig."
+    },
+    "https-required": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL.",
+    "fields": {
+      "display-name": {
+        "label": "Knoptekst",
+        "placeholder": "Bedrijfslogin"
+      },
+      "authority": {
+        "label": "Authority (issuer-URL)",
+        "placeholder": "https://sso.example.com/realms/games",
+        "relink-warning": "Als je het adres wijzigt, worden alle accounts die aan deze provider gekoppeld zijn ontkoppeld. Gebruikers melden zich dan aan met hun wachtwoord en koppelen de provider opnieuw via hun profiel; gebruikers zonder wachtwoord hebben er eerst een nodig."
+      },
+      "client-id": {
+        "label": "Client-ID"
+      },
+      "client-secret": {
+        "label": "Client secret (optioneel)",
+        "placeholder": "Laat leeg voor een publieke client",
+        "unchanged": "Opgeslagen — laat leeg om te behouden"
+      },
+      "scopes": {
+        "label": "Scopes"
+      },
+      "username-claim": {
+        "label": "Claim voor gebruikersnaam"
+      },
+      "email-claim": {
+        "label": "Claim voor e-mail"
+      },
+      "display-name-claim": {
+        "label": "Claim voor weergavenaam"
+      },
+      "picture-claim": {
+        "label": "Avatarclaim",
+        "hint": "De foto in deze claim wordt de avatar van gebruikers die zelf geen foto hebben geüpload. Je identiteitsprovider moet een picture-claim meesturen in het token of in de gebruikersinfo."
+      },
+      "roles-claim": {
+        "label": "Claim voor groepen/rollen"
+      },
+      "admin-group": {
+        "label": "Waarde voor beheerdersgroep",
+        "placeholder": "bgt-admins"
+      },
+      "auto-provision": {
+        "label": "Accounts aanmaken bij eerste keer inloggen",
+        "description": "Nieuwe mensen krijgen automatisch een account met de standaardrol. Als dit uit staat, kunnen alleen gekoppelde accounts inloggen."
+      },
+      "enabled": {
+        "label": "Ingeschakeld",
+        "description": "Toon de inlogknop op de inlogpagina."
+      },
+      "default-role": {
+        "label": "Standaardrol"
+      },
+      "role-sync": "Met een groepen-claim en beheerdersgroep krijgen accounts die via de provider zijn aangemaakt bij elke login de rol Beheerder als ze in die groep zitten, en anders de standaardrol. De laatste beheerder verliest die rol nooit."
+    },
+    "discovery": {
+      "button": "Discovery testen",
+      "testing": "Testen…",
+      "ok": "De provider antwoordde en de issuer komt overeen met de authority.",
+      "issuer-mismatch": "De provider antwoordde, maar meldt issuer {{issuer}}. Gebruik die waarde als authority.",
+      "failed": "De provider is niet bereikbaar of gaf geen discovery-document terug.",
+      "authorization": "Autorisatie",
+      "token": "Token",
+      "userinfo": "Gebruikersinfo",
+      "end-session": "Uitloggen",
+      "none": "niet aangeboden",
+      "signing": "Ondertekeningsalgoritmen",
+      "signing-unsupported": "De provider ondertekent tokens alleen met {{algorithms}}, wat BoardGameTracker niet accepteert. Stel bij je identiteitsprovider een RS256- of ES256-ondertekeningssleutel in voor deze client.",
+      "certificate-expired": "Het ondertekeningscertificaat van de provider is verlopen op {{date}}. Inloggen werkt nog, maar vernieuw het ondertekeningscertificaat bij je identiteitsprovider."
+    },
+    "setup": {
+      "title": "Registreren bij de provider",
+      "description": "Sta deze redirect-URI's toe op de client die je bij je identiteitsprovider hebt aangemaakt.",
+      "public-url-warning": "Er is geen publieke URL ingesteld, dus de redirect-URI's worden afgeleid van de huidige aanvraag ({{url}}). Stel de publieke URL in onder Algemeen als dat niet het adres is dat mensen gebruiken.",
+      "redirect-uri": "Redirect-URI voor inloggen",
+      "link-redirect-uri": "Redirect-URI voor accountkoppeling",
+      "copy": "Kopiëren",
+      "post-logout-redirect-uri": "Redirect-URI na uitloggen",
+      "https-pending": "Beschikbaar zodra de publieke URL https gebruikt."
+    },
+    "validation": {
+      "display-name": "Een knoptekst is verplicht",
+      "authority": "Geef de https-URL van de provider op",
+      "client-id": "De client-ID is verplicht",
+      "scopes": "Minstens de scope openid is verplicht"
+    },
+    "create": "Provider aanmaken",
+    "save": "Provider opslaan",
+    "delete": "Provider verwijderen",
+    "delete-description": "Als je de provider verwijdert, worden ook alle accounts van de identiteitsprovider ontkoppeld. Mensen behouden hun lokale wachtwoord als ze er een hebben.",
+    "notifications": {
+      "saved": "Provider opgeslagen",
+      "save-failed": "Kon de provider niet opslaan",
+      "deleted": "Provider verwijderd",
+      "delete-failed": "Kon de provider niet verwijderen"
+    },
+    "https-required-locked": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL. Tot dan kun je de provider alleen uitschakelen."
+  },
+  "changedetection": {
+    "title": "changedetection.io",
+    "description": "Toont live prijs en voorraad voor spellen met een watch-id.",
+    "base-url": {
+      "label": "Basis-URL",
+      "placeholder": "https://changes.example.com",
+      "invalid": "Geef een geldige http(s)-URL op"
+    },
+    "api-key": {
+      "label": "API-sleutel",
+      "placeholder": "Voer je changedetection.io API-sleutel in",
+      "clear": "API-sleutel verwijderen",
+      "clear-hint": "Sla instellingen op om de verwijdering toe te passen."
+    },
+    "help-description": "De API-sleutel vind je onder Instellingen in je changedetection.io-instantie."
+  },
+  "integrations": {
+    "name": {
+      "bgg": "BoardGameGeek",
+      "changeDetection": "changedetection.io"
+    },
+    "status": {
+      "ok": "Verbonden",
+      "unauthorized": "Geweigerd",
+      "unreachable": "Onbereikbaar",
+      "rateLimited": "Te veel verzoeken",
+      "notConfigured": "Niet geconfigureerd"
+    },
+    "checked-at": "gecontroleerd om {{time}}",
+    "checking": "Controleren…",
+    "test": "Verbinding testen",
+    "testing": "Testen…",
+    "test-failed": "De verbindingstest kon niet worden uitgevoerd",
+    "save-failed": "Instellingen opgeslagen, maar {{name}} is niet verbonden",
+    "reason": {
+      "ok": "De verbinding werkt",
+      "not-configured": "Nog geen API-sleutel opgeslagen",
+      "unauthorized": "De API-sleutel werd geweigerd",
+      "unreachable": "De dienst kon niet worden bereikt",
+      "timeout": "De dienst antwoordde niet binnen 10 seconden",
+      "rate-limited": "Te veel verzoeken, probeer het over enkele minuten opnieuw",
+      "misconfigured": "De basis-URL of API-sleutel is ongeldig",
+      "unexpected-response": "De dienst gaf een onverwacht antwoord"
+    },
+    "test-hint": "Sla een API-sleutel op om de verbinding te testen",
+    "test-hint-change-detection": "Sla de basis-URL en een API-sleutel op om de verbinding te testen"
+  }
 }

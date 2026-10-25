@@ -48,7 +48,7 @@ describe("FormStrip", () => {
 		).toBeInTheDocument();
 	});
 
-	it("shows the streak pill and explains the letters, including both won", () => {
+	it("shows the streak pill and explains each letter in its own tooltip", () => {
 		render(
 			<FormStrip
 				sessions={newestFirst}
@@ -59,7 +59,8 @@ describe("FormStrip", () => {
 		);
 
 		expect(screen.getByText("Kathleen 2 in a row")).toBeInTheDocument();
-		expect(screen.getByText("M or K: who won · –: someone else · +: both won")).toBeInTheDocument();
+		expect(screen.getAllByTestId("form-tile").every((tile) => tile.getAttribute("title")?.includes(" · "))).toBe(true);
+		expect(screen.queryByText(/who won/)).not.toBeInTheDocument();
 	});
 
 	it("shows a hatched = for games on the same co-op team", () => {
@@ -81,12 +82,10 @@ describe("FormStrip", () => {
 		expect(tiles[2]).toHaveClass("bg-hatch");
 		expect(tiles[2]).toHaveAttribute("title", "Pandemic · same team, won");
 		expect(tiles[1]).toHaveAttribute("title", "Pandemic · same team, lost");
-		expect(
-			screen.getByText("M or K: who won · –: someone else · =: same co-op team, doesn't break or extend a streak"),
-		).toBeInTheDocument();
+		expect(screen.getByText("=: co-op")).toBeInTheDocument();
 	});
 
-	it("leaves out the both-won hint and the streak when they do not apply", () => {
+	it("leaves out the co-op legend when no session was co-op", () => {
 		render(
 			<FormStrip
 				sessions={[sessionRow({ sessionId: 1, outcome: "playerOne" })]}
@@ -96,7 +95,7 @@ describe("FormStrip", () => {
 			/>,
 		);
 
-		expect(screen.getByText("M or K: who won · –: someone else")).toBeInTheDocument();
+		expect(screen.queryByText("=: co-op")).not.toBeInTheDocument();
 		expect(screen.getByText("Mikhaël 3 in a row")).toBeInTheDocument();
 		expect(screen.getByText("Last session together", { exact: false })).toBeInTheDocument();
 	});

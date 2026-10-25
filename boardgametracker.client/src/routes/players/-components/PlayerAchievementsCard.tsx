@@ -29,7 +29,7 @@ const MilestoneTile = ({ milestone }: { milestone: Milestone }) => {
 			/>
 			<div className="min-w-0 flex-1">
 				<div className={cx("truncate", earned ? "text-white" : "text-white/50")}>{t(`badges:${shown.titleKey}`)}</div>
-				<div className="truncate text-xs text-white/50" title={goal}>
+				<div className="line-clamp-2 text-xs text-white/50" title={goal}>
 					{goal}
 				</div>
 			</div>

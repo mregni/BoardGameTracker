@@ -28,7 +28,7 @@ describe("TopPlayersCard", () => {
 		expect(first).toHaveAttribute("title", "top-players.row");
 		expect(within(first).getByText("1")).toBeInTheDocument();
 		expect(within(first).getByText("Mikhaël")).toBeInTheDocument();
-		expect(within(first).getByText("54")).toBeInTheDocument();
+		expect(within(first).getByText("top-players.wins").parentElement).toHaveTextContent("54 top-players.wins");
 		expect(within(rows[2]).getByRole("link")).toHaveAttribute("href", "/players/3");
 		expect(screen.getByText("top-players.hint")).toBeInTheDocument();
 	});
