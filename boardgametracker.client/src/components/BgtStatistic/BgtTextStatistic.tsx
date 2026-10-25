@@ -79,7 +79,7 @@ export const BgtTextStatistic = (props: Props) => {
 			</BgtText>
 			{caption && (
 				<span
-					className="mt-1 block text-xs break-words text-white/50 md:truncate"
+					className="mt-1 block text-xs break-words text-white/50"
 					title={typeof caption === "string" ? caption : undefined}
 				>
 					{caption}

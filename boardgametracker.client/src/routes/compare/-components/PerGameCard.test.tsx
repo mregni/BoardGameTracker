@@ -22,6 +22,7 @@ const rows = [
 		playerTwoWins: 7,
 		playerOneAverageScore: 71,
 		playerTwoAverageScore: 78.25,
+		scoredSessionCount: 4,
 		lastOutcome: "playerTwo",
 		lastPlayed: new Date(2026, 9, 13),
 	}),
@@ -83,6 +84,7 @@ describe("PerGameCard", () => {
 						playerOneWins: 1,
 						playerOneAverageScore: 6,
 						playerTwoAverageScore: 10,
+						scoredSessionCount: 1,
 					}),
 				]}
 				playerOne={playerOne}
@@ -94,6 +96,29 @@ describe("PerGameCard", () => {
 
 		expect(screen.getByTestId("per-game-row")).toHaveTextContent("1 session · 6 – 10");
 		expect(screen.getByTestId("per-game-row")).not.toHaveTextContent("avg");
+	});
+
+	it("leaves out an average of only two scored sessions", () => {
+		render(
+			<PerGameCard
+				games={[
+					gameRow({
+						gameId: 10,
+						sessionCount: 3,
+						playerOneAverageScore: 6,
+						playerTwoAverageScore: 10,
+						scoredSessionCount: 2,
+					}),
+				]}
+				playerOne={playerOne}
+				playerTwo={playerTwo}
+				dateFormat="dd-MM-yyyy"
+				uiLanguage="en-US"
+			/>,
+		);
+
+		const row = screen.getByTestId("per-game-row");
+		expect(row.querySelector("small")).toHaveTextContent(/^3 sessions$/);
 	});
 
 	it("shows counts, averages, other winners and the last result per game", () => {

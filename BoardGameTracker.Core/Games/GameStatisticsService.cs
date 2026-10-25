@@ -34,6 +34,7 @@ public class GameStatisticsService : IGameStatisticsService
             HighScore = await _gameStatisticsRepository.GetHighestScore(gameId, cancellationToken),
             AveragePlayTime = await _gameStatisticsRepository.GetAveragePlayTime(gameId, cancellationToken),
             AverageScore = await _gameStatisticsRepository.GetAverageScore(gameId, cancellationToken),
+            ScoredSessionCount = await _gameStatisticsRepository.CountScoredSessions(gameId, cancellationToken),
             LastPlayed = await _sessionRepository.FirstOrDefaultAsync(new LastPlayedDateSpec(gameId), cancellationToken),
             ExpansionCount = await _gameStatisticsRepository.GetExpansionCount(gameId, cancellationToken),
         };

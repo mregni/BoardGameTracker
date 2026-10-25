@@ -142,6 +142,7 @@ public class HeadToHeadCalculatorTests
             SameTeamWins = 2,
             PlayerOneAverageScore = 10,
             PlayerTwoAverageScore = 5,
+            ScoredSessionCount = 1,
             LastPlayed = Day,
             LastOutcome = CompareOutcome.SameTeam,
             LastTeamWon = true

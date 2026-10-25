@@ -7,6 +7,7 @@ public class GameStatistics
     public decimal? PricePerPlay { get; set; }
     public double? HighScore { get; set; }
     public double? AverageScore { get; set; }
+    public int ScoredSessionCount { get; set; }
     public MostWinningPlayer? MostWinsPlayer { get; set; }
     public double AveragePlayTime { get; set; }
     public DateTime? LastPlayed { get; set; }

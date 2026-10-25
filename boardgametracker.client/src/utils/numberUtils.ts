@@ -1,3 +1,5 @@
+export const MIN_SESSIONS_FOR_AVERAGE = 3;
+
 export type NumberValue = number | null | undefined;
 
 export const EMPTY_NUMBER = "-";

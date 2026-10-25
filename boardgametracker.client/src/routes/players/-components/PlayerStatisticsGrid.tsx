@@ -61,7 +61,7 @@ export const PlayerStatisticsGrid = (props: Props) => {
 						won: formatInteger(statistics.coopWinCount, settings?.uiLanguage),
 						lost: formatInteger(statistics.coopLossCount, settings?.uiLanguage),
 					})}
-					title={t("coop-won-lost")}
+					title={t("coop-record")}
 					textSize="4"
 				/>
 			)}

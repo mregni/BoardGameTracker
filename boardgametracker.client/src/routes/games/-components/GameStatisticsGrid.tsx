@@ -5,7 +5,13 @@ import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { useShortDuration } from "@/hooks/useShortDuration";
 import { getSettings } from "@/services/queries/settings";
 import { toRelative } from "@/utils/dateUtils";
-import { formatDecimal, formatPrice, formatRatio, type NumberValue } from "@/utils/numberUtils";
+import {
+	formatDecimal,
+	formatPrice,
+	formatRatio,
+	MIN_SESSIONS_FOR_AVERAGE,
+	type NumberValue,
+} from "@/utils/numberUtils";
 
 interface GameStats {
 	playCount: number;
@@ -13,6 +19,7 @@ interface GameStats {
 	pricePerPlay: number | null;
 	highScore: number | null;
 	averageScore: number | null;
+	scoredSessionCount: number;
 	averagePlayTime: number | null;
 	lastPlayed: string | null;
 	coopWinCount: number;
@@ -25,7 +32,7 @@ interface Props {
 	hasScoringResults?: boolean;
 }
 
-export const MIN_COOP_SESSIONS_FOR_RATE = 3;
+export const MIN_COOP_SESSIONS_FOR_RATE = MIN_SESSIONS_FOR_AVERAGE;
 
 export const statisticsGridColumns = (count: number) => {
 	if (count <= 2) return "md:grid-cols-2";
@@ -51,13 +58,14 @@ export const GameStatisticsGrid = (props: Props) => {
 
 	const coopPlayCount = gameStats.coopWinCount + gameStats.coopLossCount;
 	const showCoopRate = coopPlayCount >= MIN_COOP_SESSIONS_FOR_RATE;
+	const showScores = !hasScoringResults && gameStats.scoredSessionCount >= MIN_SESSIONS_FOR_AVERAGE;
 
 	const tileCount =
 		2 +
 		[
 			gameStats.pricePerPlay != null,
-			!hasScoringResults && gameStats.highScore != null,
-			!hasScoringResults && gameStats.averageScore != null,
+			showScores && gameStats.highScore != null,
+			showScores && gameStats.averageScore != null,
 			lastPlayedRelative !== null,
 			showCoopRate,
 		].filter(Boolean).length;
@@ -76,7 +84,7 @@ export const GameStatisticsGrid = (props: Props) => {
 				title={t("price-per-play")}
 				textSize="4"
 			/>
-			{!hasScoringResults && (
+			{showScores && (
 				<>
 					<BgtTextStatistic content={decimalOrNull(gameStats.highScore)} title={t("high-score")} textSize="4" />
 					<BgtTextStatistic content={decimalOrNull(gameStats.averageScore)} title={t("average-score")} textSize="4" />

@@ -1,6 +1,6 @@
 {
   "average-abreviation": "gem.",
-  "average-score": "Gemiddelde score",
+  "average-score": "Gemiddelde (alle spelers)",
   "high-score": "Hoogste score",
   "most-wins": "Meeste overwinningen",
   "play-count": "Sessies",
@@ -28,8 +28,8 @@
   "collection-value": "Waarde van de collectie",
   "average-price-paid-priced_one": "Gem. betaalde prijs · {{count}} spel met prijs",
   "average-price-paid-priced_other": "Gem. betaalde prijs · {{count}} spellen met prijs",
-  "coop-won-lost": "Co-op gewonnen · verloren",
-  "coop-results": "{{won}} · {{lost}}",
+  "coop-record": "Co-op",
+  "coop-results": "{{won}} gewonnen · {{lost}} verloren",
   "team-win-rate": "Winstpercentage team",
   "added": "Toegevoegd",
   "team-win-rate-count_one": "{{won}} van {{count}} co-opsessie",
