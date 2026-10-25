@@ -89,7 +89,7 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 			</div>
 			<div
 				aria-hidden="true"
-				className="hidden grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)_auto] gap-3 px-2 text-[11px] uppercase tracking-wider text-white/60 sm:grid"
+				className="hidden grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)_auto] gap-3 px-2 text-xs text-white/60 sm:grid"
 			>
 				<span />
 				<span>{t("per-game.game")}</span>

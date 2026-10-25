@@ -12,6 +12,7 @@ describe("PlayerAchievementsCard", () => {
 		expect(screen.getByText("badges:sessions.blue.title")).toBeInTheDocument();
 		expect(screen.getByText("badges:wins.green.title")).toBeInTheDocument();
 		expect(screen.getAllByText("achievements.next")).toHaveLength(2);
+		expect(screen.getAllByText("achievements.next")[0]).toHaveClass("line-clamp-2");
 		expect(screen.getByRole("img", { name: "2/4" })).toBeInTheDocument();
 		expect(screen.getByRole("img", { name: "0/4" })).toBeInTheDocument();
 	});

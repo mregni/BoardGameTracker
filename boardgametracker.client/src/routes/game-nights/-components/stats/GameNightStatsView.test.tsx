@@ -45,7 +45,6 @@ describe("GameNightStatsView", () => {
 
 		expect(await screen.findByText("stats.tiles.nights")).toBeInTheDocument();
 		expect(mocks.getStatistics).toHaveBeenCalledWith(GameNightStatisticsPeriod.ThisYear);
-		expect(screen.getByText("stats.logged")).toBeInTheDocument();
 		for (const name of [
 			"stats.winners.title",
 			"stats.history.title",
@@ -85,6 +84,18 @@ describe("GameNightStatsView", () => {
 		expect(screen.getByText("stats.empty.description")).toBeInTheDocument();
 		expect(screen.queryByText("stats.logged")).not.toBeInTheDocument();
 		expect(screen.queryByText("stats.tiles.nights")).not.toBeInTheDocument();
+	});
+
+	it("only explains the logged count when some nights have no sessions", async () => {
+		mocks.getStatistics.mockResolvedValue(buildStatistics({ totalNights: 4, nightsWithSessions: 4 }));
+		const { unmount } = renderView();
+		expect(await screen.findByText("stats.tiles.nights")).toBeInTheDocument();
+		expect(screen.queryByText("stats.logged")).not.toBeInTheDocument();
+		unmount();
+
+		mocks.getStatistics.mockResolvedValue(buildStatistics({ totalNights: 4, nightsWithSessions: 3 }));
+		renderView();
+		expect(await screen.findByText("stats.logged")).toBeInTheDocument();
 	});
 
 	it("still shows the logged hint when held nights have nothing to count", async () => {
