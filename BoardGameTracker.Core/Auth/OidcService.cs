@@ -160,9 +160,9 @@ public class OidcService : IOidcService
         var pending = TakePendingAuthorization(state, browserState, OidcFlow.Login, provider);
         var identity = await AuthenticateAsync(provider, code, issuer, pending);
 
-        var email = identity.Claims.GetValue(provider.EmailClaimType ?? "email");
-        var username = identity.Claims.GetValue(provider.UsernameClaimType ?? "preferred_username") ?? email;
-        var displayName = identity.Claims.GetValue(provider.DisplayNameClaimType ?? "name");
+        var email = ClaimText(identity.Claims, OidcClaimTypes.Email(provider));
+        var username = ClaimText(identity.Claims, OidcClaimTypes.Username(provider)) ?? email;
+        var displayName = ClaimText(identity.Claims, OidcClaimTypes.DisplayName(provider));
 
         var externalLogin = await FindExternalLoginAsync(provider, identity);
 
@@ -182,6 +182,12 @@ public class OidcService : IOidcService
                 externalLogin.UpdateProvider(provider.DisplayName);
             }
 
+            if (string.IsNullOrWhiteSpace(externalLogin.ProviderDisplayName))
+            {
+                externalLogin.UpdateProviderDisplayName(displayName ?? username);
+            }
+
+            await FillMissingProfileAsync(user, provider, displayName, email);
             await _roleReconciler.ReconcileAsync(user, provider, identity.Claims);
             _logger.LogInformation("Existing OIDC user {UserId} logged in via {Provider}", user.Id, provider.DisplayName);
         }
@@ -211,7 +217,8 @@ public class OidcService : IOidcService
         var user = await _userManager.FindByIdAsync(pending.UserId!)
             ?? throw new EntityNotFoundException(nameof(ApplicationUser), pending.UserId!);
         var identity = await AuthenticateAsync(provider, code, issuer, pending);
-        var displayName = identity.Claims.GetValue(provider.DisplayNameClaimType ?? "name");
+        var displayName = ClaimText(identity.Claims, OidcClaimTypes.DisplayName(provider))
+            ?? ClaimText(identity.Claims, OidcClaimTypes.Username(provider));
 
         if (await FindExternalLoginAsync(provider, identity) != null)
         {
@@ -369,6 +376,7 @@ public class OidcService : IOidcService
             throw new DomainException(Constants.Errors.OidcEmailAlreadyRegistered);
         }
 
+        displayName ??= userName;
         var user = new ApplicationUser(
             userName,
             email ?? $"{identity.Subject}{PlaceholderEmailDomain}",
@@ -386,6 +394,53 @@ public class OidcService : IOidcService
         _context.ExternalLogins.Add(new ExternalLogin(user.Id, provider.DisplayName, identity.Issuer, identity.Subject, displayName));
         _logger.LogInformation("Auto-provisioned user {UserId} from {Provider}", user.Id, provider.DisplayName);
         return user;
+    }
+
+    private async Task FillMissingProfileAsync(ApplicationUser user, OidcProvider provider, string? displayName, string? email)
+    {
+        if (user.PasswordHash == null && string.IsNullOrWhiteSpace(user.DisplayName))
+        {
+            user.UpdateDisplayName(displayName ?? user.UserName);
+            _logger.LogInformation("Filled in the empty display name of user {UserId} from {Provider}", user.Id, provider.DisplayName);
+        }
+
+        if (email == null || !IsPlaceholderEmail(user.Email))
+        {
+            return;
+        }
+
+        if (await FindLocalUserByEmailAsync(email) != null)
+        {
+            _logger.LogWarning("User {UserId} from {Provider} keeps a placeholder email because another account already uses the email from the provider", user.Id, provider.DisplayName);
+            return;
+        }
+
+        user.UpdateEmail(email);
+        _logger.LogInformation("Replaced the placeholder email of user {UserId} with the email from {Provider}", user.Id, provider.DisplayName);
+    }
+
+    private static bool IsPlaceholderEmail(string? email)
+    {
+        return email != null && email.EndsWith(PlaceholderEmailDomain, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string? ClaimText(OidcClaims claims, string claimType)
+    {
+        var value = claims.GetValue(claimType)?.Trim();
+        return string.IsNullOrEmpty(value) ? null : value;
+    }
+
+    private void LogReceivedClaimTypes(OidcProvider provider, OidcClaims idTokenClaims, OidcClaims? userInfoClaims)
+    {
+        _logger.LogDebug("Sign-in via {Provider} received id_token claim types [{IdTokenClaimTypes}] and user info claim types [{UserInfoClaimTypes}]",
+            provider.DisplayName, ClaimTypeList(idTokenClaims), userInfoClaims == null ? "none" : ClaimTypeList(userInfoClaims));
+    }
+
+    private static string ClaimTypeList(OidcClaims claims)
+    {
+        return string.Join(", ", claims.Names
+            .Order(StringComparer.Ordinal)
+            .Select(name => name.Replace("\r", string.Empty).Replace("\n", string.Empty)));
     }
 
     private async Task<ExternalLogin?> FindExternalLoginAsync(OidcProvider provider, OidcIdentity identity)
@@ -525,11 +580,12 @@ public class OidcService : IOidcService
 
         var validated = await _idTokenValidator.ValidateAsync(provider.Authority, metadata, provider.ClientId, idToken, pending.Nonce);
         var claims = validated.Claims;
+        OidcClaims? userInfo = null;
 
         var userInfoEndpoint = provider.UserInfoEndpoint ?? metadata.UserInfoEndpoint;
         if (!string.IsNullOrEmpty(userInfoEndpoint) && TokenValue(tokenResponse, "access_token") is { } accessToken)
         {
-            var userInfo = await FetchUserInfoAsync(client, provider, SecureEndpoint(userInfoEndpoint), accessToken);
+            userInfo = await FetchUserInfoAsync(client, provider, SecureEndpoint(userInfoEndpoint), accessToken);
             if (!string.Equals(userInfo.Subject, validated.Subject, StringComparison.Ordinal))
             {
                 _logger.LogError("User info from {Provider} describes a different subject than the id_token", provider.DisplayName);
@@ -538,6 +594,8 @@ public class OidcService : IOidcService
 
             claims = claims.MergeWith(userInfo);
         }
+
+        LogReceivedClaimTypes(provider, validated.Claims, userInfo);
 
         return new OidcIdentity(OidcIssuer.Normalize(metadata.Issuer), validated.Subject, claims, idToken, metadata.EndSessionEndpoint);
     }

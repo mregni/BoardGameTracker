@@ -71,7 +71,7 @@ Under **Settings → Single sign-on** the provider cannot be enabled while the *
 
 ### Configure the provider in BoardGameTracker
 
-An administrator fills in the provider under **Settings → Single sign-on**. Enter the authority (issuer URL) and press **Test discovery** before saving: it fetches the provider's discovery document and tells you whether the reported issuer matches what you typed. Most providers only need the button label, authority and client ID; the claim and endpoint fields are for providers that do not follow the defaults.
+An administrator fills in the provider under **Settings → Single sign-on**. Enter the authority (issuer URL) and press **Test discovery** before saving: it fetches the provider's discovery document and tells you whether the reported issuer matches what you typed. Most providers only need the button label, authority and client ID; the claim fields are filled in with the standard defaults and the endpoint fields are for providers that do not follow them.
 
 The same configuration is available through the API (`POST /api/admin/oidc-providers`, also in Swagger when `SWAGGER_ENABLED=true`):
 
@@ -90,7 +90,19 @@ The same configuration is available through the API (`POST /api/admin/oidc-provi
 
 - **authority** (the provider's address, not BoardGameTracker's) must use `https`; plain `http` is accepted only for a provider on a local address, and single sign-on itself still needs HTTPS as described [above](#https-is-required). It must match the `issuer` in the provider's discovery document. Pointing an existing provider at a different authority unlinks every account linked to it, because a user id from one issuer says nothing about the same id at another; users sign in with their password and link the provider again.
 - **autoProvisionUsers** creates an account with the default role on first sign-in. When the username or the email already belongs to a local account that is not linked, the sign-in is refused and the user is told to log in with the password first and link the provider under **Settings → Account → External logins**. Accounts are never linked automatically by username or email.
-- **rolesClaimType** / **adminGroupValue** / **defaultRole** map the provider's groups to a role: `Admin` when the named group is present in that claim, otherwise the default role (`User` or `Reader`). For accounts created through the provider this is applied again on every sign-in, so a group change at the provider takes effect at the next sign-in. Without a groups claim and admin group nothing is changed after the first sign-in. The last active admin is never demoted; the server logs a warning instead.
+- The claim fields start with these defaults, and an empty field uses its default as well:
+
+  | Field | API property | Default |
+  | --- | --- | --- |
+  | Username claim | `usernameClaimType` | `preferred_username` |
+  | Email claim | `emailClaimType` | `email` |
+  | Display name claim | `displayNameClaimType` | `name` |
+  | Avatar claim | `pictureClaimType` | `picture` |
+  | Groups/roles claim | `rolesClaimType` | `groups` |
+  | Admin group value | `adminGroupValue` | `bgt-admins` |
+
+- **rolesClaimType** / **adminGroupValue** / **defaultRole** map the provider's groups to a role: `Admin` when the named group is present in that claim, otherwise the default role (`User` or `Reader`). With the defaults, members of a group named `bgt-admins` in the `groups` claim become Admin, so create that group at your provider (or set your own group name) and make sure the provider sends the groups claim. For accounts created through the provider this is applied again on every sign-in, so a group change at the provider takes effect at the next sign-in. The last active admin is never demoted; the server logs a warning instead.
+- When the provider sends no display name, the username becomes the display name; when it sends no email, the account gets a placeholder address ending in `@sso.external`. At every later sign-in an empty display name and the placeholder email are filled in from the provider, but only when no other account uses that email. Values a user or admin set themselves are never overwritten, and local accounts that were linked to the provider keep their own profile. With debug logging enabled, the server logs which claim types (names only, no values) arrived in the id_token and the userinfo response, which helps when a claim seems to be missing.
 - A role that an admin sets under **Settings → Account** is a local override and is no longer changed by the provider. **Access → Let the identity provider manage the role** hands it back. Local accounts that were linked to the provider later keep their local role.
 - **displayName** is the label of the sign-in button and of the linked account under **Settings → Account**. It can be changed at any time; links are stored per issuer and subject, so linked accounts keep working and the redirect URIs stay the same.
 - Only one provider can be configured; creating a second one is refused. The login page shows one *Continue with …* button. Switch **Enabled** off to hide the button without losing the configuration.

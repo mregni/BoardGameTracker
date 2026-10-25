@@ -35,11 +35,6 @@ public class OidcRoleReconciler : IOidcRoleReconciler
             return;
         }
 
-        if (!IsRoleMappingConfigured(provider))
-        {
-            return;
-        }
-
         var target = TargetRole(provider, claims);
         await AdminRoleGate.Lock.WaitAsync();
         try
@@ -75,15 +70,10 @@ public class OidcRoleReconciler : IOidcRoleReconciler
         }
     }
 
-    public static bool IsRoleMappingConfigured(OidcProvider provider)
-    {
-        return !string.IsNullOrWhiteSpace(provider.RolesClaimType) && !string.IsNullOrWhiteSpace(provider.AdminGroupValue);
-    }
-
     public static string TargetRole(OidcProvider provider, OidcClaims claims)
     {
-        if (IsRoleMappingConfigured(provider)
-            && claims.GetValues(provider.RolesClaimType!).Any(g => string.Equals(g, provider.AdminGroupValue!.Trim(), StringComparison.OrdinalIgnoreCase)))
+        var adminGroup = OidcClaimTypes.AdminGroup(provider);
+        if (claims.GetValues(OidcClaimTypes.Roles(provider)).Any(g => string.Equals(g, adminGroup, StringComparison.OrdinalIgnoreCase)))
         {
             return Constants.AuthRoles.Admin;
         }

@@ -68,12 +68,26 @@ public class OidcRoleReconcilerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task AssignInitialRoleAsync_ShouldUseTheDefaultRole_WhenNoRoleMappingIsConfigured()
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("", "")]
+    [InlineData(" ", "  ")]
+    public async Task AssignInitialRoleAsync_ShouldUseTheDefaultGroupsClaimAndAdminGroup_WhenTheyAreEmpty(string? rolesClaim, string? adminGroup)
     {
         var user = new ApplicationUser("jane", "jane@example.com") { Id = "user-1" };
 
-        await _reconciler.AssignInitialRoleAsync(user, Provider(rolesClaim: null, defaultRole: "Reader"), Claims("bgt-admins"));
+        await _reconciler.AssignInitialRoleAsync(user, Provider(rolesClaim, adminGroup, "Reader"), Claims("bgt-admins"));
+
+        _userManagerMock.Verify(x => x.AddToRoleAsync(user, "Admin"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AssignInitialRoleAsync_ShouldUseTheDefaultRole_WhenTheUserIsNotInTheConfiguredAdminGroup()
+    {
+        var user = new ApplicationUser("jane", "jane@example.com") { Id = "user-1" };
+
+        await _reconciler.AssignInitialRoleAsync(user, Provider(" roles ", " game-admins ", "Reader"), OidcClaims.Parse("""{"sub":"s","roles":["bgt-admins"]}"""));
 
         _userManagerMock.Verify(x => x.AddToRoleAsync(user, "Reader"), Times.Once);
         VerifyNoOtherCalls();
@@ -174,13 +188,35 @@ public class OidcRoleReconcilerTests
     [Theory]
     [InlineData(null, "bgt-admins")]
     [InlineData("groups", null)]
-    [InlineData(" ", "bgt-admins")]
-    public async Task ReconcileAsync_ShouldDoNothing_WhenTheRoleMappingIsNotConfigured(string? rolesClaim, string? adminGroup)
+    [InlineData(" ", "")]
+    public async Task ReconcileAsync_ShouldPromoteWithTheDefaults_WhenTheGroupsClaimOrAdminGroupIsEmpty(string? rolesClaim, string? adminGroup)
     {
         var user = IdpUser();
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
 
-        await _reconciler.ReconcileAsync(user, Provider(rolesClaim, adminGroup), Claims());
+        await _reconciler.ReconcileAsync(user, Provider(rolesClaim, adminGroup), Claims("bgt-admins"));
 
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(user, "Admin"), Times.Once);
+        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(user, It.Is<IEnumerable<string>>(r => r.SequenceEqual(new[] { "User" }))), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ReconcileAsync_ShouldPromoteAnIdentityProviderManagedUser_OnceTheAdminGroupIsConfigured()
+    {
+        var user = IdpUser();
+        var claims = Claims("staff", "game-admins");
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
+
+        await _reconciler.ReconcileAsync(user, Provider(adminGroup: "bgt-admins"), claims);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(user, "Admin"), Times.Never);
+
+        await _reconciler.ReconcileAsync(user, Provider(adminGroup: "game-admins"), claims);
+
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Exactly(2));
+        _userManagerMock.Verify(x => x.AddToRoleAsync(user, "Admin"), Times.Once);
+        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(user, It.Is<IEnumerable<string>>(r => r.SequenceEqual(new[] { "User" }))), Times.Once);
         VerifyNoOtherCalls();
     }
 

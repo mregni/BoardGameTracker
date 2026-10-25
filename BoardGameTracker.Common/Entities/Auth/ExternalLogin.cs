@@ -34,6 +34,11 @@ public class ExternalLogin
         Provider = provider;
     }
 
+    public void UpdateProviderDisplayName(string? providerDisplayName)
+    {
+        ProviderDisplayName = providerDisplayName;
+    }
+
     public void UpdateIssuer(string issuer)
     {
         Issuer = issuer;

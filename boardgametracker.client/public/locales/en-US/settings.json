@@ -383,8 +383,7 @@
         "label": "Groups/roles claim"
       },
       "admin-group": {
-        "label": "Admin group value",
-        "placeholder": "bgt-admins"
+        "label": "Admin group value"
       },
       "auto-provision": {
         "label": "Create accounts on first sign-in",
@@ -397,7 +396,9 @@
       "default-role": {
         "label": "Default role"
       },
-      "role-sync": "With a groups claim and admin group set, accounts created through the provider get Admin when they are in that group and the default role otherwise, on every sign-in. The last admin is never demoted."
+      "role-sync": "With a groups claim and admin group set, accounts created through the provider get Admin when they are in that group and the default role otherwise, on every sign-in. The last admin is never demoted.",
+      "role-sync-defaults": "An empty groups claim or admin group falls back to the default ({{claim}} and {{group}}), so role sync stays on.",
+      "default-value": "Default: {{value}}"
     },
     "discovery": {
       "button": "Test discovery",

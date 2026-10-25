@@ -383,8 +383,7 @@
         "label": "Claim voor groepen/rollen"
       },
       "admin-group": {
-        "label": "Waarde voor beheerdersgroep",
-        "placeholder": "bgt-admins"
+        "label": "Waarde voor beheerdersgroep"
       },
       "auto-provision": {
         "label": "Accounts aanmaken bij eerste keer inloggen",
@@ -397,7 +396,9 @@
       "default-role": {
         "label": "Standaardrol"
       },
-      "role-sync": "Met een groepen-claim en beheerdersgroep krijgen accounts die via de provider zijn aangemaakt bij elke login de rol Beheerder als ze in die groep zitten, en anders de standaardrol. De laatste beheerder verliest die rol nooit."
+      "role-sync": "Met een groepen-claim en beheerdersgroep krijgen accounts die via de provider zijn aangemaakt bij elke login de rol Beheerder als ze in die groep zitten, en anders de standaardrol. De laatste beheerder verliest die rol nooit.",
+      "role-sync-defaults": "Een lege groepen-claim of beheerdersgroep valt terug op de standaardwaarde ({{claim}} en {{group}}), dus de rolsynchronisatie blijft actief.",
+      "default-value": "Standaard: {{value}}"
     },
     "discovery": {
       "button": "Discovery testen",
