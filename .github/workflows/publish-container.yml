@@ -50,7 +50,7 @@ jobs:
           fetch-depth: 0
 
       - name: Git Semantic Version
-        uses: PaulHatch/semantic-version@502226b17e3e242e4befd0a45690fcbb27dd1373 # v6.0.3
+        uses: PaulHatch/semantic-version@79147b94804704a613626766998afe7b2bd0bb47 # v6.0.5
         id: versioning
         with:
           major_pattern: "(MAJOR)"
@@ -416,7 +416,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download SBOM
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: sbom-${{ needs.version.outputs.version }}
 
