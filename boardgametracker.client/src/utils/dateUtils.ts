@@ -95,8 +95,7 @@ export const toDisplay = (date: Date | string | undefined | null, dateFormat: st
 	}
 
 	const locale = getDateFnsLocale(uiLanguage);
-	const dateFnsFormat = convertDateFormat(dateFormat);
-	return format(dateObj, dateFnsFormat, { locale });
+	return format(dateObj, normalizeDateFnsFormat(dateFormat, DEFAULT_DATE_FORMAT), { locale });
 };
 
 export const toDisplayDateTime = (
@@ -116,8 +115,8 @@ export const toDisplayDateTime = (
 	}
 
 	const locale = getDateFnsLocale(uiLanguage);
-	const dateFnsDateFormat = convertDateFormat(dateFormat);
-	const combinedFormat = `${dateFnsDateFormat} ${timeFormat}`;
+	const dateFnsDateFormat = normalizeDateFnsFormat(dateFormat, DEFAULT_DATE_FORMAT);
+	const combinedFormat = `${dateFnsDateFormat} ${normalizeDateFnsFormat(timeFormat, DEFAULT_TIME_FORMAT)}`;
 
 	return format(dateObj, combinedFormat, { locale });
 };

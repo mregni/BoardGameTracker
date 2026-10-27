@@ -1,5 +1,4 @@
 import { cx } from "class-variance-authority";
-import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import MapPin from "@/assets/icons/map-pin.svg?react";
 import Play from "@/assets/icons/play.svg?react";
@@ -11,7 +10,7 @@ import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
 import type { GameNight, Settings } from "@/models";
-import { toDisplay } from "@/utils/dateUtils";
+import { toDisplay, toDisplayTime } from "@/utils/dateUtils";
 import { relativeDay } from "@/utils/relativeDay";
 import { isInsidePlayWindow, isNightInProgress } from "../-utils/gameNightPlay";
 import { NightEndAction } from "./NightEndAction";
@@ -83,7 +82,7 @@ export const GameNightDetailHeader = (props: Props) => {
 								: t(isPlanned ? "plan.starts" : "card.when", {
 										when: relativeDay(gameNight.startDate, settings.uiLanguage),
 										date: toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage),
-										time: format(gameNight.startDate, settings.timeFormat),
+										time: toDisplayTime(gameNight.startDate, settings.timeFormat, settings.uiLanguage),
 									})}
 					</span>
 					<BgtHeading size="5" className="wrap-anywhere">

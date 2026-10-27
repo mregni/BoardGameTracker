@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import MapPin from "@/assets/icons/map-pin.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
@@ -6,7 +5,7 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { GameNight, Settings } from "@/models";
-import { toDisplay } from "@/utils/dateUtils";
+import { toDisplay, toDisplayTime } from "@/utils/dateUtils";
 import { relativeDay } from "@/utils/relativeDay";
 
 interface Props {
@@ -27,7 +26,7 @@ export const RsvpEventDetails = ({ gameNight, settings }: Props) => {
 					<span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-indigo-300 tabular-nums first-letter:uppercase">
 						{t("game-nights:card.when", {
 							when: relativeDay(startDate, uiLanguage),
-							time: format(startDate, settings.timeFormat),
+							time: toDisplayTime(startDate, settings.timeFormat, uiLanguage),
 						})}
 					</span>
 					<BgtHeading as="h1" size="6" className="wrap-anywhere">

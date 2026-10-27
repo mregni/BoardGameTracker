@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import { AvatarChip } from "@/components/GameNight/AvatarChip";
 import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
 import type { DashboardGameNight } from "@/models";
 import { isNightInProgress } from "@/routes/game-nights/-utils/gameNightPlay";
+import { toDisplayTime } from "@/utils/dateUtils";
 import { relativeDay } from "@/utils/relativeDay";
 import { cardLinkClasses, dashboardLinkClasses, pillVariants } from "./dashboardStyles";
 
@@ -65,7 +65,7 @@ export const NextGameNightCard = (props: Props) => {
 					<div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm">
 						<span className="text-white/60">
 							{t("night.details", {
-								time: format(start, timeFormat),
+								time: toDisplayTime(start, timeFormat, uiLanguage),
 								location: gameNight.locationName,
 								host: gameNight.hostName,
 							})}
