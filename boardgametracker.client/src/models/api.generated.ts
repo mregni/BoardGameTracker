@@ -4716,43 +4716,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/settings/environment": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["UIEnvironmentDto"];
-                        "application/json": components["schemas"]["UIEnvironmentDto"];
-                        "text/json": components["schemas"]["UIEnvironmentDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/settings/languages": {
         parameters: {
             query?: never;
@@ -6019,8 +5982,6 @@ export interface components {
             /** Format: double */
             totalPlayedTime: number;
         };
-        /** @enum {string} */
-        LogEventLevel: "verbose" | "debug" | "information" | "warning" | "error" | "fatal";
         LoginRequest: {
             username: string;
             password: string;
@@ -6534,14 +6495,6 @@ export interface components {
         };
         /** @enum {string} */
         Trend: "up" | "down" | "equal";
-        UIEnvironmentDto: {
-            enableStatistics: boolean;
-            logLevel: components["schemas"]["LogEventLevel"];
-            environmentName: string;
-            /** Format: int32 */
-            port: number;
-            version: string;
-        };
         UIResourceDto: {
             timeFormat: string;
             dateFormat: string;

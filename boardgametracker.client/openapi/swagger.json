@@ -5408,35 +5408,6 @@
         }
       }
     },
-    "/api/settings/environment": {
-      "get": {
-        "tags": [
-          "Settings"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/UIEnvironmentDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UIEnvironmentDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UIEnvironmentDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/settings/languages": {
       "get": {
         "tags": [
@@ -8373,17 +8344,6 @@
         },
         "additionalProperties": false
       },
-      "LogEventLevel": {
-        "enum": [
-          "verbose",
-          "debug",
-          "information",
-          "warning",
-          "error",
-          "fatal"
-        ],
-        "type": "string"
-      },
       "LoginRequest": {
         "type": "object",
         "properties": {
@@ -9803,28 +9763,6 @@
           "equal"
         ],
         "type": "string"
-      },
-      "UIEnvironmentDto": {
-        "type": "object",
-        "properties": {
-          "enableStatistics": {
-            "type": "boolean"
-          },
-          "logLevel": {
-            "$ref": "#/components/schemas/LogEventLevel"
-          },
-          "environmentName": {
-            "type": "string"
-          },
-          "port": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "version": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
       },
       "UIResourceDto": {
         "required": [

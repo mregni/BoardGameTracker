@@ -71,19 +71,6 @@ public class AuthorizationMatrixTests
     }
 
     [Fact]
-    public async Task Admin_ShouldReadEnvironment_WhileUserGets403()
-    {
-        using var admin = await _fixture.CreateAdminClientAsync();
-        using var user = await _fixture.CreateClientAsAsync("user");
-
-        var adminResponse = await admin.GetAsync("/api/settings/environment");
-        var userResponse = await user.GetAsync("/api/settings/environment");
-
-        adminResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        userResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
     public async Task UnknownApiRoute_ShouldGet404_NotTheSpaFallback()
     {
         using var admin = await _fixture.CreateAdminClientAsync();
