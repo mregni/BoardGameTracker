@@ -90,7 +90,7 @@ public class Game : BaseGame
     {
         var loan = new Loan(Id, playerId, loanDate);
         loan.SetDueDate(dueDate);
-        EnsureFree(loanDate, dueDate);
+        EnsureFree(loanDate, null);
 
         Loans.Add(loan);
         return loan;
