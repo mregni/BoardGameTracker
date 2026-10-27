@@ -12,6 +12,7 @@ public class UpdateCheckBackgroundService : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<UpdateCheckBackgroundService> _logger;
     private readonly TimeSpan _defaultInterval = TimeSpan.FromHours(24);
+    private const int MaxIntervalHours = 720;
 
     public UpdateCheckBackgroundService(
         IServiceProvider serviceProvider,
@@ -80,7 +81,7 @@ public class UpdateCheckBackgroundService : BackgroundService
 
         if (hours > 0)
         {
-            return TimeSpan.FromHours(hours);
+            return TimeSpan.FromHours(Math.Min(hours, MaxIntervalHours));
         }
 
         await configRepository.SetConfigValueAsync(UpdateConfig.CheckIntervalHours, 24);

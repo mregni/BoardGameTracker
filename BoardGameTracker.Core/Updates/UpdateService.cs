@@ -23,6 +23,7 @@ public partial class UpdateService : IUpdateService
 
     private const string DOCKER_OWNER = "uping";
     private const string DOCKER_REPO = "boardgametracker";
+    private const int MaxTagPages = 10;
 
     public UpdateService(
         IConfigRepository configRepository,
@@ -71,15 +72,7 @@ public partial class UpdateService : IUpdateService
             _logger.LogInformation("Current version: {Version}, Update track: {Track}",
                 currentVersion, updateTrack);
 
-            var response = await _dockerHubApi.GetTags(DOCKER_OWNER, DOCKER_REPO);
-            if (!response.IsSuccessStatusCode || response.Content == null)
-            {
-                throw new InvalidOperationException($"Docker Hub API returned status {response.StatusCode}");
-            }
-
-            var semverTags = response.Content.Results
-                .Where(t => IsSemanticVersion(t.Name))
-                .ToList();
+            var semverTags = await GetSemverTagsAsync();
 
             if (semverTags.Count == 0)
             {
@@ -89,15 +82,10 @@ public partial class UpdateService : IUpdateService
                 return;
             }
 
-            var latestVersion = isBetaTrack
-                ? semverTags
-                    .Where(t => IsBetaVersion(t.Name))
-                    .OrderByDescending(t => ParseVersion(t.Name))
-                    .FirstOrDefault()?.Name
-                : semverTags
-                    .Where(t => !IsBetaVersion(t.Name))
-                    .OrderByDescending(t => ParseVersion(t.Name))
-                    .FirstOrDefault()?.Name;
+            var latestVersion = semverTags
+                .Where(t => isBetaTrack || !IsBetaVersion(t))
+                .OrderByDescending(VersionKey)
+                .FirstOrDefault();
 
             if (latestVersion == null)
             {
@@ -133,6 +121,27 @@ public partial class UpdateService : IUpdateService
         }
     }
 
+    private async Task<List<string>> GetSemverTagsAsync()
+    {
+        var tags = new List<string>();
+        for (var page = 1; page <= MaxTagPages; page++)
+        {
+            var response = await _dockerHubApi.GetTags(DOCKER_OWNER, DOCKER_REPO, page);
+            if (!response.IsSuccessStatusCode || response.Content == null)
+            {
+                throw new InvalidOperationException($"Docker Hub API returned status {response.StatusCode}");
+            }
+
+            tags.AddRange(response.Content.Results.Select(t => t.Name).Where(IsSemanticVersion));
+            if (string.IsNullOrEmpty(response.Content.Next))
+            {
+                break;
+            }
+        }
+
+        return tags;
+    }
+
     public string GetCurrentVersion()
     {
         var version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -153,6 +162,11 @@ public partial class UpdateService : IUpdateService
         return Version.TryParse(versionOnly, out var version) ? version : new Version(0, 0, 0);
     }
 
+    private static (Version Version, bool Stable) VersionKey(string versionString)
+    {
+        return (ParseVersion(versionString), !versionString.Contains('-'));
+    }
+
     private static bool IsBetaVersion(string versionString)
     {
         return versionString.Contains("-beta", StringComparison.OrdinalIgnoreCase);
@@ -160,8 +174,6 @@ public partial class UpdateService : IUpdateService
 
     private static bool CompareVersions(string current, string latest)
     {
-        var currentVer = ParseVersion(current);
-        var latestVer = ParseVersion(latest);
-        return latestVer > currentVer;
+        return VersionKey(latest).CompareTo(VersionKey(current)) > 0;
     }
 }
