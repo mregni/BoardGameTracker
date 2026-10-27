@@ -162,7 +162,6 @@
   },
   "charts": {
     "player-count": "Sessies per aantal spelers",
-    "games-week-day": "Partijen per dag van de week",
     "scoring": "Scores per partij/speler",
     "top-scoring": {
       "top-score": "Topscore",

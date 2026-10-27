@@ -162,7 +162,6 @@
   },
   "charts": {
     "player-count": "Partidas por número de jugadores",
-    "games-week-day": "Partidas por día de la semana",
     "scoring": "Puntuación por partida/jugador",
     "top-scoring": {
       "top-score": "Puntuación máxima",

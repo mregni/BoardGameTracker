@@ -1,6 +1,5 @@
 import {
 	isValid as dateFnsIsValid,
-	differenceInDays,
 	differenceInMonths,
 	format,
 	formatDistance,
@@ -191,14 +190,6 @@ export const safeParseDate = (date: Date | string | undefined): Date | undefined
 
 	const parsed = parseISO(date);
 	return dateFnsIsValid(parsed) ? parsed : undefined;
-};
-
-export const getDaysSincePurchase = (date: Date | null): number => {
-	if (!date || !dateFnsIsValid(date)) {
-		return 0;
-	}
-
-	return differenceInDays(new Date(), date);
 };
 
 const toValidDate = (date: Date | string | undefined | null): Date | null => {

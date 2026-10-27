@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { AuthStatus, LoginRequest, OidcProvider, User } from "@/models/Auth/Auth";
+import type { AuthStatus, LoginRequest, User } from "@/models/Auth/Auth";
 import { getAuthStatusCall, loginCall, logoutCall } from "@/services/authService";
 import { announceSessionChange } from "@/utils/sessionSync";
 
@@ -23,7 +23,6 @@ interface AuthState {
 	isAuthenticated: boolean;
 	isLoading: boolean;
 	authStatus: AuthStatus | null;
-	oidcProvider: OidcProvider | null;
 
 	login: (request: LoginRequest) => Promise<void>;
 	logout: () => Promise<void>;
@@ -44,7 +43,6 @@ export const useAuth = create<AuthState>()((set, get) => ({
 	...signedOut,
 	isLoading: false,
 	authStatus: null,
-	oidcProvider: null,
 
 	login: async (request: LoginRequest) => {
 		set({ isLoading: true });

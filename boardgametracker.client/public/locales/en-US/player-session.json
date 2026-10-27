@@ -39,8 +39,7 @@
       "none": "No location"
     },
     "comment": {
-      "label": "Comment",
-      "sub-label": "Extra comment on the session."
+      "label": "Comment"
     }
   },
   "update": {
