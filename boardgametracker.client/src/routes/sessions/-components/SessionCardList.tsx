@@ -1,12 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
-import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { useShortDuration } from "@/hooks/useShortDuration";
 import type { Game, Player, Session } from "@/models";
-import { toDisplay } from "@/utils/dateUtils";
+import { toDisplay, toDisplayTime } from "@/utils/dateUtils";
 import { SessionPlayerPills } from "./SessionPlayerPills";
 
 interface Props {
@@ -65,8 +64,8 @@ export const SessionCardList = (props: Props) => {
 									</Link>
 								)}
 								<span className="text-sm tabular-nums text-white/60">
-									{toDisplay(session.start, dateFormat, uiLanguage)} · {format(new Date(session.start), timeFormat)} ·{" "}
-									{shortDuration(session.minutes)}
+									{toDisplay(session.start, dateFormat, uiLanguage)} ·{" "}
+									{toDisplayTime(session.start, timeFormat, uiLanguage)} · {shortDuration(session.minutes)}
 								</span>
 							</div>
 							{canWrite && (

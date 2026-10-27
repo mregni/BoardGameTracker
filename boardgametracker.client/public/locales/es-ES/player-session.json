@@ -39,8 +39,7 @@
       "none": "Sin ubicación"
     },
     "comment": {
-      "label": "Comentario",
-      "sub-label": "Comentario adicional sobre la partida."
+      "label": "Comentario"
     }
   },
   "update": {

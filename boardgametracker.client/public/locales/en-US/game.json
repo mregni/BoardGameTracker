@@ -162,7 +162,6 @@
   },
   "charts": {
     "player-count": "Sessions by player count",
-    "games-week-day": "Games by day of the week",
     "scoring": "Scoring per game/player",
     "top-scoring": {
       "top-score": "Top score",

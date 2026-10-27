@@ -139,6 +139,12 @@ describe("dateUtils", () => {
 		it("should return empty string for invalid date", () => {
 			expect(toDisplay("invalid-date", "DD/MM/YYYY", "en")).toBe("");
 		});
+
+		it("should fall back to the default date format when the format is invalid", () => {
+			const date = new Date("2024-03-20T14:30:00");
+			expect(toDisplay(date, "DD/MM/YYYY QQQQQQ A", "en")).toBe("20-03-2024");
+			expect(toDisplay(date, "", "en")).toBe("20-03-2024");
+		});
 	});
 
 	describe("toDisplayDateTime", () => {
@@ -163,6 +169,12 @@ describe("dateUtils", () => {
 		it("should return empty string for invalid date", () => {
 			expect(toDisplayDateTime("invalid-date", "DD/MM/YYYY", "HH:mm", "en")).toBe("");
 		});
+
+		it("should fall back to the default formats when the formats are invalid", () => {
+			const date = new Date("2024-03-20T14:45:30");
+			expect(toDisplayDateTime(date, "DD/MM/YYYY", "h:mm A", "en")).toBe("20/03/2024 14:45");
+			expect(toDisplayDateTime(date, "A", "HH:mm", "en")).toBe("20-03-2024 14:45");
+		});
 	});
 
 	describe("toDisplayTime", () => {
@@ -177,6 +189,7 @@ describe("dateUtils", () => {
 
 		it("should fall back to the default time format when the format is invalid", () => {
 			expect(toDisplayTime("2024-03-20T14:45:30", "", "en")).toBe("14:45");
+			expect(toDisplayTime("2024-03-20T14:45:30", "h:mm A", "en")).toBe("14:45");
 		});
 
 		it("should return empty string for an invalid date", () => {

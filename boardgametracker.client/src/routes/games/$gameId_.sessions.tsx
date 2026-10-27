@@ -1,6 +1,5 @@
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { format } from "date-fns";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
@@ -17,7 +16,7 @@ import type { Session } from "@/models";
 import { getGame, getGameSessions } from "@/services/queries/games";
 import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
-import { toDisplay } from "@/utils/dateUtils";
+import { toDisplay, toDisplayTime } from "@/utils/dateUtils";
 import { gameIdParamSchema } from "@/utils/routeSchemas";
 import { useBack } from "../-hooks/useBack";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
@@ -66,7 +65,7 @@ function RouteComponent() {
 						},
 						{
 							accessorKey: "1",
-							cell: ({ row }) => format(new Date(row.original.start), settings.timeFormat),
+							cell: ({ row }) => toDisplayTime(row.original.start, settings.timeFormat, settings.uiLanguage),
 							header: t("time"),
 						},
 						{

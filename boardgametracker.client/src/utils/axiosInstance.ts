@@ -84,23 +84,6 @@ export const axiosInstance = axios.create({
 	},
 });
 
-let isRefreshing = false;
-let failedQueue: Array<{
-	resolve: (value: unknown) => void;
-	reject: (reason: unknown) => void;
-}> = [];
-
-function processQueue(error: unknown, token: string | null = null) {
-	for (const promise of failedQueue) {
-		if (error) {
-			promise.reject(error);
-		} else {
-			promise.resolve(token);
-		}
-	}
-	failedQueue = [];
-}
-
 const isApiRequest = (url?: string) => {
 	if (!url) {
 		return true;
@@ -129,11 +112,8 @@ async function handleTokenRefresh(
 	error: AxiosError,
 ): Promise<AxiosResponse> {
 	(originalRequest as { _retry?: boolean })._retry = true;
-	isRefreshing = true;
 
 	if (!useAuth.getState().accessToken) {
-		isRefreshing = false;
-		processQueue(error, null);
 		throw classifyError(error);
 	}
 
@@ -144,16 +124,12 @@ async function handleTokenRefresh(
 			originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 		}
 
-		processQueue(null, newAccessToken);
 		return axiosInstance(originalRequest);
-	} catch (refreshError) {
-		processQueue(refreshError, null);
+	} catch {
 		clearAuthState();
 		const currentPath = globalThis.location.pathname + globalThis.location.search;
 		globalThis.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
 		throw classifyError(error);
-	} finally {
-		isRefreshing = false;
 	}
 }
 
@@ -180,17 +156,6 @@ axiosInstance.interceptors.response.use(
 		const originalRequest = error.config;
 
 		if (originalRequest && isUnauthorizedRetryable(error)) {
-			if (isRefreshing) {
-				return new Promise((resolve, reject) => {
-					failedQueue.push({ resolve, reject });
-				}).then((token) => {
-					if (originalRequest.headers) {
-						originalRequest.headers.Authorization = `Bearer ${token}`;
-					}
-					return axiosInstance(originalRequest);
-				});
-			}
-
 			return handleTokenRefresh(originalRequest, error);
 		}
 

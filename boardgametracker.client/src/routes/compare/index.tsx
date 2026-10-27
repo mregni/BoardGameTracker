@@ -27,8 +27,8 @@ import { TogetherTiles } from "./-components/TogetherTiles";
 import { useCompareData } from "./-hooks/useCompareData";
 
 const compareSearchSchema = z.object({
-	left: z.number().optional(),
-	right: z.number().optional(),
+	left: z.number().optional().catch(undefined),
+	right: z.number().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/compare/")({

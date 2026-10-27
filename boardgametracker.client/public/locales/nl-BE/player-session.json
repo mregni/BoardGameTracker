@@ -39,8 +39,7 @@
       "none": "Geen locatie"
     },
     "comment": {
-      "label": "Opmerking",
-      "sub-label": "Extra opmerking over de sessie."
+      "label": "Opmerking"
     }
   },
   "update": {

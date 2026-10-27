@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import ClockIcon from "@/assets/icons/clock.svg?react";
 import HistoryIcon from "@/assets/icons/history.svg?react";
@@ -7,7 +6,7 @@ import UsersIcon from "@/assets/icons/users.svg?react";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { useShortDuration } from "@/hooks/useShortDuration";
 import type { GameNightRecord, GameNightRecords } from "@/models";
-import { toDisplay } from "@/utils/dateUtils";
+import { toDisplay, toDisplayTime } from "@/utils/dateUtils";
 import { StatFact, StatsCard, StatsEmpty, type StatsLookup } from "./StatsParts";
 
 interface Props {
@@ -68,7 +67,7 @@ export const NightRecordsCard = ({ records, lookup }: Props) => {
 						<StatFact
 							icon={<HistoryIcon />}
 							title={t("stats.records.latest-finish")}
-							value={format(latestFinish.at, lookup.timeFormat)}
+							value={toDisplayTime(latestFinish.at, lookup.timeFormat, lookup.uiLanguage)}
 							hint={t("stats.records.finish", {
 								title: latestFinish.title,
 								game: latestGame ?? "",

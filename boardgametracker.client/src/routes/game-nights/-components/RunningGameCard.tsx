@@ -1,4 +1,4 @@
-import { differenceInMinutes, format } from "date-fns";
+import { differenceInMinutes } from "date-fns";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import XIcon from "@/assets/icons/x.svg?react";
@@ -9,6 +9,7 @@ import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useShortDuration } from "@/hooks/useShortDuration";
 import type { Game, Player, RunningGame, Settings } from "@/models";
+import { toDisplayTime } from "@/utils/dateUtils";
 
 const TICK_MS = 30_000;
 
@@ -48,7 +49,7 @@ export const RunningGameCard = (props: Props) => {
 					</BgtText>
 					<BgtText size="2" color="gray">
 						{t("play.running", {
-							time: format(runningGame.start, settings.timeFormat),
+							time: toDisplayTime(runningGame.start, settings.timeFormat, settings.uiLanguage),
 							duration: shortDuration(Math.max(1, differenceInMinutes(now, runningGame.start))),
 							players: names,
 						})}
