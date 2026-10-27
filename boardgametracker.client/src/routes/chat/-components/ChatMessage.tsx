@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { Bars } from "react-loading-icons";
 import { BgtButton } from "@/components/BgtButton/BgtButton";
+import { BgtSpinner } from "@/components/BgtLoadingSpinner/BgtSpinner";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { ApiError } from "@/models";
 import type { ChatExchange } from "../-hooks/useRagChat";
@@ -53,7 +53,7 @@ export const ChatMessage = ({ exchange, onRetry, onSelectSource, activeSourceInd
 					<span className="sr-only">{t("assistant")}: </span>
 					{exchange.status === "pending" && (
 						<div className="flex items-center gap-2 text-white/60">
-							<Bars className="size-4 text-primary" />
+							<BgtSpinner className="size-4 text-primary" />
 							<span>{t("thinking")}</span>
 						</div>
 					)}

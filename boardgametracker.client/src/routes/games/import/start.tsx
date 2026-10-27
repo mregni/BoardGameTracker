@@ -1,12 +1,12 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { createFileRoute, redirect, useNavigate, useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { Bars } from "react-loading-icons";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtInputField } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import { BgtSpinner } from "@/components/BgtLoadingSpinner/BgtSpinner";
 import { useAppForm } from "@/hooks/form";
 import { BggUserNameSchema } from "@/models";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
@@ -69,7 +69,7 @@ function RouteComponent() {
 									{t("common:cancel")}
 								</BgtButton>
 								<BgtButton type="submit" disabled={isLoading} className="flex-1" variant="primary">
-									{isLoading && <Bars className="size-4" />}
+									{isLoading && <BgtSpinner className="size-4" />}
 									{t("import.start.button")}
 								</BgtButton>
 							</div>

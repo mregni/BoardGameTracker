@@ -1,8 +1,8 @@
 import { cx } from "class-variance-authority";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Bars } from "react-loading-icons";
 import BgtButton from "../BgtButton/BgtButton";
+import { BgtSpinner } from "../BgtLoadingSpinner/BgtSpinner";
 
 const footerButton = "min-h-10 flex-auto md:min-w-32 md:flex-none";
 
@@ -58,7 +58,7 @@ export const BgtDialogFooter = (props: BgtDialogFooterProps) => {
 					onClick={onConfirm}
 					disabled={disabled || loading}
 				>
-					{loading && <Bars className="size-4" />}
+					{loading && <BgtSpinner className="size-4" />}
 					{confirmLabel}
 				</BgtButton>
 			)}
