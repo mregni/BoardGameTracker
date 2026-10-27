@@ -380,6 +380,23 @@ public class UserAdminServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateRoleAsync_ShouldThrowDomainException_WhenTheOnlyOtherAdminIsDisabled()
+    {
+        var adminUser = new ApplicationUser("admin", "admin@test.com") { Id = "admin-1" };
+        var disabledAdmin = new ApplicationUser("admin-3", null) { Id = "admin-3", LockoutEnd = DateTimeOffset.MaxValue };
+
+        _userManagerMock.Setup(x => x.FindByIdAsync("admin-1")).ReturnsAsync(adminUser);
+        _userManagerMock.Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin)).ReturnsAsync([adminUser, disabledAdmin]);
+
+        var act = () => _service.UpdateRoleAsync("admin-1", Constants.AuthRoles.User, "admin-1");
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.CannotRemoveLastAdmin);
+        _userManagerMock.Verify(x => x.FindByIdAsync("admin-1"), Times.Once);
+        _userManagerMock.Verify(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task UpdateRoleAsync_ShouldThrowDomainException_WhenLastAdminDemotesSelf()
     {
         var adminUserId = "admin-1";
@@ -582,6 +599,23 @@ public class UserAdminServiceTests : IDisposable
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage(expectedMessage);
 
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateUserAsync_ShouldThrowDomainException_WhenTheOnlyOtherAdminIsDisabled()
+    {
+        var adminUser = new ApplicationUser("admin", "admin@test.com") { Id = "admin-1" };
+        var disabledAdmin = new ApplicationUser("admin-3", null) { Id = "admin-3", LockoutEnd = DateTimeOffset.MaxValue };
+
+        _userManagerMock.Setup(x => x.FindByIdAsync("admin-1")).ReturnsAsync(adminUser);
+        _userManagerMock.Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin)).ReturnsAsync([adminUser, disabledAdmin]);
+
+        var act = () => _service.UpdateUserAsync("admin-1", "admin", null, Constants.AuthRoles.User, null, "admin-1");
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.CannotRemoveLastAdmin);
+        _userManagerMock.Verify(x => x.FindByIdAsync("admin-1"), Times.Once);
+        _userManagerMock.Verify(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin), Times.Once);
         VerifyNoOtherCalls();
     }
 
