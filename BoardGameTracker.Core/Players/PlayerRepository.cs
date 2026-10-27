@@ -1,6 +1,7 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Models;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Leaderboard;
@@ -16,15 +17,18 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
     private readonly MainDbContext _dbContext;
     private readonly IReadRepository<Session> _sessionReadRepository;
     private readonly IReadRepository<PlayerSession> _playerSessionReadRepository;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
     public PlayerRepository(
         MainDbContext dbContext,
         IReadRepository<Session> sessionReadRepository,
-        IReadRepository<PlayerSession> playerSessionReadRepository) : base(dbContext)
+        IReadRepository<PlayerSession> playerSessionReadRepository,
+        IDateTimeProvider dateTimeProvider) : base(dbContext)
     {
         _dbContext = dbContext;
         _sessionReadRepository = sessionReadRepository;
         _playerSessionReadRepository = playerSessionReadRepository;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public override Task<Player?> GetByIdAsync(int id)
@@ -205,13 +209,13 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
 
         if (filter.From.HasValue)
         {
-            var from = filter.From.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var from = _dateTimeProvider.ConvertToUtc(filter.From.Value.ToDateTime(TimeOnly.MinValue));
             plays = plays.Where(x => x.Session.Start >= from);
         }
 
         if (filter.To.HasValue)
         {
-            var until = filter.To.Value.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var until = _dateTimeProvider.ConvertToUtc(filter.To.Value.AddDays(1).ToDateTime(TimeOnly.MinValue));
             plays = plays.Where(x => x.Session.Start < until);
         }
 

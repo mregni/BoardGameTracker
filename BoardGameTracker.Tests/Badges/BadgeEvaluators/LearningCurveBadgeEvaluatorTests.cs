@@ -171,6 +171,46 @@ public class LearningCurveBadgeEvaluatorTests
         result.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData(new[] { 30.0, 40.0, 50.0 }, true)]
+    [InlineData(new[] { 50.0, 40.0, 30.0 }, false)]
+    public async Task CanAwardBadge_ShouldTreatLowerScoresAsBetter_WhenTheLowestScoreWins(double[] scoresMostRecentFirst, bool expected)
+    {
+        var badge = TestBadges.Create(BadgeType.LearningCurve, BadgeLevel.Green);
+        var sessions = new List<Session>();
+        for (var i = 0; i < scoresMostRecentFirst.Length; i++)
+        {
+            sessions.Add(new SessionBuilder().ForGame(GameId).DaysAgo(i)
+                .WithWinner(PlayerId, scoresMostRecentFirst[i])
+                .WithPlayer(PlayerId + 1, 100)
+                .Build());
+        }
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+
+        result.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(new[] { 50.0, 40.0, 30.0 }, true)]
+    [InlineData(new[] { 30.0, 40.0, 50.0 }, false)]
+    public async Task CanAwardBadge_ShouldTreatHigherScoresAsBetter_WhenTheHighestScoreWins(double[] scoresMostRecentFirst, bool expected)
+    {
+        var badge = TestBadges.Create(BadgeType.LearningCurve, BadgeLevel.Green);
+        var sessions = new List<Session>();
+        for (var i = 0; i < scoresMostRecentFirst.Length; i++)
+        {
+            sessions.Add(new SessionBuilder().ForGame(GameId).DaysAgo(i)
+                .WithWinner(PlayerId, scoresMostRecentFirst[i])
+                .WithPlayer(PlayerId + 1, 10)
+                .Build());
+        }
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+
+        result.Should().Be(expected);
+    }
+
     private static List<Session> CreateSessionsWithScores(double[] scoresMostRecentFirst)
     {
         var sessions = new List<Session>();

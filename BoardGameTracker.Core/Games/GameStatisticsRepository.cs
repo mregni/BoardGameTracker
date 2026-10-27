@@ -48,10 +48,13 @@ public class GameStatisticsRepository : IGameStatisticsRepository
     {
         var playerSession = await GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
-            .Where(x => x.Won)
             .GroupBy(x => x.PlayerId)
-            .Select(x => new { PlayerId = x.Key, Count = x.Count() })
+            .Select(x => new { PlayerId = x.Key, Count = x.Count(p => p.Won), Plays = x.Count() })
+            .Where(x => x.Count > 0)
             .OrderByDescending(x => x.Count)
+            .ThenByDescending(x => (double)x.Count / x.Plays)
+            .ThenByDescending(x => x.Plays)
+            .ThenBy(x => x.PlayerId)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (playerSession == null)
