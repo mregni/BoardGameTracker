@@ -18,7 +18,9 @@ import {
 } from "./-test/compareTestSetup";
 
 const mocks = vi.hoisted(() => ({
-	captured: {} as { config: { component: FC } },
+	captured: {} as {
+		config: { component: FC; validateSearch: { parse: (input: unknown) => { left?: number; right?: number } } };
+	},
 	search: {} as { left?: number; right?: number },
 	navigate: vi.fn(),
 	players: [] as Player[],
@@ -32,7 +34,7 @@ vi.mock("react-i18next", () => ({
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-	createFileRoute: () => (config: { component: FC }) => {
+	createFileRoute: () => (config: typeof mocks.captured.config) => {
 		mocks.captured.config = config;
 		return { ...config, useSearch: () => mocks.search };
 	},
@@ -81,6 +83,12 @@ const deferred = <T,>() => {
 describe("Compare page", () => {
 	beforeAll(async () => {
 		mocks.i18n = await createCompareI18n("en-US");
+	});
+
+	it("keeps valid player ids in the search and drops invalid ones", () => {
+		const { parse } = mocks.captured.config.validateSearch;
+		expect(parse({ left: 1, right: 2 })).toEqual({ left: 1, right: 2 });
+		expect(parse({ left: "abc", right: 2 })).toEqual({ right: 2 });
 	});
 
 	beforeEach(() => {
