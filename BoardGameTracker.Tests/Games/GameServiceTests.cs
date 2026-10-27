@@ -610,7 +610,7 @@ public class GameServiceTests
 
         await _gameService.Delete(gameId);
 
-        _imageServiceMock.Verify(x => x.DeleteImage("game-image.png"), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("game-image.png"), Times.Once);
         _manualServiceMock.Verify(x => x.GetManualsForGame(gameId), Times.Once);
         _manualServiceMock.Verify(x => x.DeleteManualFiles(manuals), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
@@ -895,7 +895,7 @@ public class GameServiceTests
 
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
-        _imageServiceMock.Verify(x => x.DeleteImage("/images/cover/old.webp"), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("/images/cover/old.webp"), Times.Once);
         VerifyNoOtherCalls();
     }
 

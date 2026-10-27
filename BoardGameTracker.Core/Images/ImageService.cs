@@ -2,9 +2,11 @@
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Helpers;
+using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
 
@@ -24,12 +26,14 @@ public class ImageService : IImageService
 
     private readonly IDiskProvider _diskProvider;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly MainDbContext _context;
     private readonly ILogger<ImageService> _logger;
 
-    public ImageService(IDiskProvider diskProvider, IHttpClientFactory httpClientFactory, ILogger<ImageService> logger)
+    public ImageService(IDiskProvider diskProvider, IHttpClientFactory httpClientFactory, MainDbContext context, ILogger<ImageService> logger)
     {
         _diskProvider = diskProvider;
         _httpClientFactory = httpClientFactory;
+        _context = context;
         _logger = logger;
     }
 
@@ -199,6 +203,25 @@ public class ImageService : IImageService
         }
 
         _diskProvider.DeleteFile(physicalPath);
+    }
+
+    public async Task DeleteImageIfUnusedAsync(string? image)
+    {
+        if (string.IsNullOrWhiteSpace(image))
+        {
+            return;
+        }
+
+        var inUse = await _context.Players.AnyAsync(p => p.Image == image)
+            || await _context.Games.AnyAsync(g => g.Image == image)
+            || await _context.Users.AnyAsync(u => u.ProfileImage == image);
+        if (inUse)
+        {
+            _logger.LogDebug("Keeping image {Image} because another record still uses it", image);
+            return;
+        }
+
+        DeleteImage(image);
     }
 
     public void ClearAllImages()
