@@ -1100,7 +1100,6 @@
           "Microsoft.AspNetCore.SpaProxy": "[10.0.13, )",
           "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore": "[10.0.13, )",
           "Microsoft.Extensions.Http.Resilience": "[10.10.0, )",
-          "Microsoft.IdentityModel.Protocols.OpenIdConnect": "[8.22.0, )",
           "Refit.HttpClientFactory": "[15.2.0, )",
           "Refit.Reflection": "[15.2.0, )",
           "Serilog.AspNetCore": "[10.0.0, )",

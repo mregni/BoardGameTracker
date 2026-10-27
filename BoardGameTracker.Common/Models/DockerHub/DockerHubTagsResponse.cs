@@ -3,6 +3,7 @@ namespace BoardGameTracker.Common.Models.DockerHub;
 public class DockerHubTagsResponse
 {
     public int Count { get; set; }
+    public string? Next { get; set; }
     public List<DockerHubTag> Results { get; set; } = [];
 }
 

@@ -7,6 +7,7 @@ using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Auth.Interfaces;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Email.Interfaces;
@@ -32,8 +33,10 @@ public class AuthService : IAuthService
     private readonly ILoginAttemptTracker _loginAttempts;
     private readonly MainDbContext _context;
     private readonly IMemoryCache _cache;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<AuthService> _logger;
     private static readonly TimeSpan PasswordResetCooldown = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan LostResponseGrace = TimeSpan.FromSeconds(60);
 
     private static readonly PasswordHasher<ApplicationUser> DummyPasswordHasher = new();
     private static readonly ApplicationUser DummyUser = new("timing-dummy", "timing-dummy@localhost");
@@ -52,9 +55,11 @@ public class AuthService : IAuthService
         ILoginAttemptTracker loginAttempts,
         MainDbContext context,
         IMemoryCache cache,
+        IDateTimeProvider dateTimeProvider,
         ILogger<AuthService> logger)
     {
         _cache = cache;
+        _dateTimeProvider = dateTimeProvider;
         _userManager = userManager;
         _signInManager = signInManager;
         _tokenService = tokenService;
@@ -170,9 +175,9 @@ public class AuthService : IAuthService
         var successor = await _tokenService.GetSuccessorAsync(presented);
         while (successor != null && seen.Add(successor.Token))
         {
-            if (successor.WasUsed)
+            if (successor.WasUsed || (successor.IsActive && !WithinLostResponseGrace(presented)))
             {
-                _logger.LogWarning("A replaced refresh token was presented again after a later token of its session was used for user {UserId}; revoking every session", presented.UserId);
+                _logger.LogWarning("A replaced refresh token was presented again after its session moved on or its retry window closed for user {UserId}; revoking every session", presented.UserId);
                 await _tokenService.RevokeAllUserTokensAsync(presented.UserId, "Refresh token reuse detected");
                 throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
             }
@@ -194,6 +199,9 @@ public class AuthService : IAuthService
         _logger.LogInformation("A replaced refresh token was presented for user {UserId}, but its session has ended", presented.UserId);
         throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
     }
+
+    private bool WithinLostResponseGrace(RefreshToken presented) =>
+        presented.RevokedAt.HasValue && _dateTimeProvider.UtcNow - presented.RevokedAt.Value <= LostResponseGrace;
 
     public async Task LogoutAsync(string? userId, string? refreshToken)
     {
@@ -293,6 +301,7 @@ public class AuthService : IAuthService
             if (request.PlayerId.HasValue)
             {
                 await PlayerLinkGuard.EnsureLinkableAsync(_context, request.PlayerId.Value, userId);
+                await EnsureEmailAllowsLinkAsync(user, request.PlayerId.Value);
                 user.LinkPlayer(request.PlayerId.Value);
             }
             else
@@ -309,6 +318,19 @@ public class AuthService : IAuthService
 
         var roles = await _userManager.GetRolesAsync(user);
         return user.ToProfileDto(roles);
+    }
+
+    private async Task EnsureEmailAllowsLinkAsync(ApplicationUser user, int playerId)
+    {
+        var playerEmail = await _context.Players
+            .Where(p => p.Id == playerId)
+            .Select(p => p.Email)
+            .FirstOrDefaultAsync();
+        if (!PlayerLinkMatcher.EmailAllowsLink(user.Email, playerEmail))
+        {
+            _logger.LogWarning("User {UserId} tried to link player {PlayerId} with a different email", user.Id, playerId);
+            throw new ForbiddenException(Constants.Errors.PlayerEmailMismatch);
+        }
     }
 
     private async Task EnsureEmailChangeAllowedAsync(ApplicationUser user, string? currentPassword)
@@ -353,11 +375,21 @@ public class AuthService : IAuthService
             .Select(u => u.PlayerId!.Value)
             .ToListAsync();
 
-        return await _context.Players
+        var caller = await _context.Users
+            .Where(u => u.Id == currentUserId)
+            .Select(u => new { u.Email, u.PlayerId })
+            .FirstOrDefaultAsync();
+
+        var players = await _context.Players
             .Where(p => !linkedByOthers.Contains(p.Id))
             .OrderBy(p => p.Name)
-            .Select(p => new PlayerLinkDto(p.Id, p.Name))
+            .Select(p => new { p.Id, p.Name, p.Email })
             .ToListAsync();
+
+        return players
+            .Where(p => p.Id == caller?.PlayerId || PlayerLinkMatcher.EmailAllowsLink(caller?.Email, p.Email))
+            .Select(p => new PlayerLinkDto(p.Id, p.Name))
+            .ToList();
     }
 
     public async Task ChangePasswordAsync(string userId, ChangePasswordRequest request)

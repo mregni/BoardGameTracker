@@ -467,6 +467,34 @@ public class LoanServiceTests
     }
 
     [Fact]
+    public async Task Update_ShouldTreatAnUnreturnedLoanAsOpenEnded_WhenALaterLoanExists()
+    {
+        var game = new Game("Catan") { Id = 1 };
+        var later = game.LoanToPlayer(2, new DateTime(2026, 11, 1, 0, 0, 0, DateTimeKind.Utc));
+        later.Id = 7;
+        var loan = new Loan(1, 3, new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc)) { Id = 8 };
+        _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(game);
+
+        var act = () => _loanService.Update(new UpdateLoanCommand
+        {
+            Id = 8,
+            GameId = 1,
+            PlayerId = 3,
+            LoanDate = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc),
+            DueDate = new DateTime(2026, 10, 15, 0, 0, 0, DateTimeKind.Utc)
+        });
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(BoardGameTracker.Common.Constants.Errors.GameAlreadyOnLoan);
+        loan.LoanDate.Should().Be(new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc));
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task Update_ShouldThrowEntityNotFoundException_WhenLoanDoesNotExist()
     {
         // Arrange

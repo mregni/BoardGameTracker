@@ -8,10 +8,6 @@ public class EnvironmentProvider : IEnvironmentProvider
 {
     public string EnvironmentName => EnvironmentExtensions.GetEnvironmentName();
 
-    public int Port => int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var parsedPort) && parsedPort >= 0
-        ? parsedPort
-        : 7178;
-
     public bool StatisticsEnabled =>
         bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS_ENABLED"), out var statisticsEnabled) && statisticsEnabled;
 

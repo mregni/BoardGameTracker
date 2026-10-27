@@ -24,7 +24,6 @@ public class EnvironmentProviderTests : IDisposable
         _environmentProvider = new EnvironmentProvider();
         _originalEnvironmentVariables = new Dictionary<string, string?>
         {
-            ["PORT"] = Environment.GetEnvironmentVariable("PORT"),
             ["STATISTICS"] = Environment.GetEnvironmentVariable("STATISTICS"),
             ["STATISTICS_ENABLED"] = Environment.GetEnvironmentVariable("STATISTICS_ENABLED"),
             ["LOGLEVEL"] = Environment.GetEnvironmentVariable("LOGLEVEL"),
@@ -46,30 +45,6 @@ public class EnvironmentProviderTests : IDisposable
             Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
         }
         GC.SuppressFinalize(this);
-    }
-
-    [Theory]
-    [InlineData("3000", 3000)]
-    [InlineData("5000", 5000)]
-    [InlineData("8080", 8080)]
-    [InlineData("9999", 9999)]
-    [InlineData("1", 1)]
-    [InlineData("65535", 65535)]
-    [InlineData("0", 0)]
-    [InlineData("", 7178)]
-    [InlineData("   ", 7178)]
-    [InlineData("abc", 7178)]
-    [InlineData("8080.5", 7178)]
-    [InlineData("not-a-number", 7178)]
-    [InlineData("-1", 7178)]
-    [InlineData(null, 7178)]
-    public void Port_ShouldParseValue_OrFallBackToDefault(string? portString, int expectedPort)
-    {
-        Environment.SetEnvironmentVariable("PORT", portString);
-
-        var result = _environmentProvider.Port;
-
-        result.Should().Be(expectedPort);
     }
 
     [Theory]
@@ -100,14 +75,14 @@ public class EnvironmentProviderTests : IDisposable
     [Fact]
     public void Properties_ShouldNotCacheValues_WhenEnvironmentVariablesChange()
     {
-        Environment.SetEnvironmentVariable("PORT", "3000");
-        var initialPort = _environmentProvider.Port;
+        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", "true");
+        var initial = _environmentProvider.StatisticsEnabled;
 
-        Environment.SetEnvironmentVariable("PORT", "8080");
-        var updatedPort = _environmentProvider.Port;
+        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", "false");
+        var updated = _environmentProvider.StatisticsEnabled;
 
-        initialPort.Should().Be(3000);
-        updatedPort.Should().Be(8080);
+        initial.Should().BeTrue();
+        updated.Should().BeFalse();
     }
 
     [Theory]

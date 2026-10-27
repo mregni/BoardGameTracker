@@ -58,24 +58,30 @@ public class UpdateServiceTests
 
     private void SetupTags(params string[] tags)
     {
+        SetupTagPage(1, null, tags);
+    }
+
+    private void SetupTagPage(int page, string? next, params string[] tags)
+    {
         var response = new ApiResponse<DockerHubTagsResponse>(
             new HttpResponseMessage(HttpStatusCode.OK) { RequestMessage = new HttpRequestMessage() },
             new DockerHubTagsResponse
             {
                 Count = tags.Length,
+                Next = next,
                 Results = tags.Select(t => new DockerHubTag { Name = t }).ToList()
             },
             new RefitSettings());
 
         _dockerHubApiMock
-            .Setup(x => x.GetTags("uping", "boardgametracker", It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetTags("uping", "boardgametracker", page, It.IsAny<CancellationToken>()))
             .ReturnsAsync(response);
     }
 
     private void VerifyCheckPreamble()
     {
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track), Times.Once);
-        _dockerHubApiMock.Verify(x => x.GetTags("uping", "boardgametracker", It.IsAny<CancellationToken>()), Times.Once);
+        _dockerHubApiMock.Verify(x => x.GetTags("uping", "boardgametracker", 1, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private void VerifyLastRunPersisted()
@@ -209,6 +215,63 @@ public class UpdateServiceTests
     }
 
     [Fact]
+    public async Task CheckForUpdatesAsync_ShouldReadLaterPages_WhenTheStableTagsAreNotOnTheFirstPage()
+    {
+        SetupTrack(VersionTrack.Stable);
+        SetupTagPage(1, "page-2", "998.0.0-beta", "998.1.0", "999.0.0-beta");
+        SetupTagPage(2, null, "latest", "999.2.0");
+
+        await _updateService.CheckForUpdatesAsync();
+
+        VerifyCheckPreamble();
+        _dockerHubApiMock.Verify(x => x.GetTags("uping", "boardgametracker", 2, It.IsAny<CancellationToken>()), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.AvailableVersion, "999.2.0"), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.Available, true), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.CheckError, string.Empty), Times.Once);
+        VerifyLastRunPersisted();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CheckForUpdatesAsync_ShouldStopAfterTenPages()
+    {
+        SetupTrack(VersionTrack.Stable);
+        for (var page = 1; page <= 11; page++)
+        {
+            SetupTagPage(page, "more", $"{page}.0.0");
+        }
+
+        await _updateService.CheckForUpdatesAsync();
+
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track), Times.Once);
+        _dockerHubApiMock.Verify(x => x.GetTags("uping", "boardgametracker", It.IsInRange(1, 10, Moq.Range.Inclusive), It.IsAny<CancellationToken>()), Times.Exactly(10));
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.AvailableVersion, "10.0.0"), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.Available, true), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.CheckError, string.Empty), Times.Once);
+        VerifyLastRunPersisted();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("999.0.0-beta", "999.0.0", "999.0.0")]
+    [InlineData("999.0.0", "999.1.0-beta", "999.1.0-beta")]
+    [InlineData("999.0.0", "998.5.0-beta", "999.0.0")]
+    public async Task CheckForUpdatesAsync_ShouldPickTheHighestOfAllTags_WhenTrackIsBeta(string first, string second, string expected)
+    {
+        SetupTrack(VersionTrack.Beta);
+        SetupTags(first, second);
+
+        await _updateService.CheckForUpdatesAsync();
+
+        VerifyCheckPreamble();
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.AvailableVersion, expected), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.Available, true), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.CheckError, string.Empty), Times.Once);
+        VerifyLastRunPersisted();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task CheckForUpdatesAsync_ShouldReportNoUpdate_WhenLatestVersionIsNotNewer()
     {
         SetupTrack(VersionTrack.Stable);
@@ -241,13 +304,13 @@ public class UpdateServiceTests
     [Fact]
     public async Task CheckForUpdatesAsync_ShouldPersistError_WhenNoVersionsMatchTrack()
     {
-        SetupTrack(VersionTrack.Beta);
-        SetupTags("1.0.0", "2.0.0");
+        SetupTrack(VersionTrack.Stable);
+        SetupTags("1.0.0-beta", "2.0.0-beta");
 
         await _updateService.CheckForUpdatesAsync();
 
         VerifyCheckPreamble();
-        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.CheckError, "No Beta versions found"), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.CheckError, "No Stable versions found"), Times.Once);
         VerifyLastRunPersisted();
         VerifyNoOtherCalls();
     }
@@ -262,7 +325,7 @@ public class UpdateServiceTests
             new RefitSettings());
 
         _dockerHubApiMock
-            .Setup(x => x.GetTags("uping", "boardgametracker", It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetTags("uping", "boardgametracker", 1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(response);
 
         await _updateService.CheckForUpdatesAsync();
@@ -284,7 +347,7 @@ public class UpdateServiceTests
             new RefitSettings());
 
         _dockerHubApiMock
-            .Setup(x => x.GetTags("uping", "boardgametracker", It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetTags("uping", "boardgametracker", 1, It.IsAny<CancellationToken>()))
             .ThrowsAsync(apiException);
 
         await _updateService.CheckForUpdatesAsync();

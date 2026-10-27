@@ -116,6 +116,29 @@ public class GameStatisticsRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task MostWins_ShouldBreakATieOnWinsByTheBetterWinRate()
+    {
+        await using (var seedScope = _fixture.CreateScope())
+        {
+            var db = seedScope.ServiceProvider.GetRequiredService<MainDbContext>();
+            var bobWins = new Session(_ownedGameId, Monday.AddDays(8), Monday.AddDays(8).AddHours(1), string.Empty);
+            bobWins.AddPlayerSession(_bobId, 40, false, true);
+            var aliceLoses = new Session(_ownedGameId, Monday.AddDays(9), Monday.AddDays(9).AddHours(1), string.Empty);
+            aliceLoses.AddPlayerSession(_aliceId, 10, false, false);
+            db.AddRange(bobWins, aliceLoses);
+            await db.SaveChangesAsync();
+        }
+
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IGameStatisticsRepository>();
+
+        var (player, wins) = await repository.GetMostWins(_ownedGameId);
+
+        player!.Id.Should().Be(_bobId);
+        wins.Should().Be(2);
+    }
+
+    [Fact]
     public async Task SessionStartTimes_ShouldComeBackAsUtc()
     {
         await using var scope = _fixture.CreateScope();
