@@ -27,14 +27,36 @@ describe("QueryInvalidator", () => {
 			expect.arrayContaining([
 				[QUERY_KEYS.games],
 				[QUERY_KEYS.game, 7],
-				[QUERY_KEYS.game, 7, QUERY_KEYS.statistics],
-				[QUERY_KEYS.game, 7, QUERY_KEYS.sessions],
 				[QUERY_KEYS.counts],
 				[QUERY_KEYS.shames],
 				[QUERY_KEYS.dashboard, QUERY_KEYS.statistics],
 			]),
 		);
 		expect(keys).not.toContainEqual([QUERY_KEYS.game, 8]);
+	});
+
+	it("invalidateGame and invalidatePlayer reach the nested sub-queries through the prefix", async () => {
+		spy.mockRestore();
+		const nested = [
+			[QUERY_KEYS.game, 7, QUERY_KEYS.statistics],
+			[QUERY_KEYS.game, 7, QUERY_KEYS.sessions, QUERY_KEYS.shortlist],
+			[QUERY_KEYS.game, 7, QUERY_KEYS.expansions],
+			[QUERY_KEYS.game, 7, QUERY_KEYS.manuals],
+			[QUERY_KEYS.player, 1, QUERY_KEYS.statistics],
+			[QUERY_KEYS.player, 1, QUERY_KEYS.sessions],
+		];
+		const untouched = [QUERY_KEYS.game, 8, QUERY_KEYS.statistics];
+		for (const key of [...nested, untouched]) {
+			queryClient.setQueryData(key, {});
+		}
+
+		await invalidator.invalidateGame(7);
+		await invalidator.invalidatePlayer(1);
+
+		for (const key of nested) {
+			expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
+		}
+		expect(queryClient.getQueryState(untouched)?.isInvalidated).toBe(false);
 	});
 
 	it("invalidateSession refreshes the game, every player that played and the compare page", async () => {
@@ -47,11 +69,11 @@ describe("QueryInvalidator", () => {
 				[QUERY_KEYS.sessions, 42],
 				[QUERY_KEYS.game, 7],
 				[QUERY_KEYS.player, 1],
-				[QUERY_KEYS.player, 1, QUERY_KEYS.badges],
 				[QUERY_KEYS.player, 2],
 				[QUERY_KEYS.locations],
 				[QUERY_KEYS.compare],
 				[QUERY_KEYS.leaderboard],
+				[QUERY_KEYS.gameNights],
 			]),
 		);
 	});
@@ -62,10 +84,11 @@ describe("QueryInvalidator", () => {
 		const keys = invalidatedKeys(spy);
 		expect(keys).toEqual(
 			expect.arrayContaining([
-				[QUERY_KEYS.game, 7, QUERY_KEYS.statistics],
-				[QUERY_KEYS.player, 1, QUERY_KEYS.statistics],
-				[QUERY_KEYS.player, 2, QUERY_KEYS.sessions],
+				[QUERY_KEYS.game, 7],
+				[QUERY_KEYS.player, 1],
+				[QUERY_KEYS.player, 2],
 				[QUERY_KEYS.leaderboard],
+				[QUERY_KEYS.gameNights],
 				[QUERY_KEYS.dashboard, QUERY_KEYS.statistics],
 			]),
 		);
@@ -124,6 +147,21 @@ describe("QueryInvalidator", () => {
 				[QUERY_KEYS.gameNights],
 				[QUERY_KEYS.counts],
 				[QUERY_KEYS.dashboard, QUERY_KEYS.statistics],
+			]),
+		);
+	});
+
+	it("invalidateGameDeleted refreshes everything that can embed the removed game", async () => {
+		await invalidator.invalidateGameDeleted();
+
+		expect(invalidatedKeys(spy)).toEqual(
+			expect.arrayContaining([
+				[QUERY_KEYS.games],
+				[QUERY_KEYS.players],
+				[QUERY_KEYS.loans],
+				[QUERY_KEYS.leaderboard],
+				[QUERY_KEYS.compare],
+				[QUERY_KEYS.gameNights],
 			]),
 		);
 	});
