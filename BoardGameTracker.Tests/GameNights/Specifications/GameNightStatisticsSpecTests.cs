@@ -76,4 +76,17 @@ public class GameNightStatisticsSpecTests
         spec.Evaluate([late, early, before, after]).Select(x => x.Id).Should().Equal(1, 2);
         spec.AsNoTracking.Should().BeTrue();
     }
+
+    [Fact]
+    public void GameNightStatisticsSpec_ShouldKeepANightWhosePlayHasAlreadyOpened()
+    {
+        var openSoon = GameNight.Create("Tonight", "", Start.AddHours(11), 1, 1);
+        openSoon.Id = 1;
+        var tooLate = GameNight.Create("Tomorrow", "", Start.AddHours(13), 1, 1);
+        tooLate.Id = 2;
+
+        var spec = new GameNightStatisticsSpec(null, Start);
+
+        spec.Evaluate([openSoon, tooLate]).Select(x => x.Id).Should().Equal(1);
+    }
 }
