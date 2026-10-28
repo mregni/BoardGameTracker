@@ -124,4 +124,29 @@ describe("BGG import list", () => {
 		expect(first).toBeChecked();
 		expect(second).toBeChecked();
 	});
+
+	it("only allows starting the import once a game is selected", async () => {
+		const Component = mocks.captured.config.component;
+		const user = userEvent.setup();
+		renderWithProviders(<Component />);
+
+		await screen.findByText("Dwar7s Winter");
+		const start = screen.getByRole("button", { name: "games:import.start-import" });
+		expect(start).toBeDisabled();
+
+		await user.click(screen.getByRole("checkbox", { name: "Earth" }));
+
+		expect(start).toBeEnabled();
+	});
+
+	it("names each row's fields after the game", async () => {
+		const Component = mocks.captured.config.component;
+		renderWithProviders(<Component />);
+
+		await screen.findByText("Earth");
+
+		expect(screen.getByRole("textbox", { name: "game:price.label: Earth" })).toBeInTheDocument();
+		expect(screen.getByRole("combobox", { name: "state: Earth" })).toBeInTheDocument();
+		expect(screen.getByLabelText("game:added-date.label: Earth")).toBeInTheDocument();
+	});
 });

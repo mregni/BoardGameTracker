@@ -98,9 +98,9 @@ describe("RootComponent", () => {
 	describe("Loading state", () => {
 		it("should show loading spinner while auth is being checked", () => {
 			mocks.authState.fetchAuthStatus = vi.fn(() => new Promise(() => {}));
-			const { container } = render(<mocks.captured.Root />);
+			render(<mocks.captured.Root />);
 
-			expect(container.querySelector(".animate-spin")).toBeInTheDocument();
+			expect(screen.getByTestId("bgt-spinner")).toBeInTheDocument();
 			expect(screen.queryByTestId("sidebar")).not.toBeInTheDocument();
 			expect(screen.queryByTestId("outlet")).not.toBeInTheDocument();
 		});
@@ -168,10 +168,10 @@ describe("RootComponent", () => {
 			let finishRestore: (restored: boolean) => void = () => {};
 			mocks.restoreSession.mockReturnValue(new Promise<boolean>((resolve) => (finishRestore = resolve)));
 
-			const { container } = render(<mocks.captured.Root />);
+			render(<mocks.captured.Root />);
 
 			await waitFor(() => expect(mocks.restoreSession).toHaveBeenCalledTimes(1));
-			expect(container.querySelector(".animate-spin")).toBeInTheDocument();
+			expect(screen.getByTestId("bgt-spinner")).toBeInTheDocument();
 			expect(screen.queryByTestId("outlet")).not.toBeInTheDocument();
 			expect(mocks.navigate).not.toHaveBeenCalled();
 

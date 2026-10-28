@@ -114,7 +114,7 @@ export const BgtSimpleSelect = (props: Props) => {
 					ref={triggerRef}
 					onPointerDown={onTriggerPointerDown}
 					onClick={onTriggerClick}
-					aria-label={ariaLabel}
+					aria-label={ariaLabel ?? label ?? placeholder ?? undefined}
 					className={
 						trigger
 							? triggerClassName

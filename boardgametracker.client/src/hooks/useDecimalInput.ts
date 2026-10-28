@@ -5,7 +5,7 @@ import { useNumberFormat } from "./useNumberFormat";
 const DECIMAL_DRAFT = /^[+-]?[\d.,\s]*$/;
 
 export const useDecimalInput = (value: NumberValue, onValueChange: (value: number | null) => void) => {
-	const { input } = useNumberFormat();
+	const { input, locale } = useNumberFormat();
 	const [draft, setDraft] = useState<string | null>(null);
 
 	return {
@@ -13,7 +13,7 @@ export const useDecimalInput = (value: NumberValue, onValueChange: (value: numbe
 		onChange: (raw: string) => {
 			if (!DECIMAL_DRAFT.test(raw)) return;
 			setDraft(raw);
-			onValueChange(parseDecimal(raw));
+			onValueChange(parseDecimal(raw, locale));
 		},
 		onBlur: () => setDraft(null),
 	};
