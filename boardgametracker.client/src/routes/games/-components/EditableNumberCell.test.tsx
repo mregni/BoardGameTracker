@@ -47,6 +47,12 @@ describe("EditableNumberCell", () => {
 		expect(props.onStopEdit).toHaveBeenCalled();
 	});
 
+	it("names the input with the given label", () => {
+		renderCell({ editing: true, ariaLabel: "Price: Catan" });
+
+		expect(screen.getByRole("textbox", { name: "Price: Catan" })).toBeInTheDocument();
+	});
+
 	it("commits null when the input is cleared", async () => {
 		const user = userEvent.setup();
 		const props = renderCell({ editing: true });

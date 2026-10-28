@@ -275,6 +275,7 @@ function RouteComponent() {
 						onStartEdit={() => startEdit(row.original.id, "buyingPrice")}
 						onStopEdit={stopEdit}
 						onChange={(buyingPrice) => updateGame({ ...row.original, buyingPrice })}
+						ariaLabel={`${t("games:columns.price")}: ${row.original.title}`}
 					/>
 				),
 				meta: { hideOnMobile: true },
@@ -391,12 +392,14 @@ function RouteComponent() {
 					<BgtSimpleSelect
 						className="w-full md:w-44"
 						value={stateFilter}
+						aria-label={t("games:columns.state")}
 						items={stateItems}
 						onValueChange={(value) => updateSearch({ state: value === ANY ? undefined : (String(value) as GameState) })}
 					/>
 					<BgtSimpleSelect
 						className="w-full md:w-44"
 						value={languageFilter}
+						aria-label={t("games:columns.language")}
 						items={languageItems}
 						onValueChange={(value) => updateSearch({ language: value === ANY ? undefined : String(value) })}
 					/>

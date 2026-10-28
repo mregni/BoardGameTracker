@@ -81,6 +81,7 @@ export const SettingsSidebar = ({ activeCategory, onCategoryChange, canManageSet
 				<BgtSimpleSelect
 					className="w-full"
 					value={activeCategory}
+					aria-label={t("common:settings")}
 					onValueChange={(value) => onCategoryChange(value as SettingsCategory)}
 					items={visibleCategories.map((category) => ({
 						value: category.id,

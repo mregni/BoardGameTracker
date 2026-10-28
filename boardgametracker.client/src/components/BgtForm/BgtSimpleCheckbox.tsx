@@ -9,10 +9,11 @@ interface Props {
 	disabled?: boolean;
 	checked: boolean;
 	onCheckedChange: (checked: boolean) => void;
+	"aria-label"?: string;
 }
 
 const BgtSimpleCheckboxComponent = (props: Props) => {
-	const { id, label, disabled = false, checked, onCheckedChange } = props;
+	const { id, label, disabled = false, checked, onCheckedChange, "aria-label": ariaLabel } = props;
 
 	const handleCheckedChange = useCallback(
 		(checkedState: boolean | "indeterminate") => {
@@ -31,6 +32,7 @@ const BgtSimpleCheckboxComponent = (props: Props) => {
 				checked={checked}
 				onCheckedChange={handleCheckedChange}
 				disabled={disabled}
+				aria-label={ariaLabel}
 			>
 				<Checkbox.Indicator className="text-white">
 					<CheckIcon className="size-3" />
