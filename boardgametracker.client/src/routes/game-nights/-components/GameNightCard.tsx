@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
-import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import MapPin from "@/assets/icons/map-pin.svg?react";
 import User from "@/assets/icons/user.svg?react";
@@ -12,6 +11,7 @@ import { AvatarChip } from "@/components/GameNight/AvatarChip";
 import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
 import { RsvpProgress } from "@/components/GameNight/RsvpProgress";
 import type { GameNight, Player, Settings } from "@/models";
+import { toDisplayTime } from "@/utils/dateUtils";
 import { relativeDay } from "@/utils/relativeDay";
 import { sortRsvps } from "@/utils/sortRsvps";
 import { GameNightActions } from "./GameNightActions";
@@ -67,7 +67,7 @@ export const GameNightCard = (props: Props) => {
 								? t("card.live")
 								: t("card.when", {
 										when: relativeDay(gameNight.startDate, settings.uiLanguage),
-										time: format(gameNight.startDate, settings.timeFormat),
+										time: toDisplayTime(gameNight.startDate, settings.timeFormat, settings.uiLanguage),
 									})}
 						</span>
 						<BgtHeading size="5" className="wrap-anywhere">

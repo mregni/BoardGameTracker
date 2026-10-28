@@ -85,9 +85,6 @@ importers:
       react-i18next:
         specifier: ^17.0.18
         version: 17.0.18(i18next@26.4.6(typescript@5.9.3))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@5.9.3)
-      react-loading-icons:
-        specifier: ^1.1.0
-        version: 1.1.0
       sonner:
         specifier: ^2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -2455,10 +2452,6 @@ packages:
 
   react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
-
-  react-loading-icons@1.1.0:
-    resolution: {integrity: sha512-Y9eZ6HAufmUd8DIQd6rFrx5Bt/oDlTM9Nsjvf8YpajTa3dI8cLNU8jUN5z7KTANU+Yd6/KJuBjxVlrU2dMw33g==}
-    engines: {node: '>= 12.0.0'}
 
   react-remove-scroll-bar@2.3.8:
     resolution: {integrity: sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q==}
@@ -5208,8 +5201,6 @@ snapshots:
       typescript: 5.9.3
 
   react-is@17.0.2: {}
-
-  react-loading-icons@1.1.0: {}
 
   react-remove-scroll-bar@2.3.8(@types/react@19.3.0)(react@19.3.1):
     dependencies:

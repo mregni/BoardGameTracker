@@ -11,18 +11,6 @@ export class QueryInvalidator {
 			this.queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.game, gameId],
 			}),
-			this.queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.statistics],
-			}),
-			this.queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.sessions],
-			}),
-			this.queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.expansions],
-			}),
-			this.queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.manuals],
-			}),
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] }),
 			this.invalidateDashboard(),
 			this.invalidateCounts(),
@@ -49,6 +37,9 @@ export class QueryInvalidator {
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] }),
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] }),
 			this.invalidatePlayers(),
+			this.invalidateLeaderboard(),
+			this.invalidateCompare(),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.gameNights] }),
 		]);
 	}
 
@@ -64,6 +55,7 @@ export class QueryInvalidator {
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] }),
 			this.invalidateCompare(),
 			this.invalidateLeaderboard(),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.gameNights] }),
 		]);
 	}
 
@@ -79,6 +71,7 @@ export class QueryInvalidator {
 			this.invalidateShames(),
 			this.invalidateDashboard(),
 			this.invalidateLeaderboard(),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.gameNights] }),
 		]);
 	}
 
@@ -91,15 +84,6 @@ export class QueryInvalidator {
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] }),
 			this.queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.player, playerId],
-			}),
-			this.queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.player, playerId, QUERY_KEYS.statistics],
-			}),
-			this.queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.player, playerId, QUERY_KEYS.sessions],
-			}),
-			this.queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.player, playerId, QUERY_KEYS.badges],
 			}),
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.compare] }),
 			this.invalidateDashboard(),

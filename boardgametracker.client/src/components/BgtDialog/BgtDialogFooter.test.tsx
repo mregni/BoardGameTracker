@@ -76,11 +76,11 @@ describe("BgtDialogFooter", () => {
 	});
 
 	it("disables both buttons and shows a spinner while loading", () => {
-		const { container } = renderWithTheme(<BgtDialogFooter onCancel={vi.fn()} confirmLabel="Save" loading />);
+		renderWithTheme(<BgtDialogFooter onCancel={vi.fn()} confirmLabel="Save" loading />);
 
 		expect(screen.getByRole("button", { name: "common:cancel" })).toBeDisabled();
 		expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
-		expect(container.querySelector("svg")).toBeInTheDocument();
+		expect(screen.getByTestId("bgt-spinner")).toBeInTheDocument();
 	});
 
 	it("disables each button on its own", () => {

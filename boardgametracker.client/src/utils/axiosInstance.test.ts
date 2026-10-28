@@ -53,6 +53,35 @@ const rotateTo = (token: string) => () => {
 	return Promise.resolve(token);
 };
 
+const sharedRefresh = () => {
+	let started = 0;
+	let waiting = 0;
+	let inFlight: Promise<string> | null = null;
+	let settle: { resolve: (token: string) => void; reject: (error: Error) => void } = {
+		resolve: () => {},
+		reject: () => {},
+	};
+	mocks.refreshSession.mockImplementation(() => {
+		waiting += 1;
+		if (!inFlight) {
+			started += 1;
+			inFlight = new Promise<string>((resolve, reject) => {
+				settle = { resolve, reject };
+			}).then((token) => {
+				useAuth.getState().setSession(token, user);
+				return token;
+			});
+		}
+		return inFlight;
+	});
+	return {
+		started: () => started,
+		waiting: () => waiting,
+		resolve: (token: string) => settle.resolve(token),
+		reject: (error: Error) => settle.reject(error),
+	};
+};
+
 describe("axiosInstance refresh on 401", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -75,20 +104,38 @@ describe("axiosInstance refresh on 401", () => {
 		expect(seen).toEqual(["Bearer expired", "Bearer fresh"]);
 	});
 
-	it("queues concurrent 401s behind a single refresh", async () => {
-		let finish: () => void = () => {};
-		mocks.refreshSession.mockReturnValue(new Promise<void>((resolve) => (finish = resolve)).then(rotateTo("fresh")));
+	it("replays concurrent 401s after one shared refresh", async () => {
+		const gate = sharedRefresh();
 		respond((config) => (bearer(config) === "Bearer fresh" ? ok(config, config.url) : 401));
 
-		const first = axiosInstance.get("games");
-		const second = axiosInstance.get("players");
-		await vi.waitFor(() => expect(mocks.refreshSession).toHaveBeenCalledTimes(1));
-		await new Promise((resolve) => setTimeout(resolve, 0));
-		finish();
+		const requests = [axiosInstance.get("games"), axiosInstance.get("players"), axiosInstance.get("locations")];
+		await vi.waitFor(() => expect(gate.waiting()).toBe(3));
+		gate.resolve("fresh");
 
-		const responses = await Promise.all([first, second]);
-		expect(responses.map((r) => r.data)).toEqual(["games", "players"]);
-		expect(mocks.refreshSession).toHaveBeenCalledTimes(1);
+		const responses = await Promise.all(requests);
+		expect(responses.map((r) => r.data)).toEqual(["games", "players", "locations"]);
+		expect(gate.started()).toBe(1);
+	});
+
+	it("rejects every concurrent 401 with an ApiError when the shared refresh fails", async () => {
+		const gate = sharedRefresh();
+		const seen = respond(() => 401);
+
+		const requests = [axiosInstance.get("games"), axiosInstance.get("players"), axiosInstance.get("locations")];
+		await vi.waitFor(() => expect(gate.waiting()).toBe(3));
+		gate.reject(new Error("refresh failed"));
+
+		const results = await Promise.allSettled(requests);
+		for (const result of results) {
+			expect(result).toMatchObject({
+				status: "rejected",
+				reason: { kind: "client", status: 401, message: expect.any(String) },
+			});
+			expect((result as PromiseRejectedResult).reason).not.toBeInstanceOf(Error);
+		}
+		expect(gate.started()).toBe(1);
+		expect(seen).toHaveLength(3);
+		expect(useAuth.getState().accessToken).toBeNull();
 	});
 
 	it("signs out and goes to the login page when the cookie session is gone", async () => {

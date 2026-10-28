@@ -1,6 +1,6 @@
 import { useSelector } from "@tanstack/react-form";
 import { noop } from "@tanstack/react-query";
-import { differenceInMinutes, format, startOfMinute, subMinutes } from "date-fns";
+import { differenceInMinutes, startOfMinute, subMinutes } from "date-fns";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -27,6 +27,7 @@ import { SessionFormFields } from "@/routes/sessions/-components/SessionFormFiel
 import { useSessionFormState } from "@/routes/sessions/-hooks/useSessionFormState";
 import { applyPlayMode, coopDefaults } from "@/routes/sessions/-utils/coopSession";
 import { sessionFormOpts } from "@/routes/sessions/-utils/sessionFormOpts";
+import { toDisplayTime } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 
 const DEFAULT_MINUTES = 30;
@@ -135,7 +136,7 @@ export const PlaySessionSheet = (props: Props) => {
 						{runningGame && (
 							<BgtDialogDescription className="text-sm">
 								{t("play.finish.subtitle", {
-									time: format(defaults.start, settings.timeFormat),
+									time: toDisplayTime(defaults.start, settings.timeFormat, settings.uiLanguage),
 									duration: shortDuration(defaults.minutes),
 									location: gameNight.location.name,
 								})}
