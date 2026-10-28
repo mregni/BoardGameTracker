@@ -316,11 +316,6 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.Entity<Session>()
-            .HasMany(x => x.ExtraImages)
-            .WithOne(x => x.Play)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<Session>()
             .HasMany(x => x.Expansions)
             .WithMany(x => x.Sessions);
 

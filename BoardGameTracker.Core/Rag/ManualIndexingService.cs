@@ -1,6 +1,5 @@
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
@@ -84,7 +83,7 @@ public class ManualIndexingService : IManualIndexingService
 
             await _aiClientFactory.EnsureModelsAvailableAsync(cancellationToken);
 
-            var path = GetPhysicalPath(manual.StoredFileName);
+            var path = PathHelper.MapManualFileToPhysical(manual.StoredFileName);
             List<PdfPageText> pages;
             await using (var stream = _diskProvider.OpenRead(path))
             {
@@ -170,17 +169,5 @@ public class ManualIndexingService : IManualIndexingService
         }
 
         return entities;
-    }
-
-    private static string GetPhysicalPath(string storedFileName)
-    {
-        var root = Path.GetFullPath(PathHelper.FullManualsPath);
-        var fullPath = Path.GetFullPath(Path.Combine(root, storedFileName));
-        if (!fullPath.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.Ordinal))
-        {
-            throw new EntityNotFoundException(nameof(Manual), storedFileName);
-        }
-
-        return fullPath;
     }
 }

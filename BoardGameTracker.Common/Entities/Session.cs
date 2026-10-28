@@ -40,7 +40,6 @@ public class Session : HasId
     public Location? Location { get; private set; }
     public int? GameNightId { get; private set; }
     public GameNight? GameNight { get; private set; }
-    public ICollection<Image> ExtraImages { get; private set; }
     public ICollection<PlayerSession> PlayerSessions { get; private set; }
 
     public Session(int gameId, DateTime start, DateTime end, string comment)
@@ -53,7 +52,6 @@ public class Session : HasId
         End = end; // Use property setter for validation
         Comment = comment;
         Expansions = new List<Expansion>();
-        ExtraImages = new List<Image>();
         PlayerSessions = new List<PlayerSession>();
     }
 
@@ -150,12 +148,6 @@ public class Session : HasId
         IsCoop = false;
         TeamWon = null;
         TeamScore = null;
-    }
-
-    public void AddImage(Image image)
-    {
-        Guard.Against.Null(image);
-        ExtraImages.Add(image);
     }
 
     public TimeSpan GetDuration() => End - Start;
