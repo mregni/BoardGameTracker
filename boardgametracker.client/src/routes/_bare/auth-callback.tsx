@@ -5,6 +5,7 @@ import { z } from "zod";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import { BgtSpinner } from "@/components/BgtLoadingSpinner/BgtSpinner";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
 import type { LoginResponse } from "@/models/Auth/Auth";
@@ -104,7 +105,7 @@ function AuthCallbackPage() {
 					</BgtCard>
 				) : (
 					<div className="text-center">
-						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+						<BgtSpinner className="size-8 text-primary" />
 						<BgtText size="3" color="white" className="mt-4">
 							{t("authenticating")}
 						</BgtText>

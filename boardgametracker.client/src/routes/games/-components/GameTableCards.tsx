@@ -146,6 +146,7 @@ export const GameTableCards = (props: Props) => {
 								onStartEdit={() => startEdit(game.id, "buyingPrice")}
 								onStopEdit={stopEdit}
 								onChange={(buyingPrice) => updateGame({ ...game, buyingPrice })}
+								ariaLabel={`${t("games:columns.price")}: ${game.title}`}
 								align="right"
 								size="sm"
 								className="h-9 w-full text-sm"

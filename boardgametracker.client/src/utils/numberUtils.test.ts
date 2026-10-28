@@ -219,6 +219,21 @@ describe("numberUtils", () => {
 		it.each([[""], ["   "], ["abc"], ["8,1x"], ["-"], [","], [null], [undefined]])("returns null for %s", (input) => {
 			expect(parseDecimal(input)).toBeNull();
 		});
+
+		it.each([
+			["en-US", "1,250", 1250],
+			["en-US", "1.5", 1.5],
+			["en-US", "1,234.5", 1234.5],
+			["nl-BE", "1.250", 1250],
+			["nl-BE", "1,5", 1.5],
+			["nl-BE", "3.25", 3.25],
+			["en-US", "1,234,567", 1234567],
+			["nl-BE", "1.234,5", 1234.5],
+			[undefined, "1,250", 1.25],
+			[undefined, "1.250", 1.25],
+		])("parses with locale %s: %s", (locale, input, expected) => {
+			expect(parseDecimal(input, locale)).toBe(expected);
+		});
 	});
 
 	describe("formatFileSize", () => {

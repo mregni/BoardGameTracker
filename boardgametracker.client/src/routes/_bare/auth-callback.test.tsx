@@ -98,6 +98,7 @@ describe("AuthCallbackPage", () => {
 		);
 
 		const { rerender } = renderWithTheme(<mocks.captured.Page />);
+		expect(screen.getByTestId("bgt-spinner")).toBeInTheDocument();
 		rerender(<mocks.captured.Page />);
 		resolveAdopt(login);
 

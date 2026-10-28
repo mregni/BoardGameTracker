@@ -33,9 +33,10 @@ interface ImportPriceInputProps {
 	placeholder: string;
 	disabled: boolean;
 	currency?: string;
+	ariaLabel: string;
 }
 
-const ImportPriceInput = ({ price, onChange, placeholder, disabled, currency }: ImportPriceInputProps) => {
+const ImportPriceInput = ({ price, onChange, placeholder, disabled, currency, ariaLabel }: ImportPriceInputProps) => {
 	const decimal = useDecimalInput(price || null, (value) => onChange(value ?? 0));
 	return (
 		<BgtSimpleInputField
@@ -48,6 +49,7 @@ const ImportPriceInput = ({ price, onChange, placeholder, disabled, currency }: 
 			disabled={disabled}
 			className="w-32.5"
 			suffixLabel={currency}
+			ariaLabel={ariaLabel}
 		/>
 	);
 };
@@ -198,6 +200,7 @@ function RouteComponent() {
 						placeholder={t("game:price.placeholder")}
 						disabled={row.original.inCollection}
 						currency={settings?.currency}
+						ariaLabel={`${t("game:price.label")}: ${row.original.title}`}
 					/>
 				),
 				header: t("game:price.label"),
@@ -209,6 +212,7 @@ function RouteComponent() {
 						value={row.original.state}
 						onValueChange={(value) => updateGame(row.original.bggId, { state: value as GameState })}
 						disabled={row.original.inCollection}
+						aria-label={`${t("state")}: ${row.original.title}`}
 						items={Object.values(GameState).map((value) => ({
 							label: t(getItemStateTranslationKey(value, false)),
 							value: value,
@@ -241,6 +245,7 @@ function RouteComponent() {
 						}
 						type="date"
 						disabled={row.original.inCollection}
+						ariaLabel={`${t("game:added-date.label")}: ${row.original.title}`}
 					/>
 				),
 				header: t("game:added-date.label"),
@@ -295,7 +300,11 @@ function RouteComponent() {
 								/>
 							</div>
 							<div>
-								<BgtButton onClick={() => triggerImport()} disabled={checkedCount > maxImport} variant="primary">
+								<BgtButton
+									onClick={() => triggerImport()}
+									disabled={checkedCount === 0 || checkedCount > maxImport}
+									variant="primary"
+								>
 									{t("games:import.start-import", {
 										count: checkedCount,
 										totalCount: maxImport,

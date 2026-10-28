@@ -141,7 +141,10 @@ export const formatFileSize = (bytes: number, locale?: string | null): string =>
 export const formatDecimalInput = (value: NumberValue, locale?: string | null): string =>
 	isMissing(value) ? "" : formatNumber(value, locale, { useGrouping: false, maximumFractionDigits: 10 });
 
-export const parseDecimal = (input: string | null | undefined): number | null => {
+const localeDecimalSeparator = (locale: string) =>
+	new Intl.NumberFormat(locale).formatToParts(1.1).find((part) => part.type === "decimal")?.value;
+
+export const parseDecimal = (input: string | null | undefined, locale?: string | null): number | null => {
 	const compact = (input ?? "").replace(/[\s  ']/g, "");
 	if (compact === "") {
 		return null;
@@ -149,10 +152,16 @@ export const parseDecimal = (input: string | null | undefined): number | null =>
 
 	const lastComma = compact.lastIndexOf(",");
 	const lastDot = compact.lastIndexOf(".");
-	const decimalIndex = Math.max(lastComma, lastDot);
+	const lastIndex = Math.max(lastComma, lastDot);
+	const isGrouping =
+		(lastComma < 0 || lastDot < 0) &&
+		!!locale &&
+		compact[lastIndex] !== localeDecimalSeparator(locale) &&
+		/^[+-]?\d{1,3}(,\d{3})+$/.test(compact.replaceAll(".", ","));
+	const decimalIndex = isGrouping ? -1 : lastIndex;
 	const normalized =
 		decimalIndex < 0
-			? compact
+			? compact.replace(/[.,]/g, "")
 			: `${compact.slice(0, decimalIndex).replace(/[.,]/g, "")}.${compact.slice(decimalIndex + 1)}`;
 
 	if (!/^[+-]?(\d+\.?\d*|\.\d+)$/.test(normalized)) {

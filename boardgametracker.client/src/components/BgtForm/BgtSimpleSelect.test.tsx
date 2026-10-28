@@ -149,6 +149,15 @@ describe("BgtSimpleSelect", () => {
 			expect(screen.getByText("Choose...")).toBeInTheDocument();
 		});
 
+		it.each([
+			[{ label: "Game", placeholder: "Pick one" }, "Game"],
+			[{ placeholder: "Pick one" }, "Pick one"],
+			[{ label: "Game", "aria-label": "Filter by game" }, "Filter by game"],
+		])("should name the trigger from %o", (props, name) => {
+			renderWithTheme(<BgtSimpleSelect {...defaultProps} {...props} />);
+			expect(screen.getByRole("combobox", { name })).toBeInTheDocument();
+		});
+
 		it("should render caret down icon when closed", () => {
 			renderWithTheme(<BgtSimpleSelect {...defaultProps} />);
 			expect(screen.getByTestId("caret-down-icon")).toBeInTheDocument();

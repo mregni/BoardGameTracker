@@ -19,6 +19,7 @@ interface Props {
 	align?: "left" | "right";
 	readOnly?: boolean;
 	size?: "xs" | "sm";
+	ariaLabel?: string;
 }
 
 type EditorProps = Omit<Props, "editing" | "onStartEdit" | "align" | "readOnly" | "format">;
@@ -26,8 +27,8 @@ type EditorProps = Omit<Props, "editing" | "onStartEdit" | "align" | "readOnly" 
 const isOutOfRange = (value: number, min?: number, max?: number) =>
 	(min !== undefined && value < min) || (max !== undefined && value > max);
 
-const NumberEditor = ({ value, onStopEdit, onChange, min, max, prefix, suffix, className }: EditorProps) => {
-	const { input } = useNumberFormat();
+const NumberEditor = ({ value, onStopEdit, onChange, min, max, prefix, suffix, className, ariaLabel }: EditorProps) => {
+	const { input, locale } = useNumberFormat();
 	const [draft, setDraft] = useState(() => input(value));
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -37,7 +38,7 @@ const NumberEditor = ({ value, onStopEdit, onChange, min, max, prefix, suffix, c
 
 	const commit = () => {
 		const trimmed = draft.trim();
-		const parsed = parseDecimal(trimmed);
+		const parsed = parseDecimal(trimmed, locale);
 		const invalid = trimmed !== "" && (parsed === null || isOutOfRange(parsed, min, max));
 		if (!invalid && parsed !== value) {
 			onChange(parsed);
@@ -61,6 +62,7 @@ const NumberEditor = ({ value, onStopEdit, onChange, min, max, prefix, suffix, c
 				type="text"
 				inputMode="decimal"
 				autoComplete="off"
+				aria-label={ariaLabel}
 				value={draft}
 				onChange={(event) => setDraft(event.target.value)}
 				onBlur={commit}
