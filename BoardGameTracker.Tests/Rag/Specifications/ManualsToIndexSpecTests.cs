@@ -35,7 +35,7 @@ public class ManualsToIndexSpecTests
 
     [Theory]
     [InlineData(ManualIndexStatus.Pending, true)]
-    [InlineData(ManualIndexStatus.Failed, true)]
+    [InlineData(ManualIndexStatus.Failed, false)]
     [InlineData(ManualIndexStatus.Indexing, true)]
     [InlineData(ManualIndexStatus.Indexed, false)]
     public void IsSatisfiedBy_ShouldSelectManual_WhenStatusRequiresIndexing(ManualIndexStatus status, bool expected)
@@ -46,7 +46,7 @@ public class ManualsToIndexSpecTests
     }
 
     [Fact]
-    public void Evaluate_ShouldExcludeIndexedManuals_WhenListContainsAllStatuses()
+    public void Evaluate_ShouldExcludeIndexedAndFailedManuals_WhenListContainsAllStatuses()
     {
         var manuals = new List<Manual>
         {
@@ -58,6 +58,6 @@ public class ManualsToIndexSpecTests
 
         var result = new ManualsToIndexSpec().Evaluate(manuals).ToList();
 
-        result.Select(m => m.Id).Should().BeEquivalentTo(new[] { 1, 2, 4 });
+        result.Select(m => m.Id).Should().BeEquivalentTo(new[] { 1, 4 });
     }
 }

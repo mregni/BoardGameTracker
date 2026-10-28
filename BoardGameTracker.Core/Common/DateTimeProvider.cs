@@ -46,6 +46,11 @@ public class DateTimeProvider : IDateTimeProvider
             return localDateTime;
         }
 
+        if (_timeZone.IsInvalidTime(localDateTime))
+        {
+            localDateTime = localDateTime.AddHours(1);
+        }
+
         return TimeZoneInfo.ConvertTimeToUtc(localDateTime, _timeZone);
     }
 }

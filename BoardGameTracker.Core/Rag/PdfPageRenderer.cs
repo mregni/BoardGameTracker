@@ -36,10 +36,24 @@ public class PdfPageRenderer : IPdfPageRenderer
         }
 
         Directory.CreateDirectory(directory);
-        var rendered = await RunPdfToPpmAsync(pdfPath, target, page, cancellationToken);
-        if (!rendered || !File.Exists(target))
+        var tempRoot = Path.Combine(directory, $"page-{page}.{Guid.NewGuid():N}.tmp");
+        var tempPng = tempRoot + ".png";
+        try
         {
-            return null;
+            var rendered = await RunPdfToPpmAsync(pdfPath, tempRoot, page, cancellationToken);
+            if (!rendered || !File.Exists(tempPng))
+            {
+                return null;
+            }
+
+            File.Move(tempPng, target, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(tempPng))
+            {
+                File.Delete(tempPng);
+            }
         }
 
         return File.OpenRead(target);
@@ -65,11 +79,9 @@ public class PdfPageRenderer : IPdfPageRenderer
     private static string GetFiguresDirectory(int manualId) =>
         Path.Combine(PathHelper.FullManualFiguresPath, manualId.ToString(CultureInfo.InvariantCulture));
 
-    private async Task<bool> RunPdfToPpmAsync(string pdfPath, string targetPng, int page,
+    private async Task<bool> RunPdfToPpmAsync(string pdfPath, string outputRoot, int page,
         CancellationToken cancellationToken)
     {
-        var prefix = targetPng.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? targetPng[..^4] : targetPng;
-
         var startInfo = new ProcessStartInfo
         {
             FileName = "pdftoppm",
@@ -86,7 +98,7 @@ public class PdfPageRenderer : IPdfPageRenderer
         startInfo.ArgumentList.Add(RenderDpi.ToString(CultureInfo.InvariantCulture));
         startInfo.ArgumentList.Add("-singlefile");
         startInfo.ArgumentList.Add(pdfPath);
-        startInfo.ArgumentList.Add(prefix);
+        startInfo.ArgumentList.Add(outputRoot);
 
         await RenderSlots.WaitAsync(cancellationToken);
         try

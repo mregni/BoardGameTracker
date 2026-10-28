@@ -431,6 +431,32 @@ public class GameServiceTests
     }
 
     [Fact]
+    public async Task CreateWatchForGame_ShouldRemoveTheNewWatch_WhenSavingFails()
+    {
+        var watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var existingGame = new Game("Brass", true) { Id = 1 };
+
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(existingGame);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ThrowsAsync(new InvalidOperationException("db down"));
+        _changeDetectionClientMock
+            .Setup(x => x.CreateWatchAsync("https://shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ChangeDetectionStatus.Ok, (string?)watchId));
+        _changeDetectionClientMock
+            .Setup(x => x.DeleteWatchAsync(watchId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ChangeDetectionStatus.Ok);
+
+        var action = async () => await _gameService.CreateWatchForGame(1, "https://shop.example.com/brass");
+
+        await action.Should().ThrowAsync<InvalidOperationException>();
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _changeDetectionClientMock.Verify(
+            x => x.CreateWatchAsync("https://shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.DeleteWatchAsync(watchId, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task CreateWatchForGame_ShouldThrow_WhenChangeDetectionNotConfigured()
     {
         var existingGame = new Game("Brass", true) { Id = 1 };
@@ -616,6 +642,34 @@ public class GameServiceTests
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
         _gameRepositoryMock.Verify(x => x.DeleteAsync(gameId), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(ChangeDetectionStatus.Ok)]
+    [InlineData(ChangeDetectionStatus.Unreachable)]
+    public async Task Delete_ShouldRemoveThePriceWatch_WithoutFailingTheDelete(ChangeDetectionStatus status)
+    {
+        var watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var game = new Game("Brass") { Id = 1 };
+        game.UpdateChangeDetectionWatchId(watchId);
+        var manuals = new List<Manual>();
+
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
+        _gameRepositoryMock.Setup(x => x.DeleteAsync(1)).ReturnsAsync(true);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+        _manualServiceMock.Setup(x => x.GetManualsForGame(1)).ReturnsAsync(manuals);
+        _changeDetectionClientMock.Setup(x => x.DeleteWatchAsync(watchId, It.IsAny<CancellationToken>())).ReturnsAsync(status);
+
+        await _gameService.Delete(1);
+
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _gameRepositoryMock.Verify(x => x.DeleteAsync(1), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync(null), Times.Once);
+        _manualServiceMock.Verify(x => x.GetManualsForGame(1), Times.Once);
+        _manualServiceMock.Verify(x => x.DeleteManualFiles(manuals), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.DeleteWatchAsync(watchId, It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -896,6 +950,55 @@ public class GameServiceTests
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("/images/cover/old.webp"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateGame_ShouldRemoveTheNewImage_WhenSavingFails()
+    {
+        var command = new UpdateGameCommand
+        {
+            Id = 1,
+            Title = "Updated Game",
+            HasScoring = false,
+            State = GameState.Owned,
+            Image = "/images/cover/new.webp"
+        };
+        var existingGame = new Game("Original Game", false) { Id = 1 };
+        existingGame.UpdateImage("/images/cover/old.webp");
+
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(existingGame);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ThrowsAsync(new InvalidOperationException("db down"));
+
+        var action = async () => await _gameService.UpdateGame(command);
+
+        await action.Should().ThrowAsync<InvalidOperationException>();
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("/images/cover/new.webp"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateGameFromCommand_ShouldRemoveTheUploadedImage_WhenSavingFails()
+    {
+        var command = new CreateGameCommand
+        {
+            Title = "Simple Game",
+            HasScoring = false,
+            State = GameState.Wanted,
+            Image = "/images/cover/new.webp"
+        };
+
+        _gameRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<Game>())).ReturnsAsync((Game g) => g);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ThrowsAsync(new InvalidOperationException("db down"));
+
+        var action = async () => await _gameService.CreateGameFromCommand(command);
+
+        await action.Should().ThrowAsync<InvalidOperationException>();
+        _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("/images/cover/new.webp"), Times.Once);
         VerifyNoOtherCalls();
     }
 
