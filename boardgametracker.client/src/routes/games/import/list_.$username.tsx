@@ -302,7 +302,7 @@ function RouteComponent() {
 							<div>
 								<BgtButton
 									onClick={() => triggerImport()}
-									disabled={checkedCount > maxImport}
+									disabled={checkedCount === 0 || checkedCount > maxImport}
 									variant="primary"
 								>
 									{t("games:import.start-import", {
