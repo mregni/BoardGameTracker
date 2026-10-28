@@ -3572,6 +3572,16 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
           }
         ],
         "responses": {

@@ -33,4 +33,16 @@ public class SessionsByLocationSpecsTests
         spec.AsNoTracking.Should().BeTrue();
         spec.ShouldIncludeExactly("PlayerSessions");
     }
+
+    [Fact]
+    public void SessionsByLocationRecentFirstSpec_ShouldLimitToTheMostRecent_WhenCountProvided()
+    {
+        var first = SessionAt(1, Home, new DateTime(2030, 1, 1));
+        var second = SessionAt(2, Home, new DateTime(2030, 1, 5));
+        var third = SessionAt(3, Home, new DateTime(2030, 1, 9));
+
+        var result = new SessionsByLocationRecentFirstSpec(1, 2).Evaluate([first, second, third]).ToList();
+
+        result.Select(x => x.Id).Should().Equal(3, 2);
+    }
 }
