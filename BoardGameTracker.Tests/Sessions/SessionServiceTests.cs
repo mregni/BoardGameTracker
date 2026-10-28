@@ -1297,6 +1297,26 @@ public class SessionServiceTests
     }
 
     [Fact]
+    public async Task UpdateFromCommand_ShouldKeepTheResultOfANewPlayer_WhenSwitchingCoopOff()
+    {
+        var session = ExistingSession(true);
+        session.MarkAsCoop(true, null);
+        var command = CoopUpdateCommand(false, null);
+        command.PlayerSessions.Add(new CreatePlayerSessionCommand { PlayerId = 3, Won = false, Score = 12 });
+
+        var result = await _sessionService.UpdateFromCommand(command);
+
+        result.IsCoop.Should().BeFalse();
+        result.PlayerSessions.Should().ContainSingle(ps => ps.PlayerId == 3 && !ps.Won && ps.Score == 12);
+
+        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task UpdateFromCommand_ShouldRequireATeamResult_WhenCoop()
     {
         var action = async () => await _sessionService.UpdateFromCommand(CoopUpdateCommand(true, null));

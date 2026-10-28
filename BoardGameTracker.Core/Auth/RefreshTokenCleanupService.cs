@@ -33,8 +33,6 @@ public class RefreshTokenCleanupService : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Task.Delay(Interval, stoppingToken);
-
             try
             {
                 using var scope = _scopeFactory.CreateScope();
@@ -47,6 +45,8 @@ public class RefreshTokenCleanupService : BackgroundService
             {
                 _logger.LogError(ex, "Error during refresh token cleanup");
             }
+
+            await Task.Delay(Interval, stoppingToken);
         }
     }
 }

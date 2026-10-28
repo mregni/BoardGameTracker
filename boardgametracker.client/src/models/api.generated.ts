@@ -3029,7 +3029,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    count?: number;
+                };
                 header?: never;
                 path: {
                     id: number;

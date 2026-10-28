@@ -232,14 +232,63 @@ public class ImageService : IImageService
 
     private static MemoryStream ResizeToWebp(SKCodec codec)
     {
-        using var source = SKBitmap.Decode(codec)
+        var scale = Math.Min(1f, (float)ImageSize / Math.Min(codec.Info.Width, codec.Info.Height));
+        var decodeSize = codec.GetScaledDimensions(scale);
+        using var source = SKBitmap.Decode(codec, new SKImageInfo(decodeSize.Width, decodeSize.Height, SKColorType.Rgba8888, SKAlphaType.Premul))
             ?? throw new ValidationException(Constants.Errors.ImageUnsupportedFormat);
         using var sourceImage = SKImage.FromBitmap(source);
+
+        var origin = codec.EncodedOrigin;
+        var sideways = origin is SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightTop or SKEncodedOrigin.RightBottom or SKEncodedOrigin.LeftBottom;
+        var orientedWidth = sideways ? source.Height : source.Width;
+        var orientedHeight = sideways ? source.Width : source.Height;
+        var side = Math.Min(orientedWidth, orientedHeight);
+
         using var surface = SKSurface.Create(new SKImageInfo(ImageSize, ImageSize, SKColorType.Rgba8888, SKAlphaType.Premul));
-        surface.Canvas.DrawImage(sourceImage, new SKRect(0, 0, ImageSize, ImageSize), Sampling);
+        var canvas = surface.Canvas;
+        canvas.Scale((float)ImageSize / side);
+        canvas.Translate(-(orientedWidth - side) / 2f, -(orientedHeight - side) / 2f);
+        ApplyOrigin(canvas, origin, source.Width, source.Height);
+        canvas.DrawImage(sourceImage, 0, 0, Sampling);
         using var resized = surface.Snapshot();
         using var encoded = resized.Encode(SKEncodedImageFormat.Webp, WebpQuality);
         return new MemoryStream(encoded.ToArray());
+    }
+
+    private static void ApplyOrigin(SKCanvas canvas, SKEncodedOrigin origin, int width, int height)
+    {
+        switch (origin)
+        {
+            case SKEncodedOrigin.TopRight:
+                canvas.Translate(width, 0);
+                canvas.Scale(-1, 1);
+                break;
+            case SKEncodedOrigin.BottomRight:
+                canvas.Translate(width, height);
+                canvas.RotateDegrees(180);
+                break;
+            case SKEncodedOrigin.BottomLeft:
+                canvas.Translate(0, height);
+                canvas.Scale(1, -1);
+                break;
+            case SKEncodedOrigin.LeftTop:
+                canvas.RotateDegrees(90);
+                canvas.Scale(1, -1);
+                break;
+            case SKEncodedOrigin.RightTop:
+                canvas.Translate(height, 0);
+                canvas.RotateDegrees(90);
+                break;
+            case SKEncodedOrigin.RightBottom:
+                canvas.Translate(height, width);
+                canvas.RotateDegrees(90);
+                canvas.Scale(-1, 1);
+                break;
+            case SKEncodedOrigin.LeftBottom:
+                canvas.Translate(0, width);
+                canvas.RotateDegrees(-90);
+                break;
+        }
     }
 
     private static async Task<byte[]?> ReadWithLimitAsync(HttpContent content, long maxBytes)

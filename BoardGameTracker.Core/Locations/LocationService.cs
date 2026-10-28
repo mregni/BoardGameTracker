@@ -68,10 +68,10 @@ public class LocationService : ILocationService
         };
     }
 
-    public Task<List<Session>> GetSessions(int id)
+    public Task<List<Session>> GetSessions(int id, int? count)
     {
         _logger.LogDebug("Fetching sessions for location {LocationId}", id);
-        return _sessionRepository.ListAsync(new SessionsByLocationRecentFirstSpec(id));
+        return _sessionRepository.ListAsync(new SessionsByLocationRecentFirstSpec(id, count));
     }
 
     public async Task<Location> Create(CreateLocationCommand command)

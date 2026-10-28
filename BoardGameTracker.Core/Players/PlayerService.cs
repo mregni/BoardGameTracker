@@ -69,7 +69,16 @@ public class PlayerService : IPlayerService
         var name = await EnsureUniqueName(command.Name, null);
         var player = new Player(name, command.Image, command.Email);
         await _playerRepository.CreateAsync(player);
-        await _unitOfWork.SaveChangesAsync();
+        try
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            await _imageService.DeleteImageIfUnusedAsync(command.Image);
+            throw;
+        }
+
         _logger.LogInformation("Player {PlayerId} ({Name}) created", player.Id, player.Name);
         return player;
     }
@@ -126,6 +135,11 @@ public class PlayerService : IPlayerService
         catch (Exception)
         {
             _imageService.DeleteImage(accountImage);
+            if (newImage != null && newImage != previousImage)
+            {
+                await _imageService.DeleteImageIfUnusedAsync(newImage);
+            }
+
             throw;
         }
 

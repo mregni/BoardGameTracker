@@ -20,7 +20,7 @@ export const useLocationData = ({ locationId }: Props) => {
 		queries: [
 			getLocation(locationId),
 			getLocationStatistics(locationId),
-			getLocationSessions(locationId),
+			getLocationSessions(locationId, 5),
 			getSettings(),
 		],
 	});

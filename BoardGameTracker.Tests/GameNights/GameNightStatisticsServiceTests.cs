@@ -485,7 +485,7 @@ public class GameNightStatisticsServiceTests
             GameNight.Create("Last autumn", "", new DateTime(2025, 11, 1, 20, 0, 0, DateTimeKind.Utc), 1, 1),
             GameNight.Create("New year", "", new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), 1, 1),
             GameNight.Create("This morning", "", Now.AddHours(-1), 1, 1),
-            GameNight.Create("Tonight", "", Now.AddHours(8), 1, 1)
+            GameNight.Create("Tomorrow", "", Now.AddHours(13), 1, 1)
         };
         for (var i = 0; i < nights.Length; i++)
         {
