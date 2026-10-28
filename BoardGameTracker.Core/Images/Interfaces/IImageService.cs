@@ -10,5 +10,6 @@ public interface IImageService
     Task<string> SaveProfileImage(byte[] content);
     Task<string?> CopyProfileImage(string image);
     void DeleteImage(string? image);
+    Task DeleteImageIfUnusedAsync(string? image);
     void ClearAllImages();
 }

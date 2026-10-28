@@ -171,28 +171,29 @@ public class GameLoanTests
     }
 
     [Fact]
-    public void LoanToPlayer_WithDueDateBeforeLaterLoanStarts_ShouldSucceed()
+    public void LoanToPlayer_WithDueDateBeforeAnUnreturnedLaterLoan_ShouldThrow()
     {
-        var anchor = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
         var game = new Game("Test Game");
-        game.LoanToPlayer(1, anchor.AddDays(10));
+        game.LoanToPlayer(1, new DateTime(2026, 11, 1, 0, 0, 0, DateTimeKind.Utc));
 
-        var loan = game.LoanToPlayer(2, anchor, anchor.AddDays(7));
+        var act = () => game.LoanToPlayer(2, new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2026, 10, 15, 0, 0, 0, DateTimeKind.Utc));
 
-        loan.DueDate.Should().Be(anchor.AddDays(7));
-        game.Loans.Should().HaveCount(2);
+        act.Should().Throw<DomainException>().WithMessage(Constants.Errors.GameAlreadyOnLoan);
+        game.Loans.Should().ContainSingle();
     }
 
     [Fact]
-    public void LoanToPlayer_WithDueDateEndingOnLaterLoanStart_ShouldSucceed()
+    public void LoanToPlayer_WithDueDateBeforeAReturnedLaterLoan_ShouldThrow()
     {
         var anchor = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
         var game = new Game("Test Game");
-        game.LoanToPlayer(1, anchor.AddDays(10));
+        var later = game.LoanToPlayer(1, anchor.AddDays(10));
+        later.MarkAsReturned(anchor.AddDays(12));
 
-        game.LoanToPlayer(2, anchor, anchor.AddDays(10));
+        var act = () => game.LoanToPlayer(2, anchor, anchor.AddDays(7));
 
-        game.Loans.Should().HaveCount(2);
+        act.Should().Throw<DomainException>().WithMessage(Constants.Errors.GameAlreadyOnLoan);
+        game.Loans.Should().ContainSingle();
     }
 
     [Fact]

@@ -9,7 +9,6 @@ const mocks = vi.hoisted(() => ({
 	useMatch: vi.fn(),
 	useLocation: vi.fn(),
 	getSettingsCall: vi.fn(),
-	getEnvironmentCall: vi.fn(),
 	initSentry: vi.fn(),
 	restoreSession: vi.fn(),
 	startSessionSync: vi.fn(),
@@ -41,7 +40,6 @@ vi.mock("@/hooks/useAuth", () => ({
 
 vi.mock("@/services/settingsService", () => ({
 	getSettingsCall: () => mocks.getSettingsCall(),
-	getEnvironmentCall: () => mocks.getEnvironmentCall(),
 	getLanguagesCall: vi.fn(),
 	getVersionInfoCall: vi.fn(),
 }));
@@ -343,18 +341,6 @@ describe("RootComponent", () => {
 				expect(mocks.navigate).toHaveBeenCalled();
 			});
 			expect(mocks.getSettingsCall).not.toHaveBeenCalled();
-		});
-
-		it("should never call the admin-only environment endpoint", async () => {
-			mocks.authState.authStatus = { authEnabled: true };
-			mocks.authState.isAuthenticated = true;
-			mocks.getSettingsCall.mockResolvedValue({ statistics: true });
-			render(<mocks.captured.Root />);
-
-			await waitFor(() => {
-				expect(mocks.initSentry).toHaveBeenCalled();
-			});
-			expect(mocks.getEnvironmentCall).not.toHaveBeenCalled();
 		});
 	});
 

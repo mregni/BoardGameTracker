@@ -5,7 +5,6 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models.Updates;
-using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Integrations.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
@@ -14,7 +13,6 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using Serilog.Events;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Settings;
@@ -22,7 +20,6 @@ namespace BoardGameTracker.Tests.Settings;
 public class SettingsControllerTests
 {
     private readonly Mock<ISettingsService> _settingsServiceMock;
-    private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly Mock<ILanguageService> _languageServiceMock;
     private readonly Mock<IUpdateService> _updateServiceMock;
     private readonly Mock<IIntegrationStatusService> _integrationStatusServiceMock;
@@ -31,14 +28,12 @@ public class SettingsControllerTests
     public SettingsControllerTests()
     {
         _settingsServiceMock = new Mock<ISettingsService>();
-        _environmentProviderMock = new Mock<IEnvironmentProvider>();
         _languageServiceMock = new Mock<ILanguageService>();
         _updateServiceMock = new Mock<IUpdateService>();
         _integrationStatusServiceMock = new Mock<IIntegrationStatusService>();
 
         _controller = new SettingsController(
             _settingsServiceMock.Object,
-            _environmentProviderMock.Object,
             _languageServiceMock.Object,
             _updateServiceMock.Object,
             _integrationStatusServiceMock.Object);
@@ -47,7 +42,6 @@ public class SettingsControllerTests
     private void VerifyNoOtherCalls()
     {
         _settingsServiceMock.VerifyNoOtherCalls();
-        _environmentProviderMock.VerifyNoOtherCalls();
         _languageServiceMock.VerifyNoOtherCalls();
         _updateServiceMock.VerifyNoOtherCalls();
         _integrationStatusServiceMock.VerifyNoOtherCalls();
@@ -133,39 +127,6 @@ public class SettingsControllerTests
 
         await act.Should().ThrowAsync<BoardGameTracker.Common.Exceptions.ValidationException>();
         _settingsServiceMock.Verify(x => x.UpdateSettingsAsync(model), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Theory]
-    [InlineData(true, LogEventLevel.Information, "Production", 5000, "1.2.3")]
-    [InlineData(false, LogEventLevel.Debug, "Development", 3000, "2.0.0-beta")]
-    public void GetEnvironment_ShouldReturnEnvironmentInfo(bool statisticsEnabled, LogEventLevel logLevel, string environmentName, int port, string version)
-    {
-        _environmentProviderMock.SetupGet(x => x.StatisticsEnabled).Returns(statisticsEnabled);
-        _environmentProviderMock.SetupGet(x => x.LogLevel).Returns(logLevel);
-        _environmentProviderMock.SetupGet(x => x.EnvironmentName).Returns(environmentName);
-        _environmentProviderMock.SetupGet(x => x.Port).Returns(port);
-
-        _updateServiceMock
-            .Setup(x => x.GetCurrentVersion())
-            .Returns(version);
-
-        var result = _controller.GetEnvironment();
-
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var environment = okResult.Value.Should().BeAssignableTo<UIEnvironmentDto>().Subject;
-
-        environment.EnableStatistics.Should().Be(statisticsEnabled);
-        environment.LogLevel.Should().Be(logLevel);
-        environment.EnvironmentName.Should().Be(environmentName);
-        environment.Port.Should().Be(port);
-        environment.Version.Should().Be(version);
-
-        _environmentProviderMock.VerifyGet(x => x.StatisticsEnabled, Times.Once);
-        _environmentProviderMock.VerifyGet(x => x.LogLevel, Times.Once);
-        _environmentProviderMock.VerifyGet(x => x.EnvironmentName, Times.Once);
-        _environmentProviderMock.VerifyGet(x => x.Port, Times.Once);
-        _updateServiceMock.Verify(x => x.GetCurrentVersion(), Times.Once);
         VerifyNoOtherCalls();
     }
 

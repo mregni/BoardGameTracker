@@ -29,7 +29,16 @@ public class LearningCurveBadgeEvaluator : IBadgeEvaluator
             return Task.FromResult(false);
         }
 
-        var result = scores[0] > scores[1] && scores[1] > scores[2];
+        var result = sessions.Any(LowestWins)
+            ? scores[0] < scores[1] && scores[1] < scores[2]
+            : scores[0] > scores[1] && scores[1] > scores[2];
         return Task.FromResult(result);
+    }
+
+    private static bool LowestWins(Session session)
+    {
+        var winners = session.PlayerSessions.Where(x => x.Won && x.Score != null).ToList();
+        var losers = session.PlayerSessions.Where(x => !x.Won && x.Score != null).ToList();
+        return winners.Count > 0 && losers.Count > 0 && winners.Max(x => x.Score) < losers.Min(x => x.Score);
     }
 }

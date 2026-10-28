@@ -172,16 +172,16 @@ public class UserAdminService : IUserAdminService
         var user = await _userManager.FindByIdAsync(userId)
             ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
 
-        if (userId == currentUserId && role != Constants.AuthRoles.Admin)
+        await AdminRoleGate.Lock.WaitAsync();
+        try
         {
-            var admins = await _userManager.GetUsersInRoleAsync(Constants.AuthRoles.Admin);
-            if (admins.Count == 1)
-            {
-                throw new DomainException(Constants.Errors.CannotRemoveLastAdmin);
-            }
+            await EnsureNotLastAdminAsync(userId, role, currentUserId);
+            await ReplaceRoleAsync(user, role);
         }
-
-        await ReplaceRoleAsync(user, role);
+        finally
+        {
+            AdminRoleGate.Lock.Release();
+        }
 
         _logger.LogInformation("Admin {AdminId} updated role for user {UserId} ({Username}) to {Role}",
             currentUserId, userId, user.UserName, role);
@@ -205,46 +205,47 @@ public class UserAdminService : IUserAdminService
         var user = await _userManager.FindByIdAsync(userId)
             ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
 
-        if (userId == currentUserId && role != Constants.AuthRoles.Admin)
+        await AdminRoleGate.Lock.WaitAsync();
+        try
         {
-            var admins = await _userManager.GetUsersInRoleAsync(Constants.AuthRoles.Admin);
-            if (admins.Count == 1)
-            {
-                throw new DomainException(Constants.Errors.CannotRemoveLastAdmin);
-            }
-        }
+            await EnsureNotLastAdminAsync(userId, role, currentUserId);
 
-        if (!string.Equals(user.UserName, username, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(user.UserName, username, StringComparison.OrdinalIgnoreCase))
+            {
+                var existingUser = await _userManager.FindByNameAsync(username);
+                if (existingUser != null)
+                {
+                    throw new ValidationException(Constants.Errors.UsernameAlreadyExists);
+                }
+
+                await _userManager.SetUserNameAsync(user, username);
+            }
+
+            user.UpdateEmail(email);
+
+            var previousPlayerId = user.PlayerId;
+            if (playerId != user.PlayerId)
+            {
+                if (playerId.HasValue)
+                {
+                    await DetachFromOtherAccountAsync(playerId.Value, userId);
+                    user.LinkPlayer(playerId.Value);
+                }
+                else
+                {
+                    user.UnlinkPlayer();
+                }
+            }
+
+            await _userManager.UpdateAsync(user);
+            await _playerAccountImageService.RelinkAsync(previousPlayerId, user);
+
+            await ReplaceRoleAsync(user, role);
+        }
+        finally
         {
-            var existingUser = await _userManager.FindByNameAsync(username);
-            if (existingUser != null)
-            {
-                throw new ValidationException(Constants.Errors.UsernameAlreadyExists);
-            }
-
-            await _userManager.SetUserNameAsync(user, username);
+            AdminRoleGate.Lock.Release();
         }
-
-        user.UpdateEmail(email);
-
-        var previousPlayerId = user.PlayerId;
-        if (playerId != user.PlayerId)
-        {
-            if (playerId.HasValue)
-            {
-                await DetachFromOtherAccountAsync(playerId.Value, userId);
-                user.LinkPlayer(playerId.Value);
-            }
-            else
-            {
-                user.UnlinkPlayer();
-            }
-        }
-
-        await _userManager.UpdateAsync(user);
-        await _playerAccountImageService.RelinkAsync(previousPlayerId, user);
-
-        await ReplaceRoleAsync(user, role);
 
         _logger.LogInformation("Admin {AdminId} updated user {UserId} (username: {Username}, role: {Role})",
             currentUserId, userId, username, role);
@@ -365,6 +366,20 @@ public class UserAdminService : IUserAdminService
     {
         var roles = await _userManager.GetRolesAsync(user);
         return user.ToDto(roles, await CountLinksAsync(user.Id));
+    }
+
+    private async Task EnsureNotLastAdminAsync(string userId, string role, string currentUserId)
+    {
+        if (userId != currentUserId || role == Constants.AuthRoles.Admin)
+        {
+            return;
+        }
+
+        var admins = await _userManager.GetUsersInRoleAsync(Constants.AuthRoles.Admin);
+        if (!admins.Any(a => a.Id != userId && !a.IsDisabled))
+        {
+            throw new DomainException(Constants.Errors.CannotRemoveLastAdmin);
+        }
     }
 
     private async Task ReplaceRoleAsync(ApplicationUser user, string role)

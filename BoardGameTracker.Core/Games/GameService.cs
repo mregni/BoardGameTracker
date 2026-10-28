@@ -93,7 +93,7 @@ public class GameService : IGameService
         await _gameRepository.DeleteAsync(game.Id);
         await _unitOfWork.SaveChangesAsync();
 
-        _imageService.DeleteImage(game.Image);
+        await _imageService.DeleteImageIfUnusedAsync(game.Image);
         _manualService.DeleteManualFiles(manuals);
         _logger.LogInformation("Game {GameId} deleted", id);
     }
@@ -191,7 +191,7 @@ public class GameService : IGameService
         await _unitOfWork.SaveChangesAsync();
         if (!string.IsNullOrEmpty(previousImage) && previousImage != game.Image)
         {
-            _imageService.DeleteImage(previousImage);
+            await _imageService.DeleteImageIfUnusedAsync(previousImage);
         }
 
         return game;

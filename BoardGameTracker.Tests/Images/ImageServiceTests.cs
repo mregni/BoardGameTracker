@@ -7,11 +7,15 @@ using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Helpers;
+using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Images;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
@@ -25,6 +29,7 @@ public class ImageServiceTests : IDisposable
     private readonly Mock<IDiskProvider> _diskProviderMock;
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
     private readonly Mock<ILogger<ImageService>> _loggerMock;
+    private readonly MainDbContext _context;
     private readonly ImageService _imageService;
     private readonly List<string> _filesToCleanup = [];
 
@@ -33,7 +38,10 @@ public class ImageServiceTests : IDisposable
         _diskProviderMock = new Mock<IDiskProvider>();
         _httpClientFactoryMock = new Mock<IHttpClientFactory>();
         _loggerMock = new Mock<ILogger<ImageService>>();
-        _imageService = new ImageService(_diskProviderMock.Object, _httpClientFactoryMock.Object, _loggerMock.Object);
+        _context = new MainDbContext(new DbContextOptionsBuilder<MainDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options);
+        _imageService = new ImageService(_diskProviderMock.Object, _httpClientFactoryMock.Object, _context, _loggerMock.Object);
 
         Directory.CreateDirectory(PathHelper.FullCoverImagePath);
         Directory.CreateDirectory(PathHelper.FullProfileImagePath);
@@ -46,6 +54,7 @@ public class ImageServiceTests : IDisposable
         {
             File.Delete(file);
         }
+        _context.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -324,6 +333,50 @@ public class ImageServiceTests : IDisposable
         var result = await _imageService.CopyProfileImage("/images/../../secret.txt");
 
         result.Should().BeNull();
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DeleteImageIfUnusedAsync_ShouldDeleteTheFile_WhenNothingUsesIt()
+    {
+        const string imagePath = "/images/cover/free.webp";
+        _context.Players.Add(new Player("Other", "/images/profile/other.webp"));
+        await _context.SaveChangesAsync();
+
+        await _imageService.DeleteImageIfUnusedAsync(imagePath);
+
+        _diskProviderMock.Verify(x => x.DeleteFile(PathHelper.MapImageWebPathToPhysical(imagePath)!), Times.Once);
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("player")]
+    [InlineData("game")]
+    [InlineData("user")]
+    public async Task DeleteImageIfUnusedAsync_ShouldKeepTheFile_WhenAnotherRecordUsesIt(string owner)
+    {
+        const string imagePath = "/images/profile/shared.webp";
+        switch (owner)
+        {
+            case "player":
+                _context.Players.Add(new Player("Other", imagePath));
+                break;
+            case "game":
+                var game = new Game("Other");
+                game.UpdateImage(imagePath);
+                _context.Games.Add(game);
+                break;
+            default:
+                var user = new ApplicationUser("other", "other@test.com");
+                user.UseUploadedProfileImage(imagePath);
+                _context.Users.Add(user);
+                break;
+        }
+
+        await _context.SaveChangesAsync();
+
+        await _imageService.DeleteImageIfUnusedAsync(imagePath);
+
         _diskProviderMock.VerifyNoOtherCalls();
     }
 

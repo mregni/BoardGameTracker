@@ -131,7 +131,7 @@ public class PlayerService : IPlayerService
 
         if (previousImage != dbPlayer.Image)
         {
-            _imageService.DeleteImage(previousImage);
+            await _imageService.DeleteImageIfUnusedAsync(previousImage);
         }
 
         return dbPlayer;
@@ -182,7 +182,7 @@ public class PlayerService : IPlayerService
         await _playerRepository.DeleteAsync(player.Id);
         await _unitOfWork.SaveChangesAsync();
 
-        _imageService.DeleteImage(player.Image);
+        await _imageService.DeleteImageIfUnusedAsync(player.Image);
         _logger.LogInformation("Player {PlayerId} deleted", id);
     }
 

@@ -136,6 +136,27 @@ public class UpdateCheckBackgroundServiceTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_ShouldWaitInsteadOfFailing_WhenTheIntervalIsTooLongForATimer()
+    {
+        var intervalRead = new TaskCompletionSource();
+        SetupConfig(enabled: true, intervalHours: 100_000);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>(UpdateConfig.CheckIntervalHours))
+            .Callback(() => intervalRead.TrySetResult())
+            .ReturnsAsync(100_000);
+
+        async Task IntervalReadThenPause()
+        {
+            await intervalRead.Task;
+            await Task.Delay(300);
+        }
+
+        await RunUntilAsync(CreateService(), IntervalReadThenPause());
+
+        _updateServiceMock.Verify(x => x.CheckForUpdatesAsync(), Times.Once);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_ShouldKeepRunning_WhenUpdateCheckThrows()
     {
         var secondAttempt = new TaskCompletionSource();
