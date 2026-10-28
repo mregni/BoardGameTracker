@@ -93,9 +93,31 @@ public class GameService : IGameService
         await _gameRepository.DeleteAsync(game.Id);
         await _unitOfWork.SaveChangesAsync();
 
-        _imageService.DeleteImage(game.Image);
+        await _imageService.DeleteImageIfUnusedAsync(game.Image);
         _manualService.DeleteManualFiles(manuals);
+        await DeleteWatchQuietlyAsync(game.ChangeDetectionWatchId);
         _logger.LogInformation("Game {GameId} deleted", id);
+    }
+
+    private async Task DeleteWatchQuietlyAsync(string? watchId)
+    {
+        if (string.IsNullOrWhiteSpace(watchId))
+        {
+            return;
+        }
+
+        try
+        {
+            var status = await _changeDetectionClient.DeleteWatchAsync(watchId);
+            if (status != ChangeDetectionStatus.Ok)
+            {
+                _logger.LogWarning("Could not remove price watch {WatchId}: {Status}", watchId, status);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not remove price watch {WatchId}", watchId);
+        }
     }
 
     public Task<int> CountAsync(CancellationToken cancellationToken = default)
@@ -133,7 +155,16 @@ public class GameService : IGameService
         }
 
         await _gameRepository.CreateAsync(game);
-        await _unitOfWork.SaveChangesAsync();
+        try
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            await _imageService.DeleteImageIfUnusedAsync(command.Image);
+            throw;
+        }
+
         _logger.LogInformation("Game {GameId} ({Title}) created", game.Id, game.Title);
         return game;
     }
@@ -188,10 +219,23 @@ public class GameService : IGameService
             game.UpdateAdditionDate(command.AdditionDate);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        try
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            if (previousImage != game.Image)
+            {
+                await _imageService.DeleteImageIfUnusedAsync(game.Image);
+            }
+
+            throw;
+        }
+
         if (!string.IsNullOrEmpty(previousImage) && previousImage != game.Image)
         {
-            _imageService.DeleteImage(previousImage);
+            await _imageService.DeleteImageIfUnusedAsync(previousImage);
         }
 
         return game;
@@ -409,10 +453,23 @@ public class GameService : IGameService
             throw new ValidationException(Constants.Errors.ShopUrlNotPublic);
         }
 
+        var previousWatchId = game.ChangeDetectionWatchId;
         var watchId = await ReuseOrCreateWatchAsync(game, shopUrl, cancellationToken);
         game.UpdateChangeDetectionWatchId(watchId);
         game.UpdateShopUrl(shopUrl);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception)
+        {
+            if (watchId != previousWatchId)
+            {
+                await DeleteWatchQuietlyAsync(watchId);
+            }
+
+            throw;
+        }
         _logger.LogInformation("Game {GameId} linked to changedetection.io watch {WatchId}", gameId, watchId);
         return await _gameRepository.SingleOrDefaultAsync(new GameByIdWithDetailsForReadSpec(gameId), cancellationToken) ?? game;
     }

@@ -9,6 +9,7 @@ using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Email.Interfaces;
@@ -38,6 +39,7 @@ public class AuthServiceTests : IDisposable
     private readonly Mock<IPublicUrlBuilder> _publicUrlBuilderMock;
     private readonly Mock<IBackgroundEmailSender> _backgroundEmailSenderMock;
     private readonly Mock<ILoginAttemptTracker> _loginAttemptsMock;
+    private readonly Mock<IDateTimeProvider> _dateTimeProviderMock = new();
     private readonly MainDbContext _context;
     private readonly Mock<ILogger<AuthService>> _loggerMock;
     private readonly AuthService _authService;
@@ -84,8 +86,10 @@ public class AuthServiceTests : IDisposable
             _loginAttemptsMock.Object,
             _context,
             new MemoryCache(new MemoryCacheOptions()),
+            _dateTimeProviderMock.Object,
             _loggerMock.Object);
 
+        _dateTimeProviderMock.SetupGet(x => x.UtcNow).Returns(() => DateTime.UtcNow);
         _userManagerMock.Invocations.Clear();
         _signInManagerMock.Invocations.Clear();
     }
@@ -480,6 +484,24 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
         _tokenServiceMock.Verify(x => x.SupersedeRefreshTokenAsync(unusedSuccessor), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldRevokeEverySession_WhenAReplacedTokenComesBackAfterTheRetryWindow()
+    {
+        var presented = Replaced(RefreshToken.Create("user-id-123", 7), RefreshToken.RotatedReason);
+        var unusedSuccessor = RefreshToken.Create("user-id-123", 7);
+        _dateTimeProviderMock.SetupGet(x => x.UtcNow).Returns(presented.RevokedAt!.Value.AddMinutes(5));
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("replaced")).ReturnsAsync(presented);
+        _tokenServiceMock.Setup(x => x.GetSuccessorAsync(presented)).ReturnsAsync(unusedSuccessor);
+
+        var act = () => _authService.RefreshAsync("replaced");
+
+        await act.Should().ThrowAsync<AuthenticationFailedException>();
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("replaced"), Times.Once);
+        _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync("user-id-123", It.IsAny<string>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -1082,6 +1104,51 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateProfileAsync_ShouldRefuseLinkingAPlayerWithAnotherEmail()
+    {
+        _context.Players.Add(new Player("Target", email: "someone-else@test.com") { Id = 3 });
+        await _context.SaveChangesAsync();
+
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", "test@test.com", "Name");
+        var request = new UpdateProfileRequest("Name", null, 3);
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+
+        var act = () => _authService.UpdateProfileAsync(userId, request);
+
+        (await act.Should().ThrowAsync<ForbiddenException>()).WithMessage(Constants.Errors.PlayerEmailMismatch);
+        user.PlayerId.Should().BeNull();
+
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_ShouldLinkAPlayerWithTheSameEmail()
+    {
+        _context.Players.Add(new Player("Target", email: " TEST@test.com ") { Id = 3 });
+        await _context.SaveChangesAsync();
+
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", "test@test.com", "Name");
+        var request = new UpdateProfileRequest("Name", null, 3);
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+
+        var result = await _authService.UpdateProfileAsync(userId, request);
+
+        result.PlayerId.Should().Be(3);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, user), Times.Once);
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task UpdateProfileAsync_ShouldThrowEntityNotFoundException_WhenLinkedPlayerDoesNotExist()
     {
         var userId = "user-id-123";
@@ -1129,6 +1196,24 @@ public class AuthServiceTests : IDisposable
 
         result.Should().Contain(p => p.Id == 9 && p.Name == "Mine");
         result.Should().Contain(p => p.Id == 1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLinkablePlayersAsync_ShouldHidePlayersWithAnotherEmail_ButKeepTheCallersOwnPlayer()
+    {
+        _context.Players.Add(new Player("Alice", email: "alice@test.com") { Id = 1 });
+        _context.Players.Add(new Player("Mine", email: "old@test.com") { Id = 9 });
+        _context.Players.Add(new Player("Same", email: "ME@test.com") { Id = 4 });
+        _context.Players.Add(new Player("NoEmail") { Id = 5 });
+        var caller = new ApplicationUser("me", "me@test.com");
+        caller.LinkPlayer(9);
+        _context.Users.Add(caller);
+        await _context.SaveChangesAsync();
+
+        var result = await _authService.GetLinkablePlayersAsync(caller.Id);
+
+        result.Select(p => p.Id).Should().BeEquivalentTo([9, 4, 5]);
         VerifyNoOtherCalls();
     }
 

@@ -2,7 +2,6 @@ using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common;
-using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Integrations.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
@@ -19,20 +18,17 @@ namespace BoardGameTracker.Api.Controllers;
 public class SettingsController : ControllerBase
 {
     private readonly ISettingsService _settingsService;
-    private readonly IEnvironmentProvider _environmentProvider;
     private readonly ILanguageService _languageService;
     private readonly IUpdateService _updateService;
     private readonly IIntegrationStatusService _integrationStatusService;
 
     public SettingsController(
         ISettingsService settingsService,
-        IEnvironmentProvider environmentProvider,
         ILanguageService languageService,
         IUpdateService updateService,
         IIntegrationStatusService integrationStatusService)
     {
         _settingsService = settingsService;
-        _environmentProvider = environmentProvider;
         _languageService = languageService;
         _updateService = updateService;
         _integrationStatusService = integrationStatusService;
@@ -68,23 +64,6 @@ public class SettingsController : ControllerBase
         var updated = await _settingsService.UpdateSettingsAsync(model);
         _integrationStatusService.Invalidate();
         return Ok(updated);
-    }
-
-    [HttpGet("environment")]
-    [Authorize(Roles = Constants.AuthRoles.Admin)]
-    [ProducesResponseType<UIEnvironmentDto>(StatusCodes.Status200OK)]
-    public IActionResult GetEnvironment()
-    {
-        var resources = new UIEnvironmentDto
-        {
-            EnableStatistics = _environmentProvider.StatisticsEnabled,
-            LogLevel = _environmentProvider.LogLevel,
-            EnvironmentName = _environmentProvider.EnvironmentName,
-            Port = _environmentProvider.Port,
-            Version = _updateService.GetCurrentVersion()
-        };
-
-        return Ok(resources);
     }
 
     [HttpGet("languages")]

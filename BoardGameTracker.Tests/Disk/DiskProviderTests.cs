@@ -125,6 +125,21 @@ public class DiskProviderTests: IDisposable
         }
 
         [Fact]
+        public async Task WriteFile_ShouldRemoveThePartialFile_WhenTheCopyFails()
+        {
+            var stream = new Mock<Stream>();
+            stream.SetupGet(x => x.CanRead).Returns(true);
+            stream
+                .Setup(x => x.CopyToAsync(It.IsAny<Stream>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new IOException("connection reset"));
+
+            var action = async () => await _diskProvider.WriteFile(stream.Object, "data.bin", _testDirectory);
+
+            await action.Should().ThrowAsync<IOException>();
+            Directory.EnumerateFiles(_testDirectory).Should().BeEmpty();
+        }
+
+        [Fact]
         public void ClearFolder_ShouldDeleteAllFiles_AndLeaveSubdirectories()
         {
             CreateTestFile("one.txt", "1");

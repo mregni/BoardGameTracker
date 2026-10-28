@@ -21,8 +21,8 @@ export const getLocationStatisticsCall = (id: number): Promise<LocationStatistic
 	});
 };
 
-export const getLocationSessionsCall = (id: number): Promise<Session[]> => {
-	return axiosInstance.get<Session[]>(`${domain}/${id}/sessions`).then((response) => {
+export const getLocationSessionsCall = (id: number, count?: number): Promise<Session[]> => {
+	return axiosInstance.get<Session[]>(`${domain}/${id}/sessions`, { params: { count } }).then((response) => {
 		return response.data;
 	});
 };

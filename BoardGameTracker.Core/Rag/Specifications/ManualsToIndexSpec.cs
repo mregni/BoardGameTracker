@@ -10,7 +10,6 @@ public sealed class ManualsToIndexSpec : Specification<Manual>
     {
         Query.Where(m =>
             m.IndexStatus == ManualIndexStatus.Pending ||
-            m.IndexStatus == ManualIndexStatus.Failed ||
             m.IndexStatus == ManualIndexStatus.Indexing);
     }
 }

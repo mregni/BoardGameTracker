@@ -162,4 +162,21 @@ public class DateTimeProviderTests
         result.Should().Be(utcTime);
         result.Kind.Should().Be(DateTimeKind.Utc);
     }
+
+    [Fact]
+    public void ConvertToUtc_ShouldShiftForward_WhenTheLocalTimeFallsInTheDaylightSavingGap()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { "TZ", "America/Santiago" }
+            })
+            .Build();
+        var provider = new DateTimeProvider(config);
+        var midnight = new DateTime(2026, 9, 6, 0, 0, 0, DateTimeKind.Unspecified);
+
+        var result = provider.ConvertToUtc(midnight);
+
+        result.Should().Be(new DateTime(2026, 9, 6, 4, 0, 0, DateTimeKind.Utc));
+    }
 }

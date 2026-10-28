@@ -17,7 +17,6 @@ public class MaintenanceRepository : IMaintenanceRepository
 
     public async Task ClearUserDataAsync(CancellationToken cancellationToken = default)
     {
-        await _context.Set<Image>().ExecuteDeleteAsync(cancellationToken);
         await _context.Set<GameNightRsvp>().ExecuteDeleteAsync(cancellationToken);
         await _context.PlayerSessions.ExecuteDeleteAsync(cancellationToken);
         await _context.Loans.ExecuteDeleteAsync(cancellationToken);

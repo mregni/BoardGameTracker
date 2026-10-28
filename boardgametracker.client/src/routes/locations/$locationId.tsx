@@ -24,7 +24,7 @@ export const Route = createFileRoute("/locations/$locationId")({
 	loader: ({ params, context: { queryClient } }) => {
 		queryClient.query(getLocation(params.locationId)).catch(noop);
 		queryClient.query(getLocationStatistics(params.locationId)).catch(noop);
-		queryClient.query(getLocationSessions(params.locationId)).catch(noop);
+		queryClient.query(getLocationSessions(params.locationId, 5)).catch(noop);
 		queryClient.query(getGames()).catch(noop);
 		queryClient.query(getPlayers()).catch(noop);
 	},

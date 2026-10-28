@@ -7,11 +7,15 @@ using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Helpers;
+using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Images;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
@@ -25,6 +29,7 @@ public class ImageServiceTests : IDisposable
     private readonly Mock<IDiskProvider> _diskProviderMock;
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
     private readonly Mock<ILogger<ImageService>> _loggerMock;
+    private readonly MainDbContext _context;
     private readonly ImageService _imageService;
     private readonly List<string> _filesToCleanup = [];
 
@@ -33,7 +38,10 @@ public class ImageServiceTests : IDisposable
         _diskProviderMock = new Mock<IDiskProvider>();
         _httpClientFactoryMock = new Mock<IHttpClientFactory>();
         _loggerMock = new Mock<ILogger<ImageService>>();
-        _imageService = new ImageService(_diskProviderMock.Object, _httpClientFactoryMock.Object, _loggerMock.Object);
+        _context = new MainDbContext(new DbContextOptionsBuilder<MainDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options);
+        _imageService = new ImageService(_diskProviderMock.Object, _httpClientFactoryMock.Object, _context, _loggerMock.Object);
 
         Directory.CreateDirectory(PathHelper.FullCoverImagePath);
         Directory.CreateDirectory(PathHelper.FullProfileImagePath);
@@ -46,6 +54,7 @@ public class ImageServiceTests : IDisposable
         {
             File.Delete(file);
         }
+        _context.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -328,6 +337,50 @@ public class ImageServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task DeleteImageIfUnusedAsync_ShouldDeleteTheFile_WhenNothingUsesIt()
+    {
+        const string imagePath = "/images/cover/free.webp";
+        _context.Players.Add(new Player("Other", "/images/profile/other.webp"));
+        await _context.SaveChangesAsync();
+
+        await _imageService.DeleteImageIfUnusedAsync(imagePath);
+
+        _diskProviderMock.Verify(x => x.DeleteFile(PathHelper.MapImageWebPathToPhysical(imagePath)!), Times.Once);
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("player")]
+    [InlineData("game")]
+    [InlineData("user")]
+    public async Task DeleteImageIfUnusedAsync_ShouldKeepTheFile_WhenAnotherRecordUsesIt(string owner)
+    {
+        const string imagePath = "/images/profile/shared.webp";
+        switch (owner)
+        {
+            case "player":
+                _context.Players.Add(new Player("Other", imagePath));
+                break;
+            case "game":
+                var game = new Game("Other");
+                game.UpdateImage(imagePath);
+                _context.Games.Add(game);
+                break;
+            default:
+                var user = new ApplicationUser("other", "other@test.com");
+                user.UseUploadedProfileImage(imagePath);
+                _context.Users.Add(user);
+                break;
+        }
+
+        await _context.SaveChangesAsync();
+
+        await _imageService.DeleteImageIfUnusedAsync(imagePath);
+
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public void DeleteImage_ShouldNotCallDiskProvider_WhenImagePathIsNull()
     {
         _imageService.DeleteImage(null);
@@ -404,6 +457,79 @@ public class ImageServiceTests : IDisposable
 
         result.Should().Be($"/{PathHelper.ProfileImagePath}/unique-avatar.webp".Replace("\\", "/"));
         AssertResizedWebp(written);
+    }
+
+    [Fact]
+    public async Task SaveProfileImage_ShouldCropTheCenterSquare_InsteadOfStretching()
+    {
+        using var bitmap = new SKBitmap(300, 100);
+        using (var canvas = new SKCanvas(bitmap))
+        {
+            canvas.Clear(SKColors.Green);
+            using var red = new SKPaint { Color = SKColors.Red };
+            using var blue = new SKPaint { Color = SKColors.Blue };
+            canvas.DrawRect(0, 0, 100, 100, red);
+            canvas.DrawRect(200, 0, 100, 100, blue);
+        }
+
+        using var data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
+
+        var output = await SaveProfileImageAndDecode(data.ToArray());
+
+        IsMostly(output.GetPixel(20, 256), SKColors.Green).Should().BeTrue();
+        IsMostly(output.GetPixel(256, 256), SKColors.Green).Should().BeTrue();
+        IsMostly(output.GetPixel(490, 256), SKColors.Green).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SaveProfileImage_ShouldApplyTheExifOrientation()
+    {
+        using var bitmap = new SKBitmap(200, 100);
+        using (var canvas = new SKCanvas(bitmap))
+        {
+            canvas.Clear(SKColors.Blue);
+            using var red = new SKPaint { Color = SKColors.Red };
+            canvas.DrawRect(0, 0, 100, 100, red);
+        }
+
+        using var data = bitmap.Encode(SKEncodedImageFormat.Jpeg, 95);
+        var jpeg = data.ToArray();
+        byte[] exif =
+        [
+            0xFF, 0xE1, 0x00, 0x22,
+            (byte)'E', (byte)'x', (byte)'i', (byte)'f', 0x00, 0x00,
+            0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00,
+            0x01, 0x00,
+            0x12, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00
+        ];
+        var rotated = jpeg[..2].Concat(exif).Concat(jpeg[2..]).ToArray();
+
+        var output = await SaveProfileImageAndDecode(rotated);
+
+        IsMostly(output.GetPixel(256, 64), SKColors.Red).Should().BeTrue();
+        IsMostly(output.GetPixel(256, 448), SKColors.Blue).Should().BeTrue();
+    }
+
+    private async Task<SKBitmap> SaveProfileImageAndDecode(byte[] content)
+    {
+        byte[]? written = null;
+        _diskProviderMock
+            .Setup(x => x.WriteFile(It.IsAny<Stream>(), "avatar.webp", PathHelper.FullProfileImagePath))
+            .Callback<Stream, string, string>((stream, _, _) => written = ReadAll(stream))
+            .ReturnsAsync("unique-avatar.webp");
+
+        await _imageService.SaveProfileImage(content);
+
+        AssertResizedWebp(written);
+        return SKBitmap.Decode(written!);
+    }
+
+    private static bool IsMostly(SKColor actual, SKColor expected)
+    {
+        return Math.Abs(actual.Red - expected.Red) < 60
+            && Math.Abs(actual.Green - expected.Green) < 60
+            && Math.Abs(actual.Blue - expected.Blue) < 60;
     }
 
     [Fact]

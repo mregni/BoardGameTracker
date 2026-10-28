@@ -160,6 +160,11 @@ public class SessionService : ISessionService
         existingSession.SetGameNight(command.GameNightId);
 
         await SyncExpansions(existingSession, command.ExpansionIds);
+        if (!command.IsCoop)
+        {
+            existingSession.MarkAsCompetitive();
+        }
+
         SyncPlayerSessions(existingSession, command.PlayerSessions);
         ApplyPlayMode(existingSession, command);
         await UpdateLocation(existingSession, command.LocationId);

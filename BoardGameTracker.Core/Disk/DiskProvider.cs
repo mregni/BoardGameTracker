@@ -18,8 +18,16 @@ public class DiskProvider : IDiskProvider
         var uniqueFileName = fileName.GenerateUniqueFileName();
         var filePath = Path.Combine(path, uniqueFileName);
 
-        await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-        await stream.CopyToAsync(fileStream);
+        try
+        {
+            await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+            await stream.CopyToAsync(fileStream);
+        }
+        catch
+        {
+            File.Delete(filePath);
+            throw;
+        }
 
         return uniqueFileName;
     }

@@ -29,6 +29,7 @@ public class GameNightService : IGameNightService
     private readonly IGameRepository _gameRepository;
     private readonly IPlayerRepository _playerRepository;
     private readonly IEmailService _emailService;
+    private readonly IBackgroundEmailSender _backgroundEmailSender;
     private readonly IPublicUrlBuilder _publicUrlBuilder;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IMemoryCache _cache;
@@ -46,6 +47,7 @@ public class GameNightService : IGameNightService
         IGameRepository gameRepository,
         IPlayerRepository playerRepository,
         IEmailService emailService,
+        IBackgroundEmailSender backgroundEmailSender,
         IPublicUrlBuilder publicUrlBuilder,
         IDateTimeProvider dateTimeProvider,
         IMemoryCache cache,
@@ -60,6 +62,7 @@ public class GameNightService : IGameNightService
         _gameRepository = gameRepository;
         _playerRepository = playerRepository;
         _emailService = emailService;
+        _backgroundEmailSender = backgroundEmailSender;
         _publicUrlBuilder = publicUrlBuilder;
         _dateTimeProvider = dateTimeProvider;
         _logger = logger;
@@ -68,10 +71,7 @@ public class GameNightService : IGameNightService
     public async Task<List<GameNight>> GetGameNights()
     {
         _logger.LogDebug("Fetching game nights");
-        if (!await IsEnabledAsync())
-        {
-            throw new FeatureDisabledException(Constants.AppConfig.GameNightsEnabled);
-        }
+        await EnsureEnabledAsync();
 
         return await _gameNightRepository.ListAsync(new GameNightsOverviewSpec());
     }
@@ -79,6 +79,14 @@ public class GameNightService : IGameNightService
     private Task<bool> IsEnabledAsync()
     {
         return _configRepository.GetConfigValueOrDefaultAsync(Constants.AppConfig.GameNightsEnabled, true);
+    }
+
+    private async Task EnsureEnabledAsync()
+    {
+        if (!await IsEnabledAsync())
+        {
+            throw new FeatureDisabledException(Constants.AppConfig.GameNightsEnabled);
+        }
     }
 
     public Task<GameNight?> GetById(int id)
@@ -90,10 +98,7 @@ public class GameNightService : IGameNightService
     public async Task<GameNight?> GetDetail(int id)
     {
         _logger.LogDebug("Fetching details of game night {GameNightId}", id);
-        if (!await IsEnabledAsync())
-        {
-            throw new FeatureDisabledException(Constants.AppConfig.GameNightsEnabled);
-        }
+        await EnsureEnabledAsync();
 
         return await _gameNightRepository.SingleOrDefaultAsync(new GameNightDetailSpec(id));
     }
@@ -225,10 +230,7 @@ public class GameNightService : IGameNightService
 
         var toAdd = desiredPlayerIds.Except(existingPlayerIds);
         gameNight.AddInvitedPlayers(toAdd);
-        if (!existingPlayerIds.Contains(command.HostId))
-        {
-            gameNight.InvitedPlayers.First(p => p.PlayerId == command.HostId).UpdateState(GameNightRsvpState.Accepted);
-        }
+        gameNight.InvitedPlayers.First(p => p.PlayerId == command.HostId).UpdateState(GameNightRsvpState.Accepted);
 
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Game night {GameNightId} updated", command.Id);
@@ -311,6 +313,7 @@ public class GameNightService : IGameNightService
 
     public async Task<RsvpUpdateResult> UpdateRsvpByLink(Guid linkId, UpdateRsvpCommand command, bool isAuthenticated)
     {
+        await EnsureEnabledAsync();
         await GameNightLinkAccess.EnsureAllowedAsync(_configRepository, isAuthenticated);
 
         var rsvp = await FindRsvpAsync(command);
@@ -344,7 +347,11 @@ public class GameNightService : IGameNightService
             rsvp = await _rsvpRepository.SingleOrDefaultAsync(new RsvpByPlayerAndGameNightSpec(command.PlayerId.Value, command.GameNightId.Value));
         }
 
-        Guard.Against.Null(rsvp);
+        if (rsvp == null)
+        {
+            throw new EntityNotFoundException(nameof(GameNightRsvp), command.Id ?? 0);
+        }
+
         return rsvp;
     }
 
@@ -411,19 +418,10 @@ public class GameNightService : IGameNightService
         var subject = $"RSVP update: {gameNight.Title}";
         var body = $"<p><strong>{playerName}</strong> {response} game night <strong>{title}</strong> on {date}.</p>";
 
-        try
-        {
-            await _emailService.SendAsync(hostEmail, subject, body);
-            _logger.LogInformation(
-                "Sent RSVP notification to host of game night {GameNightId} for player {PlayerId}", gameNight.Id, rsvp.PlayerId);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex,
-                "Failed to send RSVP notification to host of game night {GameNightId}", gameNight.Id);
-            return false;
-        }
+        _backgroundEmailSender.Queue(hostEmail, subject, body);
+        _logger.LogInformation(
+            "Queued RSVP notification to host of game night {GameNightId} for player {PlayerId}", gameNight.Id, rsvp.PlayerId);
+        return true;
     }
 
     public async Task<SendInvitesResultDto> SendInvitesAsync(int id, CancellationToken cancellationToken = default)
@@ -464,15 +462,8 @@ public class GameNightService : IGameNightService
                 continue;
             }
 
-            try
-            {
-                await _emailService.SendAsync(email, subject, body, cancellationToken: cancellationToken);
-                result.Sent++;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to send invite to player {PlayerId} for game night {GameNightId}", rsvp.PlayerId, id);
-            }
+            _backgroundEmailSender.Queue(email, subject, body);
+            result.Sent++;
         }
 
         if (result.Sent == 0)
@@ -480,7 +471,7 @@ public class GameNightService : IGameNightService
             _cache.Remove(cooldownKey);
         }
 
-        _logger.LogInformation("Game night {GameNightId} invites: {Sent} sent", id, result.Sent);
+        _logger.LogInformation("Game night {GameNightId} invites: {Sent} queued", id, result.Sent);
         return result;
     }
 
@@ -496,6 +487,7 @@ public class GameNightService : IGameNightService
 
     public async Task<GameNight?> GetByLinkId(Guid linkId, bool isAuthenticated)
     {
+        await EnsureEnabledAsync();
         await GameNightLinkAccess.EnsureAllowedAsync(_configRepository, isAuthenticated);
 
         return await _gameNightRepository.SingleOrDefaultAsync(new GameNightByLinkIdSpec(linkId));

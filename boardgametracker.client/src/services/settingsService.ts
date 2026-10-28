@@ -1,4 +1,4 @@
-import type { Environment, Language } from "@/models";
+import type { Language } from "@/models";
 import type { VersionInfo } from "@/models/Settings/VersionInfo";
 import type { Settings } from "../models";
 import { axiosInstance } from "../utils/axiosInstance";
@@ -26,12 +26,6 @@ export const updateSettingsCall = (settings: Settings): Promise<Settings> => {
 
 export const getLanguagesCall = (): Promise<Language[]> => {
 	return axiosInstance.get<Language[]>(`${domain}/languages`).then((response) => {
-		return response.data;
-	});
-};
-
-export const getEnvironmentCall = (): Promise<Environment> => {
-	return axiosInstance.get<Environment>(`${domain}/environment`).then((response) => {
 		return response.data;
 	});
 };
