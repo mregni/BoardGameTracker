@@ -6,7 +6,6 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtInputField } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
-import { BgtSpinner } from "@/components/BgtLoadingSpinner/BgtSpinner";
 import { useAppForm } from "@/hooks/form";
 import { BggUserNameSchema } from "@/models";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
@@ -39,8 +38,6 @@ function RouteComponent() {
 		},
 	});
 
-	const isLoading = false;
-
 	return (
 		<BgtPage>
 			<BgtPageContent centered>
@@ -50,26 +47,14 @@ function RouteComponent() {
 							<div>{t("import.start.description")}</div>
 							<form.Field name="username" validators={zodValidator(BggUserNameSchema, "username")}>
 								{(field: AnyFieldApi) => (
-									<BgtInputField
-										field={field}
-										disabled={isLoading}
-										label={t("import.start.bgg-username.label")}
-										type="text"
-									/>
+									<BgtInputField field={field} label={t("import.start.bgg-username.label")} type="text" />
 								)}
 							</form.Field>
 							<div className="flex flex-row gap-2">
-								<BgtButton
-									variant="cancel"
-									type="button"
-									disabled={isLoading}
-									className="flex-none"
-									onClick={() => router.history.back()}
-								>
+								<BgtButton variant="cancel" type="button" className="flex-none" onClick={() => router.history.back()}>
 									{t("common:cancel")}
 								</BgtButton>
-								<BgtButton type="submit" disabled={isLoading} className="flex-1" variant="primary">
-									{isLoading && <BgtSpinner className="size-4" />}
+								<BgtButton type="submit" className="flex-1" variant="primary">
 									{t("import.start.button")}
 								</BgtButton>
 							</div>
