@@ -56,7 +56,7 @@ const signedIn = {
 	needsPlayerLink: true,
 };
 
-const userDto = (overrides: { id?: string; username?: string; roles?: string[] }) => ({
+const userDto = (overrides: { id?: string; username?: string; roles?: string[]; playerId?: number | null }) => ({
 	id: "u1",
 	username: "admin",
 	email: null,
@@ -254,6 +254,45 @@ describe("useAccountData linked player refresh", () => {
 		);
 
 		expectPlayersRefreshed(invalidate);
+	});
+
+	it("refreshes the profile and clears the link prompt when an admin links their own account", async () => {
+		vi.mocked(updateUserCall).mockResolvedValue(userDto({ playerId: 7 }));
+		const { result, invalidate } = setup();
+
+		await act(() =>
+			result.current.updateUser({ userId: "u1", username: "admin", email: null, role: "Admin", playerId: 7 }),
+		);
+
+		expect(invalidate).toHaveBeenCalledWith({ queryKey: ["profile"] });
+		expect(useAuth.getState().user?.needsPlayerLink).toBe(false);
+	});
+
+	it("does not refresh the profile when an admin edits someone else", async () => {
+		vi.mocked(updateUserCall).mockResolvedValue(userDto({ id: "u2", username: "lotte", roles: ["User"] }));
+		const { result, invalidate } = setup();
+
+		await act(() =>
+			result.current.updateUser({ userId: "u2", username: "lotte", email: null, role: "User", playerId: null }),
+		);
+
+		expect(invalidate).not.toHaveBeenCalledWith({ queryKey: ["profile"] });
+	});
+
+	it("refreshes the user list after saving the profile", async () => {
+		vi.mocked(updateProfileCall).mockResolvedValue(profile(null));
+		const { result, invalidate } = setup();
+
+		await act(() =>
+			result.current.updateProfile({
+				displayName: "Administrator",
+				email: null,
+				playerId: null,
+				currentPassword: null,
+			}),
+		);
+
+		expect(invalidate).toHaveBeenCalledWith({ queryKey: ["users"] });
 	});
 
 	it("refreshes the players after deleting an account", async () => {

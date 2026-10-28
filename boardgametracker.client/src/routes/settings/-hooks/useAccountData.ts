@@ -39,6 +39,7 @@ export const useAccountData = () => {
 			updateCurrentUser({ displayName: profile.displayName, needsPlayerLink: profile.needsPlayerLink });
 			successToast("settings:account.notifications.profile-updated");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 			invalidatePlayers();
 		},
 		onError: (error) => {
@@ -117,7 +118,12 @@ export const useAccountData = () => {
 		}) => updateUserCall(userId, request),
 		onSuccess: (user) => {
 			if (user.id === currentUserId) {
-				updateCurrentUser({ username: user.username, roles: user.roles });
+				updateCurrentUser({
+					username: user.username,
+					roles: user.roles,
+					...(user.playerId !== null && { needsPlayerLink: false }),
+				});
+				queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
 			}
 			successToast("settings:account.notifications.user-updated");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
