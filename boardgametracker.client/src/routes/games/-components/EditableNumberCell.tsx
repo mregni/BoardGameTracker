@@ -27,7 +27,7 @@ const isOutOfRange = (value: number, min?: number, max?: number) =>
 	(min !== undefined && value < min) || (max !== undefined && value > max);
 
 const NumberEditor = ({ value, onStopEdit, onChange, min, max, prefix, suffix, className }: EditorProps) => {
-	const { input } = useNumberFormat();
+	const { input, locale } = useNumberFormat();
 	const [draft, setDraft] = useState(() => input(value));
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -37,7 +37,7 @@ const NumberEditor = ({ value, onStopEdit, onChange, min, max, prefix, suffix, c
 
 	const commit = () => {
 		const trimmed = draft.trim();
-		const parsed = parseDecimal(trimmed);
+		const parsed = parseDecimal(trimmed, locale);
 		const invalid = trimmed !== "" && (parsed === null || isOutOfRange(parsed, min, max));
 		if (!invalid && parsed !== value) {
 			onChange(parsed);
