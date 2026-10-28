@@ -48,9 +48,9 @@ public class RefreshTokenCleanupServiceTests
             .Returns(_tokenServiceMock.Object);
     }
 
-    private async Task RunUntilAsync(Task signal)
+    private async Task RunUntilAsync(Task signal, TimeSpan? interval = null)
     {
-        var service = new TestableRefreshTokenCleanupService(_scopeFactoryMock.Object, _loggerMock.Object);
+        var service = new TestableRefreshTokenCleanupService(_scopeFactoryMock.Object, _loggerMock.Object, interval);
         await service.StartAsync(CancellationToken.None);
         try
         {
@@ -74,6 +74,20 @@ public class RefreshTokenCleanupServiceTests
         await RunUntilAsync(cleanupStarted.Task);
 
         _tokenServiceMock.Verify(x => x.CleanupExpiredTokensAsync(), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldCleanUpRightAtStartup()
+    {
+        var cleanupStarted = new TaskCompletionSource();
+        _tokenServiceMock
+            .Setup(x => x.CleanupExpiredTokensAsync())
+            .Callback(() => cleanupStarted.TrySetResult())
+            .Returns(Task.CompletedTask);
+
+        await RunUntilAsync(cleanupStarted.Task, TimeSpan.FromHours(1));
+
+        _tokenServiceMock.Verify(x => x.CleanupExpiredTokensAsync(), Times.Once);
     }
 
     [Fact]
@@ -145,12 +159,16 @@ public class RefreshTokenCleanupServiceTests
 
     private sealed class TestableRefreshTokenCleanupService : RefreshTokenCleanupService
     {
+        private readonly TimeSpan _interval;
+
         public TestableRefreshTokenCleanupService(
             IServiceScopeFactory scopeFactory,
-            ILogger<RefreshTokenCleanupService> logger) : base(scopeFactory, logger)
+            ILogger<RefreshTokenCleanupService> logger,
+            TimeSpan? interval = null) : base(scopeFactory, logger)
         {
+            _interval = interval ?? TimeSpan.FromMilliseconds(10);
         }
 
-        protected override TimeSpan Interval => TimeSpan.FromMilliseconds(10);
+        protected override TimeSpan Interval => _interval;
     }
 }

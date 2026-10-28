@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
@@ -62,9 +63,9 @@ public class LocationController : ControllerBase
     [HttpGet]
     [Route("{id:int}/sessions")]
     [ProducesResponseType<List<SessionDto>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetLocationSessions(int id)
+    public async Task<IActionResult> GetLocationSessions(int id, [FromQuery, Range(1, int.MaxValue)] int? count)
     {
-        var sessions = await _locationService.GetSessions(id);
+        var sessions = await _locationService.GetSessions(id, count);
         return Ok(sessions.ToListDto());
     }
 

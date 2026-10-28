@@ -9,7 +9,8 @@ public sealed class GameNightStatisticsSpec : Specification<GameNight, GameNight
 {
     public GameNightStatisticsSpec(DateTime? from, DateTime until)
     {
-        Query.Where(x => x.StartDate <= until);
+        var latestStart = until + GameNight.PlayOpensBefore;
+        Query.Where(x => x.StartDate <= latestStart);
         if (from.HasValue)
         {
             Query.Where(x => x.StartDate >= from.Value);

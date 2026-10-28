@@ -216,12 +216,38 @@ public class ChangeDetectionClient : IChangeDetectionClient
         }, (ChangeDetectionStatus.Unreachable, (string?)null), "create watch", cancellationToken);
     }
 
-    public async Task<(ChangeDetectionStatus Status, string? Version)> TestConnectionAsync(CancellationToken cancellationToken = default)
+    public async Task<ChangeDetectionStatus> DeleteWatchAsync(string watchId, CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(watchId, out _))
+        {
+            return ChangeDetectionStatus.WatchNotFound;
+        }
+
+        var (client, status) = await TryCreateClientAsync();
+        if (client == null)
+        {
+            return status;
+        }
+
+        return await GuardedAsync(async () =>
+        {
+            using var response = await client.DeleteAsync($"api/v1/watch/{watchId}", cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return MapStatus(response.StatusCode);
+            }
+
+            _cache.Remove(CacheKeyPrefix + watchId);
+            return ChangeDetectionStatus.Ok;
+        }, ChangeDetectionStatus.Unreachable, "delete watch", cancellationToken);
+    }
+
+    public async Task<ChangeDetectionStatus> TestConnectionAsync(CancellationToken cancellationToken = default)
     {
         var (client, status) = await TryCreateClientAsync();
         if (client == null)
         {
-            return (status, null);
+            return status;
         }
 
         return await GuardedAsync(async () =>
@@ -230,13 +256,12 @@ public class ChangeDetectionClient : IChangeDetectionClient
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning("changedetection.io connection test returned {StatusCode}", response.StatusCode);
-                return (MapStatus(response.StatusCode), (string?)null);
+                return MapStatus(response.StatusCode);
             }
 
-            var body = await response.Content.ReadAsStringAsync(cancellationToken);
-            var info = JsonSerializer.Deserialize<JsonElement>(body);
-            return (ChangeDetectionStatus.Ok, GetString(info, "version"));
-        }, (ChangeDetectionStatus.Unreachable, (string?)null), "connection test", cancellationToken);
+            JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync(cancellationToken));
+            return ChangeDetectionStatus.Ok;
+        }, ChangeDetectionStatus.Unreachable, "connection test", cancellationToken);
     }
 
     private bool TryGetCached(string watchId, out ChangeDetectionResult result)

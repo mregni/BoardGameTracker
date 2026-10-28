@@ -445,7 +445,7 @@ public class LocationServiceTests
             .Setup(x => x.ListAsync(It.IsAny<SessionsByLocationRecentFirstSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessions);
 
-        var result = await _locationService.GetSessions(3);
+        var result = await _locationService.GetSessions(3, null);
 
         result.Should().BeSameAs(sessions);
         _sessionRepositoryMock.Verify(x => x.ListAsync(It.IsAny<SessionsByLocationRecentFirstSpec>(), It.IsAny<CancellationToken>()), Times.Once);

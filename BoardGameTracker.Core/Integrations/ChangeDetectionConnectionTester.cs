@@ -19,7 +19,7 @@ public class ChangeDetectionConnectionTester : IIntegrationTester
 
     public async Task<IntegrationTestResult> TestAsync(CancellationToken cancellationToken = default)
     {
-        var (status, _) = await _changeDetectionClient.TestConnectionAsync(cancellationToken);
+        var status = await _changeDetectionClient.TestConnectionAsync(cancellationToken);
         return status switch
         {
             ChangeDetectionStatus.Ok => IntegrationTestResult.Ok,

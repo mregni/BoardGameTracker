@@ -9,7 +9,7 @@ public class MailKitSmtpSender : ISmtpSender
 {
     public async Task SendAsync(MimeMessage message, string host, int port, bool useSsl, string? username, string? password, CancellationToken cancellationToken = default)
     {
-        using var client = new SmtpClient();
+        using var client = new SmtpClient { Timeout = 15000 };
         var socketOptions = port == 465
             ? SecureSocketOptions.SslOnConnect
             : useSsl

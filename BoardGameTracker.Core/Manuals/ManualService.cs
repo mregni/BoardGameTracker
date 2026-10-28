@@ -152,7 +152,7 @@ public class ManualService : IManualService
             throw new EntityNotFoundException(nameof(Manual), id);
         }
 
-        var path = GetPhysicalPath(manual.StoredFileName);
+        var path = PathHelper.MapManualFileToPhysical(manual.StoredFileName);
         await _manualRepository.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();
 
@@ -180,7 +180,7 @@ public class ManualService : IManualService
             throw new EntityNotFoundException(nameof(Manual), id);
         }
 
-        var pdfPath = GetPhysicalPath(manual.StoredFileName);
+        var pdfPath = PathHelper.MapManualFileToPhysical(manual.StoredFileName);
         if (!_diskProvider.FileExists(pdfPath))
         {
             throw new EntityNotFoundException(nameof(Manual), id);
@@ -241,7 +241,7 @@ public class ManualService : IManualService
     {
         foreach (var manual in manuals)
         {
-            _diskProvider.DeleteFile(GetPhysicalPath(manual.StoredFileName));
+            _diskProvider.DeleteFile(PathHelper.MapManualFileToPhysical(manual.StoredFileName));
             _pageRenderer.DeleteFigures(manual.Id);
         }
     }
@@ -287,7 +287,7 @@ public class ManualService : IManualService
 
     private ManualDownload OpenDownload(Manual manual)
     {
-        var path = GetPhysicalPath(manual.StoredFileName);
+        var path = PathHelper.MapManualFileToPhysical(manual.StoredFileName);
         if (!_diskProvider.FileExists(path))
         {
             throw new EntityNotFoundException(nameof(Manual), manual.Id);
@@ -299,17 +299,5 @@ public class ManualService : IManualService
             ContentType = manual.ContentType,
             FileName = manual.Title
         };
-    }
-
-    private static string GetPhysicalPath(string storedFileName)
-    {
-        var root = Path.GetFullPath(PathHelper.FullManualsPath);
-        var fullPath = Path.GetFullPath(Path.Combine(root, storedFileName));
-        if (!fullPath.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.Ordinal))
-        {
-            throw new EntityNotFoundException(nameof(Manual), storedFileName);
-        }
-
-        return fullPath;
     }
 }

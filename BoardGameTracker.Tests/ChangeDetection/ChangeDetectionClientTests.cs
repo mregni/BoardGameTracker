@@ -285,6 +285,38 @@ public class ChangeDetectionClientTests
     }
 
     [Fact]
+    public async Task DeleteWatchAsync_ShouldDeleteTheWatch_AndDropTheCachedResult()
+    {
+        await _client.GetLatestAsync(WatchId);
+
+        var status = await _client.DeleteWatchAsync(WatchId);
+        await _client.GetLatestAsync(WatchId);
+
+        status.Should().Be(ChangeDetectionStatus.Ok);
+        _handler.Requests.Should().Contain($"DELETE /api/v1/watch/{WatchId}");
+        _handler.Requests.Count(r => r == $"GET /api/v1/watch/{WatchId}").Should().Be(2);
+    }
+
+    [Fact]
+    public async Task DeleteWatchAsync_ShouldReportAMissingWatch()
+    {
+        _handler.DeleteStatus = HttpStatusCode.NotFound;
+
+        var status = await _client.DeleteWatchAsync(WatchId);
+
+        status.Should().Be(ChangeDetectionStatus.WatchNotFound);
+    }
+
+    [Fact]
+    public async Task DeleteWatchAsync_ShouldNotCallTheInstance_WhenTheWatchIdIsNotAGuid()
+    {
+        var status = await _client.DeleteWatchAsync("../systeminfo");
+
+        status.Should().Be(ChangeDetectionStatus.WatchNotFound);
+        _handler.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task GetLatestBatchAsync_ShouldOnlyFetchUncachedWatches()
     {
         await _client.GetLatestAsync(WatchId);
@@ -355,12 +387,11 @@ public class ChangeDetectionClientTests
     }
 
     [Fact]
-    public async Task TestConnectionAsync_ShouldReturnTheInstanceVersion()
+    public async Task TestConnectionAsync_ShouldReportOk_WhenTheInstanceAnswers()
     {
-        var (status, version) = await _client.TestConnectionAsync();
+        var status = await _client.TestConnectionAsync();
 
         status.Should().Be(ChangeDetectionStatus.Ok);
-        version.Should().Be("0.50.1");
     }
 
     [Theory]
@@ -372,10 +403,9 @@ public class ChangeDetectionClientTests
     {
         _handler.SystemInfoStatus = statusCode;
 
-        var (status, version) = await _client.TestConnectionAsync();
+        var status = await _client.TestConnectionAsync();
 
         status.Should().Be(expected);
-        version.Should().BeNull();
     }
 
     [Theory]
@@ -387,10 +417,9 @@ public class ChangeDetectionClientTests
             .Setup(x => x.GetChangeDetectionSettingsAsync())
             .ReturnsAsync((baseUrl, apiKey));
 
-        var (status, version) = await _client.TestConnectionAsync();
+        var status = await _client.TestConnectionAsync();
 
         status.Should().Be(expected);
-        version.Should().BeNull();
         _handler.Requests.Should().BeEmpty();
     }
 
@@ -399,10 +428,9 @@ public class ChangeDetectionClientTests
     {
         _handler.SystemInfoException = new HttpRequestException("Connection refused");
 
-        var (status, version) = await _client.TestConnectionAsync();
+        var status = await _client.TestConnectionAsync();
 
         status.Should().Be(ChangeDetectionStatus.Unreachable);
-        version.Should().BeNull();
     }
 
     [Theory]
@@ -478,6 +506,7 @@ public class ChangeDetectionClientTests
         public string? LastPostBody { get; private set; }
         public string? LastPutBody { get; private set; }
         public HttpStatusCode PutStatus { get; set; } = HttpStatusCode.OK;
+        public HttpStatusCode DeleteStatus { get; set; } = HttpStatusCode.OK;
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -492,6 +521,11 @@ public class ChangeDetectionClientTests
                     ? null
                     : await request.Content.ReadAsStringAsync(cancellationToken);
                 return Response(CreateStatus, $$$"""{"uuid":"{{{CreatedWatchId}}}"}""");
+            }
+
+            if (request.Method == HttpMethod.Delete)
+            {
+                return Response(DeleteStatus, "OK");
             }
 
             if (request.Method == HttpMethod.Put)

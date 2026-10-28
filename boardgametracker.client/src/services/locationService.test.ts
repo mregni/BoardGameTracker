@@ -38,8 +38,8 @@ describe("locationService", () => {
 	});
 
 	it("fetches the sessions of a location", async () => {
-		await expect(getLocationSessionsCall(3)).resolves.toBe("result");
-		expect(axiosMock.get).toHaveBeenCalledWith("location/3/sessions");
+		await expect(getLocationSessionsCall(3, 5)).resolves.toBe("result");
+		expect(axiosMock.get).toHaveBeenCalledWith("location/3/sessions", { params: { count: 5 } });
 	});
 
 	it("creates a location", async () => {

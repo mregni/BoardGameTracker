@@ -460,6 +460,79 @@ public class ImageServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveProfileImage_ShouldCropTheCenterSquare_InsteadOfStretching()
+    {
+        using var bitmap = new SKBitmap(300, 100);
+        using (var canvas = new SKCanvas(bitmap))
+        {
+            canvas.Clear(SKColors.Green);
+            using var red = new SKPaint { Color = SKColors.Red };
+            using var blue = new SKPaint { Color = SKColors.Blue };
+            canvas.DrawRect(0, 0, 100, 100, red);
+            canvas.DrawRect(200, 0, 100, 100, blue);
+        }
+
+        using var data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
+
+        var output = await SaveProfileImageAndDecode(data.ToArray());
+
+        IsMostly(output.GetPixel(20, 256), SKColors.Green).Should().BeTrue();
+        IsMostly(output.GetPixel(256, 256), SKColors.Green).Should().BeTrue();
+        IsMostly(output.GetPixel(490, 256), SKColors.Green).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SaveProfileImage_ShouldApplyTheExifOrientation()
+    {
+        using var bitmap = new SKBitmap(200, 100);
+        using (var canvas = new SKCanvas(bitmap))
+        {
+            canvas.Clear(SKColors.Blue);
+            using var red = new SKPaint { Color = SKColors.Red };
+            canvas.DrawRect(0, 0, 100, 100, red);
+        }
+
+        using var data = bitmap.Encode(SKEncodedImageFormat.Jpeg, 95);
+        var jpeg = data.ToArray();
+        byte[] exif =
+        [
+            0xFF, 0xE1, 0x00, 0x22,
+            (byte)'E', (byte)'x', (byte)'i', (byte)'f', 0x00, 0x00,
+            0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00,
+            0x01, 0x00,
+            0x12, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00
+        ];
+        var rotated = jpeg[..2].Concat(exif).Concat(jpeg[2..]).ToArray();
+
+        var output = await SaveProfileImageAndDecode(rotated);
+
+        IsMostly(output.GetPixel(256, 64), SKColors.Red).Should().BeTrue();
+        IsMostly(output.GetPixel(256, 448), SKColors.Blue).Should().BeTrue();
+    }
+
+    private async Task<SKBitmap> SaveProfileImageAndDecode(byte[] content)
+    {
+        byte[]? written = null;
+        _diskProviderMock
+            .Setup(x => x.WriteFile(It.IsAny<Stream>(), "avatar.webp", PathHelper.FullProfileImagePath))
+            .Callback<Stream, string, string>((stream, _, _) => written = ReadAll(stream))
+            .ReturnsAsync("unique-avatar.webp");
+
+        await _imageService.SaveProfileImage(content);
+
+        AssertResizedWebp(written);
+        return SKBitmap.Decode(written!);
+    }
+
+    private static bool IsMostly(SKColor actual, SKColor expected)
+    {
+        return Math.Abs(actual.Red - expected.Red) < 60
+            && Math.Abs(actual.Green - expected.Green) < 60
+            && Math.Abs(actual.Blue - expected.Blue) < 60;
+    }
+
+    [Fact]
     public async Task SaveProfileImage_ShouldStoreNothing_WhenTheBytesAreNotAnImage()
     {
         var result = await _imageService.SaveProfileImage("<html>not an image</html>"u8.ToArray());

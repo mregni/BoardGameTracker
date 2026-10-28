@@ -395,6 +395,41 @@ public class PlayerServiceTests
     }
 
     [Fact]
+    public async Task Update_ShouldRemoveTheNewUpload_WhenSavingFails()
+    {
+        var player = new Player("Jane", "/images/profile/old.webp") { Id = 1 };
+        SetupPlayerForUpdate(player);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ThrowsAsync(new InvalidOperationException("db down"));
+
+        var act = () => _playerService.Update(new UpdatePlayerCommand { Id = 1, Name = "Jane", Image = "/images/profile/new.webp" });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNameChecked();
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage(null), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("/images/profile/new.webp"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Create_ShouldRemoveTheUploadedImage_WhenSavingFails()
+    {
+        var command = new CreatePlayerCommand { Name = "New Player", Image = "/images/profile/new.webp" };
+        _playerRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<Player>())).ReturnsAsync((Player p) => p);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ThrowsAsync(new InvalidOperationException("db down"));
+
+        var act = () => _playerService.Create(command);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        VerifyNameChecked();
+        _playerRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Player>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("/images/profile/new.webp"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task GetLinkedAccountAsync_ShouldReturnTheLinkedAccount()
     {
         var account = new PlayerLinkedAccountDto { Id = "u1", Username = "jane" };

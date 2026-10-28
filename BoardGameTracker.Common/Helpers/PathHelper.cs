@@ -1,4 +1,7 @@
-﻿namespace BoardGameTracker.Common.Helpers;
+﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
+
+namespace BoardGameTracker.Common.Helpers;
 
 public static class PathHelper
 {
@@ -30,6 +33,18 @@ public static class PathHelper
         if (!fullPath.StartsWith(imagesRoot + Path.DirectorySeparatorChar, StringComparison.Ordinal))
         {
             return null;
+        }
+
+        return fullPath;
+    }
+
+    public static string MapManualFileToPhysical(string storedFileName)
+    {
+        var root = Path.GetFullPath(FullManualsPath);
+        var fullPath = Path.GetFullPath(Path.Combine(root, storedFileName));
+        if (!fullPath.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        {
+            throw new EntityNotFoundException(nameof(Manual), storedFileName);
         }
 
         return fullPath;
