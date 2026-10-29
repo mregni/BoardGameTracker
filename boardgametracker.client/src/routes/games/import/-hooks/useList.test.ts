@@ -5,9 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GameState, type ImportGame } from "@/models";
 
 const mocks = vi.hoisted(() => ({
-	invalidateGames: vi.fn(),
-	invalidateCounts: vi.fn(),
-	invalidateDashboard: vi.fn(),
+	invalidateGameCreated: vi.fn(),
 	successToast: vi.fn(),
 	errorToast: vi.fn(),
 	navigate: vi.fn(),
@@ -58,9 +56,7 @@ vi.mock("@/services/queries/settings", () => ({
 
 vi.mock("@/hooks/useQueryInvalidator", () => ({
 	useQueryInvalidator: () => ({
-		invalidateGames: mocks.invalidateGames,
-		invalidateCounts: mocks.invalidateCounts,
-		invalidateDashboard: mocks.invalidateDashboard,
+		invalidateGameCreated: mocks.invalidateGameCreated,
 	}),
 }));
 
@@ -171,7 +167,7 @@ describe("useList", () => {
 		]);
 		expect(mocks.importGamesCall.mock.calls.flatMap(([batch]) => batch)).toEqual(selected);
 		expect(result.current.importProgress).toEqual({ done: 12, total: 12 });
-		expect(mocks.invalidateGames).toHaveBeenCalled();
+		expect(mocks.invalidateGameCreated).toHaveBeenCalled();
 	});
 
 	it("stops at a failed batch but still refreshes the games the earlier batches imported", async () => {
@@ -186,9 +182,7 @@ describe("useList", () => {
 		await waitFor(() => expect(mocks.errorToast).toHaveBeenCalled());
 		expect(mocks.importGamesCall).toHaveBeenCalledTimes(2);
 		expect(result.current.importProgress).toEqual({ done: IMPORT_BATCH_SIZE, total: 12 });
-		await waitFor(() => expect(mocks.invalidateGames).toHaveBeenCalled());
-		expect(mocks.invalidateCounts).toHaveBeenCalled();
-		expect(mocks.invalidateDashboard).toHaveBeenCalled();
+		await waitFor(() => expect(mocks.invalidateGameCreated).toHaveBeenCalled());
 		expect(mocks.successToast).not.toHaveBeenCalled();
 	});
 

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, RowData } from "@tanstack/react-table";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import GameIcon from "@/assets/icons/gamepad.svg?react";
@@ -51,6 +51,12 @@ export const Route = createFileRoute("/games/table")({
 
 const ANY = "any";
 
+declare module "@tanstack/react-table" {
+	interface TableMeta<TData extends RowData> {
+		isEditing?: (id: number, column: GameTableColumn) => boolean;
+	}
+}
+
 interface EditingCell {
 	gameId: number;
 	column: GameTableColumn;
@@ -90,6 +96,7 @@ function RouteComponent() {
 		(gameId: number, column: EditingCell["column"]) => editingCell?.gameId === gameId && editingCell.column === column,
 		[editingCell],
 	);
+	const tableMeta = useMemo(() => ({ isEditing }), [isEditing]);
 
 	const queryClient = useQueryClient();
 	const showLivePrices = changeDetectionConfigured;
@@ -217,14 +224,14 @@ function RouteComponent() {
 			{
 				accessorKey: "language",
 				header: t("games:columns.language"),
-				cell: ({ row }) => (
+				cell: ({ row, table }) => (
 					<EditableSelectCell
 						readOnly={!canWrite}
 						value={row.original.language ?? LANGUAGE_NONE}
 						emptyValue={LANGUAGE_NONE}
 						items={languageEditItems}
 						hasSearch
-						editing={isEditing(row.original.id, "language")}
+						editing={!!table.options.meta?.isEditing?.(row.original.id, "language")}
 						onStartEdit={() => startEdit(row.original.id, "language")}
 						onStopEdit={stopEdit}
 						onChange={(language) =>
@@ -237,12 +244,12 @@ function RouteComponent() {
 			{
 				accessorKey: "state",
 				header: t("games:columns.state"),
-				cell: ({ row }) => (
+				cell: ({ row, table }) => (
 					<EditableSelectCell
 						readOnly={!canWrite}
 						value={row.original.state}
 						items={stateEditItems}
-						editing={isEditing(row.original.id, "state")}
+						editing={!!table.options.meta?.isEditing?.(row.original.id, "state")}
 						onStartEdit={() => startEdit(row.original.id, "state")}
 						onStopEdit={stopEdit}
 						onChange={(state) =>
@@ -264,14 +271,14 @@ function RouteComponent() {
 			{
 				accessorKey: "buyingPrice",
 				header: t("games:columns.price"),
-				cell: ({ row }) => (
+				cell: ({ row, table }) => (
 					<EditableNumberCell
 						readOnly={!canWrite}
 						value={row.original.buyingPrice}
 						min={0}
 						prefix={currency}
 						format={(price) => formatPriceOrEmpty(price, currency, uiLanguage)}
-						editing={isEditing(row.original.id, "buyingPrice")}
+						editing={!!table.options.meta?.isEditing?.(row.original.id, "buyingPrice")}
 						onStartEdit={() => startEdit(row.original.id, "buyingPrice")}
 						onStopEdit={stopEdit}
 						onChange={(buyingPrice) => updateGame({ ...row.original, buyingPrice })}
@@ -347,7 +354,6 @@ function RouteComponent() {
 			languageEditItems,
 			showLivePrices,
 			priceMap,
-			isEditing,
 			startEdit,
 			stopEdit,
 			canWrite,
@@ -439,6 +445,7 @@ function RouteComponent() {
 					<BgtDataTable
 						columns={columns}
 						data={filtered}
+						meta={tableMeta}
 						isLoading={isLoading}
 						noDataMessage={t("games:table.empty")}
 						widths={columnWidths}

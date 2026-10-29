@@ -39,6 +39,9 @@ export const usePlayerModal = ({ onSaveSuccess, onUpdateSuccess }: Props) => {
 			onUpdateSuccess?.();
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.player] });
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.gameNights] });
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.leaderboard] });
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.compare] });
 		},
 		onError: (error) => {
 			errorToast(apiErrorMessage(error, "player:notifications.update-failed"));
