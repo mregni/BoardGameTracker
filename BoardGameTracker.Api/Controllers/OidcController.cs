@@ -112,7 +112,7 @@ public class OidcController : ControllerBase
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "OIDC login at the identity provider failed");
+            _logger.LogWarning(ex, "Completing the OIDC login failed");
             return Fail(ErrorKey(ex));
         }
     }
@@ -170,7 +170,7 @@ public class OidcController : ControllerBase
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "OIDC link at the identity provider failed");
+            _logger.LogWarning(ex, "Completing the OIDC link failed");
             return Fail(ErrorKey(ex));
         }
     }
