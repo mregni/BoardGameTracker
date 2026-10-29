@@ -232,7 +232,7 @@ public class LoanValidationTests
         var loan = new Loan(gameId: 1, playerId: 1, loanDate);
 
         // Act
-        var result = loan.IsCurrentlyOnLoan();
+        var result = loan.IsCurrentlyOnLoan(DateTime.UtcNow);
 
         // Assert
         result.Should().BeTrue();
@@ -248,7 +248,7 @@ public class LoanValidationTests
         loan.MarkAsReturned(returnDate);
 
         // Act
-        var result = loan.IsCurrentlyOnLoan();
+        var result = loan.IsCurrentlyOnLoan(DateTime.UtcNow);
 
         // Assert
         result.Should().BeFalse();
@@ -262,14 +262,14 @@ public class LoanValidationTests
         var loan = new Loan(gameId: 1, playerId: 1, futureLoanDate);
 
         // Act
-        var result = loan.IsCurrentlyOnLoan();
+        var result = loan.IsCurrentlyOnLoan(DateTime.UtcNow);
 
         // Assert
         result.Should().BeFalse();
     }
 
     [Fact]
-    public void IsCurrentlyOnLoan_WithFutureReturnDate_PinsCurrentBehavior()
+    public void IsCurrentlyOnLoan_WithFutureReturnDate_ShouldReturnFalse()
     {
         // Arrange
         var loanDate = DateTime.UtcNow.AddDays(-5);
@@ -277,10 +277,10 @@ public class LoanValidationTests
         loan.MarkAsReturned(DateTime.UtcNow.AddDays(2));
 
         // Act
-        var result = loan.IsCurrentlyOnLoan();
+        var result = loan.IsCurrentlyOnLoan(DateTime.UtcNow);
 
         // Assert
-        result.Should().BeTrue();
+        result.Should().BeFalse();
     }
 
     private static readonly DateTime Anchor = new(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc);

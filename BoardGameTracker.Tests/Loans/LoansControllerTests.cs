@@ -4,6 +4,7 @@ using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Loans.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +16,13 @@ namespace BoardGameTracker.Tests.Loans;
 public class LoanControllerTests
 {
     private readonly Mock<ILoanService> _loanServiceMock;
+    private readonly Mock<IDateTimeProvider> _dateTimeProviderMock = new();
     private readonly LoanController _controller;
 
     public LoanControllerTests()
     {
         _loanServiceMock = new Mock<ILoanService>();
-        _controller = new LoanController(_loanServiceMock.Object);
+        _controller = new LoanController(_loanServiceMock.Object, _dateTimeProviderMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -104,6 +106,23 @@ public class LoanControllerTests
         returnedLoan.PlayerId.Should().Be(1);
 
         _loanServiceMock.Verify(x => x.GetLoanById(loanId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(-1, true)]
+    [InlineData(1, false)]
+    public async Task GetLoanById_ShouldMarkTheLoanActive_OnlyOnceItHasStarted(int startsInDays, bool expected)
+    {
+        var now = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(now);
+        _loanServiceMock.Setup(x => x.GetLoanById(1)).ReturnsAsync(new Loan(1, 1, now.AddDays(startsInDays)) { Id = 1 });
+
+        var result = await _controller.GetLoanById(1);
+
+        var dto = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<LoanDto>().Subject;
+        dto.IsActive.Should().Be(expected);
+        _loanServiceMock.Verify(x => x.GetLoanById(1), Times.Once);
         VerifyNoOtherCalls();
     }
 

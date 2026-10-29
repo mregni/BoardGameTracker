@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Ardalis.GuardClauses;
+﻿using Ardalis.GuardClauses;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ValueObjects;
 
@@ -37,7 +36,7 @@ public abstract class BaseGame : HasId
         private set => _state = Guard.Against.EnumOutOfRange(value);
     }
 
-    [NotMapped] public bool IsLoaned => Loans.Any(l => l.IsCurrentlyOnLoan());
+    public bool IsLoanedAt(DateTime now) => Loans.Any(l => l.IsCurrentlyOnLoan(now));
 
     public Price? BuyingPrice { get; private set; }
     public Price? SoldPrice { get; private set; }

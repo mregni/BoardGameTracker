@@ -144,8 +144,18 @@ public partial class UpdateService : IUpdateService
 
     public string GetCurrentVersion()
     {
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
-        return version?.ToVersionString() ?? "0.0.0";
+        var assembly = Assembly.GetExecutingAssembly();
+        return ResolveVersion(
+            assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,
+            assembly.GetName().Version);
+    }
+
+    internal static string ResolveVersion(string? informationalVersion, Version? assemblyVersion)
+    {
+        var version = informationalVersion?.Split('+')[0];
+        return version != null && IsSemanticVersion(version)
+            ? version
+            : assemblyVersion?.ToVersionString() ?? "0.0.0";
     }
 
     [GeneratedRegex(@"^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$", RegexOptions.None, 100)]
@@ -172,7 +182,7 @@ public partial class UpdateService : IUpdateService
         return versionString.Contains("-beta", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool CompareVersions(string current, string latest)
+    internal static bool CompareVersions(string current, string latest)
     {
         return VersionKey(latest).CompareTo(VersionKey(current)) > 0;
     }

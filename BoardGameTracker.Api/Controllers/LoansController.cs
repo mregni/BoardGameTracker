@@ -2,6 +2,7 @@ using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Loans.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,10 +16,12 @@ namespace BoardGameTracker.Api.Controllers;
 public class LoanController : ControllerBase
 {
     private readonly ILoanService _loanService;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public LoanController(ILoanService loanService)
+    public LoanController(ILoanService loanService, IDateTimeProvider dateTimeProvider)
     {
         _loanService = loanService;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     [HttpGet]
@@ -26,7 +29,7 @@ public class LoanController : ControllerBase
     public async Task<IActionResult> GetLoans()
     {
         var loans = await _loanService.GetLoans();
-        return Ok(loans.ToListDto());
+        return Ok(loans.ToListDto(_dateTimeProvider.UtcNow));
     }
 
     [HttpGet("{id:int}")]
@@ -39,7 +42,7 @@ public class LoanController : ControllerBase
             return NotFound();
         }
 
-        return Ok(loan.ToDto());
+        return Ok(loan.ToDto(_dateTimeProvider.UtcNow));
     }
 
     [HttpPost]
@@ -48,7 +51,7 @@ public class LoanController : ControllerBase
     public async Task<IActionResult> CreateLoan([FromBody] CreateLoanCommand command)
     {
         var createdLoan = await _loanService.LoanGameToPlayer(command);
-        return CreatedAtAction(nameof(GetLoanById), new { id = createdLoan.Id }, createdLoan.ToDto());
+        return CreatedAtAction(nameof(GetLoanById), new { id = createdLoan.Id }, createdLoan.ToDto(_dateTimeProvider.UtcNow));
     }
 
     [HttpPut]
@@ -57,7 +60,7 @@ public class LoanController : ControllerBase
     public async Task<IActionResult> UpdateLoan([FromBody] UpdateLoanCommand command)
     {
         var updatedLoan = await _loanService.Update(command);
-        return Ok(updatedLoan.ToDto());
+        return Ok(updatedLoan.ToDto(_dateTimeProvider.UtcNow));
     }
 
     [HttpPut("return")]
@@ -66,7 +69,7 @@ public class LoanController : ControllerBase
     public async Task<IActionResult> ReturnLoan([FromBody] ReturnLoanCommand command)
     {
         var updatedLoan = await _loanService.ReturnLoan(command);
-        return Ok(updatedLoan.ToDto());
+        return Ok(updatedLoan.ToDto(_dateTimeProvider.UtcNow));
     }
 
     [HttpDelete("{id:int}")]

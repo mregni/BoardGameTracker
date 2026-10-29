@@ -660,6 +660,30 @@ public class GameNightServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task Create_ShouldRefuseSuggestedGamesThatAreNotOwned()
+    {
+        var command = new CreateGameNightCommand
+        {
+            Title = "Game Night",
+            Notes = string.Empty,
+            StartDate = DateTime.UtcNow.AddDays(1),
+            HostId = 1,
+            LocationId = 1,
+            SuggestedGameIds = [5, 6],
+            InvitedPlayerIds = []
+        };
+        _gameRepositoryMock
+            .Setup(x => x.GetByIdsAsync(command.SuggestedGameIds))
+            .ReturnsAsync([new Game("Chess") { Id = 5 }, new Game("Root", false, GameState.Wanted) { Id = 6 }]);
+
+        var action = async () => await _gameNightService.Create(command);
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.SuggestedGameNotOwned);
+        _gameRepositoryMock.Verify(x => x.GetByIdsAsync(command.SuggestedGameIds), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region Update Tests
@@ -704,6 +728,72 @@ public class GameNightServiceTests
         result.SuggestedGames.Should().HaveCount(1);
         result.SuggestedGames.Should().Contain(g => g.Id == 7);
 
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetByIdsAsync(command.SuggestedGameIds), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldRefuseNewSuggestedGamesThatAreNotOwned()
+    {
+        var existingGameNight = GameNight.Create("Night", "", DateTime.UtcNow, 1, 1);
+        var command = new UpdateGameNightCommand
+        {
+            Id = 1,
+            Title = "Night",
+            Notes = string.Empty,
+            StartDate = DateTime.UtcNow.AddDays(5),
+            HostId = 1,
+            LocationId = 1,
+            SuggestedGameIds = [6],
+            InvitedPlayerIds = []
+        };
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingGameNight);
+        _gameRepositoryMock
+            .Setup(x => x.GetByIdsAsync(command.SuggestedGameIds))
+            .ReturnsAsync([new Game("Root", false, GameState.Wanted) { Id = 6 }]);
+
+        var action = async () => await _gameNightService.Update(command);
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.SuggestedGameNotOwned);
+        existingGameNight.Title.Should().Be("Night");
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetByIdsAsync(command.SuggestedGameIds), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldKeepAnAlreadySuggestedGame_ThatIsNoLongerOwned()
+    {
+        var soldGame = new Game("Root", false, GameState.ForTrade) { Id = 6 };
+        var existingGameNight = GameNight.Create("Night", "", DateTime.UtcNow, 1, 1);
+        existingGameNight.SetSuggestedGames([soldGame]);
+        var command = new UpdateGameNightCommand
+        {
+            Id = 1,
+            Title = "Renamed",
+            Notes = string.Empty,
+            StartDate = DateTime.UtcNow.AddDays(5),
+            HostId = 1,
+            LocationId = 1,
+            SuggestedGameIds = [6],
+            InvitedPlayerIds = []
+        };
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingGameNight);
+        _gameRepositoryMock
+            .Setup(x => x.GetByIdsAsync(command.SuggestedGameIds))
+            .ReturnsAsync([soldGame]);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+
+        var result = await _gameNightService.Update(command);
+
+        result.Title.Should().Be("Renamed");
+        result.SuggestedGames.Should().ContainSingle(g => g.Id == 6);
         _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>()), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetByIdsAsync(command.SuggestedGameIds), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);

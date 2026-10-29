@@ -5,6 +5,7 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
@@ -24,6 +25,7 @@ public class LoanServiceTests
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly Mock<IReadRepository<Player>> _playerRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IDateTimeProvider> _dateTimeProviderMock = new();
     private readonly Mock<ILogger<LoanService>> _loggerMock;
     private readonly LoanService _loanService;
 
@@ -43,6 +45,7 @@ public class LoanServiceTests
             _gameRepositoryMock.Object,
             _playerRepositoryMock.Object,
             _unitOfWorkMock.Object,
+            _dateTimeProviderMock.Object,
             _loggerMock.Object);
     }
 
@@ -644,9 +647,12 @@ public class LoanServiceTests
     {
         // Arrange
         var expectedCount = 5;
+        var now = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
+        var upcoming = new Loan(1, 1, now.AddDays(1));
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(now);
 
         _loanRepositoryMock
-            .Setup(x => x.CountAsync(It.IsAny<ActiveLoansSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.CountAsync(It.Is<ActiveLoansSpec>(s => !s.IsSatisfiedBy(upcoming)), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedCount);
 
         // Act

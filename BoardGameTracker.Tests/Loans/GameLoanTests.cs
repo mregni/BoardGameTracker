@@ -38,7 +38,7 @@ public class GameLoanTests
 
         act.Should().Throw<DomainException>().WithMessage(Constants.Errors.GameAlreadyOnLoan);
         game.Loans.Should().ContainSingle().Which.Should().BeSameAs(firstLoan);
-        game.IsLoaned.Should().BeTrue();
+        game.IsLoanedAt(DateTime.UtcNow).Should().BeTrue();
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class GameLoanTests
         var secondLoan = game.LoanToPlayer(2, DateTime.UtcNow);
 
         game.Loans.Should().HaveCount(2);
-        secondLoan.IsCurrentlyOnLoan().Should().BeTrue();
+        secondLoan.IsCurrentlyOnLoan(DateTime.UtcNow).Should().BeTrue();
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public class GameLoanTests
         var game = new Game("Test Game");
         game.LoanToPlayer(1, DateTime.UtcNow.AddDays(-5));
 
-        game.IsLoaned.Should().BeTrue();
+        game.IsLoanedAt(DateTime.UtcNow).Should().BeTrue();
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public class GameLoanTests
     {
         var game = new Game("Test Game");
 
-        game.IsLoaned.Should().BeFalse();
+        game.IsLoanedAt(DateTime.UtcNow).Should().BeFalse();
     }
 
     [Fact]
@@ -138,9 +138,9 @@ public class GameLoanTests
         var loan3 = game.LoanToPlayer(3, DateTime.UtcNow);
 
         game.Loans.Should().HaveCount(3);
-        loan1.IsCurrentlyOnLoan().Should().BeFalse();
-        loan2.IsCurrentlyOnLoan().Should().BeFalse();
-        loan3.IsCurrentlyOnLoan().Should().BeTrue();
+        loan1.IsCurrentlyOnLoan(DateTime.UtcNow).Should().BeFalse();
+        loan2.IsCurrentlyOnLoan(DateTime.UtcNow).Should().BeFalse();
+        loan3.IsCurrentlyOnLoan(DateTime.UtcNow).Should().BeTrue();
     }
 
     [Fact]
