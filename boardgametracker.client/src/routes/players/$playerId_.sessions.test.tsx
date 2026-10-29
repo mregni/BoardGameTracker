@@ -1,10 +1,11 @@
 import type { FC } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Player, Session } from "@/models";
 import { renderWithProviders, screen, within } from "@/test/test-utils";
 
 const mocks = vi.hoisted(() => ({
 	captured: {} as { config: { component: FC } },
+	sessions: undefined as unknown[] | undefined,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -51,7 +52,7 @@ vi.mock("./-hooks/usePlayerSessionData", () => ({
 		settings: { dateFormat: "dd-MM-yyyy", timeFormat: "HH:mm", uiLanguage: "en-US" },
 		player: { id: 1, name: "Kathleen", image: null },
 		games: [{ id: 1, title: "Spirit Island", image: null }],
-		sessions,
+		sessions: mocks.sessions ?? sessions,
 		players,
 		deleteSession: vi.fn(),
 		isLoading: false,
@@ -66,6 +67,20 @@ const renderPage = () => {
 };
 
 describe("Player sessions page", () => {
+	beforeEach(() => {
+		mocks.sessions = undefined;
+	});
+
+	it("shows the game of a session with a link and leaves a missing game empty", () => {
+		mocks.sessions = [sessions[0], { ...sessions[0], id: 43, gameId: 99 }];
+		renderPage();
+
+		const rows = within(screen.getByRole("table")).getAllByRole("row");
+		expect(within(rows[1]).getByText("Spirit Island")).toBeInTheDocument();
+		expect(within(rows[1]).getByRole("button", { name: "Spirit Island" })).toBeInTheDocument();
+		expect(rows[2].children[2]).toBeEmptyDOMElement();
+	});
+
 	it("titles the page after the player without a hyphen", () => {
 		renderPage();
 

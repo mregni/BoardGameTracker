@@ -32,6 +32,7 @@ export const useLocationModal = ({ onSaveSuccess, onUpdateSuccess }: Props) => {
 			successToast("location:notifications.update");
 			onUpdateSuccess?.();
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.gameNights] });
 		},
 		onError: (error) => {
 			errorToast(apiErrorMessage(error, "location:notifications.update-failed"));

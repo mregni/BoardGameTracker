@@ -94,7 +94,13 @@ export const BgtAvatar = (props: Props) => {
 			title={title}
 		>
 			{showImage && (
-				<img className={avatarClasses} src={image} alt={title || ""} onError={() => setFailedImage(image ?? null)} />
+				<img
+					className={avatarClasses}
+					src={image}
+					alt={title || ""}
+					loading="lazy"
+					onError={() => setFailedImage(image ?? null)}
+				/>
 			)}
 			{!showImage && title && (
 				<div

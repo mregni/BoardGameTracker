@@ -1,4 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
+import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
 import { BgtDateTimePicker } from "./BgtDateTimePicker";
@@ -104,6 +105,42 @@ describe("BgtDateTimePicker", () => {
 
 			expect(screen.getByRole("button", { name: /open-calendar/ })).toBeDisabled();
 			expect(timeSegment(/hour/i)).toHaveAttribute("aria-disabled", "true");
+		});
+	});
+
+	describe("Date changes", () => {
+		it("should keep the last valid date when every date segment is cleared", async () => {
+			const user = userEvent.setup();
+			const changes: unknown[] = [];
+			const StatefulPicker = () => {
+				const [value, setValue] = useState<Date | string>(new Date(2024, 5, 15, 10, 30));
+				const field = {
+					...createMockField(value),
+					handleChange: (next: Date) => {
+						changes.push(next);
+						setValue(next);
+					},
+				} as unknown as AnyFieldApi;
+				return <BgtDateTimePicker {...defaultProps} field={field} />;
+			};
+
+			renderWithProviders(<StatefulPicker />);
+
+			const timeSegments = within(timeGroup()).getAllByRole("spinbutton");
+			const dateSegments = screen.getAllByRole("spinbutton").filter((segment) => !timeSegments.includes(segment));
+			for (const segment of dateSegments) {
+				act(() => segment.focus());
+				await user.keyboard("{Backspace}{Backspace}{Backspace}{Backspace}");
+			}
+
+			expect(changes.every((change) => change instanceof Date && !Number.isNaN(change.getTime()))).toBe(true);
+			expect(timeSegment(/hour/i)).toHaveTextContent("10");
+		});
+
+		it("should render an invalid stored value as empty instead of crashing", () => {
+			renderWithProviders(<BgtDateTimePicker {...defaultProps} field={createMockField(new Date(""))} />);
+
+			expect(timeSegment(/hour/i)).not.toHaveAttribute("aria-valuenow");
 		});
 	});
 

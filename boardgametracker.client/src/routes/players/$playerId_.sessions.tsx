@@ -1,6 +1,6 @@
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
@@ -55,77 +55,83 @@ function RouteComponent() {
 		},
 	});
 
+	const gameMap = useMemo(() => new Map(games.map((game) => [game.id, game])), [games]);
+	const columns = useMemo<DataTableProps<Session>["columns"]>(() => {
+		if (!settings) return [];
+		return [
+			{
+				accessorKey: "0",
+				cell: ({ row }) => toDisplay(row.original.start, settings.dateFormat, settings.uiLanguage),
+				header: t("date"),
+			},
+			{
+				accessorKey: "1",
+				cell: ({ row }) => toDisplayTime(row.original.start, settings.timeFormat, settings.uiLanguage),
+				header: t("time"),
+			},
+			{
+				accessorKey: "2",
+				cell: ({ row }) => {
+					const game = gameMap.get(row.original.gameId);
+					return (
+						game && (
+							<div className="flex flex-row gap-2 items-center">
+								<BgtAvatar
+									image={game.image}
+									title={game.title}
+									onClick={() => navigate({ to: `/games/${game.id}` })}
+								/>
+								<span>{game.title}</span>
+							</div>
+						)
+					);
+				},
+				header: t("game"),
+			},
+			{
+				accessorKey: "3",
+				cell: ({ row }) => shortDuration(row.original.minutes),
+				header: t("duration"),
+			},
+			{
+				accessorKey: "4",
+				cell: ({ row }) => (
+					<div className="flex flex-wrap items-center gap-1.5">
+						{row.original.isCoop && <CoopResultPill won={row.original.teamWon === true} />}
+						{row.original.isCoop && row.original.teamScore != null && (
+							<span className="text-sm font-semibold tabular-nums">{decimal(row.original.teamScore)}</span>
+						)}
+						<SessionPlayerPills playerSessions={row.original.playerSessions} players={players} />
+					</div>
+				),
+				header: t("players"),
+			},
+			{
+				accessorKey: "5",
+				cell: ({ row }) => <SessionCommentCell comment={row.original.comment} />,
+				header: t("comment"),
+			},
+			...(canWrite
+				? [
+						{
+							accessorKey: "200",
+							cell: ({ row }: { row: { original: Session } }) => (
+								<BgtEditDeleteButtons
+									onDelete={() => setSessionToDelete(row.original.id)}
+									onEdit={() => navigate({ to: `/sessions/update/${row.original.id}` })}
+								/>
+							),
+							header: () => <div className="flex justify-end">{t("actions")}</div>,
+						},
+					]
+				: []),
+		];
+	}, [settings, gameMap, players, t, navigate, shortDuration, decimal, canWrite]);
+
 	return (
 		<BgtPage>
 			<BgtPageContent isLoading={isLoading} data={{ player, settings, games, players }}>
 				{({ player, settings, games, players }) => {
-					const columns: DataTableProps<Session>["columns"] = [
-						{
-							accessorKey: "0",
-							cell: ({ row }) => toDisplay(row.original.start, settings.dateFormat, settings.uiLanguage),
-							header: t("date"),
-						},
-						{
-							accessorKey: "1",
-							cell: ({ row }) => toDisplayTime(row.original.start, settings.timeFormat, settings.uiLanguage),
-							header: t("time"),
-						},
-						{
-							accessorKey: "2",
-							cell: ({ row }) => {
-								const game = games.find((x) => x.id === row.original.gameId);
-								return (
-									<div className="flex flex-row gap-2 items-center">
-										<BgtAvatar
-											image={game?.image}
-											title={game?.title}
-											onClick={() => navigate({ to: `/games/${game?.id}` })}
-										/>
-										<span>{game?.title}</span>
-									</div>
-								);
-							},
-							header: t("game"),
-						},
-						{
-							accessorKey: "3",
-							cell: ({ row }) => shortDuration(row.original.minutes),
-							header: t("duration"),
-						},
-						{
-							accessorKey: "4",
-							cell: ({ row }) => (
-								<div className="flex flex-wrap items-center gap-1.5">
-									{row.original.isCoop && <CoopResultPill won={row.original.teamWon === true} />}
-									{row.original.isCoop && row.original.teamScore != null && (
-										<span className="text-sm font-semibold tabular-nums">{decimal(row.original.teamScore)}</span>
-									)}
-									<SessionPlayerPills playerSessions={row.original.playerSessions} players={players} />
-								</div>
-							),
-							header: t("players"),
-						},
-						{
-							accessorKey: "5",
-							cell: ({ row }) => <SessionCommentCell comment={row.original.comment} />,
-							header: t("comment"),
-						},
-						...(canWrite
-							? [
-									{
-										accessorKey: "200",
-										cell: ({ row }: { row: { original: Session } }) => (
-											<BgtEditDeleteButtons
-												onDelete={() => setSessionToDelete(row.original.id)}
-												onEdit={() => navigate({ to: `/sessions/update/${row.original.id}` })}
-											/>
-										),
-										header: () => <div className="flex justify-end">{t("actions")}</div>,
-									},
-								]
-							: []),
-					];
-
 					return (
 						<>
 							<BgtPageHeader

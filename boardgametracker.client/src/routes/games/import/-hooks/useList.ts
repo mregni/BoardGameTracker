@@ -106,11 +106,7 @@ export const useList = ({ username }: Props) => {
 			}
 		},
 		async onSettled() {
-			await Promise.all([
-				invalidator.invalidateGames(),
-				invalidator.invalidateCounts(),
-				invalidator.invalidateDashboard(),
-			]);
+			await invalidator.invalidateGameCreated();
 		},
 		onSuccess() {
 			successToast("games:import.success");

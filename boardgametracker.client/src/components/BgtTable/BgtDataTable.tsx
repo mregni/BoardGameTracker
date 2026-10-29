@@ -5,6 +5,7 @@ import {
 	getFilteredRowModel,
 	getSortedRowModel,
 	type RowData,
+	type TableMeta,
 	useReactTable,
 } from "@tanstack/react-table";
 import { cx } from "class-variance-authority";
@@ -31,14 +32,16 @@ export interface DataTableProps<T> {
 	noHeaders?: boolean;
 	firstCellClassNames?: string;
 	widths?: (string | null)[];
+	meta?: TableMeta<T>;
 }
 
 const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
-	const { columns, data, size = "md", noDataMessage, isLoading = false, widths, noHeaders } = props;
+	const { columns, data, size = "md", noDataMessage, isLoading = false, widths, noHeaders, meta } = props;
 	const { t } = useTranslation();
 	const table = useReactTable({
 		data,
 		columns,
+		meta,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),

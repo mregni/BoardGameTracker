@@ -29,7 +29,10 @@ export const useUpdateSessionData = ({ sessionId, onSuccess }: Props) => {
 				...(session?.playerSessions ?? []).map((x) => x.playerId),
 				...sessionResult.playerSessions.map((x) => x.playerId),
 			]);
-			await invalidator.invalidateSession(sessionId, sessionResult.gameId, [...playerIds]);
+			await Promise.all([
+				invalidator.invalidateSession(sessionId, sessionResult.gameId, [...playerIds]),
+				session && session.gameId !== sessionResult.gameId ? invalidator.invalidateGame(session.gameId) : undefined,
+			]);
 		},
 		onError: (error) => {
 			errorToast(apiErrorMessage(error, "player-session:update.notifications.update-failed"));
