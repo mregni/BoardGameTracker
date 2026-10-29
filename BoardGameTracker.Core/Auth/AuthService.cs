@@ -240,6 +240,7 @@ public class AuthService : IAuthService
         }
 
         var user = new ApplicationUser(request.Username, request.Email, request.Username);
+        user.ConfirmEmail();
         var result = await _userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
         {
@@ -292,7 +293,7 @@ public class AuthService : IAuthService
         {
             await EnsureEmailChangeAllowedAsync(user, request.CurrentPassword);
             previousEmail = user.Email;
-            user.UpdateEmail(request.Email);
+            user.UpdateEmail(request.Email, false);
         }
 
         var previousPlayerId = user.PlayerId;
@@ -326,7 +327,7 @@ public class AuthService : IAuthService
             .Where(p => p.Id == playerId)
             .Select(p => p.Email)
             .FirstOrDefaultAsync();
-        if (!PlayerLinkMatcher.EmailAllowsLink(user.Email, playerEmail))
+        if (!PlayerLinkMatcher.EmailAllowsLink(user.Email, user.EmailConfirmed, playerEmail))
         {
             _logger.LogWarning("User {UserId} tried to link player {PlayerId} with a different email", user.Id, playerId);
             throw new ForbiddenException(Constants.Errors.PlayerEmailMismatch);
@@ -377,7 +378,7 @@ public class AuthService : IAuthService
 
         var caller = await _context.Users
             .Where(u => u.Id == currentUserId)
-            .Select(u => new { u.Email, u.PlayerId })
+            .Select(u => new { u.Email, u.EmailConfirmed, u.PlayerId })
             .FirstOrDefaultAsync();
 
         var players = await _context.Players
@@ -387,7 +388,7 @@ public class AuthService : IAuthService
             .ToListAsync();
 
         return players
-            .Where(p => p.Id == caller?.PlayerId || PlayerLinkMatcher.EmailAllowsLink(caller?.Email, p.Email))
+            .Where(p => p.Id == caller?.PlayerId || PlayerLinkMatcher.EmailAllowsLink(caller?.Email, caller?.EmailConfirmed == true, p.Email))
             .Select(p => new PlayerLinkDto(p.Id, p.Name))
             .ToList();
     }
@@ -441,6 +442,12 @@ public class AuthService : IAuthService
             return;
         }
 
+        if (!await _userManager.HasPasswordAsync(user))
+        {
+            _logger.LogInformation("Forgot-password requested for an account without a local password; no email sent");
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(user.Email))
         {
             _logger.LogWarning("Forgot-password requested for user {UserId} but no email address is set", user.Id);
@@ -484,7 +491,7 @@ public class AuthService : IAuthService
     public async Task ResetPasswordWithTokenAsync(ResetPasswordConfirmRequest request)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
-        if (user == null)
+        if (user == null || !await _userManager.HasPasswordAsync(user))
         {
             throw new ValidationException(Constants.Errors.InvalidResetToken);
         }

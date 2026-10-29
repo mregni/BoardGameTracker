@@ -474,6 +474,7 @@ public class UserAdminServiceTests : IDisposable
         var result = await _service.UpdateUserAsync(targetUserId, "newuser", "new@test.com", Constants.AuthRoles.Reader, null, currentUserId);
 
         result.Should().NotBeNull();
+        targetUser.EmailConfirmed.Should().BeTrue();
         result.Roles.Should().Contain(Constants.AuthRoles.Reader);
 
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
@@ -537,6 +538,7 @@ public class UserAdminServiceTests : IDisposable
 
         await _service.UpdateUserAsync(targetUserId, "SAMEUSER", "old@test.com", Constants.AuthRoles.User, null, currentUserId);
 
+        targetUser.EmailConfirmed.Should().BeFalse();
         _userManagerMock.Verify(x => x.FindByNameAsync(It.IsAny<string>()), Times.Never);
         _userManagerMock.Verify(x => x.SetUserNameAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Never);
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
@@ -933,9 +935,24 @@ public class UserAdminServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task UnlinkExternalLoginAsync_ShouldRemoveTheLink_EvenIfItWasTheOnlySignInMethod()
+    public async Task UnlinkExternalLoginAsync_ShouldRefuse_WhenItIsTheOnlySignInMethod()
     {
         AddUser("user-2");
+        var login = new ExternalLogin("user-2", "kc", "https://sso.example.com", "sub-1");
+        _context.ExternalLogins.Add(login);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var act = () => _service.UnlinkExternalLoginAsync("user-2", login.Id, "admin-1");
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.LastSignInMethod);
+        (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UnlinkExternalLoginAsync_ShouldRemoveTheLink_WhenTheUserHasAPassword()
+    {
+        AddUser("user-2", "hash");
         var login = new ExternalLogin("user-2", "kc", "https://sso.example.com", "sub-1");
         _context.ExternalLogins.Add(login);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -943,6 +960,22 @@ public class UserAdminServiceTests : IDisposable
         await _service.UnlinkExternalLoginAsync("user-2", login.Id, "admin-1");
 
         (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        VerifyInformationLogged("admin-1", "user-2");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UnlinkExternalLoginAsync_ShouldRemoveTheLink_WhenTheUserHasAnotherExternalLogin()
+    {
+        AddUser("user-2");
+        var login = new ExternalLogin("user-2", "kc", "https://sso.example.com", "sub-1");
+        _context.ExternalLogins.Add(login);
+        _context.ExternalLogins.Add(new ExternalLogin("user-2", "kc", "https://other.example.com", "sub-2"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _service.UnlinkExternalLoginAsync("user-2", login.Id, "admin-1");
+
+        (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(1);
         VerifyInformationLogged("admin-1", "user-2");
         VerifyNoOtherCalls();
     }

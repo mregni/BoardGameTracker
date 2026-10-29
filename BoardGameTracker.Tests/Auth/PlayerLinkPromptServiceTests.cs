@@ -65,7 +65,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
         _accountImagesMock.VerifyNoOtherCalls();
     }
 
-    private async Task<ApplicationUser> CreateUserAsync(string role, string userName = "mregni", string? email = "mikhael@example.com", string? displayName = "Mikhaël Regni", bool pending = true)
+    private async Task<ApplicationUser> CreateUserAsync(string role, string userName = "mregni", string? email = "mikhael@example.com", string? displayName = "Mikhaël Regni", bool pending = true, bool emailConfirmed = true)
     {
         if (!await _scope.RoleManager.RoleExistsAsync(role))
         {
@@ -73,6 +73,11 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
         }
 
         var user = new ApplicationUser(userName, email, displayName);
+        if (emailConfirmed)
+        {
+            user.ConfirmEmail();
+        }
+
         if (pending)
         {
             user.AwaitPlayerLink();
@@ -217,6 +222,32 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
         var stored = await ReloadAsync(user.Id);
         stored.PlayerLinkPending.Should().BeTrue();
         stored.PlayerId.Should().BeNull();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkAsync_ShouldRefuseAPlayerWithTheSameEmail_WhenTheAccountEmailIsNotConfirmed()
+    {
+        var user = await CreateUserAsync(Constants.AuthRoles.User, email: "alice@example.com", emailConfirmed: false);
+        var player = await AddPlayerAsync("Alice", "alice@example.com");
+
+        var act = () => _service.LinkAsync(user.Id, player.Id);
+
+        (await act.Should().ThrowAsync<ForbiddenException>()).WithMessage(Constants.Errors.PlayerEmailMismatch);
+        (await ReloadAsync(user.Id)).PlayerId.Should().BeNull();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetSuggestionsAsync_ShouldLeaveOutPlayersWithTheSameEmail_WhenTheAccountEmailIsNotConfirmed()
+    {
+        var user = await CreateUserAsync(Constants.AuthRoles.User, email: "alice@example.com", emailConfirmed: false);
+        await AddPlayerAsync("Alice", "alice@example.com");
+        var noEmail = await AddPlayerAsync("Anna");
+
+        var result = await _service.GetSuggestionsAsync(user.Id);
+
+        result.Players.Select(p => p.Id).Should().Equal(noEmail.Id);
         VerifyNoOtherCalls();
     }
 

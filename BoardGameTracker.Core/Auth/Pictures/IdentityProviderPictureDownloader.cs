@@ -31,6 +31,18 @@ public class IdentityProviderPictureDownloader : IIdentityProviderPictureDownloa
             return null;
         }
 
+        if (!Uri.TryCreate(pictureUrl, UriKind.Absolute, out var pictureUri))
+        {
+            _logger.LogDebug("Skipped the identity provider picture because it is not an absolute address");
+            return null;
+        }
+
+        if (pictureUri.Scheme != Uri.UriSchemeHttps && pictureUri.Scheme != Uri.UriSchemeHttp)
+        {
+            _logger.LogDebug("Skipped the identity provider picture because it uses the {Scheme} scheme", pictureUri.Scheme);
+            return null;
+        }
+
         var target = IdentityProviderPicturePolicy.Validate(pictureUrl, authorityUri);
         if (target == null)
         {

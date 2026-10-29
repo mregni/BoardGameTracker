@@ -49,7 +49,6 @@ public class IdentityProviderPictureDownloaderTests : IDisposable
     [Theory]
     [InlineData("http://cdn.example.com/a.png")]
     [InlineData("https://127.0.0.1/a.png")]
-    [InlineData("data:image/png;base64,AAAA")]
     public async Task DownloadAsync_ShouldNotSendARequest_ForARefusedAddress(string url)
     {
         var result = await _downloader.DownloadAsync(url, Authority, TestContext.Current.CancellationToken);
@@ -57,6 +56,31 @@ public class IdentityProviderPictureDownloaderTests : IDisposable
         result.Should().BeNull();
         _handler.Requests.Should().BeEmpty();
         VerifyWarning();
+    }
+
+    [Theory]
+    [InlineData("data:image/svg+xml;base64,c2VjcmV0", "data")]
+    [InlineData("ftp://cdn.example.com/c2VjcmV0.png", "ftp")]
+    [InlineData("/avatars/c2VjcmV0.png", null)]
+    public async Task DownloadAsync_ShouldOnlyLogAtDebug_ForAPictureThatIsNotAWebAddress(string url, string? scheme)
+    {
+        var result = await _downloader.DownloadAsync(url, Authority, TestContext.Current.CancellationToken);
+
+        result.Should().BeNull();
+        _handler.Requests.Should().BeEmpty();
+        _loggerMock.Verify(x => x.Log(LogLevel.Debug, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, _) => !v.ToString()!.Contains("c2VjcmV0") && (scheme == null || v.ToString()!.Contains(scheme))), null, It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once);
+        _loggerMock.Verify(x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception?>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DownloadAsync_ShouldFetchAPlainHttpPictureOfTheAuthorityHost_OverHttps()
+    {
+        _handler.Respond = _ => Image([5]);
+
+        var result = await _downloader.DownloadAsync("http://idp.example.com/media/a.png", Authority, TestContext.Current.CancellationToken);
+
+        result.Should().Equal(5);
+        _handler.Requests.Should().ContainSingle().Which.Uri.Should().Be(new Uri("https://idp.example.com/media/a.png"));
     }
 
     [Fact]

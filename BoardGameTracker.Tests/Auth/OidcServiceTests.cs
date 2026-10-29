@@ -135,34 +135,6 @@ public class OidcServiceTests : IDisposable
 
     #endregion
 
-    #region HasEnabledProviderAsync
-
-    [Fact]
-    public async Task HasEnabledProviderAsync_ShouldReturnTrue_WhenEnabledProviderExists()
-    {
-        _context.OidcProviders.Add(new OidcProvider("Google", "https://accounts.google.com", "client-id"));
-        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var result = await _service.HasEnabledProviderAsync();
-
-        result.Should().BeTrue();
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task HasEnabledProviderAsync_ShouldReturnFalse_WhenOnlyDisabledProviderExists()
-    {
-        _context.OidcProviders.Add(CreateDisabledProvider("google"));
-        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var result = await _service.HasEnabledProviderAsync();
-
-        result.Should().BeFalse();
-        VerifyNoOtherCalls();
-    }
-
-    #endregion
-
     #region GetExternalLoginsAsync
 
     [Fact]

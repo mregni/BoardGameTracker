@@ -14,7 +14,6 @@ public interface IOidcService
     LoginResponse? TakeHandoff(string? handoffKey);
     Task<List<ExternalLoginDto>> GetExternalLoginsAsync(string userId);
     Task UnlinkExternalLoginAsync(string userId, int externalLoginId);
-    Task<bool> HasEnabledProviderAsync();
     Task<string?> EndSessionAsync(string? sessionKey, string publicBaseUrl);
     Task CleanupExpiredSessionsAsync();
 }

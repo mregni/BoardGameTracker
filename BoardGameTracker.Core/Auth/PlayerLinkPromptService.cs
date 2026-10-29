@@ -51,7 +51,7 @@ public class PlayerLinkPromptService : IPlayerLinkPromptService
             .Where(p => !linkedPlayerIds.Contains(p.Id))
             .Select(p => new PlayerLinkCandidate(p.Id, p.Name, p.Image, p.Email))
             .ToListAsync();
-        candidates.RemoveAll(p => !PlayerLinkMatcher.EmailAllowsLink(user.Email, p.Email));
+        candidates.RemoveAll(p => !PlayerLinkMatcher.EmailAllowsLink(user.Email, user.EmailConfirmed, p.Email));
         candidates.Sort((left, right) => StringComparer.InvariantCultureIgnoreCase.Compare(left.Name, right.Name));
 
         var suggestions = PlayerLinkMatcher.Suggest(candidates, user.Email, user.DisplayName, user.UserName);
@@ -74,7 +74,7 @@ public class PlayerLinkPromptService : IPlayerLinkPromptService
             throw new ConflictException(Constants.Errors.PlayerAlreadyLinked);
         }
 
-        if (!PlayerLinkMatcher.EmailAllowsLink(user.Email, player.Email))
+        if (!PlayerLinkMatcher.EmailAllowsLink(user.Email, user.EmailConfirmed, player.Email))
         {
             _logger.LogWarning("User {UserId} tried to link player {PlayerId} with a different email", userId, playerId);
             throw new ForbiddenException(Constants.Errors.PlayerEmailMismatch);
