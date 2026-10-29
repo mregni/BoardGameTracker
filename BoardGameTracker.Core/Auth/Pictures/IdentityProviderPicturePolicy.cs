@@ -15,6 +15,14 @@ public static class IdentityProviderPicturePolicy
             return null;
         }
 
+        if (candidate.Scheme == Uri.UriSchemeHttp
+            && authority.Scheme == Uri.UriSchemeHttps
+            && candidate.IsDefaultPort
+            && IsAuthorityHost(candidate, authority))
+        {
+            candidate = new UriBuilder(candidate) { Scheme = Uri.UriSchemeHttps, Port = authority.Port }.Uri;
+        }
+
         var authorityIsLoopback = SecureUrlPolicy.IsLoopbackHost(authority.IdnHost);
         var targetIsLoopback = SecureUrlPolicy.IsLoopbackHost(candidate.IdnHost);
         if (targetIsLoopback && !authorityIsLoopback)

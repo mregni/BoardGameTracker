@@ -31,9 +31,15 @@ public class ApplicationUser : IdentityUser
         DisplayName = displayName;
     }
 
-    public void UpdateEmail(string? email)
+    public void UpdateEmail(string? email, bool confirmed)
     {
         Email = email;
+        EmailConfirmed = confirmed;
+    }
+
+    public void ConfirmEmail()
+    {
+        EmailConfirmed = true;
     }
 
     public void UpdateLastLogin()

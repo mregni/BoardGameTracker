@@ -21,7 +21,8 @@ public class IdentityProviderPicturePolicyTests
 
     [Theory]
     [InlineData("http://cdn.example.com/a.png")]
-    [InlineData("http://idp.example.com/a.png")]
+    [InlineData("http://idp.example.com:8080/a.png")]
+    [InlineData("http://sub.idp.example.com/a.png")]
     [InlineData("ftp://cdn.example.com/a.png")]
     [InlineData("file:///etc/passwd")]
     [InlineData("data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=")]
@@ -57,6 +58,15 @@ public class IdentityProviderPicturePolicyTests
         IdentityProviderPicturePolicy.Validate("http://auth.lan:9000/media/a.png", LanAuthority).Should().NotBeNull();
         IdentityProviderPicturePolicy.Validate("http://auth.lan:9001/media/a.png", LanAuthority).Should().BeNull();
         IdentityProviderPicturePolicy.Validate("http://other.lan:9000/media/a.png", LanAuthority).Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("http://idp.example.com/media/a.png?s=64", "https://idp.example.com/application/o/bgt/", "https://idp.example.com/media/a.png?s=64")]
+    [InlineData("http://IDP.example.com/media/a.png", "https://idp.example.com/", "https://idp.example.com/media/a.png")]
+    [InlineData("http://idp.example.com/media/a.png", "https://idp.example.com:8443/", "https://idp.example.com:8443/media/a.png")]
+    public void Validate_ShouldUpgradePlainHttp_OnTheHostOfAnHttpsAuthority(string url, string authority, string expected)
+    {
+        IdentityProviderPicturePolicy.Validate(url, new Uri(authority))!.AbsoluteUri.Should().Be(expected);
     }
 
     [Fact]
