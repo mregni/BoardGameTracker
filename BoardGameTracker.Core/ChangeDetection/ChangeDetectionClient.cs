@@ -223,7 +223,22 @@ public class ChangeDetectionClient : IChangeDetectionClient
             return ChangeDetectionStatus.WatchNotFound;
         }
 
-        var (client, status) = await TryCreateClientAsync();
+        var (baseUrl, apiKey) = await _settingsService.GetChangeDetectionSettingsAsync();
+        return await DeleteWatchAsync(watchId, baseUrl, apiKey, cancellationToken);
+    }
+
+    public async Task<ChangeDetectionStatus> DeleteWatchAsync(
+        string watchId,
+        string? baseUrl,
+        string? apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(watchId, out _))
+        {
+            return ChangeDetectionStatus.WatchNotFound;
+        }
+
+        var (client, status) = CreateClient(baseUrl, apiKey);
         if (client == null)
         {
             return status;
@@ -279,6 +294,11 @@ public class ChangeDetectionClient : IChangeDetectionClient
     private async Task<(HttpClient? Client, ChangeDetectionStatus Status)> TryCreateClientAsync()
     {
         var (baseUrl, apiKey) = await _settingsService.GetChangeDetectionSettingsAsync();
+        return CreateClient(baseUrl, apiKey);
+    }
+
+    private (HttpClient? Client, ChangeDetectionStatus Status) CreateClient(string? baseUrl, string? apiKey)
+    {
         if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(apiKey))
         {
             return (null, ChangeDetectionStatus.NotConfigured);

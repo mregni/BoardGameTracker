@@ -6,6 +6,8 @@ namespace BoardGameTracker.Core.Email;
 
 public class BackgroundEmailSender : IBackgroundEmailSender
 {
+    private static readonly SemaphoreSlim SendLock = new(1, 1);
+
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<BackgroundEmailSender> _logger;
 
@@ -22,6 +24,7 @@ public class BackgroundEmailSender : IBackgroundEmailSender
 
     private async Task SendAsync(string to, string subject, string htmlBody)
     {
+        await SendLock.WaitAsync();
         try
         {
             using var scope = _scopeFactory.CreateScope();
@@ -31,6 +34,10 @@ public class BackgroundEmailSender : IBackgroundEmailSender
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to send a queued email with subject {Subject}", subject);
+        }
+        finally
+        {
+            SendLock.Release();
         }
     }
 }

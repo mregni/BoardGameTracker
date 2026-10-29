@@ -49,6 +49,9 @@ public class ManualServiceTests
         _loggerMock = new Mock<ILogger<ManualService>>();
 
         _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueOrDefaultAsync(BoardGameTracker.Common.Constants.AppConfig.GameNightsEnabled, true))
+            .ReturnsAsync(true);
         _manualService = new ManualService(
             _manualRepositoryMock.Object,
             _diskProviderMock.Object,
@@ -71,6 +74,11 @@ public class ManualServiceTests
         _unitOfWorkMock.VerifyNoOtherCalls();
         _indexingQueueMock.VerifyNoOtherCalls();
         _pageRendererMock.VerifyNoOtherCalls();
+    }
+
+    private void VerifyGameNightsEnabledChecked(int times = 1)
+    {
+        _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(BoardGameTracker.Common.Constants.AppConfig.GameNightsEnabled, true), Times.Exactly(times));
     }
 
     private static IFormFile CreateFormFile(string fileName = "rulebook.pdf", string contentType = "application/pdf", long length = 1024)
@@ -533,6 +541,24 @@ public class ManualServiceTests
         await list.Should().ThrowAsync<AuthenticationFailedException>();
         await download.Should().ThrowAsync<AuthenticationFailedException>();
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(BoardGameTracker.Common.Constants.AppConfig.RsvpAuthenticationEnabled, false), Times.Exactly(2));
+        VerifyGameNightsEnabledChecked(2);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GameNightManuals_ShouldBeNotFound_WhenGameNightsAreDisabled()
+    {
+        var linkId = Guid.NewGuid();
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueOrDefaultAsync(BoardGameTracker.Common.Constants.AppConfig.GameNightsEnabled, true))
+            .ReturnsAsync(false);
+
+        var list = async () => await _manualService.GetManualsForGameNight(linkId, true);
+        var download = async () => await _manualService.GetManualForGameNightDownload(linkId, 11, true);
+
+        await list.Should().ThrowAsync<FeatureDisabledException>();
+        await download.Should().ThrowAsync<FeatureDisabledException>();
+        VerifyGameNightsEnabledChecked(2);
         VerifyNoOtherCalls();
     }
 
@@ -550,6 +576,7 @@ public class ManualServiceTests
         result.Should().BeEmpty();
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(BoardGameTracker.Common.Constants.AppConfig.RsvpAuthenticationEnabled, false), Times.Once);
         _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyGameNightsEnabledChecked();
         VerifyNoOtherCalls();
     }
 
@@ -567,6 +594,7 @@ public class ManualServiceTests
         _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
         _manualRepositoryMock.Verify(x => x.GetByIdAsync(11), Times.Once);
         _diskProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Never);
+        VerifyGameNightsEnabledChecked();
         VerifyNoOtherCalls();
     }
 
@@ -586,6 +614,7 @@ public class ManualServiceTests
         _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
         _manualRepositoryMock.Verify(x => x.GetByIdAsync(11), Times.Once);
         _diskProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Never);
+        VerifyGameNightsEnabledChecked();
         VerifyNoOtherCalls();
     }
 
@@ -604,6 +633,7 @@ public class ManualServiceTests
 
         _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
         _manualRepositoryMock.Verify(x => x.GetByIdAsync(11), Times.Once);
+        VerifyGameNightsEnabledChecked();
         VerifyNoOtherCalls();
     }
 
@@ -626,6 +656,7 @@ public class ManualServiceTests
         _manualRepositoryMock.Verify(x => x.GetByIdAsync(11), Times.Once);
         _diskProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once);
         _diskProviderMock.Verify(x => x.OpenRead(It.IsAny<string>()), Times.Once);
+        VerifyGameNightsEnabledChecked();
         VerifyNoOtherCalls();
     }
 
@@ -649,6 +680,7 @@ public class ManualServiceTests
 
         _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
         _manualRepositoryMock.Verify(x => x.ListAsync(It.IsAny<ManualsByGameIdsSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyGameNightsEnabledChecked();
         VerifyNoOtherCalls();
     }
 
@@ -665,6 +697,7 @@ public class ManualServiceTests
 
         _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
         _manualRepositoryMock.Verify(x => x.ListAsync(It.IsAny<ManualsByGameIdsSpec>(), It.IsAny<CancellationToken>()), Times.Never);
+        VerifyGameNightsEnabledChecked();
         VerifyNoOtherCalls();
     }
 
@@ -679,6 +712,7 @@ public class ManualServiceTests
         result.Should().BeEmpty();
 
         _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyGameNightsEnabledChecked();
         VerifyNoOtherCalls();
     }
 

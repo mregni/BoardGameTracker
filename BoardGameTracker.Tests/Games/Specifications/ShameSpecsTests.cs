@@ -43,17 +43,6 @@ public class ShameSpecsTests
     ];
 
     [Fact]
-    public void GamesWithNoRecentSessionsSpec_ShouldReturnOnlyOwnedGamesWithoutRecentSessions_OrderedByTitle()
-    {
-        var spec = new GamesWithNoRecentSessionsSpec(Cutoff);
-
-        var result = spec.Evaluate(Fixture()).ToList();
-
-        result.Select(x => x.Id).Should().Equal(3, 7, 1);
-        spec.AsNoTracking.Should().BeTrue();
-    }
-
-    [Fact]
     public void ShameGamesSpec_ShouldReturnOnlyOwnedGamesWithoutRecentSessions_OrderedByTitle()
     {
         var spec = new ShameGamesSpec(Cutoff);

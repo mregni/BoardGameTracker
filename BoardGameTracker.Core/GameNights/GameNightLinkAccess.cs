@@ -8,6 +8,11 @@ public static class GameNightLinkAccess
 {
     public static async Task EnsureAllowedAsync(IConfigRepository configRepository, bool isAuthenticated)
     {
+        if (!await configRepository.GetConfigValueOrDefaultAsync(Constants.AppConfig.GameNightsEnabled, true))
+        {
+            throw new FeatureDisabledException(Constants.AppConfig.GameNightsEnabled);
+        }
+
         if (isAuthenticated)
         {
             return;

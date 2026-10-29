@@ -160,7 +160,7 @@ public class GameRepository : EfRepository<Game>, IGameRepository
 
     public Task<int> CountGamesWithNoRecentSessions(DateTime cutoffDate, CancellationToken cancellationToken = default)
     {
-        return CountAsync(new GamesWithNoRecentSessionsSpec(cutoffDate), cancellationToken);
+        return CountAsync(new ShameGamesSpec(cutoffDate), cancellationToken);
     }
 
     public Task<List<ShameGame>> GetShameGames(DateTime cutoffDate)
