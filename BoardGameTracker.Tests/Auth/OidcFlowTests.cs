@@ -378,7 +378,7 @@ public class OidcFlowTests : IDisposable
 
         result.Login.User.Username.Should().Be("jane");
         result.Login.User.NeedsPlayerLink.Should().BeTrue();
-        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "jane" && u.Email == "jane@example.com" && u.PlayerLinkPending)), Times.Once);
+        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "jane" && u.Email == "jane@example.com" && u.EmailConfirmed && u.PlayerLinkPending)), Times.Once);
         _userManagerMock.Verify(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.RoleManagedByIdentityProvider), "User"), Times.Once);
         var login = await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken);
         login.ProviderKey.Should().Be("sub-new");
@@ -466,7 +466,7 @@ public class OidcFlowTests : IDisposable
         var result = await LoginAsync();
 
         result.Login.User.Username.Should().Be("anna");
-        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "anna" && u.DisplayName == "anna" && u.Email == "sub-anna" + OidcService.PlaceholderEmailDomain)), Times.Once);
+        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "anna" && u.DisplayName == "anna" && u.Email == "sub-anna" + OidcService.PlaceholderEmailDomain && !u.EmailConfirmed)), Times.Once);
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("anna");
     }
 
@@ -497,6 +497,7 @@ public class OidcFlowTests : IDisposable
         result.Login.User.DisplayName.Should().Be("Anna Smith");
         user.DisplayName.Should().Be("Anna Smith");
         user.Email.Should().Be("anna@example.com");
+        user.EmailConfirmed.Should().BeTrue();
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("Anna Smith");
         _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
     }
@@ -529,7 +530,22 @@ public class OidcFlowTests : IDisposable
 
         user.DisplayName.Should().Be("Annie");
         user.Email.Should().Be("anna@home.example.com");
+        user.EmailConfirmed.Should().BeFalse();
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("Old name");
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldConfirmTheEmail_WhenTheProviderReportsTheSameEmail()
+    {
+        var user = SsoUser("anna", "Anna@Example.com", "Anna");
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-anna"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna", ["email"] = "anna@example.com" };
+
+        await LoginAsync();
+
+        user.Email.Should().Be("Anna@Example.com");
+        user.EmailConfirmed.Should().BeTrue();
     }
 
     [Fact]

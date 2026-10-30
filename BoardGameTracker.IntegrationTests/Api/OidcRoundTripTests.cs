@@ -563,7 +563,13 @@ public class OidcRoundTripTests : IAsyncLifetime
 
         var links = await admin.GetFromJsonAsync<List<ExternalLoginDto>>($"/api/admin/users/{login.User.Id}/external-logins", IntegrationFixture.Json);
         links.Should().ContainSingle();
-        var unlink = await admin.DeleteAsync($"/api/admin/users/{login.User.Id}/external-logins/{links![0].Id}");
+        var lastMethod = await admin.DeleteAsync($"/api/admin/users/{login.User.Id}/external-logins/{links![0].Id}");
+        lastMethod.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await lastMethod.Content.ReadAsStringAsync()).Should().Contain(Constants.Errors.LastSignInMethod);
+
+        var reset = await admin.PostAsync($"/api/auth/reset-password/{login.User.Id}", null);
+        reset.StatusCode.Should().Be(HttpStatusCode.OK, await reset.Content.ReadAsStringAsync());
+        var unlink = await admin.DeleteAsync($"/api/admin/users/{login.User.Id}/external-logins/{links[0].Id}");
         unlink.StatusCode.Should().Be(HttpStatusCode.NoContent);
         (await admin.GetFromJsonAsync<List<ExternalLoginDto>>($"/api/admin/users/{login.User.Id}/external-logins", IntegrationFixture.Json)).Should().BeEmpty();
 

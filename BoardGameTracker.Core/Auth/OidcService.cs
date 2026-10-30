@@ -82,11 +82,6 @@ public class OidcService : IOidcService
             .FirstOrDefaultAsync();
     }
 
-    public async Task<bool> HasEnabledProviderAsync()
-    {
-        return await _context.OidcProviders.AnyAsync(p => p.Enabled);
-    }
-
     public Task<OidcAuthorizationRequest> StartLoginAsync(string publicBaseUrl, string? redirectPath)
     {
         return StartAsync(publicBaseUrl, OidcFlow.Login, null, LocalPath.Normalize(redirectPath));
@@ -382,6 +377,10 @@ public class OidcService : IOidcService
             email ?? $"{identity.Subject}{PlaceholderEmailDomain}",
             displayName);
         user.AwaitPlayerLink();
+        if (email != null)
+        {
+            user.ConfirmEmail();
+        }
 
         var result = await _userManager.CreateAsync(user);
         if (!result.Succeeded)
@@ -404,6 +403,12 @@ public class OidcService : IOidcService
             _logger.LogInformation("Filled in the empty display name of user {UserId} from {Provider}", user.Id, provider.DisplayName);
         }
 
+        if (email != null && !user.EmailConfirmed && string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase))
+        {
+            user.ConfirmEmail();
+            _logger.LogInformation("Confirmed the email of user {UserId} because {Provider} reports the same email", user.Id, provider.DisplayName);
+        }
+
         if (email == null || !IsPlaceholderEmail(user.Email))
         {
             return;
@@ -415,7 +420,7 @@ public class OidcService : IOidcService
             return;
         }
 
-        user.UpdateEmail(email);
+        user.UpdateEmail(email, true);
         _logger.LogInformation("Replaced the placeholder email of user {UserId} with the email from {Provider}", user.Id, provider.DisplayName);
     }
 
