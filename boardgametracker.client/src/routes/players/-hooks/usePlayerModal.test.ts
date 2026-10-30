@@ -24,7 +24,7 @@ vi.mock("@/services/playerService", () => ({
 	linkPlayerAccountCall: vi.fn(),
 }));
 
-import { linkPlayerAccountCall } from "@/services/playerService";
+import { linkPlayerAccountCall, updatePlayerCall } from "@/services/playerService";
 import { usePlayerModal } from "./usePlayerModal";
 
 const setup = () => {
@@ -63,5 +63,23 @@ describe("usePlayerModal linked account", () => {
 		await act(() => result.current.linkAccount({ playerId: 4, userId: null }).catch(() => undefined));
 
 		expect(errorToast).toHaveBeenCalledWith("player:account.link-failed");
+	});
+});
+
+describe("usePlayerModal update", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("refreshes every view that shows the player name", async () => {
+		vi.mocked(updatePlayerCall).mockResolvedValue({ id: 4, name: "Jane", image: null, email: null, badges: [] });
+		const { result, invalidate } = setup();
+
+		await act(() => result.current.updatePlayer({ id: 4, name: "Jane" } as never));
+
+		expect(successToast).toHaveBeenCalledWith("player:notifications.updated");
+		for (const key of ["players", "player", "gameNights", "leaderboard", "compare"]) {
+			expect(invalidate).toHaveBeenCalledWith({ queryKey: [key] });
+		}
 	});
 });

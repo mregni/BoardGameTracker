@@ -26,7 +26,7 @@ export const usePlayerSessionData = ({ playerId, onDeleteSuccess }: UsePlayerSes
 	const sessions = sessionsQuery.data ?? [];
 	const players = playersQuery.data ?? [];
 
-	const isLoading = settingsQuery.isLoading || playerQuery.isLoading || gamesQuery.isLoading;
+	const isLoading = settingsQuery.isLoading || playerQuery.isLoading || gamesQuery.isLoading || sessionsQuery.isLoading;
 
 	const deleteSession = async (id: number) => {
 		const deleted = sessions.find((session) => session.id === id);

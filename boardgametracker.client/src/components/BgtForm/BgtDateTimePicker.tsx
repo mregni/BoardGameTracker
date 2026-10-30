@@ -28,10 +28,7 @@ export const BgtDateTimePicker = (props: BgtDateTimePickerProps) => {
 	const hourCycle = getHourCycle(settings?.timeFormat);
 	const locale = settings?.uiLanguage || undefined;
 
-	const selectedDate = useMemo(
-		() => (field.state.value ? new Date(field.state.value) : undefined),
-		[field.state.value],
-	);
+	const selectedDate = useMemo(() => parseLocalDate(field.state.value), [field.state.value]);
 
 	const dateField = useMemo(
 		() => ({
@@ -40,7 +37,8 @@ export const BgtDateTimePicker = (props: BgtDateTimePickerProps) => {
 				meta: field.state.meta,
 			},
 			handleChange: (dateString: string) => {
-				const newDate = parseLocalDate(dateString) ?? new Date(dateString);
+				const newDate = parseLocalDate(dateString);
+				if (!newDate) return;
 
 				if (selectedDate) {
 					newDate.setHours(selectedDate.getHours());
