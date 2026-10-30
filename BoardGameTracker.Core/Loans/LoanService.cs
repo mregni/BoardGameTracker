@@ -1,6 +1,7 @@
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
@@ -17,6 +18,7 @@ public class LoanService : ILoanService
     private readonly IGameRepository _gameRepository;
     private readonly IReadRepository<Player> _playerRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<LoanService> _logger;
 
     public LoanService(
@@ -24,12 +26,14 @@ public class LoanService : ILoanService
         IGameRepository gameRepository,
         IReadRepository<Player> playerRepository,
         IUnitOfWork unitOfWork,
+        IDateTimeProvider dateTimeProvider,
         ILogger<LoanService> logger)
     {
         _loanRepository = loanRepository;
         _gameRepository = gameRepository;
         _playerRepository = playerRepository;
         _unitOfWork = unitOfWork;
+        _dateTimeProvider = dateTimeProvider;
         _logger = logger;
     }
 
@@ -113,6 +117,6 @@ public class LoanService : ILoanService
 
     public Task<int> CountActiveLoans(CancellationToken cancellationToken = default)
     {
-        return _loanRepository.CountAsync(new ActiveLoansSpec(), cancellationToken);
+        return _loanRepository.CountAsync(new ActiveLoansSpec(_dateTimeProvider.UtcNow), cancellationToken);
     }
 }

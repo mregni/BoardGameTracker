@@ -5,7 +5,7 @@ namespace BoardGameTracker.Common.Extensions;
 
 public static class LoanDtoExtensions
 {
-    public static LoanDto ToDto(this Loan loan)
+    public static LoanDto ToDto(this Loan loan, DateTime now)
     {
         return new LoanDto
         {
@@ -15,12 +15,12 @@ public static class LoanDtoExtensions
             ReturnedDate = loan.ReturnedDate,
             GameId = loan.GameId,
             PlayerId = loan.PlayerId,
-            IsActive = loan.IsCurrentlyOnLoan()
+            IsActive = loan.IsCurrentlyOnLoan(now)
         };
     }
 
-    public static List<LoanDto> ToListDto(this IEnumerable<Loan> loans)
+    public static List<LoanDto> ToListDto(this IEnumerable<Loan> loans, DateTime now)
     {
-        return loans.Select(l => l.ToDto()).ToList();
+        return loans.Select(l => l.ToDto(now)).ToList();
     }
 }

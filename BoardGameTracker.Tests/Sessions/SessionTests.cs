@@ -66,8 +66,7 @@ public class SessionTests
         session.AddPlayerSession(7, 10, true, true);
         session.AddPlayerSession(7, 99, false, false);
 
-        session.GetPlayerCount().Should().Be(1);
-        session.PlayerSessions.Single().Score.Should().Be(10);
+        session.PlayerSessions.Should().ContainSingle().Which.Score.Should().Be(10);
     }
 
     [Fact]

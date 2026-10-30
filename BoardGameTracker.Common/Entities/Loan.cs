@@ -36,10 +36,9 @@ public class Loan : HasId
         ReturnedDate = returnedDate;
     }
 
-    public bool IsCurrentlyOnLoan()
+    public bool IsCurrentlyOnLoan(DateTime now)
     {
-        var now = DateTime.UtcNow;
-        return LoanDate <= now && (ReturnedDate == null || now < ReturnedDate.Value);
+        return ReturnedDate == null && LoanDate <= now;
     }
 
     public bool Overlaps(DateTime start, DateTime? end)

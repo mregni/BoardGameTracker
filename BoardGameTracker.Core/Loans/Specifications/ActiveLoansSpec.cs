@@ -5,8 +5,8 @@ namespace BoardGameTracker.Core.Loans.Specifications;
 
 public sealed class ActiveLoansSpec : Specification<Loan>
 {
-    public ActiveLoansSpec()
+    public ActiveLoansSpec(DateTime now)
     {
-        Query.Where(x => x.ReturnedDate == null);
+        Query.Where(x => x.ReturnedDate == null && x.LoanDate <= now);
     }
 }

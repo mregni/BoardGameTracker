@@ -15,6 +15,14 @@ public class MaintenanceRepository : IMaintenanceRepository
         _context = context;
     }
 
+    public Task<List<string>> GetChangeDetectionWatchIdsAsync(CancellationToken cancellationToken = default)
+    {
+        return _context.Games
+            .Where(g => g.ChangeDetectionWatchId != null)
+            .Select(g => g.ChangeDetectionWatchId!)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task ClearUserDataAsync(CancellationToken cancellationToken = default)
     {
         await _context.Set<GameNightRsvp>().ExecuteDeleteAsync(cancellationToken);

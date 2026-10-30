@@ -151,6 +151,4 @@ public class Session : HasId
     }
 
     public TimeSpan GetDuration() => End - Start;
-
-    public int GetPlayerCount() => PlayerSessions.Count;
 }

@@ -383,7 +383,34 @@ public class UpdateServiceTests
         var result = _updateService.GetCurrentVersion();
 
         result.Should().NotBeNullOrEmpty();
-        result.Should().MatchRegex(@"^\d+\.\d+\.\d+$");
+        result.Should().MatchRegex(@"^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$");
+    }
+
+    [Theory]
+    [InlineData("1.5.0-beta+abc123", "1.5.0-beta")]
+    [InlineData("1.5.0", "1.5.0")]
+    [InlineData("1.5.0+abc123", "1.5.0")]
+    [InlineData("not-a-version", "1.4.0")]
+    [InlineData(null, "1.4.0")]
+    public void ResolveVersion_ShouldPreferTheInformationalVersion(string? informational, string expected)
+    {
+        UpdateService.ResolveVersion(informational, new Version(1, 4, 0, 0)).Should().Be(expected);
+    }
+
+    [Fact]
+    public void ResolveVersion_ShouldReturnZero_WhenNothingIsKnown()
+    {
+        UpdateService.ResolveVersion(null, null).Should().Be("0.0.0");
+    }
+
+    [Theory]
+    [InlineData("1.5.0-beta", "1.5.0", true)]
+    [InlineData("1.5.0", "1.5.0-beta", false)]
+    [InlineData("1.5.0", "1.5.0", false)]
+    [InlineData("1.5.0-beta", "1.5.1-beta", true)]
+    public void CompareVersions_ShouldRankStableAboveBeta(string current, string latest, bool expected)
+    {
+        UpdateService.CompareVersions(current, latest).Should().Be(expected);
     }
 
     #endregion

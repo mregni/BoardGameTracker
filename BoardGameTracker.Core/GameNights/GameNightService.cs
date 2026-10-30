@@ -183,6 +183,7 @@ public class GameNightService : IGameNightService
     {
         _logger.LogDebug("Creating game night {Title}", command.Title);
         var games = await _gameRepository.GetByIdsAsync(command.SuggestedGameIds ?? []);
+        EnsureOwned(games);
 
         var players = (command.InvitedPlayerIds ?? []).Select(playerId => GameNightRsvp.Create(playerId, GameNightRsvpState.Pending)).ToList();
         if (players.All(x => x.PlayerId != command.HostId))
@@ -216,6 +217,7 @@ public class GameNightService : IGameNightService
         }
 
         var games = await _gameRepository.GetByIdsAsync(command.SuggestedGameIds ?? []);
+        EnsureOwned(games.Where(game => gameNight.SuggestedGames.All(suggested => suggested.Id != game.Id)));
 
         gameNight.Update(command.Title, command.Notes, command.StartDate, command.HostId, command.LocationId);
         gameNight.SetSuggestedGames(games);
@@ -238,6 +240,14 @@ public class GameNightService : IGameNightService
         return gameNight;
     }
 
+    private static void EnsureOwned(IEnumerable<Game> games)
+    {
+        if (games.Any(game => game.State != GameState.Owned))
+        {
+            throw new ValidationException(Constants.Errors.SuggestedGameNotOwned);
+        }
+    }
+
     public async Task Delete(int id)
     {
         _logger.LogDebug("Deleting game night {GameNightId}", id);
@@ -257,10 +267,7 @@ public class GameNightService : IGameNightService
             throw new EntityNotFoundException(nameof(Game), command.GameId);
         }
 
-        if (game.State != GameState.Owned)
-        {
-            throw new ValidationException(Constants.Errors.SuggestedGameNotOwned);
-        }
+        EnsureOwned([game]);
 
         if (gameNight.AddSuggestedGame(game))
         {
@@ -313,7 +320,6 @@ public class GameNightService : IGameNightService
 
     public async Task<RsvpUpdateResult> UpdateRsvpByLink(Guid linkId, UpdateRsvpCommand command, bool isAuthenticated)
     {
-        await EnsureEnabledAsync();
         await GameNightLinkAccess.EnsureAllowedAsync(_configRepository, isAuthenticated);
 
         var rsvp = await FindRsvpAsync(command);
@@ -487,7 +493,6 @@ public class GameNightService : IGameNightService
 
     public async Task<GameNight?> GetByLinkId(Guid linkId, bool isAuthenticated)
     {
-        await EnsureEnabledAsync();
         await GameNightLinkAccess.EnsureAllowedAsync(_configRepository, isAuthenticated);
 
         return await _gameNightRepository.SingleOrDefaultAsync(new GameNightByLinkIdSpec(linkId));

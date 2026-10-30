@@ -72,4 +72,39 @@ public class BackgroundEmailSenderTests
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
     }
+
+    [Fact]
+    public async Task Queue_ShouldSendOneMailAtATime()
+    {
+        const int mails = 5;
+        var active = 0;
+        var maxActive = 0;
+        var sent = 0;
+        var gate = new object();
+        var allSent = new TaskCompletionSource();
+        _emailServiceMock
+            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                var now = Interlocked.Increment(ref active);
+                lock (gate)
+                {
+                    maxActive = Math.Max(maxActive, now);
+                }
+                await Task.Delay(20);
+                Interlocked.Decrement(ref active);
+                if (Interlocked.Increment(ref sent) == mails)
+                {
+                    allSent.TrySetResult();
+                }
+            });
+
+        for (var i = 0; i < mails; i++)
+        {
+            _sender.Queue($"to{i}@test.com", "Subject", "<p>Body</p>");
+        }
+
+        await allSent.Task.WaitAsync(SignalTimeout);
+        Assert.Equal(1, maxActive);
+    }
 }
