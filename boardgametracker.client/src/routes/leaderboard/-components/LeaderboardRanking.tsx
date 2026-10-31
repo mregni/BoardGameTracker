@@ -27,6 +27,7 @@ const withoutPodiums =
 const columnsFor = (showPodiums: boolean) => cx(baseColumns, showPodiums ? withPodiums : withoutPodiums);
 
 const desktopOnly = "hidden md:block";
+const columnLabel = "text-xs font-medium uppercase tracking-wider text-white/60";
 
 const tieRule: Record<LeaderboardRankBy, string> = {
 	wins: "ranking.ties-wins",
@@ -82,10 +83,14 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 				<BgtAvatar image={entry.image} title={entry.name} size="medium" />
 				<span className="min-w-0">
 					<strong className="block truncate">{entry.name}</strong>
-					<small className="block text-[11px] text-white/60 md:hidden">{details}</small>
+					<small className="block text-xs text-white/60 md:hidden">{details}</small>
 				</span>
-				<span className={cx(desktopOnly, "text-right font-bold")}>{format.integer(entry.winCount)}</span>
-				<span className={cx(desktopOnly, "text-right")}>{format.integer(entry.playCount)}</span>
+				<span className={cx(desktopOnly, "text-right", rankBy === "wins" && "font-bold")}>
+					{format.integer(entry.winCount)}
+				</span>
+				<span className={cx(desktopOnly, "text-right", rankBy === "sessions" && "font-bold")}>
+					{format.integer(entry.playCount)}
+				</span>
 				<span className="grid grid-cols-1 items-center gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem]">
 					<BgtProgressBar
 						className="hidden md:flex"
@@ -96,9 +101,15 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 						aria-label={t("columns.win-rate")}
 						aria-valuetext={rate}
 					/>
-					<b className={cx("hidden text-right md:block", entry.isRanked ? "text-card-value" : "text-white/60")}>
+					<span
+						className={cx(
+							"hidden text-right md:block",
+							rankBy === "winRate" && "font-bold",
+							entry.isRanked ? "text-card-value" : "text-white/60",
+						)}
+					>
 						{rate}
-					</b>
+					</span>
 					<b
 						data-testid="leaderboard-mobile-value"
 						className={cx("text-right md:hidden", entry.isRanked ? "text-card-value" : "text-white/60")}
@@ -132,10 +143,7 @@ export const LeaderboardRanking = ({
 		<section aria-label={label} className="flex flex-col gap-1.5">
 			<div
 				aria-hidden="true"
-				className={cx(
-					columnsFor(showPodiums),
-					"hidden px-3 text-[11px] uppercase tracking-[0.08em] text-white/60 md:grid [&>span]:whitespace-nowrap",
-				)}
+				className={cx(columnsFor(showPodiums), columnLabel, "hidden px-3 md:grid [&>span]:whitespace-nowrap")}
 			>
 				<span className="text-right">#</span>
 				<span />
@@ -163,9 +171,7 @@ export const LeaderboardRanking = ({
 			)}
 			{unranked.length > 0 && (
 				<>
-					<h3 className="pt-2 text-xs font-medium uppercase tracking-wider text-white/60">
-						{t("ranking.not-ranked", { count: minimumSessions })}
-					</h3>
+					<h3 className={cx(columnLabel, "pt-2")}>{t("ranking.not-ranked", { count: minimumSessions })}</h3>
 					<ul className="flex flex-col gap-1.5">
 						{unranked.map((entry) => (
 							<Row key={entry.playerId} entry={entry} rankBy={rankBy} showPodiums={showPodiums} />
@@ -174,7 +180,7 @@ export const LeaderboardRanking = ({
 				</>
 			)}
 			{(coopWinCount > 0 || ranked.length > 1) && (
-				<p className="pt-1 text-xs text-white/60">
+				<p className="max-w-[75ch] pt-1 text-xs leading-5 text-pretty text-white/60">
 					{[
 						coopWinCount > 0 ? t("ranking.coop", { count: coopWinCount, total: winCount }) : null,
 						ranked.length > 1 ? t(tieRule[rankBy]) : null,

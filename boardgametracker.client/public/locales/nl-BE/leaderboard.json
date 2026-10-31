@@ -43,6 +43,8 @@
   "ranking": {
     "label": "Rangschikking",
     "not-ranked-rank": "Niet gerangschikt",
+    "podium": "Podium",
+    "place": "Plaats",
     "not-ranked_one": "Minder dan {{count}} sessie · niet gerangschikt",
     "not-ranked_other": "Minder dan {{count}} sessies · niet gerangschikt",
     "coop_one": "Coöperatieve overwinningen en verliezen tellen mee: een teamoverwinning is een overwinning voor iedereen aan tafel, een teamverlies een verlies ({{count}} van de {{total}} overwinningen).",

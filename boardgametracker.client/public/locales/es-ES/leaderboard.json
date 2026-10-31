@@ -43,6 +43,8 @@
   "ranking": {
     "label": "Clasificación",
     "not-ranked-rank": "Sin clasificar",
+    "podium": "Podio",
+    "place": "Puesto",
     "not-ranked_one": "Menos de {{count}} partida · sin clasificar",
     "not-ranked_other": "Menos de {{count}} partidas · sin clasificar",
     "coop_one": "Las victorias y derrotas cooperativas cuentan: una victoria del equipo es una victoria para todos en la mesa y una derrota del equipo, una derrota ({{count}} de las {{total}} victorias).",

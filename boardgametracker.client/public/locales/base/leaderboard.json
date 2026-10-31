@@ -43,6 +43,8 @@
   "ranking": {
     "label": "Ranking",
     "not-ranked-rank": "Not ranked",
+    "podium": "Podium",
+    "place": "Place",
     "not-ranked_one": "Fewer than {{count}} session · not ranked",
     "not-ranked_other": "Fewer than {{count}} sessions · not ranked",
     "coop_one": "Co-op wins and losses count: a team win is a win for everyone at the table, a team loss a loss ({{count}} of the {{total}} wins).",

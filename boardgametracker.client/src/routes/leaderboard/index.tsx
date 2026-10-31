@@ -11,6 +11,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { getGames } from "@/services/queries/games";
 import { getLeaderboard } from "@/services/queries/leaderboard";
 import { LeaderboardFilters } from "./-components/LeaderboardFilters";
+import { LeaderboardPodium } from "./-components/LeaderboardPodium";
 import { LeaderboardRanking } from "./-components/LeaderboardRanking";
 import { LeaderboardTiles } from "./-components/LeaderboardTiles";
 import {
@@ -74,6 +75,7 @@ function RouteComponent() {
 							/>
 						) : (
 							<>
+								<LeaderboardPodium players={leaderboard.players} rankBy={leaderboard.rankBy} />
 								<LeaderboardTiles leaderboard={leaderboard} />
 								<LeaderboardRanking
 									players={leaderboard.players}

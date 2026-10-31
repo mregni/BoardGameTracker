@@ -113,13 +113,13 @@ describe("Leaderboard page", () => {
 		mocks.search = {};
 	});
 
-	it("should ask for the default filters and show the tiles and the table without separate podium cards", async () => {
+	it("should ask for the default filters and show the podium, the tiles and the table", async () => {
 		mocks.getLeaderboardCall.mockResolvedValue(leaderboard(byWins));
 
 		renderPage();
 
 		expect(await rankingNames()).toHaveLength(4);
-		expect(screen.queryByRole("region", { name: "ranking.podium" })).not.toBeInTheDocument();
+		expect(screen.getByRole("region", { name: "ranking.podium" })).toBeInTheDocument();
 		expect(screen.queryByRole("note")).not.toBeInTheDocument();
 		expect(mocks.getLeaderboardCall).toHaveBeenCalledWith({ minSessions: 5, rankBy: "wins" });
 		expect(await rankingNames()).toEqual(["Mikhaël", "Kathleen", "reggi", "Anna"]);
@@ -174,7 +174,7 @@ describe("Leaderboard page", () => {
 		await rankingNames();
 		const hrefs = screen.getAllByRole("link").map((link) => link.getAttribute("href"));
 		expect(hrefs.every((href) => href?.startsWith("/players/"))).toBe(true);
-		expect(hrefs).toHaveLength(4 + 4);
+		expect(hrefs).toHaveLength(3 + 4 + 4);
 	});
 
 	it("should update the search when a filter changes", async () => {
