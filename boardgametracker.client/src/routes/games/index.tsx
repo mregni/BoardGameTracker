@@ -215,7 +215,7 @@ function RouteComponent() {
 						</div>
 					</div>
 				</div>
-				{view === "table" ? (
+				{filteredGames.length === 0 ? null : view === "table" ? (
 					<GamesTableView
 						games={filteredGames}
 						priceMap={priceMap}
