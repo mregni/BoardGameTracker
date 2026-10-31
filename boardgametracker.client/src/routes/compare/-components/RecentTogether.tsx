@@ -19,7 +19,8 @@ const pillVariants = cva(
 	{
 		variants: {
 			tone: {
-				ok: "bg-ok/15 text-ok",
+				playerOne: "bg-player-one/15 text-player-one",
+				playerTwo: "bg-player-two/15 text-player-two",
 				neutral: "bg-card-light text-white/60",
 			},
 		},
@@ -55,7 +56,7 @@ export const RecentTogether = ({ sessions, playerOne, playerTwo, dateFormat, uiL
 		if (session.outcome === "playerOne" || session.outcome === "playerTwo") {
 			const player = session.outcome === "playerOne" ? playerOne : playerTwo;
 			return (
-				<span className={pillVariants({ tone: "ok" })}>
+				<span className={pillVariants({ tone: session.outcome })}>
 					<Crown aria-hidden="true" className="size-3.5" />
 					{player.name}
 				</span>
@@ -67,7 +68,7 @@ export const RecentTogether = ({ sessions, playerOne, playerTwo, dateFormat, uiL
 		}
 
 		if (session.outcome === "both") {
-			return <span className={pillVariants({ tone: "ok" })}>{t("recent.both-won")}</span>;
+			return <span className={pillVariants({ tone: "neutral" })}>{t("recent.both-won")}</span>;
 		}
 
 		const other = session.otherWinnerId ? playerById(session.otherWinnerId) : null;

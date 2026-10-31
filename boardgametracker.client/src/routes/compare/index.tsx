@@ -12,12 +12,10 @@ import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
-import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { usePermissions } from "@/hooks/usePermissions";
-import type { CompareResult, CompareSide, Player } from "@/models";
+import type { CompareResult, Player } from "@/models";
 import { getPlayers } from "@/services/queries/players";
 import { BestWorstCards } from "./-components/BestWorstCards";
-import { Highlights } from "./-components/Highlights";
 import { OverallTable } from "./-components/OverallTable";
 import { PerGameCard } from "./-components/PerGameCard";
 import { PlayerPicker } from "./-components/PlayerPicker";
@@ -44,7 +42,6 @@ function RouteComponent() {
 	const navigate = useNavigate();
 	const search = Route.useSearch();
 	const { canWrite } = usePermissions();
-	const { percent } = useNumberFormat();
 
 	const { players, leftId, rightId, shownLeftId, shownRightId, compare, settings, isLoading, isUpdating } =
 		useCompareData({
@@ -81,14 +78,6 @@ function RouteComponent() {
 	const shownOne = players.find((player) => player.id === shownLeftId);
 	const shownTwo = players.find((player) => player.id === shownRightId);
 
-	const summary = (data: CompareResult, player: Player) => {
-		const side: CompareSide | null =
-			player.id === shownLeftId ? "playerOne" : player.id === shownRightId ? "playerTwo" : null;
-		return side
-			? t("player-summary", { count: data.sessionCounts[side], rate: percent(data.winPercentage[side]) })
-			: "";
-	};
-
 	return (
 		<BgtPage>
 			<BgtPageHeader header={t("title")} icon={TrendUp} />
@@ -101,14 +90,15 @@ function RouteComponent() {
 								player={playerOne}
 								players={players}
 								excludeId={playerTwo.id}
-								summary={summary(compare, playerOne)}
 								onPlayerChange={(id) => goTo(id, playerTwo.id)}
 							/>
 							<div className="flex flex-col items-center gap-1">
-								<span className="text-lg font-bold tracking-widest text-white/60">{t("vs")}</span>
+								<span className="bg-linear-to-r from-player-one to-player-two bg-clip-text text-2xl font-black italic tracking-wide text-transparent sm:text-4xl">
+									{t("vs")}
+								</span>
 								<BgtIconButton
 									intent="subtile"
-									className="border border-card-border text-white/60 hover:text-white"
+									className="border border-card-border text-white/60 hover:text-white max-sm:h-11 max-sm:w-11"
 									icon={<LeftRightArrow className="size-4" />}
 									aria-label={t("swap")}
 									onClick={() => goTo(playerTwo.id, playerOne.id)}
@@ -127,7 +117,6 @@ function RouteComponent() {
 								player={playerTwo}
 								players={players}
 								excludeId={playerOne.id}
-								summary={summary(compare, playerTwo)}
 								onPlayerChange={(id) => goTo(playerOne.id, id)}
 							/>
 						</div>
@@ -147,7 +136,6 @@ function RouteComponent() {
 								uiLanguage={settings.uiLanguage}
 								canOpen={canWrite}
 							/>
-							<Highlights compare={compare} dateFormat={settings.dateFormat} uiLanguage={settings.uiLanguage} />
 							<OverallTable compare={compare} playerOne={shownOne} playerTwo={shownTwo} />
 						</div>
 					</div>
@@ -172,8 +160,8 @@ const Together = ({ compare, playerOne, playerTwo, dateFormat, uiLanguage, canOp
 	if (compare.totalSessionsTogether === 0) {
 		return (
 			<section className="flex flex-col items-center gap-1 rounded-xl border border-card-border bg-card p-6 text-center">
-				<h2 className="font-bold">{t("no-games-together.title")}</h2>
-				<p className="text-sm text-white/60">
+				<h2 className="text-balance text-lg font-extrabold">{t("no-games-together.title")}</h2>
+				<p className="text-pretty text-sm text-white/60">
 					{t("no-games-together.description", { playerOne: playerOne.name, playerTwo: playerTwo.name })}
 				</p>
 			</section>

@@ -126,13 +126,13 @@ describe("PerGameCard", () => {
 		const [azul, carcassonne, brass, inventors] = screen.getAllByTestId("per-game-row");
 
 		expect(azul).toHaveTextContent("11 sessions · avg 71 – 78.3");
-		expect(azul).toHaveTextContent("K · 13-10-2026");
+		expect(azul).toHaveTextContent("Kathleen · 13-10-2026");
 		expect(within(azul).getByRole("img", { name: "Azul: Mikhaël 4, Kathleen 7, someone else 0" })).toBeInTheDocument();
-		expect(carcassonne).toHaveTextContent("+2 others");
+		expect(carcassonne).toHaveTextContent("2 won by someone else");
 		expect(carcassonne).toHaveTextContent("– · 10-10-2026");
-		expect(brass).toHaveTextContent("+1 other");
+		expect(brass).toHaveTextContent("1 won by someone else");
 		expect(brass).toHaveTextContent("7 sessions · no scores");
-		expect(brass).toHaveTextContent("M · ");
+		expect(brass).toHaveTextContent("Mikhaël · ");
 		expect(inventors).toHaveTextContent("+ · ");
 	});
 
