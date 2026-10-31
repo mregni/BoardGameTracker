@@ -20,7 +20,15 @@ const game = (id: number, title: string) =>
 
 const Harness = ({ games, onExclude }: { games: Game[]; onExclude: (id: number) => void }) => {
 	const [winnerId, setWinnerId] = useState<number>();
-	return <PickWheel games={games} winnerId={winnerId} onResult={setWinnerId} onExclude={onExclude} />;
+	return (
+		<PickWheel
+			games={games}
+			winnerId={winnerId}
+			onSpinStart={() => setWinnerId(undefined)}
+			onResult={setWinnerId}
+			onExclude={onExclude}
+		/>
+	);
 };
 
 describe("PickWheel", () => {
@@ -40,7 +48,7 @@ describe("PickWheel", () => {
 		expect(navigate).toHaveBeenCalledWith({ to: "/games/$gameId", params: { gameId: expect.any(Number) } });
 
 		await userEvent.click(screen.getByRole("button", { name: "pick.exclude" }));
-		expect(onExclude).toHaveBeenCalledOnce();
+		await vi.waitFor(() => expect(onExclude).toHaveBeenCalledOnce());
 	});
 
 	it("shows the only candidate straight away without a spin", () => {

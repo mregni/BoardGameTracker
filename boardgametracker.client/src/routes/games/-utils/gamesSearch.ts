@@ -1,5 +1,12 @@
 import { type Game, GameState } from "@/models";
-import type { AgeBucket, GameSort, GamesFilterSearch, WeightBucket } from "../-components/GamesFilters";
+import {
+	type AgeBucket,
+	type GameSort,
+	type GamesFilterSearch,
+	PLAY_TIMES,
+	PLAYER_COUNTS,
+	type WeightBucket,
+} from "../-components/GamesFilters";
 
 const WEIGHT_BUCKETS: WeightBucket[] = ["light", "medium", "heavy"];
 const AGE_BUCKETS: AgeBucket[] = ["0-6", "7-9", "10-12", "13plus"];
@@ -9,6 +16,11 @@ const GAME_STATES = Object.values(GameState) as string[];
 const parsePositiveInt = (value: unknown): number | undefined => {
 	const parsed = Number(value);
 	return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+};
+
+const parseOneOf = (value: unknown, allowed: number[]): number | undefined => {
+	const parsed = parsePositiveInt(value);
+	return parsed !== undefined && allowed.includes(parsed) ? parsed : undefined;
 };
 
 const parseText = (value: unknown): string | undefined => {
@@ -25,8 +37,8 @@ export const parseGamesSearch = (search: Record<string, unknown>): GamesFilterSe
 		view: search.view === "table" ? "table" : undefined,
 		q: parseText(search.q),
 		category: parseText(search.category),
-		players: parsePositiveInt(search.players),
-		playTime: parsePositiveInt(search.playTime),
+		players: parseOneOf(search.players, PLAYER_COUNTS),
+		playTime: parseOneOf(search.playTime, PLAY_TIMES),
 		weight: WEIGHT_BUCKETS.includes(weight) ? weight : undefined,
 		age: AGE_BUCKETS.includes(age) ? age : undefined,
 		state: GAME_STATES.includes(search.state as string) ? (search.state as GameState) : undefined,

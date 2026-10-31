@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,14 +13,18 @@ import { formatRange } from "@/utils/rangeUtils";
 interface Props {
 	games: Game[];
 	winnerId?: number;
+	onSpinStart: () => void;
 	onResult: (gameId: number) => void;
 	onExclude: (gameId: number) => void;
 }
+
+export const PICK_ACTION_SELECTOR = "[data-pick-action]";
 
 const RADIUS = 96;
 const HUB = 16;
 const FULL_TURNS = 6;
 const SPIN_MS = 4200;
+const VETO_MS = 320;
 
 const point = (angle: number, radius: number) => {
 	const radians = (angle * Math.PI) / 180;
@@ -53,36 +57,44 @@ const segmentCoverBox = (start: number, end: number) => {
 
 const restingRotation = (index: number, slice: number) => 360 - (index + 0.5) * slice;
 
-export const PickWheel = ({ games, winnerId, onResult, onExclude }: Props) => {
+const normalise = (angle: number) => ((angle % 360) + 360) % 360;
+
+export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude }: Props) => {
 	const { t } = useTranslation("games");
 	const navigate = useNavigate();
 	const { canWrite } = usePermissions();
 	const durationRange = useDurationRange();
 	const clipPrefix = useId();
-	const openButtonId = useId();
 	const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
 	const wheelRef = useRef<SVGGElement>(null);
+	const cardRef = useRef<HTMLDivElement>(null);
 	const slice = 360 / Math.max(games.length, 1);
 	const initialIndex = games.findIndex((game) => game.id === winnerId);
-	const rotationRef = useRef(initialIndex >= 0 ? restingRotation(initialIndex, slice) : 0);
+	const rotationRef = useRef(restingRotation(Math.max(initialIndex, 0), slice));
 	const spunRef = useRef(false);
 	const [spinning, setSpinning] = useState(false);
+	const [vetoId, setVetoId] = useState<number>();
 
 	const winnerIndex = spinning ? -1 : games.length === 1 ? 0 : games.findIndex((game) => game.id === winnerId);
 	const picked = winnerIndex >= 0 ? games[winnerIndex] : undefined;
 
 	useEffect(() => {
-		if (picked && spunRef.current) document.getElementById(openButtonId)?.focus();
-	}, [picked, openButtonId]);
+		if (!spunRef.current) return;
+		if (picked) {
+			cardRef.current?.scrollIntoView?.({ block: "end", behavior: reduceMotion ? "auto" : "smooth" });
+		}
+		document.querySelector<HTMLElement>(PICK_ACTION_SELECTOR)?.focus({ preventScroll: true });
+	}, [picked, reduceMotion]);
 
 	const spin = () => {
 		const wheel = wheelRef.current;
-		if (!wheel || spinning || games.length === 0) return;
+		if (!wheel || spinning || games.length < 2) return;
 		const next = Math.floor(Math.random() * games.length);
 		const from = rotationRef.current;
 		const to = from - (from % 360) + FULL_TURNS * 360 + restingRotation(next, slice);
 		rotationRef.current = to;
 		spunRef.current = true;
+		onSpinStart();
 		if (typeof wheel.animate !== "function") {
 			wheel.style.transform = `rotate(${to}deg)`;
 			onResult(games[next].id);
@@ -100,6 +112,18 @@ export const PickWheel = ({ games, winnerId, onResult, onExclude }: Props) => {
 		};
 	};
 
+	const veto = (gameId: number) => {
+		spunRef.current = true;
+		setVetoId(gameId);
+		window.setTimeout(
+			() => {
+				setVetoId(undefined);
+				onExclude(gameId);
+			},
+			reduceMotion ? 0 : VETO_MS,
+		);
+	};
+
 	const overlayClass = (index: number) => {
 		if (winnerIndex < 0) return "fill-black/50";
 		return index === winnerIndex ? "fill-black/10" : "fill-black/75";
@@ -109,6 +133,7 @@ export const PickWheel = ({ games, winnerId, onResult, onExclude }: Props) => {
 	const fontSize = Math.max(6.5, Math.min(9.5, chord * 0.42));
 	const maxChars = Math.floor((RADIUS - HUB - 10) / (fontSize * 0.56));
 	const label = (title: string) => (title.length > maxChars ? `${title.slice(0, maxChars - 1)}…` : title);
+	const labelDistance = (RADIUS + HUB) / 2;
 
 	return (
 		<div className="flex flex-col items-center gap-4 w-full">
@@ -117,14 +142,21 @@ export const PickWheel = ({ games, winnerId, onResult, onExclude }: Props) => {
 					<li key={game.id}>{game.title}</li>
 				))}
 			</ul>
-			<svg viewBox="-112 -112 224 224" className="w-full max-w-[480px] aspect-square" aria-hidden="true">
+			<svg
+				viewBox="-112 -112 224 224"
+				className={cx("w-full max-w-[480px] aspect-square", !picked && games.length > 1 && "cursor-pointer")}
+				aria-hidden="true"
+				onClick={picked ? undefined : spin}
+			>
 				<g ref={wheelRef} style={{ transformOrigin: "0 0", transform: `rotate(${rotationRef.current}deg)` }}>
 					{games.map((game, index) => {
 						const start = index * slice;
 						const box = segmentCoverBox(start, start + slice);
 						const clipId = `${clipPrefix}-${game.id}`;
+						const mid = start + slice / 2;
+						const upsideDown = normalise(mid + rotationRef.current) > 180;
 						return (
-							<g key={game.id}>
+							<g key={game.id} className={cx("wheel-slice", game.id === vetoId && "vetoed")}>
 								<clipPath id={clipId}>
 									<path d={segmentPath(start, start + slice)} />
 								</clipPath>
@@ -145,9 +177,26 @@ export const PickWheel = ({ games, winnerId, onResult, onExclude }: Props) => {
 										y={-RADIUS}
 										width={RADIUS * 2}
 										height={RADIUS * 2}
-										className={`${overlayClass(index)} transition-[fill] duration-500`}
+										className={`${overlayClass(index)} transition-[fill] duration-500 motion-reduce:transition-none`}
 									/>
 								</g>
+								<text
+									transform={
+										upsideDown
+											? `rotate(${mid + 90}) translate(${-labelDistance} 0)`
+											: `rotate(${mid - 90}) translate(${labelDistance} 0)`
+									}
+									textAnchor="middle"
+									dominantBaseline="middle"
+									paintOrder="stroke"
+									strokeWidth={fontSize * 0.28}
+									strokeLinejoin="round"
+									fontSize={fontSize}
+									className="fill-white stroke-black/80 font-bold"
+								>
+									<title>{game.title}</title>
+									{label(game.title)}
+								</text>
 							</g>
 						);
 					})}
@@ -166,106 +215,84 @@ export const PickWheel = ({ games, winnerId, onResult, onExclude }: Props) => {
 								/>
 							);
 						})}
-					{games.map((game, index) => {
-						const mid = index * slice + slice / 2;
-						const leftHalf = games.length > 1 && mid > 180;
-						const distance = games.length === 1 ? 0 : (RADIUS + HUB) / 2;
-						return (
-							<text
-								key={`label-${game.id}`}
-								transform={
-									leftHalf
-										? `rotate(${mid + 90}) translate(${-distance} 0)`
-										: `rotate(${mid - 90}) translate(${distance} 0)`
-								}
-								textAnchor="middle"
-								dominantBaseline="middle"
-								paintOrder="stroke"
-								strokeWidth={fontSize * 0.28}
-								strokeLinejoin="round"
-								fontSize={fontSize}
-								className="fill-white stroke-black/80 font-bold"
-							>
-								<title>{game.title}</title>
-								{label(game.title)}
-							</text>
-						);
-					})}
-					<circle r={RADIUS + 2} fill="none" className="stroke-primary" strokeWidth={6} />
+					<circle r={RADIUS + 1} fill="none" className="stroke-primary" strokeWidth={3} />
 					{games.length > 1 &&
 						games.map((game, index) => {
-							const peg = point(index * slice, RADIUS + 2);
-							return <circle key={`peg-${game.id}`} cx={peg.x} cy={peg.y} r={2.2} className="fill-white" />;
+							const peg = point(index * slice, RADIUS + 1);
+							return <circle key={`peg-${game.id}`} cx={peg.x} cy={peg.y} r={1.6} className="fill-primary-text" />;
 						})}
 					{winnerIndex >= 0 && games.length > 1 && (
 						<path
 							d={segmentPath(winnerIndex * slice, (winnerIndex + 1) * slice)}
 							fill="none"
-							className="stroke-white"
-							strokeWidth={2.5}
+							className="stroke-primary-text"
+							strokeWidth={1.5}
 							strokeLinejoin="round"
 						/>
 					)}
 				</g>
-				<circle r={HUB} className="fill-card stroke-primary" strokeWidth={4} />
+				<circle r={HUB} className="fill-card stroke-primary" strokeWidth={2.5} />
 				<path
 					d="M -9 -111 L 9 -111 L 0 -90 Z"
-					className="fill-white stroke-background"
+					className="fill-primary-text stroke-background"
 					strokeWidth={1.5}
 					strokeLinejoin="round"
 				/>
 			</svg>
 			<p className="sr-only" aria-live="polite">
-				{picked ? t("pick.result", { title: picked.title }) : spinning ? t("pick.spinning") : ""}
+				{spunRef.current && (picked ? t("pick.result", { title: picked.title }) : spinning ? t("pick.spinning") : "")}
 			</p>
 			{picked ? (
-				<div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-[480px] rounded-xl border border-primary/30 bg-primary/10 p-4">
+				<div
+					ref={cardRef}
+					className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-[480px] rounded-xl border border-primary/30 bg-primary/10 p-4 scroll-mb-28 md:scroll-mb-6"
+				>
 					<div className="size-24 shrink-0 overflow-hidden rounded-lg">
 						<BgtFallbackImage title={picked.title} image={picked.image} decorative />
 					</div>
-					<div className="flex flex-col gap-2 min-w-0 flex-1 items-center sm:items-start text-center sm:text-left">
-						<span className="text-sm text-white/60">{t("pick.tonight")}</span>
-						<span className="text-xl font-bold text-white">{picked.title}</span>
-						<span className="text-sm text-card-value">
-							{t("pick.players", { range: formatRange(picked.minPlayers, picked.maxPlayers) ?? "-" })}
-							{" · "}
-							{durationRange(picked.minPlayTime, picked.maxPlayTime) ?? "-"}
-						</span>
-						<div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+					<div className="flex flex-col gap-3 min-w-0 flex-1 items-center sm:items-start text-center sm:text-left">
+						<div className="flex flex-col gap-1">
+							<span className="text-sm text-white/60">{t("pick.tonight")}</span>
+							<span className="text-xl font-bold text-white">{picked.title}</span>
+							<span className="text-sm text-card-value">
+								{t("pick.players", { range: formatRange(picked.minPlayers, picked.maxPlayers) ?? "-" })}
+								{" · "}
+								{durationRange(picked.minPlayTime, picked.maxPlayTime) ?? "-"}
+							</span>
+						</div>
+						<div className="grid grid-cols-2 gap-2 w-full">
 							<BgtButton
-								id={openButtonId}
+								data-pick-action
+								className="min-h-11"
 								onClick={() => navigate({ to: "/games/$gameId", params: { gameId: picked.id } })}
 							>
 								{t("pick.open")}
 							</BgtButton>
 							{canWrite && (
-								<Link
-									to="/sessions/new/$gameId"
-									params={{ gameId: picked.id }}
-									className="inline-flex items-center px-3 py-2 rounded font-bold border border-cancel/60 text-cancel hover:bg-cancel/10"
+								<BgtButton
+									variant="cancel"
+									className="min-h-11"
+									onClick={() => navigate({ to: "/sessions/new/$gameId", params: { gameId: picked.id } })}
 								>
 									{t("pick.log")}
-								</Link>
+								</BgtButton>
 							)}
-						</div>
-						<div className="flex gap-4 text-sm">
-							<button type="button" onClick={spin} className="text-primary-text hover:underline cursor-pointer">
-								{t("pick.again")}
-							</button>
 							{games.length > 1 && (
-								<button
-									type="button"
-									onClick={() => onExclude(picked.id)}
-									className="text-primary-text hover:underline cursor-pointer"
-								>
-									{t("pick.exclude")}
-								</button>
+								<>
+									<BgtButton variant="text" className="min-h-11" onClick={spin}>
+										{t("pick.again")}
+									</BgtButton>
+									<BgtButton variant="text" className="min-h-11" onClick={() => veto(picked.id)}>
+										{t("pick.exclude")}
+									</BgtButton>
+								</>
 							)}
 						</div>
 					</div>
 				</div>
 			) : (
 				<BgtButton
+					data-pick-action
 					aria-disabled={spinning || undefined}
 					onClick={spin}
 					className={cx("min-h-11", spinning && "opacity-60 cursor-wait")}

@@ -12,7 +12,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { getGames } from "@/services/queries/games";
 import { ANY, filterGames, type GamesFilterSearch, PLAY_TIMES, PLAYER_COUNTS } from "./-components/GamesFilters";
-import { PickWheel } from "./-components/PickWheel";
+import { PICK_ACTION_SELECTOR, PickWheel } from "./-components/PickWheel";
 import { useGamesData } from "./-hooks/useGamesData";
 import { isPlayable, parseGamesSearch, parseIds, pickWheelGames, withoutUndefined } from "./-utils/gamesSearch";
 
@@ -73,7 +73,7 @@ function RouteComponent() {
 	}, [wheel, pool]);
 
 	const update = (partial: Partial<PickSearch>) =>
-		navigate({ search: (prev) => withoutUndefined({ ...prev, ...partial }), replace: true });
+		navigate({ search: (prev) => withoutUndefined({ ...prev, ...partial }), replace: true, resetScroll: false });
 
 	const changeFilter = (partial: Partial<PickSearch>) => update({ ...partial, wheel: undefined, pick: undefined });
 
@@ -83,8 +83,32 @@ function RouteComponent() {
 			search: (prev) =>
 				withoutUndefined({ ...prev, wheel: pickWheelGames(pool, WHEEL_SIZE).map((game) => game.id), pick: undefined }),
 			replace: true,
+			resetScroll: false,
 		});
 	}, [isLoading, wheelGames, pool, navigate]);
+
+	const excludeGame = (gameId: number) => {
+		const current = wheelGames ?? [];
+		const spare = pool.filter((game) => game.id !== gameId && !current.some((onWheel) => onWheel.id === game.id));
+		const [replacement] = pickWheelGames(spare, 1);
+		const nextWheel = current
+			.map((game) => (game.id === gameId ? replacement : game))
+			.filter((game) => game !== undefined)
+			.map((game) => game.id);
+		update({ out: [...(out ?? []), gameId], wheel: nextWheel, pick: undefined });
+	};
+
+	const restoreExcluded = () => {
+		update({ out: undefined });
+		requestAnimationFrame(() => document.querySelector<HTMLElement>(PICK_ACTION_SELECTOR)?.focus());
+	};
+
+	const loosenOptions = [
+		players !== undefined && { key: "players" as const, label: `${t("filters.player-count")}: ${t("filters.any")}` },
+		playTime !== undefined && { key: "playTime" as const, label: `${t("filters.play-time")}: ${t("filters.any")}` },
+		category !== undefined && { key: "category" as const, label: `${t("filters.category")}: ${t("filters.any")}` },
+		out !== undefined && { key: "out" as const, label: t("pick.restore", { count: out.length }) },
+	].filter((option) => option !== false);
 
 	const withAny = <T extends string | number>(items: { value: T; label: string }[]) => [
 		{ value: ANY, label: t("filters.any") },
@@ -131,7 +155,7 @@ function RouteComponent() {
 						{out && out.length > 0 && (
 							<button
 								type="button"
-								onClick={() => changeFilter({ out: undefined })}
+								onClick={restoreExcluded}
 								className="self-start text-sm text-primary-text hover:underline cursor-pointer"
 							>
 								{t("pick.restore", { count: out.length })}
@@ -143,18 +167,27 @@ function RouteComponent() {
 							<BgtText color="white" opacity={70}>
 								{t("pick.none")}
 							</BgtText>
-							<BgtButton variant="cancel" onClick={() => navigate({ search: {}, replace: true })}>
-								{t("filters.clear")}
-							</BgtButton>
+							<div className="flex flex-wrap justify-center gap-2">
+								{loosenOptions.map((option) => (
+									<BgtButton
+										key={option.key}
+										variant="cancel"
+										className="min-h-11"
+										onClick={() => changeFilter({ [option.key]: undefined })}
+									>
+										{option.label}
+									</BgtButton>
+								))}
+							</div>
 						</div>
 					) : (
 						wheelGames && (
 							<PickWheel
-								key={wheelGames.map((game) => game.id).join("-")}
 								games={wheelGames}
 								winnerId={pick}
+								onSpinStart={() => update({ pick: undefined })}
 								onResult={(gameId) => update({ pick: gameId })}
-								onExclude={(gameId) => changeFilter({ out: [...(out ?? []), gameId] })}
+								onExclude={excludeGame}
 							/>
 						)
 					)}
