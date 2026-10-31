@@ -36,6 +36,11 @@ describe("parseGamesSearch", () => {
 		).toMatchObject({ view: "table", state: GameState.Owned, language: "nl", inStock: true, sort: "plays" });
 	});
 
+	it("only accepts player counts and play times the filters offer", () => {
+		expect(parseGamesSearch({ players: "4", playTime: "15" })).toMatchObject({ players: 4, playTime: undefined });
+		expect(parseGamesSearch({ players: "12", playTime: "60" })).toMatchObject({ players: undefined, playTime: 60 });
+	});
+
 	it("drops the default title sort so the URL stays clean", () => {
 		expect(parseGamesSearch({ sort: "title" }).sort).toBeUndefined();
 	});
