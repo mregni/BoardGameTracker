@@ -99,6 +99,27 @@ describe("Games filters", () => {
 	});
 });
 
+describe("Games filters on a phone", () => {
+	it("keeps the collapsed filters out of the tab order until the toggle opens them", async () => {
+		renderTable();
+
+		const toggle = screen.getByRole("button", { name: "filters.show-more" });
+		expect(toggle).toHaveAttribute("aria-expanded", "false");
+		expect(document.getElementById("games-filters")).toHaveAttribute("inert");
+
+		await userEvent.click(toggle);
+
+		expect(toggle).toHaveAttribute("aria-expanded", "true");
+		expect(document.getElementById("games-filters")).not.toHaveAttribute("inert");
+	});
+
+	it("labels the search field", () => {
+		renderTable();
+
+		expect(screen.getByRole("textbox", { name: "filter-name" })).toBeInTheDocument();
+	});
+});
+
 describe("Games grid", () => {
 	it("shows the play count on the cards and sorts by most played", () => {
 		mocks.search = { sort: "plays" };

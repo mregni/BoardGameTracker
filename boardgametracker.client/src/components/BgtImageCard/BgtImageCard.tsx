@@ -24,11 +24,14 @@ export const BgtImageCard = (props: Props) => {
 		<Link to={link} from="/" className="[content-visibility:auto] [contain-intrinsic-size:auto_280px]">
 			<div className="bgt-image-card flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1">
 				<div className="aspect-square rounded-lg overflow-hidden transition-all duration-200 relative">
-					<BgtFallbackImage title={title} image={image} lazy />
+					<BgtFallbackImage title={title} image={image} lazy decorative />
 					{badge && <div className="absolute top-2 right-2">{badge}</div>}
 				</div>
 				<div className="flex flex-row justify-between items-end">
-					<div className="flex flex-col items-start justify-start w-full">
+					<div className="flex flex-col-reverse items-start justify-start w-full">
+						<BgtText size="4" className="line-clamp-1 w-full" weight="medium">
+							{title}
+						</BgtText>
 						<div className="flex justify-between items-center gap-2 w-full">
 							{state !== null && state !== undefined && (
 								<BgtText
@@ -42,9 +45,6 @@ export const BgtImageCard = (props: Props) => {
 							)}
 							{meta}
 						</div>
-						<BgtText size="4" className="line-clamp-1 w-full" weight="medium">
-							{title}
-						</BgtText>
 					</div>
 				</div>
 			</div>

@@ -35,10 +35,19 @@ describe("BgtImageCard", () => {
 		});
 	});
 
+	describe("Accessibility", () => {
+		it("names the link with the title first and does not repeat it through the image", () => {
+			renderWithTheme(<BgtImageCard {...defaultProps} state={GameState.Owned} />);
+
+			expect(screen.getByRole("link").textContent?.startsWith("Catan")).toBe(true);
+			expect(screen.getByRole("link").querySelector("img")).toHaveAttribute("alt", "");
+		});
+	});
+
 	describe("Image Handling", () => {
 		it("should render a lazy async image when image provided", () => {
-			renderWithTheme(<BgtImageCard {...defaultProps} />);
-			const img = screen.getByRole("img");
+			const { container } = renderWithTheme(<BgtImageCard {...defaultProps} />);
+			const img = container.querySelector("img");
 			expect(img).toHaveAttribute("src", "/game.jpg");
 			expect(img).toHaveAttribute("loading", "lazy");
 			expect(img).toHaveAttribute("decoding", "async");
@@ -51,9 +60,9 @@ describe("BgtImageCard", () => {
 		});
 
 		it("should fall back to the initial when the image cannot be loaded", () => {
-			renderWithTheme(<BgtImageCard {...defaultProps} />);
+			const { container } = renderWithTheme(<BgtImageCard {...defaultProps} />);
 
-			fireEvent.error(screen.getByRole("img"));
+			fireEvent.error(container.querySelector("img") as HTMLImageElement);
 
 			expect(screen.getByText("C")).toBeInTheDocument();
 		});

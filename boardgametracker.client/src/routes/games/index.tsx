@@ -14,6 +14,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getGames, getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
@@ -56,6 +57,8 @@ function RouteComponent() {
 	const { games, isLoading, isError, retry } = useGamesData();
 	const { canWrite } = usePermissions();
 	const [showFilters, setShowFilters] = useState(false);
+	const isDesktop = useMediaQuery("(min-width: 48rem)");
+	const filtersCollapsed = !showFilters && !isDesktop;
 
 	const categories = useMemo(
 		() => [...new Set(games.flatMap((game) => game.categories.map((cat) => cat.name)))].sort(),
@@ -152,6 +155,8 @@ function RouteComponent() {
 					<button
 						type="button"
 						onClick={() => setShowFilters((value) => !value)}
+						aria-expanded={showFilters}
+						aria-controls="games-filters"
 						className="md:hidden flex items-center justify-center gap-1 w-full min-h-11 text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
 					>
 						{showFilters ? t("filters.show-less") : t("filters.show-more")}
@@ -164,7 +169,7 @@ function RouteComponent() {
 							showFilters ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
 						)}
 					>
-						<div className="overflow-hidden md:overflow-visible">
+						<div id="games-filters" inert={filtersCollapsed} className="overflow-hidden md:overflow-visible">
 							<div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2">
 								<GamesFilters categories={categories} search={search} onChange={updateSearch} />
 							</div>
