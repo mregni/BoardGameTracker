@@ -2,16 +2,12 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import LogOut from "@/assets/icons/log-out.svg?react";
 import More from "@/assets/icons/more.svg?react";
-import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
-import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtMenuItem } from "@/components/BgtMenu/BgtMenuItem";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { useAuth } from "@/hooks/useAuth";
 import { useIsBottomNavHidden } from "@/hooks/useHideBottomNav";
-import { useLogout } from "@/hooks/useLogout";
 import { useMenuInfo } from "../-hooks/useMenuInfo";
+import { UserCard } from "./UserCard";
 
 export const BottomNav = () => {
 	const { t } = useTranslation(["version", "common"]);
@@ -19,10 +15,6 @@ export const BottomNav = () => {
 	const [showMoreMenu, setShowMoreMenu] = useState(false);
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname;
-	const user = useAuth((s) => s.user);
-	const isAuthenticated = useAuth((s) => s.isAuthenticated);
-	const authStatus = useAuth((s) => s.authStatus);
-	const handleLogout = useLogout();
 	const hidden = useIsBottomNavHidden();
 
 	const handleMoreClick = () => {
@@ -43,7 +35,6 @@ export const BottomNav = () => {
 		return null;
 	}
 
-	const showAuth = authStatus?.authEnabled;
 	return (
 		<>
 			{showMoreMenu && (
@@ -65,22 +56,7 @@ export const BottomNav = () => {
 						</BgtText>
 					</div>
 
-					{showAuth && isAuthenticated && user && (
-						<div className="px-2  bg-white/5 flex items-center gap-2 py-2">
-							<div className="shrink-0">
-								<BgtAvatar image={user.profileImage} title={user.displayName || user.username} colorKey={user.id} />
-							</div>
-							<div className="flex-1 min-w-0">
-								<div className="text-sm font-medium text-white/80 truncate">{user.displayName || user.username}</div>
-							</div>
-							<BgtIconButton
-								icon={<LogOut className="size-4" />}
-								onClick={handleLogout}
-								intent="subtile"
-								aria-label={t("common:logout")}
-							/>
-						</div>
-					)}
+					<UserCard />
 
 					<div>
 						{menuItems
