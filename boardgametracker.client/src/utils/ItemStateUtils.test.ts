@@ -57,8 +57,8 @@ describe("ItemStateUtils", () => {
 				expect(getColorFromGameState(GameState.Owned, false)).toBe("green");
 			});
 
-			it("should return red for PreviouslyOwned state", () => {
-				expect(getColorFromGameState(GameState.PreviouslyOwned, false)).toBe("red");
+			it("should return a neutral grey for PreviouslyOwned state", () => {
+				expect(getColorFromGameState(GameState.PreviouslyOwned, false)).toBe("purple");
 			});
 
 			it("should return blue for ForTrade state", () => {

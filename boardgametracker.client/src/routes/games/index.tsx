@@ -179,7 +179,7 @@ function RouteComponent() {
 				<div className="flex flex-wrap items-center gap-2">
 					<div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:flex-1" aria-live="polite">
 						{filteredGames.length > 0 ? (
-							<BgtText size="3" color="primary" weight="medium">
+							<BgtText size="3" color="white" opacity={70} weight="medium">
 								{t("count", { count: filteredGames.length })}
 							</BgtText>
 						) : (
