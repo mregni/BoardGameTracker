@@ -1,5 +1,6 @@
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Models;
 
 namespace BoardGameTracker.Common.Extensions;
 
@@ -60,5 +61,19 @@ public static class GameDtoExtensions
     public static List<GameDto> ToListDto(this IEnumerable<Game> games)
     {
         return games.Select(g => g.ToDto()).ToList();
+    }
+
+    public static List<GameDto> ToListDto(this IEnumerable<Game> games, IReadOnlyDictionary<int, GamePlayStats> playStats)
+    {
+        return games.Select(g =>
+        {
+            var dto = g.ToDto();
+            if (playStats.TryGetValue(g.Id, out var stats))
+            {
+                dto.PlayCount = stats.PlayCount;
+                dto.LastPlayed = stats.LastPlayed;
+            }
+            return dto;
+        }).ToList();
     }
 }

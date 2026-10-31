@@ -63,9 +63,14 @@ public class GameControllerTests
             new Game("Ticket to Ride", false) { Id = 2 }
         };
 
+        var lastPlayed = new DateTime(2026, 10, 1, 20, 0, 0, DateTimeKind.Utc);
+
         _gameServiceMock
             .Setup(x => x.GetGames())
             .ReturnsAsync(games);
+        _gameServiceMock
+            .Setup(x => x.GetPlayStatsPerGame())
+            .ReturnsAsync(new Dictionary<int, GamePlayStats> { [1] = new(3, lastPlayed) });
 
         // Act
         var result = await _controller.GetGames();
@@ -77,10 +82,15 @@ public class GameControllerTests
         returnedGames.Should().HaveCount(2);
         returnedGames[0].Title.Should().Be("Catan");
         returnedGames[0].HasScoring.Should().BeTrue();
+        returnedGames[0].PlayCount.Should().Be(3);
+        returnedGames[0].LastPlayed.Should().Be(lastPlayed);
         returnedGames[1].Title.Should().Be("Ticket to Ride");
         returnedGames[1].HasScoring.Should().BeFalse();
+        returnedGames[1].PlayCount.Should().Be(0);
+        returnedGames[1].LastPlayed.Should().BeNull();
 
         _gameServiceMock.Verify(x => x.GetGames(), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayStatsPerGame(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -90,6 +100,9 @@ public class GameControllerTests
         // Arrange
         _gameServiceMock
             .Setup(x => x.GetGames())
+            .ReturnsAsync([]);
+        _gameServiceMock
+            .Setup(x => x.GetPlayStatsPerGame())
             .ReturnsAsync([]);
 
         // Act
@@ -102,6 +115,7 @@ public class GameControllerTests
         returnedGames.Should().BeEmpty();
 
         _gameServiceMock.Verify(x => x.GetGames(), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayStatsPerGame(), Times.Once);
         VerifyNoOtherCalls();
     }
 

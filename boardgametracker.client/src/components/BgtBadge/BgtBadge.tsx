@@ -10,7 +10,7 @@ const badgeVariants = cva("group px-3 py-1 rounded-full text-xs flex flex-row ga
 		},
 		color: {
 			green: "text-card-value bg-[#34FFAA1F]",
-			red: "text-error-dark y bg-error-dark/20 border-error-dark/30",
+			red: "text-error-dark bg-error-dark/20 border-error-dark/30",
 			primary: "text-chip-selected bg-primary/20 border-primary/30",
 		},
 		interactive: {

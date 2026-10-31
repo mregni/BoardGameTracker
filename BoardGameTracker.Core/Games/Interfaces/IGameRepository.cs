@@ -15,6 +15,7 @@ public interface IGameRepository: IRepository<Game>
     Task<List<Person>> GetOrCreatePeopleAsync(IEnumerable<PersonKey> people);
     Task<Game?> GetGameByBggId(int bggId);
     Task<List<Game>> GetGamesOverviewList();
+    Task<Dictionary<int, GamePlayStats>> GetPlayStatsPerGame();
     Task<List<Game>> GetTrackedGames();
     Task<GameWatchInfo?> GetWatchInfo(int gameId);
     Task<List<Expansion>> GetExpansions(int gameId, List<int> expansionIds);

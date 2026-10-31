@@ -15,6 +15,7 @@ interface Props {
 export const SearchInputField = (props: Props) => {
 	const { value, onChange, placeholder, className, inputClassName } = props;
 	const { t } = useTranslation();
+	const resolvedPlaceholder = placeholder || t("filter-name");
 
 	return (
 		<BgtSimpleInputField
@@ -22,7 +23,8 @@ export const SearchInputField = (props: Props) => {
 			onChange={onChange}
 			className={cx("border-primary/30 border bg-primary/10 w-full", className)}
 			inputClassName={cx("placeholder:text-primary-text", inputClassName)}
-			placeholder={placeholder || t("filter-name")}
+			placeholder={resolvedPlaceholder}
+			ariaLabel={resolvedPlaceholder}
 			type="text"
 			prefixLabel={<SearchIcon className="text-primary size-5" />}
 		/>

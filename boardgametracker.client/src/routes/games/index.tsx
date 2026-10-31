@@ -6,24 +6,39 @@ import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
 import Game from "@/assets/icons/gamepad.svg?react";
-import BgtButton from "@/components/BgtButton/BgtButton";
-import { SearchInputField } from "@/components/BgtForm";
+import { BgtSimpleSelect, SearchInputField } from "@/components/BgtForm";
 import { BgtImageCard } from "@/components/BgtImageCard/BgtImageCard";
 import { BgtCardList } from "@/components/BgtLayout/BgtCardList";
+import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
-import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getGames, getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
+import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { NoGamesEmptyPage } from "../-components/NoGamesEmptyPage";
-import { filterGames, type GamesFilterSearch, GamesFilters } from "./-components/GamesFilters";
+import {
+	ActiveFilterChips,
+	filterGames,
+	type GameSort,
+	type GamesFilterSearch,
+	GamesFilters,
+} from "./-components/GamesFilters";
+import { GamesTableView } from "./-components/GamesTableView";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
 import { useDebouncedSearchQuery } from "./-hooks/useDebouncedSearchQuery";
 import { useGamesData } from "./-hooks/useGamesData";
-import { filterByTitle, hasGridFilters, parseGamesSearch, withoutUndefined } from "./-utils/gamesSearch";
+import {
+	filterByTitle,
+	GAME_SORTS,
+	hasActiveFilters,
+	parseGamesSearch,
+	sortGames,
+	withoutUndefined,
+} from "./-utils/gamesSearch";
 
 export const Route = createFileRoute("/games/")({
 	component: RouteComponent,
@@ -36,12 +51,14 @@ export const Route = createFileRoute("/games/")({
 
 function RouteComponent() {
 	const search = Route.useSearch();
-	const { q, category, players, playTime, weight, age } = search;
+	const { view, q, category, players, playTime, weight, age, state, language, inStock, sort } = search;
 	const { t } = useTranslation(["games", "common"]);
-	const navigate = useNavigate();
-	const { games, isLoading } = useGamesData();
+	const navigate = useNavigate({ from: Route.fullPath });
+	const { games, isLoading, isError, retry } = useGamesData();
 	const { canWrite } = usePermissions();
 	const [showFilters, setShowFilters] = useState(false);
+	const isDesktop = useMediaQuery("(min-width: 48rem)");
+	const filtersCollapsed = !showFilters && !isDesktop;
 
 	const categories = useMemo(
 		() => [...new Set(games.flatMap((game) => game.categories.map((cat) => cat.name)))].sort(),
@@ -61,123 +78,177 @@ function RouteComponent() {
 
 	const [filterValue, setFilterValue] = useDebouncedSearchQuery(q, (value) => updateSearch({ q: value }));
 
-	const filteredGames = useMemo(() => {
-		let result = filterByTitle(games, q);
-		if (category !== undefined) {
-			result = result.filter((game) => game.categories.some((cat) => cat.name === category));
-		}
-		return filterGames(result, { playerCount: players, maxPlayTime: playTime, weight, age });
-	}, [games, q, category, players, playTime, weight, age]);
-
-	const clearFilters = () => {
-		setFilterValue("");
-		navigate({ to: "/games", search: {}, replace: true });
-	};
 	const settingsQuery = useQuery(getSettings());
-	const trackedPricesQuery = useQuery({
-		...getTrackedPrices(),
-		enabled: !!settingsQuery.data?.changeDetectionStatus?.isConfigured,
-	});
+	const showLivePrices = settingsQuery.data?.changeDetectionStatus?.isConfigured ?? false;
+	const trackedPricesQuery = useQuery({ ...getTrackedPrices(), enabled: showLivePrices });
 	const priceMap = useMemo(
 		() => new Map((trackedPricesQuery.data ?? []).map((price) => [price.gameId, price])),
 		[trackedPricesQuery.data],
 	);
 
+	const filteredGames = useMemo(() => {
+		const result = filterByTitle(games, q).filter(
+			(game) =>
+				(category === undefined || game.categories.some((cat) => cat.name === category)) &&
+				(state === undefined || game.state === state) &&
+				(language === undefined || (language === LANGUAGE_NONE ? !game.language : game.language === language)) &&
+				(!inStock || !showLivePrices || priceMap.get(game.id)?.inStock === true),
+		);
+		return sortGames(filterGames(result, { playerCount: players, maxPlayTime: playTime, weight, age }), sort);
+	}, [games, q, category, players, playTime, weight, age, state, language, inStock, showLivePrices, priceMap, sort]);
+
+	const activeFilterCount = [category, players, playTime, weight, age, state, language, inStock].filter(
+		(value) => value !== undefined,
+	).length;
+
+	const clearFilters = () => {
+		setFilterValue("");
+		navigate({ to: "/games", search: withoutUndefined({ view, sort }), replace: true });
+	};
+
 	if (isLoading) return null;
+
+	if (isError) {
+		return (
+			<BgtEmptyPage
+				header={t("title")}
+				icon={Game}
+				title={t("load-error")}
+				action={{ label: t("common:retry"), onClick: () => retry() }}
+			/>
+		);
+	}
 
 	if (games.length === 0) {
 		return <NoGamesEmptyPage header={t("title")} icon={Game} />;
 	}
+
+	const sortItems = GAME_SORTS.map((value) => ({ value, label: t(`sort.${value}`) }));
+	const viewButton = (target: GamesFilterSearch["view"], label: string) => (
+		<button
+			type="button"
+			aria-pressed={view === target}
+			onClick={() => updateSearch({ view: target })}
+			className={cx(
+				"px-3 h-11 md:h-9 text-sm font-bold cursor-pointer",
+				view === target ? "bg-primary/60 text-white" : "text-cancel hover:bg-cancel/10",
+			)}
+		>
+			{label}
+		</button>
+	);
 
 	return (
 		<BgtPage>
 			<BgtPageHeader
 				header={t("title")}
 				icon={Game}
-				actions={[
-					{
-						onClick: () => navigate({ to: "/games/table", search: q ? { q } : {} }),
-						variant: "cancel",
-						content: "games:view.table",
-					},
-					...(canWrite
-						? [
-								{
-									onClick: () => navigate({ to: "/games/add" }),
-									variant: "primary" as const,
-									content: "games:new",
-								},
-							]
-						: []),
-				]}
+				actions={
+					canWrite
+						? [{ onClick: () => navigate({ to: "/games/add" }), variant: "primary" as const, content: "games:new" }]
+						: []
+				}
 			></BgtPageHeader>
 			<BgtPageContent>
-				<div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2">
-					<div className="w-full md:flex-1 md:min-w-[8rem]">
-						<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
-					</div>
+				<div className="flex flex-col gap-2">
+					<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
 					<button
 						type="button"
 						onClick={() => setShowFilters((value) => !value)}
-						className="md:hidden flex items-center justify-center gap-1 w-full text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
+						aria-expanded={showFilters}
+						aria-controls="games-filters"
+						className="md:hidden flex items-center justify-center gap-1 w-full min-h-11 text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
 					>
 						{showFilters ? t("filters.show-less") : t("filters.show-more")}
+						{!showFilters && activeFilterCount > 0 && ` · ${activeFilterCount}`}
 						{showFilters ? <CaretUpIcon className="size-4" /> : <CaretDownIcon className="size-4" />}
 					</button>
 					<div
 						className={cx(
-							"grid w-full transition-[grid-template-rows] duration-300 ease-in-out md:contents",
+							"grid w-full transition-[grid-template-rows] duration-300 ease-in-out md:block",
 							showFilters ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
 						)}
 					>
-						<div className="overflow-hidden flex flex-col gap-2 md:contents">
-							<GamesFilters
-								categories={categories}
-								category={category}
-								filters={{ playerCount: players, maxPlayTime: playTime, weight, age }}
-								onCategoryChange={(value) => updateSearch({ category: value })}
-								onChange={(next) =>
-									updateSearch({
-										players: next.playerCount,
-										playTime: next.maxPlayTime,
-										weight: next.weight,
-										age: next.age,
-									})
-								}
-							/>
+						<div id="games-filters" inert={filtersCollapsed} className="overflow-hidden md:overflow-visible">
+							<div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2">
+								<GamesFilters categories={categories} search={search} onChange={updateSearch} />
+							</div>
 						</div>
 					</div>
 				</div>
-				<BgtText size="3" color="primary" className="pb-6" weight="medium">
-					{t("count", { count: filteredGames.length })}
-				</BgtText>
-				{filteredGames.length === 0 && (
-					<div className="flex flex-col items-center gap-3">
-						<BgtNoData message={t("filters.no-match")} className="min-h-0 py-4" />
-						{hasGridFilters(search) && (
-							<BgtButton variant="cancel" onClick={clearFilters}>
+				<div className="flex flex-wrap items-center gap-2">
+					<div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:flex-1" aria-live="polite">
+						{filteredGames.length > 0 ? (
+							<BgtText size="3" color="white" opacity={70} weight="medium">
+								{t("count", { count: filteredGames.length })}
+							</BgtText>
+						) : (
+							<BgtText size="3" color="white" opacity={70}>
+								{t("filters.no-match")}
+							</BgtText>
+						)}
+						<ActiveFilterChips search={search} onRemove={(key) => updateSearch({ [key]: undefined })} />
+						{hasActiveFilters(search) && (
+							<button
+								type="button"
+								onClick={clearFilters}
+								className="text-sm text-primary-text hover:text-indigo-300 underline-offset-2 hover:underline cursor-pointer"
+							>
 								{t("filters.clear")}
-							</BgtButton>
+							</button>
 						)}
 					</div>
-				)}
-				<BgtCardList>
-					{filteredGames.map((x) => (
-						<BgtImageCard
-							key={x.id}
-							title={x.title}
-							image={x.image}
-							state={x.state}
-							isLoaned={x.isLoaned}
-							link={`/games/${x.id}`}
-							badge={
-								x.changeDetectionWatchId ? (
-									<TrackedPriceIcon livePrice={priceMap.get(x.id)} variant="overlay" />
-								) : undefined
-							}
+					<div className="flex items-center gap-2 w-full md:w-auto">
+						<BgtSimpleSelect
+							className="flex-1 md:flex-none md:w-44"
+							aria-label={t("sort.label")}
+							value={sort ?? "title"}
+							items={sortItems}
+							onValueChange={(value) => updateSearch({ sort: value === "title" ? undefined : (value as GameSort) })}
 						/>
-					))}
-				</BgtCardList>
+						<div className="flex rounded border border-cancel/60 overflow-hidden">
+							{viewButton(undefined, t("view.grid"))}
+							{viewButton("table", t("view.table"))}
+						</div>
+					</div>
+				</div>
+				{view === "table" ? (
+					<GamesTableView
+						games={filteredGames}
+						priceMap={priceMap}
+						showLivePrices={showLivePrices}
+						inStock={inStock === true}
+						onInStockChange={(value) => updateSearch({ inStock: value ? true : undefined })}
+						currency={settingsQuery.data?.currency}
+						uiLanguage={settingsQuery.data?.uiLanguage}
+						dateFormat={settingsQuery.data?.dateFormat}
+					/>
+				) : (
+					<BgtCardList>
+						{filteredGames.map((x) => (
+							<BgtImageCard
+								key={x.id}
+								title={x.title}
+								image={x.image}
+								state={x.state}
+								isLoaned={x.isLoaned}
+								link={`/games/${x.id}`}
+								meta={
+									x.playCount > 0 ? (
+										<BgtText size="1" className="text-card-value shrink-0">
+											{t("plays", { count: x.playCount })}
+										</BgtText>
+									) : undefined
+								}
+								badge={
+									x.changeDetectionWatchId ? (
+										<TrackedPriceIcon livePrice={priceMap.get(x.id)} variant="overlay" />
+									) : undefined
+								}
+							/>
+						))}
+					</BgtCardList>
+				)}
 			</BgtPageContent>
 		</BgtPage>
 	);
