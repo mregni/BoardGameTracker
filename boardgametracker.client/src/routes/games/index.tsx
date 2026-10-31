@@ -170,9 +170,7 @@ function RouteComponent() {
 						)}
 					>
 						<div id="games-filters" inert={filtersCollapsed} className="overflow-hidden md:overflow-visible">
-							<div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2">
-								<GamesFilters categories={categories} search={search} onChange={updateSearch} />
-							</div>
+							<GamesFilters categories={categories} search={search} onChange={updateSearch} />
 						</div>
 					</div>
 				</div>

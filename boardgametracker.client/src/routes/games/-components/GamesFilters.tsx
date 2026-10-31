@@ -187,6 +187,7 @@ export const GamesFilters = (props: Props) => {
 		<BgtSimpleSelect
 			className="w-full"
 			placeholder={placeholder}
+			valuePrefix={placeholder}
 			value={value ?? null}
 			items={items}
 			hasSearch={hasSearch}
@@ -195,32 +196,46 @@ export const GamesFilters = (props: Props) => {
 	);
 
 	return (
-		<>
-			{select(
-				t("games:filters.category"),
-				search.category,
-				categoryItems,
-				(value) => onChange({ category: value === undefined ? undefined : String(value) }),
-				true,
-			)}
-			{select(t("games:filters.player-count"), search.players, playerItems, (value) =>
-				onChange({ players: value === undefined ? undefined : Number(value) }),
-			)}
-			{select(t("games:filters.play-time"), search.playTime, playTimeItems, (value) =>
-				onChange({ playTime: value === undefined ? undefined : Number(value) }),
-			)}
-			{select(t("games:filters.weight"), search.weight, weightItems, (value) =>
-				onChange({ weight: value as WeightBucket | undefined }),
-			)}
-			{select(t("games:filters.age"), search.age, ageItems, (value) =>
-				onChange({ age: value as AgeBucket | undefined }),
-			)}
-			{select(t("games:columns.state"), search.state, stateItems, (value) =>
-				onChange({ state: value as GameState | undefined }),
-			)}
-			{select(t("games:columns.language"), search.language, languageItems, (value) =>
-				onChange({ language: value === undefined ? undefined : String(value) }),
-			)}
-		</>
+		<div className="flex flex-col xl:flex-row gap-2">
+			<fieldset
+				aria-label={t("games:filters.group-game")}
+				className="grid grid-cols-2 md:grid-cols-5 gap-2 min-w-0 xl:flex-5"
+			>
+				{select(
+					t("games:filters.category"),
+					search.category,
+					categoryItems,
+					(value) => onChange({ category: value === undefined ? undefined : String(value) }),
+					true,
+				)}
+				{select(t("games:filters.player-count"), search.players, playerItems, (value) =>
+					onChange({ players: value === undefined ? undefined : Number(value) }),
+				)}
+				{select(t("games:filters.play-time"), search.playTime, playTimeItems, (value) =>
+					onChange({ playTime: value === undefined ? undefined : Number(value) }),
+				)}
+				{select(t("games:filters.weight"), search.weight, weightItems, (value) =>
+					onChange({ weight: value as WeightBucket | undefined }),
+				)}
+				{select(t("games:filters.age"), search.age, ageItems, (value) =>
+					onChange({ age: value as AgeBucket | undefined }),
+				)}
+			</fieldset>
+			<fieldset
+				aria-label={t("games:filters.group-copy")}
+				className="grid grid-cols-2 gap-2 min-w-0 xl:flex-2 xl:border-l xl:border-primary/20 xl:pl-2"
+			>
+				{select(t("games:columns.state"), search.state, stateItems, (value) =>
+					onChange({ state: value as GameState | undefined }),
+				)}
+				{select(
+					t("games:columns.language"),
+					search.language,
+					languageItems,
+					(value) => onChange({ language: value === undefined ? undefined : String(value) }),
+					true,
+				)}
+			</fieldset>
+		</div>
 	);
 };

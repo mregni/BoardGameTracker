@@ -167,11 +167,12 @@ describe("Games table load error", () => {
 	});
 });
 
-describe("Games table price tiles", () => {
-	it("shows a dash instead of a zero price when no owned game has a price", () => {
+describe("Games table price summary", () => {
+	it("hides the owned price summary when no owned game has a price", () => {
+		mocks.games = [game(1, null), game(2, 0)];
 		renderTable();
 
-		expect(screen.getAllByText("–").length).toBeGreaterThanOrEqual(2);
+		expect(screen.queryByText(/games:table.total-price-owned/)).not.toBeInTheDocument();
 		expect(screen.queryByText("€0")).not.toBeInTheDocument();
 	});
 
