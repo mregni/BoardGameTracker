@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
 import Game from "@/assets/icons/gamepad.svg?react";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import { SearchInputField } from "@/components/BgtForm";
 import { BgtImageCard } from "@/components/BgtImageCard/BgtImageCard";
 import { BgtCardList } from "@/components/BgtLayout/BgtCardList";
@@ -14,13 +13,12 @@ import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
-import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getGames, getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { NoGamesEmptyPage } from "../-components/NoGamesEmptyPage";
-import { filterGames, type GamesFilterSearch, GamesFilters } from "./-components/GamesFilters";
+import { ActiveFilterChips, filterGames, type GamesFilterSearch, GamesFilters } from "./-components/GamesFilters";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
 import { useDebouncedSearchQuery } from "./-hooks/useDebouncedSearchQuery";
 import { useGamesData } from "./-hooks/useGamesData";
@@ -69,6 +67,8 @@ function RouteComponent() {
 		}
 		return filterGames(result, { playerCount: players, maxPlayTime: playTime, weight, age });
 	}, [games, q, category, players, playTime, weight, age]);
+
+	const activeFilterCount = [category, players, playTime, weight, age].filter((value) => value !== undefined).length;
 
 	const clearFilters = () => {
 		setFilterValue("");
@@ -134,6 +134,7 @@ function RouteComponent() {
 						className="md:hidden flex items-center justify-center gap-1 w-full text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
 					>
 						{showFilters ? t("filters.show-less") : t("filters.show-more")}
+						{!showFilters && activeFilterCount > 0 && ` · ${activeFilterCount}`}
 						{showFilters ? <CaretUpIcon className="size-4" /> : <CaretDownIcon className="size-4" />}
 					</button>
 					<div
@@ -160,19 +161,27 @@ function RouteComponent() {
 						</div>
 					</div>
 				</div>
-				<BgtText size="3" color="primary" className="pb-6" weight="medium">
-					{t("count", { count: filteredGames.length })}
-				</BgtText>
-				{filteredGames.length === 0 && (
-					<div className="flex flex-col items-center gap-3">
-						<BgtNoData message={t("filters.no-match")} className="min-h-0 py-4" />
-						{hasGridFilters(search) && (
-							<BgtButton variant="cancel" onClick={clearFilters}>
-								{t("filters.clear")}
-							</BgtButton>
-						)}
-					</div>
-				)}
+				<div className="flex flex-wrap items-center gap-2 pb-6" aria-live="polite">
+					{filteredGames.length > 0 ? (
+						<BgtText size="3" color="primary" weight="medium">
+							{t("count", { count: filteredGames.length })}
+						</BgtText>
+					) : (
+						<BgtText size="3" color="white" opacity={70}>
+							{t("filters.no-match")}
+						</BgtText>
+					)}
+					<ActiveFilterChips search={search} onRemove={(key) => updateSearch({ [key]: undefined })} />
+					{hasGridFilters(search) && (
+						<button
+							type="button"
+							onClick={clearFilters}
+							className="text-sm text-primary-text hover:text-indigo-300 underline-offset-2 hover:underline cursor-pointer"
+						>
+							{t("filters.clear")}
+						</button>
+					)}
+				</div>
 				<BgtCardList>
 					{filteredGames.map((x) => (
 						<BgtImageCard

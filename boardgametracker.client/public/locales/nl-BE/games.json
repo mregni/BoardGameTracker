@@ -54,10 +54,11 @@
     "age-7-9": "7 - 9",
     "age-10-12": "10 - 12",
     "age-13plus": "13+",
-    "show-more": "Meer filters tonen",
-    "show-less": "Minder filters tonen",
+    "show-more": "Filters",
+    "show-less": "Filters verbergen",
     "no-match": "Geen spellen gevonden voor de huidige filters.",
     "clear": "Filters wissen",
+    "remove": "Filter {{name}} verwijderen",
     "state-any": "Status: alle",
     "language-any": "Taal: alle"
   },

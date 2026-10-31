@@ -54,10 +54,11 @@
     "age-7-9": "7 - 9",
     "age-10-12": "10 - 12",
     "age-13plus": "13+",
-    "show-more": "Mostrar más filtros",
-    "show-less": "Mostrar menos filtros",
+    "show-more": "Filtros",
+    "show-less": "Ocultar filtros",
     "no-match": "Ningún juego coincide con los filtros actuales.",
     "clear": "Borrar filtros",
+    "remove": "Quitar filtro {{name}}",
     "state-any": "Estado: todos",
     "language-any": "Idioma: todos"
   },

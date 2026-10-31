@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import CloseIcon from "@/assets/icons/x.svg?react";
 import { BgtSimpleSelect } from "@/components/BgtForm/BgtSimpleSelect";
 import type { BgtSelectItem, Game } from "@/models";
 
@@ -62,6 +63,59 @@ export const filterGames = (games: Game[], filters: GameFilterState): Game[] => 
 		if (filters.age !== undefined && !matchesAge(game, filters.age)) return false;
 		return true;
 	});
+};
+
+export type ActiveFilterKey = "category" | "players" | "playTime" | "weight" | "age";
+
+interface ActiveFilterChipsProps {
+	search: GamesFilterSearch;
+	onRemove: (key: ActiveFilterKey) => void;
+}
+
+export const ActiveFilterChips = ({ search, onRemove }: ActiveFilterChipsProps) => {
+	const { t } = useTranslation(["games"]);
+
+	const chips: { key: ActiveFilterKey; name: string; value?: string }[] = [
+		{ key: "category", name: t("games:filters.category"), value: search.category },
+		{
+			key: "players",
+			name: t("games:filters.player-count"),
+			value: search.players ? t("games:filters.player-count-value", { count: search.players }) : undefined,
+		},
+		{
+			key: "playTime",
+			name: t("games:filters.play-time"),
+			value: search.playTime ? t("games:filters.play-time-value", { count: search.playTime }) : undefined,
+		},
+		{
+			key: "weight",
+			name: t("games:filters.weight"),
+			value: search.weight && t(`games:filters.weight-${search.weight}`),
+		},
+		{ key: "age", name: t("games:filters.age"), value: search.age && t(`games:filters.age-${search.age}`) },
+	];
+
+	return (
+		<>
+			{chips
+				.filter((chip) => chip.value)
+				.map((chip) => {
+					const label = `${chip.name}: ${chip.value}`;
+					return (
+						<button
+							key={chip.key}
+							type="button"
+							onClick={() => onRemove(chip.key)}
+							aria-label={t("games:filters.remove", { name: label })}
+							className="flex items-center gap-2 px-3 py-1 rounded-full text-xs text-chip-selected bg-primary/20 border border-primary/30 hover:bg-primary/30 cursor-pointer"
+						>
+							{label}
+							<CloseIcon className="size-3" aria-hidden />
+						</button>
+					);
+				})}
+		</>
+	);
 };
 
 interface Props {
