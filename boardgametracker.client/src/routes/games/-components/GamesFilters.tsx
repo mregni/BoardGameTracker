@@ -30,10 +30,10 @@ export interface GamesFilterSearch {
 	sort?: GameSort;
 }
 
-const ANY = "any";
+export const ANY = "any";
 
-const PLAYER_COUNTS = [1, 2, 3, 4, 5, 6, 7, 8];
-const PLAY_TIMES = [30, 60, 90, 120, 180];
+export const PLAYER_COUNTS = [1, 2, 3, 4, 5, 6, 7, 8];
+export const PLAY_TIMES = [30, 60, 90, 120, 180];
 const WEIGHTS: WeightBucket[] = ["light", "medium", "heavy"];
 const AGES: AgeBucket[] = ["0-6", "7-9", "10-12", "13plus"];
 
