@@ -16,8 +16,10 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePermissions } from "@/hooks/usePermissions";
+import { GameState } from "@/models";
 import { getGames, getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
+import { toRelative } from "@/utils/dateUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { NoGamesEmptyPage } from "../-components/NoGamesEmptyPage";
 import {
@@ -80,6 +82,7 @@ function RouteComponent() {
 
 	const settingsQuery = useQuery(getSettings());
 	const showLivePrices = settingsQuery.data?.changeDetectionStatus?.isConfigured ?? false;
+	const uiLanguage = settingsQuery.data?.uiLanguage ?? "en-US";
 	const trackedPricesQuery = useQuery({ ...getTrackedPrices(), enabled: showLivePrices });
 	const priceMap = useMemo(
 		() => new Map((trackedPricesQuery.data ?? []).map((price) => [price.gameId, price])),
@@ -151,28 +154,28 @@ function RouteComponent() {
 			></BgtPageHeader>
 			<BgtPageContent>
 				<div className="flex flex-col gap-2">
-					<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
-					<button
-						type="button"
-						onClick={() => setShowFilters((value) => !value)}
-						aria-expanded={showFilters}
-						aria-controls="games-filters"
-						className="md:hidden flex items-center justify-center gap-1 w-full min-h-11 text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
-					>
-						{showFilters ? t("filters.show-less") : t("filters.show-more")}
-						{!showFilters && activeFilterCount > 0 && ` · ${activeFilterCount}`}
-						{showFilters ? <CaretUpIcon className="size-4" /> : <CaretDownIcon className="size-4" />}
-					</button>
+					<div className="flex items-center gap-2">
+						<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
+						<button
+							type="button"
+							onClick={() => setShowFilters((value) => !value)}
+							aria-expanded={showFilters}
+							aria-controls="games-filters"
+							className="md:hidden flex shrink-0 items-center justify-center gap-1 px-3 min-h-11 rounded-lg border border-primary/30 bg-primary/10 text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
+						>
+							{showFilters ? t("filters.show-less") : t("filters.show-more")}
+							{!showFilters && activeFilterCount > 0 && ` · ${activeFilterCount}`}
+							{showFilters ? <CaretUpIcon className="size-4" /> : <CaretDownIcon className="size-4" />}
+						</button>
+					</div>
 					<div
 						className={cx(
 							"grid w-full transition-[grid-template-rows] duration-300 ease-in-out md:block",
-							showFilters ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+							showFilters ? "grid-rows-[1fr]" : "grid-rows-[0fr] -mt-2 md:mt-0",
 						)}
 					>
 						<div id="games-filters" inert={filtersCollapsed} className="overflow-hidden md:overflow-visible">
-							<div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2">
-								<GamesFilters categories={categories} search={search} onChange={updateSearch} />
-							</div>
+							<GamesFilters categories={categories} search={search} onChange={updateSearch} />
 						</div>
 					</div>
 				</div>
@@ -212,7 +215,7 @@ function RouteComponent() {
 						</div>
 					</div>
 				</div>
-				{view === "table" ? (
+				{filteredGames.length === 0 ? null : view === "table" ? (
 					<GamesTableView
 						games={filteredGames}
 						priceMap={priceMap}
@@ -230,15 +233,20 @@ function RouteComponent() {
 								key={x.id}
 								title={x.title}
 								image={x.image}
-								state={x.state}
+								state={x.state === GameState.Owned && !x.isLoaned ? undefined : x.state}
 								isLoaned={x.isLoaned}
 								link={`/games/${x.id}`}
 								meta={
 									x.playCount > 0 ? (
-										<BgtText size="1" className="text-card-value shrink-0">
+										<BgtText size="1" className="text-card-value truncate">
 											{t("plays", { count: x.playCount })}
+											{x.lastPlayed && ` · ${toRelative(x.lastPlayed, uiLanguage)}`}
 										</BgtText>
-									) : undefined
+									) : (
+										<BgtText size="1" color="white" opacity={50} className="truncate">
+											{t("never-played")}
+										</BgtText>
+									)
 								}
 								badge={
 									x.changeDetectionWatchId ? (

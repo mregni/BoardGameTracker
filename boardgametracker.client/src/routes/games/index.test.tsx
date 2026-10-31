@@ -129,6 +129,7 @@ describe("Games grid", () => {
 		const titles = screen.getAllByText(/^Game \d$/).map((title) => title.textContent);
 		expect(titles).toEqual(["Game 2", "Game 1"]);
 		expect(screen.getByText("plays")).toBeInTheDocument();
+		expect(screen.getByText("never-played")).toBeInTheDocument();
 	});
 
 	it("switches to the table view through the URL", async () => {
@@ -167,11 +168,12 @@ describe("Games table load error", () => {
 	});
 });
 
-describe("Games table price tiles", () => {
-	it("shows a dash instead of a zero price when no owned game has a price", () => {
+describe("Games table price summary", () => {
+	it("hides the owned price summary when no owned game has a price", () => {
+		mocks.games = [game(1, null), game(2, 0)];
 		renderTable();
 
-		expect(screen.getAllByText("–").length).toBeGreaterThanOrEqual(2);
+		expect(screen.queryByText(/games:table.total-price-owned/)).not.toBeInTheDocument();
 		expect(screen.queryByText("€0")).not.toBeInTheDocument();
 	});
 
@@ -189,6 +191,16 @@ describe("Games table price tiles", () => {
 
 		expect(screen.getAllByText("short-duration.minutes").length).toBeGreaterThan(0);
 		expect(screen.getAllByText("2–4").length).toBeGreaterThan(0);
+	});
+});
+
+describe("Games table sorting", () => {
+	it("leaves sorting to the page sort control instead of the column headers", () => {
+		mocks.hideCards = true;
+		renderTable();
+
+		const headers = within(screen.getByRole("table")).getAllByRole("columnheader");
+		expect(headers.some((header) => within(header).queryByRole("button"))).toBe(false);
 	});
 });
 

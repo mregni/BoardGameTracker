@@ -138,3 +138,18 @@ body {
 .bgt-image-card:hover img {
 	scale: 1.05;
 }
+
+.bgt-image-card-cover {
+	outline: 1px solid transparent;
+	transition:
+		outline-color 200ms ease,
+		box-shadow 200ms ease;
+}
+
+.bgt-image-card:hover .bgt-image-card-cover,
+a:focus-visible .bgt-image-card-cover {
+	outline-color: rgb(99 102 241 / 0.6);
+	box-shadow:
+		0 10px 15px -3px rgb(0 0 0 / 0.1),
+		0 4px 6px -4px rgb(0 0 0 / 0.1);
+}

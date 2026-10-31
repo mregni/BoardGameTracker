@@ -78,6 +78,7 @@ describe("ownedPriceStats", () => {
 			game("A", GameState.Owned, 40),
 			game("B", GameState.Owned, 20),
 			game("C", GameState.Owned, null),
+			game("E", GameState.Owned, 0),
 			game("D", GameState.Wanted, 100),
 		]);
 

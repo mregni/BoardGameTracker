@@ -33,15 +33,27 @@ export interface DataTableProps<T> {
 	firstCellClassNames?: string;
 	widths?: (string | null)[];
 	meta?: TableMeta<T>;
+	enableSorting?: boolean;
 }
 
 const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
-	const { columns, data, size = "md", noDataMessage, isLoading = false, widths, noHeaders, meta } = props;
+	const {
+		columns,
+		data,
+		size = "md",
+		noDataMessage,
+		isLoading = false,
+		widths,
+		noHeaders,
+		meta,
+		enableSorting = true,
+	} = props;
 	const { t } = useTranslation();
 	const table = useReactTable({
 		data,
 		columns,
 		meta,
+		enableSorting,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
@@ -58,6 +70,9 @@ const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
 					<BgtTableHead
 						scope="col"
 						key={head.id}
+						aria-sort={
+							canSort ? (sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : "none") : undefined
+						}
 						className={cx(
 							widths?.[i] ?? "",
 							(i === header.headers.length - 1 || head.column.columnDef.meta?.alignRight) && "text-right",

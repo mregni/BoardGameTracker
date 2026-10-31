@@ -7,7 +7,6 @@ import Refresh from "@/assets/icons/refresh.svg?react";
 import SquareOutIcon from "@/assets/icons/square-out.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
 import { useDurationRange } from "@/hooks/useDurationRange";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -17,7 +16,7 @@ import { getTrackedPricesCall } from "@/services/gameService";
 import { toDisplay } from "@/utils/dateUtils";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
-import { EMPTY_PRICE, formatDecimal, formatPrice, formatPriceOrEmpty } from "@/utils/numberUtils";
+import { formatDecimal, formatPrice, formatPriceOrEmpty } from "@/utils/numberUtils";
 import { formatRange as formatValueRange } from "@/utils/rangeUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { useInlineGameUpdate } from "../-hooks/useInlineGameUpdate";
@@ -296,42 +295,45 @@ export const GamesTableView = (props: Props) => {
 
 	return (
 		<>
-			{showLivePrices && (
-				<div className="flex flex-col md:flex-row md:justify-end gap-2">
-					<BgtButton
-						variant={inStock ? "primary" : "cancel"}
-						className="w-full md:w-auto"
-						onClick={() => onInStockChange(!inStock)}
-					>
-						{t("games:filters.in-stock-only")}
-					</BgtButton>
-					<BgtButton
-						variant="cancel"
-						className="w-full md:w-auto"
-						disabled={refreshPricesMutation.isPending}
-						onClick={() => refreshPricesMutation.mutate()}
-					>
-						<Refresh className={refreshPricesMutation.isPending ? "size-4 animate-spin" : "size-4"} />
-						{t("games:refresh-prices")}
-					</BgtButton>
+			{(hasPrices || showLivePrices) && (
+				<div className="flex flex-col md:flex-row md:items-center gap-2">
+					{hasPrices && (
+						<p className="text-sm text-white/70 md:mr-auto">
+							{t("games:table.total-price-owned")}:{" "}
+							<span className="font-bold text-card-value">{formatPrice(ownedPrices.total, currency, uiLanguage)}</span>
+							{" · "}
+							{t("games:table.mean-price-owned", { count: ownedPrices.pricedCount })}:{" "}
+							<span className="font-bold text-card-value">{formatPrice(ownedPrices.mean, currency, uiLanguage)}</span>
+						</p>
+					)}
+					{showLivePrices && (
+						<div className="flex gap-2 md:ml-auto">
+							<BgtButton
+								variant={inStock ? "primary" : "cancel"}
+								className="flex-1 md:flex-none"
+								onClick={() => onInStockChange(!inStock)}
+							>
+								{t("games:filters.in-stock-only")}
+							</BgtButton>
+							<BgtButton
+								variant="cancel"
+								className="flex-1 md:flex-none"
+								disabled={refreshPricesMutation.isPending}
+								onClick={() => refreshPricesMutation.mutate()}
+							>
+								<Refresh className={refreshPricesMutation.isPending ? "size-4 animate-spin" : "size-4"} />
+								{t("games:refresh-prices")}
+							</BgtButton>
+						</div>
+					)}
 				</div>
 			)}
-			<div className="grid grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6">
-				<BgtTextStatistic title={t("games:table.total-games")} content={games.length} />
-				<BgtTextStatistic
-					title={t("games:table.total-price-owned")}
-					content={hasPrices ? formatPrice(ownedPrices.total, currency, uiLanguage) : EMPTY_PRICE}
-				/>
-				<BgtTextStatistic
-					title={t("games:table.mean-price-owned", { count: ownedPrices.pricedCount })}
-					content={hasPrices ? formatPrice(ownedPrices.mean, currency, uiLanguage) : EMPTY_PRICE}
-				/>
-			</div>
 			<div className="hidden md:block">
 				<BgtDataTable
 					columns={columns}
 					data={games}
 					meta={tableMeta}
+					enableSorting={false}
 					isLoading={false}
 					noDataMessage={t("games:table.empty")}
 					widths={columnWidths}

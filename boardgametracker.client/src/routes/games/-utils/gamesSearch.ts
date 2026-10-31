@@ -66,7 +66,7 @@ export const sortGames = (games: Game[], sort: GameSort | undefined): Game[] => 
 };
 
 export const ownedPriceStats = (games: Game[]) => {
-	const priced = games.filter((game) => game.state === GameState.Owned && game.buyingPrice != null);
+	const priced = games.filter((game) => game.state === GameState.Owned && (game.buyingPrice ?? 0) > 0);
 	const total = priced.reduce((sum, game) => sum + (game.buyingPrice ?? 0), 0);
 	return { total, mean: priced.length > 0 ? total / priced.length : 0, pricedCount: priced.length };
 };

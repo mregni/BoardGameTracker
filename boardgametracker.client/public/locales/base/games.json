@@ -58,7 +58,9 @@
     "show-less": "Hide filters",
     "no-match": "No games match the current filters.",
     "clear": "Clear filters",
-    "remove": "Remove filter {{name}}"
+    "remove": "Remove filter {{name}}",
+    "group-game": "Game",
+    "group-copy": "Your copy"
   },
   "columns": {
     "title": "Title",
@@ -75,7 +77,6 @@
     "current-price": "Current price"
   },
   "table": {
-    "total-games": "Total games",
     "empty": "No games match the selected filters.",
     "total-price-owned": "Total price (owned)",
     "mean-price-owned_one": "Mean price (owned) · {{count}} priced game",
@@ -105,5 +106,6 @@
     "added": "Recently added",
     "rating": "Rating",
     "weight": "Weight"
-  }
+  },
+  "never-played": "Never played"
 }

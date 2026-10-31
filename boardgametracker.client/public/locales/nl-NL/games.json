@@ -58,7 +58,9 @@
     "show-less": "Filters verbergen",
     "no-match": "Geen spellen gevonden voor de huidige filters.",
     "clear": "Filters wissen",
-    "remove": "Filter {{name}} verwijderen"
+    "remove": "Filter {{name}} verwijderen",
+    "group-game": "Spel",
+    "group-copy": "Jouw exemplaar"
   },
   "columns": {
     "title": "Titel",
@@ -75,7 +77,6 @@
     "current-price": "Huidige prijs"
   },
   "table": {
-    "total-games": "Totaal aantal spellen",
     "empty": "Geen spellen die aan de gekozen filters voldoen.",
     "total-price-owned": "Totale prijs (in bezit)",
     "mean-price-owned_one": "Gemiddelde prijs (in bezit) · {{count}} spel met prijs",
@@ -105,5 +106,6 @@
     "added": "Laatst toegevoegd",
     "rating": "Beoordeling",
     "weight": "Gewicht"
-  }
+  },
+  "never-played": "Nog nooit gespeeld"
 }
