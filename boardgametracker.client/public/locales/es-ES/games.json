@@ -109,6 +109,16 @@
   },
   "never-played": "Nunca jugado",
   "pick": {
-    "button": "Elige por nosotros"
+    "button": "Elige por nosotros",
+    "title": "¿A qué jugamos?",
+    "description": "Dile a la ruleta cuántos sois y cuánto tiempo tenéis. Solo elige juegos que tienes y que no están prestados.",
+    "spinning": "Girando…",
+    "result": "Esta noche: {{title}}",
+    "again": "Girar otra vez",
+    "open": "Abrir juego",
+    "spin": "Girar la ruleta",
+    "candidates_one": "{{count}} juego en la ruleta",
+    "candidates_other": "{{count}} juegos en la ruleta",
+    "none": "Ningún juego tuyo encaja con estas opciones. Amplía alguna."
   }
 }

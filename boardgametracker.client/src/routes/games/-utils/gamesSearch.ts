@@ -67,9 +67,13 @@ export const sortGames = (games: Game[], sort: GameSort | undefined): Game[] => 
 
 export const isPlayable = (game: Game): boolean => game.state === GameState.Owned && !game.isLoaned;
 
-export const pickPlayableGame = (games: Game[], random = Math.random): Game | undefined => {
+export const pickWheelGames = (games: Game[], max = 10, random = Math.random): Game[] => {
 	const playable = games.filter(isPlayable);
-	return playable[Math.floor(random() * playable.length)];
+	for (let i = playable.length - 1; i > 0; i--) {
+		const j = Math.floor(random() * (i + 1));
+		[playable[i], playable[j]] = [playable[j], playable[i]];
+	}
+	return playable.slice(0, max);
 };
 
 export const ownedPriceStats = (games: Game[]) => {

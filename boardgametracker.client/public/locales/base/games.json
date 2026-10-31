@@ -109,6 +109,16 @@
   },
   "never-played": "Never played",
   "pick": {
-    "button": "Pick for us"
+    "button": "Pick for us",
+    "title": "What do we play?",
+    "description": "Tell the wheel how many of you are playing and how long you have. It only picks games you own that are not lent out.",
+    "spinning": "Spinning…",
+    "result": "Tonight: {{title}}",
+    "again": "Spin again",
+    "open": "Open game",
+    "spin": "Spin the wheel",
+    "candidates_one": "{{count}} game on the wheel",
+    "candidates_other": "{{count}} games on the wheel",
+    "none": "No game you own fits these choices. Loosen one of them."
   }
 }

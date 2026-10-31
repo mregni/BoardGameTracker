@@ -109,6 +109,16 @@
   },
   "never-played": "Nog nooit gespeeld",
   "pick": {
-    "button": "Kies voor ons"
+    "button": "Kies voor ons",
+    "title": "Wat spelen we?",
+    "description": "Vertel het wiel met hoeveel jullie zijn en hoeveel tijd je hebt. Het kiest alleen spellen die je bezit en die niet uitgeleend zijn.",
+    "spinning": "Het wiel draait…",
+    "result": "Vanavond: {{title}}",
+    "again": "Opnieuw draaien",
+    "open": "Open spel",
+    "spin": "Draai het wiel",
+    "candidates_one": "{{count}} spel op het wiel",
+    "candidates_other": "{{count}} spellen op het wiel",
+    "none": "Geen enkel spel dat je bezit past bij deze keuzes. Maak er een ruimer."
   }
 }

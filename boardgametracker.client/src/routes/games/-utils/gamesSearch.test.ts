@@ -5,7 +5,7 @@ import {
 	hasActiveFilters,
 	ownedPriceStats,
 	parseGamesSearch,
-	pickPlayableGame,
+	pickWheelGames,
 	sortGames,
 } from "./gamesSearch";
 
@@ -93,23 +93,29 @@ describe("ownedPriceStats", () => {
 	});
 });
 
-describe("pickPlayableGame", () => {
+describe("pickWheelGames", () => {
 	const candidate = (title: string, state: GameState, isLoaned = false) =>
 		({ title, state, isLoaned }) as unknown as Game;
 
-	it("only picks owned games that are not lent out", () => {
+	it("never puts a lent, wanted or sold game on the wheel", () => {
 		const games = [
 			candidate("Wanted", GameState.Wanted),
 			candidate("Lent", GameState.Owned, true),
+			candidate("Sold", GameState.PreviouslyOwned),
 			candidate("Azul", GameState.Owned),
 			candidate("Catan", GameState.Owned),
 		];
 
-		expect(pickPlayableGame(games, () => 0)?.title).toBe("Azul");
-		expect(pickPlayableGame(games, () => 0.99)?.title).toBe("Catan");
+		expect(
+			pickWheelGames(games)
+				.map((g) => g.title)
+				.sort(),
+		).toEqual(["Azul", "Catan"]);
 	});
 
-	it("returns nothing when no game can be played", () => {
-		expect(pickPlayableGame([candidate("Lent", GameState.Owned, true)])).toBeUndefined();
+	it("caps the wheel at the given number of games", () => {
+		const games = Array.from({ length: 15 }, (_, i) => candidate(`Game ${i}`, GameState.Owned));
+
+		expect(pickWheelGames(games, 10)).toHaveLength(10);
 	});
 });

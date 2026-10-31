@@ -124,6 +124,26 @@ public class PostgresSemanticsTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetGamesOverviewList_ShouldLoadLoans_SoLentGamesAreMarkedAsLoaned()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IGameRepository>();
+        var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+        var lent = new Game("Lent game");
+        var home = new Game("Home game");
+        var borrower = new Player("Borrower");
+        db.AddRange(lent, home, borrower);
+        await db.SaveChangesAsync();
+        db.Add(new Loan(lent.Id, borrower.Id, DateTime.UtcNow.AddDays(-1)));
+        await db.SaveChangesAsync();
+
+        var games = await repository.GetGamesOverviewList();
+
+        games.Single(g => g.Id == lent.Id).IsLoanedAt(DateTime.UtcNow).Should().BeTrue();
+        games.Single(g => g.Id == home.Id).IsLoanedAt(DateTime.UtcNow).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task CategoryName_ShouldBeUnique_AtTheDatabaseLevel()
     {
         await using var scope = _fixture.CreateScope();
