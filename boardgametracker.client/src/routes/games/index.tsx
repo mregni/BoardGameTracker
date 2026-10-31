@@ -127,7 +127,7 @@ function RouteComponent() {
 			aria-pressed={view === target}
 			onClick={() => updateSearch({ view: target })}
 			className={cx(
-				"px-3 py-1.5 text-sm font-bold cursor-pointer",
+				"px-3 h-11 md:h-9 text-sm font-bold cursor-pointer",
 				view === target ? "bg-primary/60 text-white" : "text-cancel hover:bg-cancel/10",
 			)}
 		>
@@ -147,14 +147,12 @@ function RouteComponent() {
 				}
 			></BgtPageHeader>
 			<BgtPageContent>
-				<div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2">
-					<div className="w-full md:flex-1 md:min-w-[8rem]">
-						<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
-					</div>
+				<div className="flex flex-col gap-2">
+					<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
 					<button
 						type="button"
 						onClick={() => setShowFilters((value) => !value)}
-						className="md:hidden flex items-center justify-center gap-1 w-full text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
+						className="md:hidden flex items-center justify-center gap-1 w-full min-h-11 text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
 					>
 						{showFilters ? t("filters.show-less") : t("filters.show-more")}
 						{!showFilters && activeFilterCount > 0 && ` · ${activeFilterCount}`}
@@ -162,17 +160,19 @@ function RouteComponent() {
 					</button>
 					<div
 						className={cx(
-							"grid w-full transition-[grid-template-rows] duration-300 ease-in-out md:contents",
+							"grid w-full transition-[grid-template-rows] duration-300 ease-in-out md:block",
 							showFilters ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
 						)}
 					>
-						<div className="overflow-hidden flex flex-col gap-2 md:contents">
-							<GamesFilters categories={categories} search={search} onChange={updateSearch} />
+						<div className="overflow-hidden md:overflow-visible">
+							<div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2">
+								<GamesFilters categories={categories} search={search} onChange={updateSearch} />
+							</div>
 						</div>
 					</div>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
-					<div className="flex flex-wrap items-center gap-2 flex-1" aria-live="polite">
+					<div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:flex-1" aria-live="polite">
 						{filteredGames.length > 0 ? (
 							<BgtText size="3" color="primary" weight="medium">
 								{t("count", { count: filteredGames.length })}
@@ -193,16 +193,18 @@ function RouteComponent() {
 							</button>
 						)}
 					</div>
-					<BgtSimpleSelect
-						className="w-44"
-						aria-label={t("sort.label")}
-						value={sort ?? "title"}
-						items={sortItems}
-						onValueChange={(value) => updateSearch({ sort: value === "title" ? undefined : (value as GameSort) })}
-					/>
-					<div className="flex rounded border border-cancel/60 overflow-hidden">
-						{viewButton(undefined, t("view.grid"))}
-						{viewButton("table", t("view.table"))}
+					<div className="flex items-center gap-2 w-full md:w-auto">
+						<BgtSimpleSelect
+							className="flex-1 md:flex-none md:w-44"
+							aria-label={t("sort.label")}
+							value={sort ?? "title"}
+							items={sortItems}
+							onValueChange={(value) => updateSearch({ sort: value === "title" ? undefined : (value as GameSort) })}
+						/>
+						<div className="flex rounded border border-cancel/60 overflow-hidden">
+							{viewButton(undefined, t("view.grid"))}
+							{viewButton("table", t("view.table"))}
+						</div>
 					</div>
 				</div>
 				{view === "table" ? (

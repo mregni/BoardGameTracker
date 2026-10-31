@@ -185,7 +185,7 @@ export const GamesFilters = (props: Props) => {
 		hasSearch = false,
 	) => (
 		<BgtSimpleSelect
-			className="w-full md:w-36"
+			className="w-full"
 			placeholder={placeholder}
 			value={value ?? null}
 			items={items}

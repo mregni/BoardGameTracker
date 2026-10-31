@@ -120,7 +120,7 @@ export const BgtSimpleSelect = (props: Props) => {
 							? triggerClassName
 							: cx(
 									"relative w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
-									"pl-4 pr-9 py-2 h-9 shadow-none flex items-center leading-none text-[12px]",
+									"pl-4 pr-9 py-2 h-11 md:h-9 shadow-none flex items-center leading-none text-[12px]",
 								)
 					}
 				>
