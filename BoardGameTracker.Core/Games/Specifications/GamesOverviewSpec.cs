@@ -10,6 +10,7 @@ public sealed class GamesOverviewSpec : Specification<Game>
         Query
             .Include(x => x.Expansions)
             .Include(x => x.Categories)
+            .Include(x => x.Loans)
             .OrderBy(x => x.Title)
             .AsNoTracking();
     }
