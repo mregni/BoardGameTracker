@@ -22,17 +22,17 @@ export const BgtMenuItem = (props: Props) => {
 			to={item.path}
 			activeProps={{ className: "bg-primary/60 border border-primary" }}
 			className={cx(
-				"flex w-full p-2 text-white cursor-pointer border border-transparent items-center my-1 hover:bg-primary/60 md:rounded-lg font-semibold justify-between px-2",
+				"flex w-full py-1.5 text-white cursor-pointer border border-transparent items-center my-0.5 transition-colors hover:bg-white/5 md:rounded-lg font-medium justify-between px-2",
 				className,
 			)}
 		>
 			<div className="flex items-center gap-2">
 				<Icon className="size-5" />
-				<span className="text-[16px]/[24px]">{t(item.menuLabel)}</span>
+				<span className="text-[14px]/[20px]">{t(item.menuLabel)}</span>
 			</div>
 			{count !== undefined && (
 				<div
-					className="py-1 px-3 flex items-center justify-center text-xs"
+					className="px-2 flex items-center justify-center text-xs tabular-nums text-white/60"
 					title={item.countLabel ? t(item.countLabel, { count }) : undefined}
 				>
 					{count}
