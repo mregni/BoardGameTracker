@@ -58,9 +58,7 @@
     "show-less": "Filters verbergen",
     "no-match": "Geen spellen gevonden voor de huidige filters.",
     "clear": "Filters wissen",
-    "remove": "Filter {{name}} verwijderen",
-    "state-any": "Status: alle",
-    "language-any": "Taal: alle"
+    "remove": "Filter {{name}} verwijderen"
   },
   "columns": {
     "title": "Titel",
@@ -94,7 +92,18 @@
   "tracked": "Prijs wordt gevolgd",
   "tracked-pending": "Wacht op de eerste prijscontrole",
   "view": {
-    "table": "Tabelweergave",
-    "grid": "Rasterweergave"
+    "grid": "Raster",
+    "table": "Tabel"
+  },
+  "plays_one": "{{count}} keer gespeeld",
+  "plays_other": "{{count}} keer gespeeld",
+  "sort": {
+    "label": "Sorteren op",
+    "title": "Titel",
+    "plays": "Meest gespeeld",
+    "last-played": "Laatst gespeeld",
+    "added": "Laatst toegevoegd",
+    "rating": "Beoordeling",
+    "weight": "Gewicht"
   }
 }

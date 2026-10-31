@@ -31,6 +31,8 @@ export interface Game {
 	buyingPrice: number | null;
 	soldPrice: number | null;
 	additionDate: Date | null;
+	playCount: number;
+	lastPlayed: Date | null;
 }
 
 export interface GameLink {

@@ -62,6 +62,8 @@ const createGame = (overrides: Partial<Game> = {}): Game => ({
 	buyingPrice: 45.5,
 	soldPrice: null,
 	additionDate: null,
+	playCount: 0,
+	lastPlayed: null,
 	...overrides,
 });
 

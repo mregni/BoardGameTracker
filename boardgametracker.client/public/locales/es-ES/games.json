@@ -58,9 +58,7 @@
     "show-less": "Ocultar filtros",
     "no-match": "Ningún juego coincide con los filtros actuales.",
     "clear": "Borrar filtros",
-    "remove": "Quitar filtro {{name}}",
-    "state-any": "Estado: todos",
-    "language-any": "Idioma: todos"
+    "remove": "Quitar filtro {{name}}"
   },
   "columns": {
     "title": "Título",
@@ -94,7 +92,18 @@
   "tracked": "Seguimiento de precio activo",
   "tracked-pending": "Esperando la primera comprobación de precio",
   "view": {
-    "table": "Vista de tabla",
-    "grid": "Vista de cuadrícula"
+    "grid": "Cuadrícula",
+    "table": "Tabla"
+  },
+  "plays_one": "{{count}} partida",
+  "plays_other": "{{count}} partidas",
+  "sort": {
+    "label": "Ordenar por",
+    "title": "Título",
+    "plays": "Más jugados",
+    "last-played": "Jugados recientemente",
+    "added": "Añadidos recientemente",
+    "rating": "Valoración",
+    "weight": "Peso"
   }
 }

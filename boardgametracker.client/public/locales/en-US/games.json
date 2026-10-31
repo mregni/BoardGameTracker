@@ -58,9 +58,7 @@
     "show-less": "Hide filters",
     "no-match": "No games match the current filters.",
     "clear": "Clear filters",
-    "remove": "Remove filter {{name}}",
-    "state-any": "State: Any",
-    "language-any": "Language: Any"
+    "remove": "Remove filter {{name}}"
   },
   "columns": {
     "title": "Title",
@@ -94,7 +92,18 @@
   "tracked": "Price tracking active",
   "tracked-pending": "Waiting for the first price check",
   "view": {
-    "table": "Table view",
-    "grid": "Grid view"
+    "grid": "Grid",
+    "table": "Table"
+  },
+  "plays_one": "{{count}} play",
+  "plays_other": "{{count}} plays",
+  "sort": {
+    "label": "Sort by",
+    "title": "Title",
+    "plays": "Most played",
+    "last-played": "Recently played",
+    "added": "Recently added",
+    "rating": "Rating",
+    "weight": "Weight"
   }
 }

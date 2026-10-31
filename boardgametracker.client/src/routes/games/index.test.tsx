@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => ({
 	hideCards: false,
 	isError: false,
 	retry: vi.fn(),
+	search: {} as Record<string, unknown>,
+	navigate: vi.fn(),
 }));
 
 vi.mock("./-components/GameTableCards", async (importOriginal) => {
@@ -23,9 +25,9 @@ vi.mock("./-components/GameTableCards", async (importOriginal) => {
 vi.mock("@tanstack/react-router", () => ({
 	createFileRoute: () => (config: { component: FC }) => {
 		mocks.captured.config = config;
-		return { ...config, useSearch: () => ({}) };
+		return { ...config, useSearch: () => mocks.search };
 	},
-	useNavigate: () => vi.fn(),
+	useNavigate: () => mocks.navigate,
 	Link: ({ children }: { children: React.ReactNode }) => <a href="/">{children}</a>,
 }));
 
@@ -48,9 +50,9 @@ vi.mock("@/services/queries/settings", () => ({
 	}),
 }));
 
-await import("./table");
+await import("./index");
 
-const game = (id: number, buyingPrice: number | null) => ({
+const game = (id: number, buyingPrice: number | null, playCount = 0) => ({
 	id,
 	title: `Game ${id}`,
 	state: GameState.Owned,
@@ -66,6 +68,10 @@ const game = (id: number, buyingPrice: number | null) => ({
 	additionDate: null,
 	changeDetectionWatchId: null,
 	expansions: [],
+	categories: [],
+	isLoaned: false,
+	playCount,
+	lastPlayed: null,
 });
 
 const renderTable = () => {
@@ -78,17 +84,40 @@ beforeEach(() => {
 	mocks.hideCards = false;
 	mocks.isError = false;
 	mocks.retry.mockReset();
+	mocks.navigate.mockReset();
+	mocks.search = { view: "table" };
 });
 
-describe("Games table filters", () => {
-	it("says what each filter filters while it is set to any", () => {
+describe("Games filters", () => {
+	it("names every filter while it is set to any, the table filters included", () => {
 		renderTable();
 
-		const filters = screen.getAllByRole("combobox");
-		expect(filters.map((filter) => filter.textContent)).toEqual([
-			"games:filters.state-any",
-			"games:filters.language-any",
-		]);
+		const labels = screen.getAllByRole("combobox").map((filter) => filter.textContent);
+		expect(labels).toEqual(
+			expect.arrayContaining(["games:filters.category", "games:columns.state", "games:columns.language"]),
+		);
+	});
+});
+
+describe("Games grid", () => {
+	it("shows the play count on the cards and sorts by most played", () => {
+		mocks.search = { sort: "plays" };
+		mocks.games = [game(1, null, 0), game(2, null, 7)];
+		renderTable();
+
+		const titles = screen.getAllByText(/^Game \d$/).map((title) => title.textContent);
+		expect(titles).toEqual(["Game 2", "Game 1"]);
+		expect(screen.getByText("plays")).toBeInTheDocument();
+	});
+
+	it("switches to the table view through the URL", async () => {
+		mocks.search = {};
+		renderTable();
+
+		await userEvent.click(screen.getByRole("button", { name: "view.table" }));
+		expect(mocks.navigate).toHaveBeenCalledWith(expect.objectContaining({ to: "/games", replace: true }));
+		const { search } = mocks.navigate.mock.calls[0][0] as { search: (prev: object) => object };
+		expect(search({})).toEqual({ view: "table" });
 	});
 });
 
@@ -97,8 +126,8 @@ describe("Games table empty collection", () => {
 		mocks.games = [];
 		renderTable();
 
-		expect(screen.getByText("dashboard:empty.title")).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "dashboard:empty.button" })).toBeInTheDocument();
+		expect(screen.getByText("empty.title")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "empty.button" })).toBeInTheDocument();
 		expect(screen.queryByText("games:table.empty")).not.toBeInTheDocument();
 		expect(screen.queryAllByRole("combobox")).toHaveLength(0);
 	});
@@ -110,8 +139,8 @@ describe("Games table load error", () => {
 		mocks.isError = true;
 		renderTable();
 
-		expect(screen.getByText("games:load-error")).toBeInTheDocument();
-		expect(screen.queryByText("dashboard:empty.title")).not.toBeInTheDocument();
+		expect(screen.getByText("load-error")).toBeInTheDocument();
+		expect(screen.queryByText("empty.title")).not.toBeInTheDocument();
 		await userEvent.click(screen.getByRole("button", { name: "common:retry" }));
 		expect(mocks.retry).toHaveBeenCalledOnce();
 	});

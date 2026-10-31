@@ -1,10 +1,13 @@
 import { useTranslation } from "react-i18next";
 import CloseIcon from "@/assets/icons/x.svg?react";
 import { BgtSimpleSelect } from "@/components/BgtForm/BgtSimpleSelect";
-import type { BgtSelectItem, Game } from "@/models";
+import { type BgtSelectItem, type Game, GameState } from "@/models";
+import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
+import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
 
 export type WeightBucket = "light" | "medium" | "heavy";
 export type AgeBucket = "0-6" | "7-9" | "10-12" | "13plus";
+export type GameSort = "title" | "plays" | "last-played" | "added" | "rating" | "weight";
 
 export interface GameFilterState {
 	playerCount?: number;
@@ -14,12 +17,17 @@ export interface GameFilterState {
 }
 
 export interface GamesFilterSearch {
+	view?: "table";
 	q?: string;
 	category?: string;
 	players?: number;
 	playTime?: number;
 	weight?: WeightBucket;
 	age?: AgeBucket;
+	state?: GameState;
+	language?: string;
+	inStock?: boolean;
+	sort?: GameSort;
 }
 
 const ANY = "any";
@@ -65,7 +73,13 @@ export const filterGames = (games: Game[], filters: GameFilterState): Game[] => 
 	});
 };
 
-export type ActiveFilterKey = "category" | "players" | "playTime" | "weight" | "age";
+export type ActiveFilterKey = "category" | "players" | "playTime" | "weight" | "age" | "state" | "language" | "inStock";
+
+const languageLabel = (t: (key: string) => string, language: string, uiLanguage: string) => {
+	if (language === LANGUAGE_NONE) return t("game:language.none");
+	if (language === LANGUAGE_INDEPENDENT) return t("game:language-independent");
+	return getLanguageName(language, uiLanguage);
+};
 
 interface ActiveFilterChipsProps {
 	search: GamesFilterSearch;
@@ -73,9 +87,9 @@ interface ActiveFilterChipsProps {
 }
 
 export const ActiveFilterChips = ({ search, onRemove }: ActiveFilterChipsProps) => {
-	const { t } = useTranslation(["games"]);
+	const { t, i18n } = useTranslation(["games", "game"]);
 
-	const chips: { key: ActiveFilterKey; name: string; value?: string }[] = [
+	const chips: { key: ActiveFilterKey; name?: string; value?: string }[] = [
 		{ key: "category", name: t("games:filters.category"), value: search.category },
 		{
 			key: "players",
@@ -93,6 +107,17 @@ export const ActiveFilterChips = ({ search, onRemove }: ActiveFilterChipsProps) 
 			value: search.weight && t(`games:filters.weight-${search.weight}`),
 		},
 		{ key: "age", name: t("games:filters.age"), value: search.age && t(`games:filters.age-${search.age}`) },
+		{
+			key: "state",
+			name: t("games:columns.state"),
+			value: search.state && t(getItemStateTranslationKey(search.state, false)),
+		},
+		{
+			key: "language",
+			name: t("games:columns.language"),
+			value: search.language && languageLabel(t, search.language, i18n.language),
+		},
+		{ key: "inStock", value: search.inStock ? t("games:filters.in-stock-only") : undefined },
 	];
 
 	return (
@@ -100,7 +125,7 @@ export const ActiveFilterChips = ({ search, onRemove }: ActiveFilterChipsProps) 
 			{chips
 				.filter((chip) => chip.value)
 				.map((chip) => {
-					const label = `${chip.name}: ${chip.value}`;
+					const label = chip.name ? `${chip.name}: ${chip.value}` : (chip.value ?? "");
 					return (
 						<button
 							key={chip.key}
@@ -120,15 +145,13 @@ export const ActiveFilterChips = ({ search, onRemove }: ActiveFilterChipsProps) 
 
 interface Props {
 	categories: string[];
-	category?: string;
-	filters: GameFilterState;
-	onCategoryChange: (category?: string) => void;
-	onChange: (filters: GameFilterState) => void;
+	search: GamesFilterSearch;
+	onChange: (partial: Partial<GamesFilterSearch>) => void;
 }
 
 export const GamesFilters = (props: Props) => {
-	const { categories, category, filters, onCategoryChange, onChange } = props;
-	const { t } = useTranslation(["games"]);
+	const { categories, search, onChange } = props;
+	const { t, i18n } = useTranslation(["games", "game"]);
 
 	const withAny = (items: BgtSelectItem[]): BgtSelectItem[] => [
 		{ value: ANY, label: t("games:filters.any") },
@@ -144,45 +167,60 @@ export const GamesFilters = (props: Props) => {
 	);
 	const weightItems = withAny(WEIGHTS.map((w) => ({ value: w, label: t(`games:filters.weight-${w}`) })));
 	const ageItems = withAny(AGES.map((a) => ({ value: a, label: t(`games:filters.age-${a}`) })));
+	const stateItems = withAny(
+		Object.values(GameState).map((value) => ({ value, label: t(getItemStateTranslationKey(value, false)) })),
+	);
+	const languageItems = withAny(
+		[LANGUAGE_NONE, LANGUAGE_INDEPENDENT, ...COMMON_LANGUAGE_CODES].map((code) => ({
+			value: code,
+			label: languageLabel(t, code, i18n.language),
+		})),
+	);
+
+	const select = (
+		placeholder: string,
+		value: string | number | undefined,
+		items: BgtSelectItem[],
+		onValue: (value: string | number | undefined) => void,
+		hasSearch = false,
+	) => (
+		<BgtSimpleSelect
+			className="w-full md:w-36"
+			placeholder={placeholder}
+			value={value ?? null}
+			items={items}
+			hasSearch={hasSearch}
+			onValueChange={(next) => onValue(next === ANY ? undefined : next)}
+		/>
+	);
 
 	return (
 		<>
-			<BgtSimpleSelect
-				className="w-full md:w-36"
-				placeholder={t("games:filters.category")}
-				value={category ?? null}
-				items={categoryItems}
-				hasSearch
-				onValueChange={(value) => onCategoryChange(value === ANY ? undefined : String(value))}
-			/>
-			<BgtSimpleSelect
-				className="w-full md:w-36"
-				placeholder={t("games:filters.player-count")}
-				value={filters.playerCount ?? null}
-				items={playerItems}
-				onValueChange={(value) => onChange({ ...filters, playerCount: value === ANY ? undefined : Number(value) })}
-			/>
-			<BgtSimpleSelect
-				className="w-full md:w-36"
-				placeholder={t("games:filters.play-time")}
-				value={filters.maxPlayTime ?? null}
-				items={playTimeItems}
-				onValueChange={(value) => onChange({ ...filters, maxPlayTime: value === ANY ? undefined : Number(value) })}
-			/>
-			<BgtSimpleSelect
-				className="w-full md:w-36"
-				placeholder={t("games:filters.weight")}
-				value={filters.weight ?? null}
-				items={weightItems}
-				onValueChange={(value) => onChange({ ...filters, weight: value === ANY ? undefined : (value as WeightBucket) })}
-			/>
-			<BgtSimpleSelect
-				className="w-full md:w-36"
-				placeholder={t("games:filters.age")}
-				value={filters.age ?? null}
-				items={ageItems}
-				onValueChange={(value) => onChange({ ...filters, age: value === ANY ? undefined : (value as AgeBucket) })}
-			/>
+			{select(
+				t("games:filters.category"),
+				search.category,
+				categoryItems,
+				(value) => onChange({ category: value === undefined ? undefined : String(value) }),
+				true,
+			)}
+			{select(t("games:filters.player-count"), search.players, playerItems, (value) =>
+				onChange({ players: value === undefined ? undefined : Number(value) }),
+			)}
+			{select(t("games:filters.play-time"), search.playTime, playTimeItems, (value) =>
+				onChange({ playTime: value === undefined ? undefined : Number(value) }),
+			)}
+			{select(t("games:filters.weight"), search.weight, weightItems, (value) =>
+				onChange({ weight: value as WeightBucket | undefined }),
+			)}
+			{select(t("games:filters.age"), search.age, ageItems, (value) =>
+				onChange({ age: value as AgeBucket | undefined }),
+			)}
+			{select(t("games:columns.state"), search.state, stateItems, (value) =>
+				onChange({ state: value as GameState | undefined }),
+			)}
+			{select(t("games:columns.language"), search.language, languageItems, (value) =>
+				onChange({ language: value === undefined ? undefined : String(value) }),
+			)}
 		</>
 	);
 };

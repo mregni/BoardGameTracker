@@ -13,10 +13,11 @@ interface Props {
 	link: string;
 	isLoaned?: boolean;
 	badge?: ReactNode;
+	meta?: ReactNode;
 }
 
 export const BgtImageCard = (props: Props) => {
-	const { title, image, state, link, isLoaned = false, badge } = props;
+	const { title, image, state, link, isLoaned = false, badge, meta } = props;
 	const { t } = useTranslation();
 
 	return (
@@ -27,17 +28,20 @@ export const BgtImageCard = (props: Props) => {
 					{badge && <div className="absolute top-2 right-2">{badge}</div>}
 				</div>
 				<div className="flex flex-row justify-between items-end">
-					<div className="flex flex-col items-start justify-start">
-						{state !== null && state !== undefined && (
-							<BgtText
-								size="1"
-								className="line-clamp-1 w-full"
-								weight="medium"
-								color={getColorFromGameState(state, isLoaned)}
-							>
-								{t(getItemStateTranslationKey(state, isLoaned))}
-							</BgtText>
-						)}
+					<div className="flex flex-col items-start justify-start w-full">
+						<div className="flex justify-between items-center gap-2 w-full">
+							{state !== null && state !== undefined && (
+								<BgtText
+									size="1"
+									className="line-clamp-1"
+									weight="medium"
+									color={getColorFromGameState(state, isLoaned)}
+								>
+									{t(getItemStateTranslationKey(state, isLoaned))}
+								</BgtText>
+							)}
+							{meta}
+						</div>
 						<BgtText size="4" className="line-clamp-1 w-full" weight="medium">
 							{title}
 						</BgtText>

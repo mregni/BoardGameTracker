@@ -60,7 +60,7 @@ export const Route = createFileRoute("/game-nights/")({
 function RouteComponent() {
 	const { t } = useTranslation("game-nights");
 	const { canWrite, isAdmin } = usePermissions();
-	const navigate = useNavigate();
+	const navigate = useNavigate({ from: Route.fullPath });
 	const search = Route.useSearch();
 	const view: GameNightsView = search.view ?? "nights";
 	const period = search.period ?? GameNightStatisticsPeriod.AllTime;
