@@ -90,7 +90,7 @@
 
 :root {
 	--default-font-family: "Chakra Petch", sans-serif;
-	--bottom-nav-h: calc(5rem + env(safe-area-inset-bottom));
+	--bottom-nav-h: calc(4rem + env(safe-area-inset-bottom));
 	--form-action-bar-h: calc(4rem + env(safe-area-inset-bottom));
 	color-scheme: dark;
 }

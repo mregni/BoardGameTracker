@@ -21,8 +21,8 @@ export const Sidebar = () => {
 
 	return (
 		<div className="hidden md:block">
-			<aside className="w-64 bg-background h-full border-r border-white/10 flex flex-col gap-2">
-				<div className="pt-4">
+			<aside className="w-56 bg-background h-full border-r border-white/10 flex flex-col gap-1">
+				<div className="pt-2">
 					<BgtMenuLogo />
 				</div>
 
@@ -32,7 +32,7 @@ export const Sidebar = () => {
 							<BgtAvatar image={user.profileImage} title={user.displayName || user.username} colorKey={user.id} />
 						</div>
 						<div className="flex-1 min-w-0">
-							<div className="text-xs text-white/60 truncate">{user.displayName || user.username}</div>
+							<div className="text-sm font-medium text-white/80 truncate">{user.displayName || user.username}</div>
 						</div>
 						<BgtIconButton
 							icon={<LogOut className="size-4" />}
