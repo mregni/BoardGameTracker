@@ -307,17 +307,17 @@ export const GamesTableView = (props: Props) => {
 						</p>
 					)}
 					{showLivePrices && (
-						<div className="flex flex-col md:flex-row gap-2 md:ml-auto">
+						<div className="flex gap-2 md:ml-auto">
 							<BgtButton
 								variant={inStock ? "primary" : "cancel"}
-								className="w-full md:w-auto"
+								className="flex-1 md:flex-none"
 								onClick={() => onInStockChange(!inStock)}
 							>
 								{t("games:filters.in-stock-only")}
 							</BgtButton>
 							<BgtButton
 								variant="cancel"
-								className="w-full md:w-auto"
+								className="flex-1 md:flex-none"
 								disabled={refreshPricesMutation.isPending}
 								onClick={() => refreshPricesMutation.mutate()}
 							>

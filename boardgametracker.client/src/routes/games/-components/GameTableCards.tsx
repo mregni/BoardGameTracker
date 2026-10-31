@@ -93,65 +93,71 @@ export const GameTableCards = (props: Props) => {
 							<span className="font-semibold truncate">{game.title}</span>
 							{priceMap && game.changeDetectionWatchId && <TrackedPriceIcon livePrice={livePrice} />}
 						</Link>
-						<Row label={t("games:columns.players")}>{formatRange(game.minPlayers, game.maxPlayers)}</Row>
-						<Row label={t("games:columns.play-time")}>{formatDuration(game.minPlayTime, game.maxPlayTime)}</Row>
-						<Row label={t("games:columns.weight")}>
-							{game.weight != null && game.weight > 0 ? formatDecimal(game.weight, uiLanguage) : "-"}
-						</Row>
-						<Row label={t("games:columns.rating")}>{formatDecimal(game.rating, uiLanguage)}</Row>
-						<Row label={t("games:columns.language")}>
-							<EditableSelectCell
-								readOnly={readOnly}
-								value={game.language ?? LANGUAGE_NONE}
-								emptyValue={LANGUAGE_NONE}
-								items={languageItems}
-								hasSearch
-								editing={isEditing(game.id, "language")}
-								onStartEdit={() => startEdit(game.id, "language")}
-								onStopEdit={stopEdit}
-								onChange={(language) => updateGame({ ...game, language: language === LANGUAGE_NONE ? null : language })}
-								align="right"
-								size="sm"
-							/>
-						</Row>
-						<Row label={t("games:columns.state")}>
-							<EditableSelectCell
-								readOnly={readOnly}
-								value={game.state}
-								items={stateItems}
-								editing={isEditing(game.id, "state")}
-								onStartEdit={() => startEdit(game.id, "state")}
-								onStopEdit={stopEdit}
-								onChange={(state) => updateGame(withStateChange(game, state as GameState, livePrice))}
-								align="right"
-								size="sm"
-							/>
-						</Row>
-						{priceMap && (
-							<Row label={t("games:columns.current-price")}>
-								<LivePrice livePrice={livePrice} currency={currency} uiLanguage={uiLanguage} />
+						<div className="grid grid-cols-2 gap-x-4">
+							<Row label={t("games:columns.players")}>{formatRange(game.minPlayers, game.maxPlayers)}</Row>
+							<Row label={t("games:columns.play-time")}>{formatDuration(game.minPlayTime, game.maxPlayTime)}</Row>
+							<Row label={t("games:columns.weight")}>
+								{game.weight != null && game.weight > 0 ? formatDecimal(game.weight, uiLanguage) : "-"}
 							</Row>
-						)}
-						<Row label={t("games:columns.added")}>
-							{game.additionDate && dateFormat ? toDisplay(game.additionDate, dateFormat, uiLanguage ?? "en-US") : "-"}
-						</Row>
-						<Row label={t("games:columns.price")}>
-							<EditableNumberCell
-								readOnly={readOnly}
-								value={game.buyingPrice}
-								min={0}
-								prefix={currency}
-								format={(price) => formatPriceOrEmpty(price, currency, uiLanguage)}
-								editing={isEditing(game.id, "buyingPrice")}
-								onStartEdit={() => startEdit(game.id, "buyingPrice")}
-								onStopEdit={stopEdit}
-								onChange={(buyingPrice) => updateGame({ ...game, buyingPrice })}
-								ariaLabel={`${t("games:columns.price")}: ${game.title}`}
-								align="right"
-								size="sm"
-								className="h-9 w-full text-sm"
-							/>
-						</Row>
+							<Row label={t("games:columns.rating")}>{formatDecimal(game.rating, uiLanguage)}</Row>
+							<Row label={t("games:columns.language")}>
+								<EditableSelectCell
+									readOnly={readOnly}
+									value={game.language ?? LANGUAGE_NONE}
+									emptyValue={LANGUAGE_NONE}
+									items={languageItems}
+									hasSearch
+									editing={isEditing(game.id, "language")}
+									onStartEdit={() => startEdit(game.id, "language")}
+									onStopEdit={stopEdit}
+									onChange={(language) =>
+										updateGame({ ...game, language: language === LANGUAGE_NONE ? null : language })
+									}
+									align="right"
+									size="sm"
+								/>
+							</Row>
+							<Row label={t("games:columns.state")}>
+								<EditableSelectCell
+									readOnly={readOnly}
+									value={game.state}
+									items={stateItems}
+									editing={isEditing(game.id, "state")}
+									onStartEdit={() => startEdit(game.id, "state")}
+									onStopEdit={stopEdit}
+									onChange={(state) => updateGame(withStateChange(game, state as GameState, livePrice))}
+									align="right"
+									size="sm"
+								/>
+							</Row>
+							{priceMap && (
+								<Row label={t("games:columns.current-price")}>
+									<LivePrice livePrice={livePrice} currency={currency} uiLanguage={uiLanguage} />
+								</Row>
+							)}
+							<Row label={t("games:columns.added")}>
+								{game.additionDate && dateFormat
+									? toDisplay(game.additionDate, dateFormat, uiLanguage ?? "en-US")
+									: "-"}
+							</Row>
+							<Row label={t("games:columns.price")}>
+								<EditableNumberCell
+									readOnly={readOnly}
+									value={game.buyingPrice}
+									min={0}
+									prefix={currency}
+									format={(price) => formatPriceOrEmpty(price, currency, uiLanguage)}
+									editing={isEditing(game.id, "buyingPrice")}
+									onStartEdit={() => startEdit(game.id, "buyingPrice")}
+									onStopEdit={stopEdit}
+									onChange={(buyingPrice) => updateGame({ ...game, buyingPrice })}
+									ariaLabel={`${t("games:columns.price")}: ${game.title}`}
+									align="right"
+									size="sm"
+									className="h-9 w-full text-sm"
+								/>
+							</Row>
+						</div>
 						{(shopUrl || game.bggId) && (
 							<div className="flex justify-end gap-4 pt-1">
 								{shopUrl && (

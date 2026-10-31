@@ -151,22 +151,24 @@ function RouteComponent() {
 			></BgtPageHeader>
 			<BgtPageContent>
 				<div className="flex flex-col gap-2">
-					<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
-					<button
-						type="button"
-						onClick={() => setShowFilters((value) => !value)}
-						aria-expanded={showFilters}
-						aria-controls="games-filters"
-						className="md:hidden flex items-center justify-center gap-1 w-full min-h-11 text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
-					>
-						{showFilters ? t("filters.show-less") : t("filters.show-more")}
-						{!showFilters && activeFilterCount > 0 && ` · ${activeFilterCount}`}
-						{showFilters ? <CaretUpIcon className="size-4" /> : <CaretDownIcon className="size-4" />}
-					</button>
+					<div className="flex items-center gap-2">
+						<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
+						<button
+							type="button"
+							onClick={() => setShowFilters((value) => !value)}
+							aria-expanded={showFilters}
+							aria-controls="games-filters"
+							className="md:hidden flex shrink-0 items-center justify-center gap-1 px-3 min-h-11 rounded-lg border border-primary/30 bg-primary/10 text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
+						>
+							{showFilters ? t("filters.show-less") : t("filters.show-more")}
+							{!showFilters && activeFilterCount > 0 && ` · ${activeFilterCount}`}
+							{showFilters ? <CaretUpIcon className="size-4" /> : <CaretDownIcon className="size-4" />}
+						</button>
+					</div>
 					<div
 						className={cx(
 							"grid w-full transition-[grid-template-rows] duration-300 ease-in-out md:block",
-							showFilters ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+							showFilters ? "grid-rows-[1fr]" : "grid-rows-[0fr] -mt-2 md:mt-0",
 						)}
 					>
 						<div id="games-filters" inert={filtersCollapsed} className="overflow-hidden md:overflow-visible">
