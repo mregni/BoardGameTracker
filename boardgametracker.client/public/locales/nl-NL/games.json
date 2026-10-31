@@ -119,6 +119,13 @@
     "spin": "Draai het wiel",
     "candidates_one": "{{count}} spel op het wiel",
     "candidates_other": "{{count}} spellen op het wiel",
-    "none": "Geen enkel spel dat je bezit past bij deze keuzes. Maak er een ruimer."
+    "none": "Geen enkel spel dat je bezit past bij deze keuzes. Maak er een ruimer.",
+    "tonight": "Vanavond spelen we",
+    "players": "{{range}} spelers",
+    "log": "Log dit spel",
+    "exclude": "Niet deze",
+    "candidates-capped": "{{count}} van {{total}} spellen op het wiel",
+    "restore_one": "{{count}} uitgesloten spel terugzetten",
+    "restore_other": "{{count}} uitgesloten spellen terugzetten"
   }
 }

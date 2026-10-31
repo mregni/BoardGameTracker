@@ -119,6 +119,13 @@
     "spin": "Spin the wheel",
     "candidates_one": "{{count}} game on the wheel",
     "candidates_other": "{{count}} games on the wheel",
-    "none": "No game you own fits these choices. Loosen one of them."
+    "none": "No game you own fits these choices. Loosen one of them.",
+    "tonight": "Tonight we play",
+    "players": "{{range}} players",
+    "log": "Log this play",
+    "exclude": "Not this one",
+    "candidates-capped": "{{count}} of {{total}} games on the wheel",
+    "restore_one": "Put {{count}} excluded game back",
+    "restore_other": "Put {{count}} excluded games back"
   }
 }
