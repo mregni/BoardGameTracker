@@ -157,7 +157,7 @@ function RouteComponent() {
 								</div>
 								{!hasPlays && (
 									<div className="max-lg:order-4">
-										<GameDetailEmptyState wanted={game.state === GameState.Wanted} />
+										<GameDetailEmptyState gameId={game.id} wanted={game.state === GameState.Wanted} />
 									</div>
 								)}
 								{hasPlays && (

@@ -3,7 +3,7 @@
   "mark-owned": "Markeren als in bezit",
   "sessions": "Sessies bekijken",
   "no-sessions": {
-    "title": "Nog geen sessies geregistreerd",
+    "title": "Nog niet op tafel geweest",
     "description": "Registreer een sessie van dit spel om de statistieken te zien.",
     "not-played": "Nog niet gespeeld"
   },
@@ -229,5 +229,8 @@
       "label": "Nieuwe sessies starten coöperatief"
     },
     "hint": "Geldt enkel voor nieuwe sessies; gelogde sessies blijven zoals ze gespeeld zijn."
+  },
+  "first-play": {
+    "action": "Log het eerste spel"
   }
 }

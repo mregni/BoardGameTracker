@@ -107,5 +107,8 @@
     "rating": "Beoordeling",
     "weight": "Gewicht"
   },
-  "never-played": "Nog nooit gespeeld"
+  "never-played": "Nog nooit gespeeld",
+  "pick": {
+    "button": "Kies voor ons"
+  }
 }

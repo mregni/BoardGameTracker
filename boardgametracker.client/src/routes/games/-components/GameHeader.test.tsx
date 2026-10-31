@@ -4,6 +4,14 @@ import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { GameDetailEmptyState } from "./GameDetailEmptyState";
 import { GameHeader } from "./GameHeader";
 
+vi.mock("@tanstack/react-router", () => ({
+	Link: ({ children }: { children: React.ReactNode }) => <a href="/sessions/new/7">{children}</a>,
+}));
+
+vi.mock("@/hooks/usePermissions", () => ({
+	usePermissions: () => ({ canWrite: true }),
+}));
+
 const renderHeader = (state: GameState, onMarkOwned?: () => void) => {
 	const onAddSession = vi.fn();
 	renderWithTheme(
@@ -45,16 +53,18 @@ describe("GameHeader", () => {
 
 describe("GameDetailEmptyState", () => {
 	it("invites a session for a game without plays", () => {
-		renderWithTheme(<GameDetailEmptyState />);
+		renderWithTheme(<GameDetailEmptyState gameId={7} />);
 
 		expect(screen.getByText("no-sessions.title")).toBeInTheDocument();
 		expect(screen.getByText("no-sessions.description")).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: "first-play.action" })).toBeInTheDocument();
 	});
 
 	it("only says not played yet for a wanted game", () => {
-		renderWithTheme(<GameDetailEmptyState wanted />);
+		renderWithTheme(<GameDetailEmptyState gameId={7} wanted />);
 
 		expect(screen.getByText("no-sessions.not-played")).toBeInTheDocument();
 		expect(screen.queryByText("no-sessions.description")).not.toBeInTheDocument();
+		expect(screen.queryByRole("link")).not.toBeInTheDocument();
 	});
 });

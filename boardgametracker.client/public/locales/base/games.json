@@ -107,5 +107,8 @@
     "rating": "Rating",
     "weight": "Weight"
   },
-  "never-played": "Never played"
+  "never-played": "Never played",
+  "pick": {
+    "button": "Pick for us"
+  }
 }
