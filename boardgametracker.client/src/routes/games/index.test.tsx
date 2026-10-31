@@ -192,6 +192,16 @@ describe("Games table price tiles", () => {
 	});
 });
 
+describe("Games table sorting", () => {
+	it("leaves sorting to the page sort control instead of the column headers", () => {
+		mocks.hideCards = true;
+		renderTable();
+
+		const headers = within(screen.getByRole("table")).getAllByRole("columnheader");
+		expect(headers.some((header) => within(header).queryByRole("button"))).toBe(false);
+	});
+});
+
 describe("Games table inline editing", () => {
 	it("opens the price editor of only the clicked row and closes it again", async () => {
 		const user = userEvent.setup();

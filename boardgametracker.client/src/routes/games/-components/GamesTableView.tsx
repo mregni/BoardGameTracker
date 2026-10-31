@@ -332,6 +332,7 @@ export const GamesTableView = (props: Props) => {
 					columns={columns}
 					data={games}
 					meta={tableMeta}
+					enableSorting={false}
 					isLoading={false}
 					noDataMessage={t("games:table.empty")}
 					widths={columnWidths}

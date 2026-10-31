@@ -42,6 +42,12 @@ describe("BgtImageCard", () => {
 			expect(screen.getByRole("link").textContent?.startsWith("Catan")).toBe(true);
 			expect(screen.getByRole("link").querySelector("img")).toHaveAttribute("alt", "");
 		});
+
+		it("reads the title before the overlay badge", () => {
+			renderWithTheme(<BgtImageCard {...defaultProps} badge={<span>In stock</span>} />);
+
+			expect(screen.getByRole("link").textContent).toMatch(/^Catan.*In stock$/);
+		});
 	});
 
 	describe("Image Handling", () => {

@@ -25,7 +25,6 @@ export const BgtImageCard = (props: Props) => {
 			<div className="bgt-image-card flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1">
 				<div className="aspect-square rounded-lg overflow-hidden transition-all duration-200 relative">
 					<BgtFallbackImage title={title} image={image} lazy decorative />
-					{badge && <div className="absolute top-2 right-2">{badge}</div>}
 				</div>
 				<div className="flex flex-row justify-between items-end">
 					<div className="flex flex-col-reverse items-start justify-start w-full">
@@ -47,6 +46,7 @@ export const BgtImageCard = (props: Props) => {
 						</div>
 					</div>
 				</div>
+				{badge && <div className="absolute top-2 right-2">{badge}</div>}
 			</div>
 		</Link>
 	);
