@@ -66,7 +66,7 @@ function RouteComponent() {
 	const { t, i18n } = useTranslation(["games", "game", "common", "dashboard"]);
 	const navigate = useNavigate();
 	const { q, state, language, inStock } = Route.useSearch();
-	const { games, isLoading } = useGamesData();
+	const { games, isLoading, isError, retry } = useGamesData();
 	const { canWrite } = usePermissions();
 	const { updateGame } = useInlineGameUpdate();
 	const settingsQuery = useQuery(getSettings());
@@ -361,6 +361,17 @@ function RouteComponent() {
 	);
 
 	const columnWidths: (string | null)[] = [null, null, null, null, null, "w-52", "w-52"];
+
+	if (isError) {
+		return (
+			<BgtEmptyPage
+				header={t("games:title")}
+				icon={GameIcon}
+				title={t("games:load-error")}
+				action={{ label: t("common:retry"), onClick: () => retry() }}
+			/>
+		);
+	}
 
 	if (!isLoading && games.length === 0) {
 		return (

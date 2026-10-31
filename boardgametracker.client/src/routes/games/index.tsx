@@ -10,6 +10,7 @@ import BgtButton from "@/components/BgtButton/BgtButton";
 import { SearchInputField } from "@/components/BgtForm";
 import { BgtImageCard } from "@/components/BgtImageCard/BgtImageCard";
 import { BgtCardList } from "@/components/BgtLayout/BgtCardList";
+import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -39,7 +40,7 @@ function RouteComponent() {
 	const { q, category, players, playTime, weight, age } = search;
 	const { t } = useTranslation(["games", "common"]);
 	const navigate = useNavigate();
-	const { games, isLoading } = useGamesData();
+	const { games, isLoading, isError, retry } = useGamesData();
 	const { canWrite } = usePermissions();
 	const [showFilters, setShowFilters] = useState(false);
 
@@ -84,6 +85,17 @@ function RouteComponent() {
 	);
 
 	if (isLoading) return null;
+
+	if (isError) {
+		return (
+			<BgtEmptyPage
+				header={t("title")}
+				icon={Game}
+				title={t("load-error")}
+				action={{ label: t("common:retry"), onClick: () => retry() }}
+			/>
+		);
+	}
 
 	if (games.length === 0) {
 		return <NoGamesEmptyPage header={t("title")} icon={Game} />;

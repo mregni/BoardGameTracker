@@ -29,6 +29,7 @@
     "failed-unknown": "Importeren van spellen van BoardGameGeek mislukt, bekijk de logs voor meer details."
   },
   "title": "Spellen",
+  "load-error": "Je spellen konden niet geladen worden. Controleer of de server bereikbaar is en probeer opnieuw.",
   "new": "Spel toevoegen",
   "count_other": "{{count}} spellen",
   "count_one": "{{count}} spel",

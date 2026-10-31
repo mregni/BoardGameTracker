@@ -29,6 +29,7 @@
     "failed-unknown": "Error al importar juegos de BoardGameGeek, revisa los registros para más detalles."
   },
   "title": "Juegos",
+  "load-error": "No se pudieron cargar tus juegos. Comprueba que el servidor está disponible e inténtalo de nuevo.",
   "new": "Añadir juego",
   "count_other": "{{count}} juegos",
   "count_one": "{{count}} juego",

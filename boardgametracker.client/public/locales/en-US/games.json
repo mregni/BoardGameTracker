@@ -29,6 +29,7 @@
     "failed-unknown": "Failed importing games from BoardGameGeek, check logs for more details."
   },
   "title": "Games",
+  "load-error": "Your games could not be loaded. Check that the server is reachable and try again.",
   "new": "Add game",
   "count_other": "{{count}} games",
   "count_one": "{{count}} game",

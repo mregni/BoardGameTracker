@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => ({
 	captured: {} as { config: { component: FC } },
 	games: [] as unknown[],
 	hideCards: false,
+	isError: false,
+	retry: vi.fn(),
 }));
 
 vi.mock("./-components/GameTableCards", async (importOriginal) => {
@@ -32,7 +34,7 @@ vi.mock("@/hooks/usePermissions", () => ({
 }));
 
 vi.mock("./-hooks/useGamesData", () => ({
-	useGamesData: () => ({ games: mocks.games, isLoading: false }),
+	useGamesData: () => ({ games: mocks.games, isLoading: false, isError: mocks.isError, retry: mocks.retry }),
 }));
 
 vi.mock("./-hooks/useInlineGameUpdate", () => ({
@@ -74,6 +76,8 @@ const renderTable = () => {
 beforeEach(() => {
 	mocks.games = [game(1, null)];
 	mocks.hideCards = false;
+	mocks.isError = false;
+	mocks.retry.mockReset();
 });
 
 describe("Games table filters", () => {
@@ -97,6 +101,19 @@ describe("Games table empty collection", () => {
 		expect(screen.getByRole("button", { name: "dashboard:empty.button" })).toBeInTheDocument();
 		expect(screen.queryByText("games:table.empty")).not.toBeInTheDocument();
 		expect(screen.queryAllByRole("combobox")).toHaveLength(0);
+	});
+});
+
+describe("Games table load error", () => {
+	it("shows a retry instead of the empty collection when the games fail to load", async () => {
+		mocks.games = [];
+		mocks.isError = true;
+		renderTable();
+
+		expect(screen.getByText("games:load-error")).toBeInTheDocument();
+		expect(screen.queryByText("dashboard:empty.title")).not.toBeInTheDocument();
+		await userEvent.click(screen.getByRole("button", { name: "common:retry" }));
+		expect(mocks.retry).toHaveBeenCalledOnce();
 	});
 });
 
