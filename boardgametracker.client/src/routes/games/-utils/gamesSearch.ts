@@ -36,6 +36,12 @@ export const parseGamesSearch = (search: Record<string, unknown>): GamesFilterSe
 	};
 };
 
+export const parseIds = (value: unknown): number[] | undefined => {
+	if (!Array.isArray(value)) return undefined;
+	const ids = value.map(Number).filter((id) => Number.isInteger(id) && id > 0);
+	return ids.length > 0 ? ids : undefined;
+};
+
 export const withoutUndefined = <T extends object>(value: T): T =>
 	Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== undefined)) as T;
 

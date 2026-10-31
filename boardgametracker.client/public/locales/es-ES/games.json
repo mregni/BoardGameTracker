@@ -119,6 +119,13 @@
     "spin": "Girar la ruleta",
     "candidates_one": "{{count}} juego en la ruleta",
     "candidates_other": "{{count}} juegos en la ruleta",
-    "none": "Ningún juego tuyo encaja con estas opciones. Amplía alguna."
+    "none": "Ningún juego tuyo encaja con estas opciones. Amplía alguna.",
+    "tonight": "Esta noche jugamos",
+    "players": "{{range}} jugadores",
+    "log": "Registrar esta partida",
+    "exclude": "Este no",
+    "candidates-capped": "{{count}} de {{total}} juegos en la ruleta",
+    "restore_one": "Devolver {{count}} juego excluido",
+    "restore_other": "Devolver {{count}} juegos excluidos"
   }
 }

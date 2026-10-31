@@ -5,6 +5,7 @@ import {
 	hasActiveFilters,
 	ownedPriceStats,
 	parseGamesSearch,
+	parseIds,
 	pickWheelGames,
 	sortGames,
 } from "./gamesSearch";
@@ -117,5 +118,13 @@ describe("pickWheelGames", () => {
 		const games = Array.from({ length: 15 }, (_, i) => candidate(`Game ${i}`, GameState.Owned));
 
 		expect(pickWheelGames(games, 10)).toHaveLength(10);
+	});
+});
+
+describe("parseIds", () => {
+	it("keeps positive whole ids and drops everything else", () => {
+		expect(parseIds([3, "7", -1, 2.5, "x"])).toEqual([3, 7]);
+		expect(parseIds("3,7")).toBeUndefined();
+		expect(parseIds([])).toBeUndefined();
 	});
 });
