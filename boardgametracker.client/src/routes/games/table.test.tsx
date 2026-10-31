@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GameState } from "@/models";
-import { fireEvent, renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
+import { fireEvent, renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
 
 const mocks = vi.hoisted(() => ({
 	captured: {} as { config: { component: FC } },
@@ -141,6 +141,6 @@ describe("Games table inline editing", () => {
 
 		await user.keyboard("{Escape}");
 
-		expect(priceCell(1).queryByRole("textbox")).not.toBeInTheDocument();
+		await waitFor(() => expect(priceCell(1).queryByRole("textbox")).not.toBeInTheDocument());
 	});
 });
