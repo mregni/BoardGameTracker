@@ -23,7 +23,7 @@ export const BgtImageCard = (props: Props) => {
 	return (
 		<Link to={link} from="/" className="[content-visibility:auto] [contain-intrinsic-size:auto_280px]">
 			<div className="bgt-image-card flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1">
-				<div className="aspect-square rounded-lg overflow-hidden transition-all duration-200 relative">
+				<div className="bgt-image-card-cover aspect-square rounded-lg overflow-hidden transition-all duration-200 relative">
 					<BgtFallbackImage title={title} image={image} lazy decorative />
 				</div>
 				<div className="flex flex-row justify-between items-end">
@@ -35,7 +35,7 @@ export const BgtImageCard = (props: Props) => {
 							{state !== null && state !== undefined && (
 								<BgtText
 									size="1"
-									className="line-clamp-1"
+									className="line-clamp-1 shrink-0"
 									weight="medium"
 									color={getColorFromGameState(state, isLoaned)}
 								>

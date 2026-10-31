@@ -16,8 +16,10 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePermissions } from "@/hooks/usePermissions";
+import { GameState } from "@/models";
 import { getGames, getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
+import { toRelative } from "@/utils/dateUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { NoGamesEmptyPage } from "../-components/NoGamesEmptyPage";
 import {
@@ -80,6 +82,7 @@ function RouteComponent() {
 
 	const settingsQuery = useQuery(getSettings());
 	const showLivePrices = settingsQuery.data?.changeDetectionStatus?.isConfigured ?? false;
+	const uiLanguage = settingsQuery.data?.uiLanguage ?? "en-US";
 	const trackedPricesQuery = useQuery({ ...getTrackedPrices(), enabled: showLivePrices });
 	const priceMap = useMemo(
 		() => new Map((trackedPricesQuery.data ?? []).map((price) => [price.gameId, price])),
@@ -230,15 +233,20 @@ function RouteComponent() {
 								key={x.id}
 								title={x.title}
 								image={x.image}
-								state={x.state}
+								state={x.state === GameState.Owned && !x.isLoaned ? undefined : x.state}
 								isLoaned={x.isLoaned}
 								link={`/games/${x.id}`}
 								meta={
 									x.playCount > 0 ? (
-										<BgtText size="1" className="text-card-value shrink-0">
+										<BgtText size="1" className="text-card-value truncate">
 											{t("plays", { count: x.playCount })}
+											{x.lastPlayed && ` · ${toRelative(x.lastPlayed, uiLanguage)}`}
 										</BgtText>
-									) : undefined
+									) : (
+										<BgtText size="1" color="white" opacity={50} className="truncate">
+											{t("never-played")}
+										</BgtText>
+									)
 								}
 								badge={
 									x.changeDetectionWatchId ? (

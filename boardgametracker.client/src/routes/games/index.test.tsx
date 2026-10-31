@@ -129,6 +129,7 @@ describe("Games grid", () => {
 		const titles = screen.getAllByText(/^Game \d$/).map((title) => title.textContent);
 		expect(titles).toEqual(["Game 2", "Game 1"]);
 		expect(screen.getByText("plays")).toBeInTheDocument();
+		expect(screen.getByText("never-played")).toBeInTheDocument();
 	});
 
 	it("switches to the table view through the URL", async () => {
