@@ -65,6 +65,13 @@ export const sortGames = (games: Game[], sort: GameSort | undefined): Game[] => 
 	return [...games].sort((a, b) => primary(a, b) || byTitle(a, b));
 };
 
+export const isPlayable = (game: Game): boolean => game.state === GameState.Owned && !game.isLoaned;
+
+export const pickPlayableGame = (games: Game[], random = Math.random): Game | undefined => {
+	const playable = games.filter(isPlayable);
+	return playable[Math.floor(random() * playable.length)];
+};
+
 export const ownedPriceStats = (games: Game[]) => {
 	const priced = games.filter((game) => game.state === GameState.Owned && (game.buyingPrice ?? 0) > 0);
 	const total = priced.reduce((sum, game) => sum + (game.buyingPrice ?? 0), 0);

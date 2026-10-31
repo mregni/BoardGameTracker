@@ -107,5 +107,8 @@
     "rating": "Valoración",
     "weight": "Peso"
   },
-  "never-played": "Nunca jugado"
+  "never-played": "Nunca jugado",
+  "pick": {
+    "button": "Elige por nosotros"
+  }
 }

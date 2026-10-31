@@ -37,7 +37,9 @@ import {
 	filterByTitle,
 	GAME_SORTS,
 	hasActiveFilters,
+	isPlayable,
 	parseGamesSearch,
+	pickPlayableGame,
 	sortGames,
 	withoutUndefined,
 } from "./-utils/gamesSearch";
@@ -103,6 +105,11 @@ function RouteComponent() {
 	const activeFilterCount = [category, players, playTime, weight, age, state, language, inStock].filter(
 		(value) => value !== undefined,
 	).length;
+
+	const pickGame = () => {
+		const game = pickPlayableGame(filteredGames);
+		if (game) navigate({ to: "/games/$gameId", params: { gameId: game.id } });
+	};
 
 	const clearFilters = () => {
 		setFilterValue("");
@@ -202,6 +209,15 @@ function RouteComponent() {
 						)}
 					</div>
 					<div className="flex items-center gap-2 w-full md:w-auto">
+						{filteredGames.some(isPlayable) && (
+							<button
+								type="button"
+								onClick={pickGame}
+								className="shrink-0 px-3 min-h-11 md:min-h-9 rounded-lg border border-primary/30 bg-primary/10 text-sm font-semibold text-primary-text hover:bg-primary/20 cursor-pointer"
+							>
+								{t("pick.button")}
+							</button>
+						)}
 						<BgtSimpleSelect
 							className="flex-1 md:flex-none md:w-44"
 							aria-label={t("sort.label")}

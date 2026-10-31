@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { type Game, GameState } from "@/models";
-import { filterByTitle, hasActiveFilters, ownedPriceStats, parseGamesSearch, sortGames } from "./gamesSearch";
+import {
+	filterByTitle,
+	hasActiveFilters,
+	ownedPriceStats,
+	parseGamesSearch,
+	pickPlayableGame,
+	sortGames,
+} from "./gamesSearch";
 
 const game = (title: string, state: GameState, buyingPrice: number | null) =>
 	({ title, state, buyingPrice }) as unknown as Game;
@@ -83,5 +90,26 @@ describe("ownedPriceStats", () => {
 		]);
 
 		expect(stats).toEqual({ total: 60, mean: 30, pricedCount: 2 });
+	});
+});
+
+describe("pickPlayableGame", () => {
+	const candidate = (title: string, state: GameState, isLoaned = false) =>
+		({ title, state, isLoaned }) as unknown as Game;
+
+	it("only picks owned games that are not lent out", () => {
+		const games = [
+			candidate("Wanted", GameState.Wanted),
+			candidate("Lent", GameState.Owned, true),
+			candidate("Azul", GameState.Owned),
+			candidate("Catan", GameState.Owned),
+		];
+
+		expect(pickPlayableGame(games, () => 0)?.title).toBe("Azul");
+		expect(pickPlayableGame(games, () => 0.99)?.title).toBe("Catan");
+	});
+
+	it("returns nothing when no game can be played", () => {
+		expect(pickPlayableGame([candidate("Lent", GameState.Owned, true)])).toBeUndefined();
 	});
 });

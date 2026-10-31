@@ -3,7 +3,7 @@
   "mark-owned": "Marcar como en propiedad",
   "sessions": "Ver partidas",
   "no-sessions": {
-    "title": "Aún no hay partidas registradas",
+    "title": "Aún no ha llegado a la mesa",
     "description": "Registra una partida de este juego para ver sus estadísticas.",
     "not-played": "Aún sin jugar"
   },
@@ -229,5 +229,8 @@
       "label": "Las sesiones nuevas empiezan en cooperativo"
     },
     "hint": "Solo afecta a las sesiones nuevas; las registradas se quedan como se jugaron."
+  },
+  "first-play": {
+    "action": "Registra la primera partida"
   }
 }
