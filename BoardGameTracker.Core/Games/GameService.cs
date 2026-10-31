@@ -64,6 +64,11 @@ public class GameService : IGameService
         return _gameRepository.GetGamesOverviewList();
     }
 
+    public Task<Dictionary<int, GamePlayStats>> GetPlayStatsPerGame()
+    {
+        return _gameRepository.GetPlayStatsPerGame();
+    }
+
     public Task<Game?> GetGameById(int id)
     {
         _logger.LogDebug("Fetching game {GameId}", id);

@@ -43,7 +43,8 @@ public class GameController : ControllerBase
     public async Task<IActionResult> GetGames()
     {
         var games = await _gameService.GetGames();
-        return Ok(games.ToListDto());
+        var playStats = await _gameService.GetPlayStatsPerGame();
+        return Ok(games.ToListDto(playStats));
     }
 
     [HttpPost]
