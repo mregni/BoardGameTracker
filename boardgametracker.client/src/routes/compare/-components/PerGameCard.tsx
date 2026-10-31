@@ -11,6 +11,7 @@ import { useGameById } from "@/routes/-hooks/useGameById";
 import { toDisplay } from "@/utils/dateUtils";
 import { MIN_SESSIONS_FOR_AVERAGE } from "@/utils/numberUtils";
 import { type GameSort, initialOf, sortGames } from "../-utils/compareUtils";
+import { SectionTitle } from "./SectionTitle";
 
 export const VISIBLE_GAMES = 5;
 
@@ -36,8 +37,22 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 
 	const letter = (outcome: CompareOutcome) =>
 		({
-			playerOne: initialOf(playerOne.name),
-			playerTwo: initialOf(playerTwo.name),
+			playerOne: (
+				<>
+					<span aria-hidden="true" className="text-player-one">
+						{initialOf(playerOne.name)}
+					</span>
+					<span className="sr-only">{playerOne.name}</span>
+				</>
+			),
+			playerTwo: (
+				<>
+					<span aria-hidden="true" className="text-player-two">
+						{initialOf(playerTwo.name)}
+					</span>
+					<span className="sr-only">{playerTwo.name}</span>
+				</>
+			),
 			both: "+",
 			other: "–",
 			sameTeam: "=",
@@ -55,15 +70,10 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 	}
 
 	return (
-		<section
-			aria-labelledby="per-game-title"
-			className="flex flex-col gap-1.5 rounded-xl border border-card-border bg-card p-3.5"
-		>
-			<div className="flex flex-wrap items-center justify-between gap-2">
-				<h2 id="per-game-title" className="font-bold">
-					{t("per-game.title")}
-				</h2>
-				<fieldset className="flex gap-0.5 rounded-lg border border-card-border bg-background p-0.5">
+		<section aria-labelledby="per-game-title" className="flex flex-col gap-1.5">
+			<SectionTitle id="per-game-title">{t("per-game.title")}</SectionTitle>
+			<div className="flex flex-col gap-1.5 rounded-xl border border-card-border bg-card p-3.5">
+				<fieldset className="flex gap-0.5 self-end rounded-lg border border-card-border bg-background p-0.5">
 					<legend className="sr-only">{t("per-game.sort")}</legend>
 					{sorts.map((option) => (
 						<button
@@ -72,7 +82,7 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 							aria-pressed={sort === option}
 							onClick={() => setSort(option)}
 							className={cx(
-								"cursor-pointer rounded-md border px-2.5 py-1 text-xs font-semibold",
+								"min-h-11 cursor-pointer rounded-md border px-2.5 py-1 text-xs font-semibold sm:min-h-0",
 								sort === option
 									? "border-primary bg-primary/15 text-white"
 									: "border-transparent text-white/60 hover:text-white",
@@ -82,112 +92,112 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 						</button>
 					))}
 				</fieldset>
-			</div>
-			<div className="flex justify-between text-xs font-semibold" aria-hidden="true">
-				<span className="text-player-one">■ {playerOne.name}</span>
-				<span className="text-player-two">{playerTwo.name} ■</span>
-			</div>
-			<div
-				aria-hidden="true"
-				className="hidden grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)_auto] gap-3 px-2 text-xs text-white/60 sm:grid"
-			>
-				<span />
-				<span>{t("per-game.game")}</span>
-				<span>{t("per-game.wins")}</span>
-				<span className="text-right">{t("per-game.last")}</span>
-			</div>
-			<ul className="flex flex-col">
-				{visible.map((game) => {
-					const details = gameById(game.gameId);
-					const title = details?.title ?? "";
-					const coopOnly = game.sameTeamCount > 0 && game.sameTeamCount === game.sessionCount;
-					const teamText = t("per-game.same-team", { won: game.sameTeamWins, count: game.sameTeamCount });
-					return (
-						<li
-							key={game.gameId}
-							data-testid="per-game-row"
-							className="grid grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 border-t border-card-border px-0.5 py-2 first:border-t-0 sm:grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)_auto] sm:px-2"
-						>
-							<span className="row-span-2 self-start sm:row-span-1 sm:self-center">
-								<BgtAvatar image={details?.image} title={title} size="medium" />
-							</span>
-							<span className="flex min-w-0 flex-col">
-								<strong className="truncate">{title}</strong>
-								<small className="truncate text-[11px] text-white/60">
-									{[t("games", { count: game.sessionCount }), coopOnly ? t("per-game.coop") : scoreDetail(game)]
-										.filter(Boolean)
-										.join(" · ")}
-								</small>
-							</span>
-							<span className="col-span-2 col-start-2 row-start-2 flex min-w-0 flex-col gap-1 sm:col-span-1 sm:col-start-3 sm:row-start-1">
-								{coopOnly ? (
-									<span className="text-xs text-white/60">{teamText}</span>
+				<div className="flex justify-between text-xs font-semibold" aria-hidden="true">
+					<span className="text-player-one">■ {playerOne.name}</span>
+					<span className="text-player-two">{playerTwo.name} ■</span>
+				</div>
+				<div
+					aria-hidden="true"
+					className="hidden grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)_auto] gap-3 px-2 text-xs text-white/60 sm:grid"
+				>
+					<span />
+					<span>{t("per-game.game")}</span>
+					<span>{t("per-game.wins")}</span>
+					<span className="text-right">{t("per-game.last")}</span>
+				</div>
+				<ul className="flex flex-col">
+					{visible.map((game) => {
+						const details = gameById(game.gameId);
+						const title = details?.title ?? "";
+						const coopOnly = game.sameTeamCount > 0 && game.sameTeamCount === game.sessionCount;
+						const teamText = t("per-game.same-team", { won: game.sameTeamWins, count: game.sameTeamCount });
+						return (
+							<li
+								key={game.gameId}
+								data-testid="per-game-row"
+								className="grid grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 border-t border-card-border px-0.5 py-2 first:border-t-0 sm:grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)_auto] sm:px-2"
+							>
+								<span className="row-span-2 self-start sm:row-span-1 sm:self-center">
+									<BgtAvatar image={details?.image} title={title} size="medium" />
+								</span>
+								<span className="flex min-w-0 flex-col">
+									<strong className="truncate">{title}</strong>
+									<small className="truncate text-xs text-white/60">
+										{[t("games", { count: game.sessionCount }), coopOnly ? t("per-game.coop") : scoreDetail(game)]
+											.filter(Boolean)
+											.join(" · ")}
+									</small>
+								</span>
+								<span className="col-span-2 col-start-2 row-start-2 flex min-w-0 flex-col gap-1 sm:col-span-1 sm:col-start-3 sm:row-start-1">
+									{coopOnly ? (
+										<span className="text-xs text-white/60">{teamText}</span>
+									) : (
+										<span className="flex justify-between gap-2 text-sm font-black tabular-nums">
+											<span className="text-player-one">{integer(game.playerOneWins)}</span>
+											{(game.otherWins > 0 || game.sameTeamCount > 0) && (
+												<span className="truncate font-normal text-white/60">
+													{[
+														game.otherWins > 0 && t("per-game.others", { count: game.otherWins }),
+														game.sameTeamCount > 0 && t("per-game.same-team-extra", { count: game.sameTeamCount }),
+													]
+														.filter(Boolean)
+														.join(" · ")}
+												</span>
+											)}
+											<span className="text-player-two">{integer(game.playerTwoWins)}</span>
+										</span>
+									)}
+									<BgtProgressBar
+										size="thin"
+										animateOnMount
+										gapped
+										formatValue={integer}
+										formatLabel={() =>
+											coopOnly
+												? `${title}: ${teamText}`
+												: t("per-game.row", {
+														game: title,
+														playerOne: playerOne.name,
+														playerTwo: playerTwo.name,
+														one: integer(game.playerOneWins),
+														two: integer(game.playerTwoWins),
+														count: game.otherWins,
+													})
+										}
+										segments={[
+											{ key: "playerOne", label: playerOne.name, value: game.playerOneWins, tone: "playerOne" },
+											{ key: "others", label: t("record.someone-else"), value: game.otherWins, tone: "muted" },
+											{
+												key: "sameTeam",
+												label: t("record.same-team"),
+												value: game.sameTeamCount,
+												tone: "subtle",
+												pattern: "hatch",
+											},
+											{ key: "playerTwo", label: playerTwo.name, value: game.playerTwoWins, tone: "playerTwo" },
+										]}
+									/>
+								</span>
+								{game.lastOutcome === "sameTeam" ? (
+									<CoopResultPill
+										won={game.lastTeamWon === true}
+										className="col-start-3 row-start-1 justify-self-end sm:col-start-4"
+									/>
 								) : (
-									<span className="flex justify-between gap-2 text-xs font-bold tabular-nums">
-										<span className="text-player-one">{integer(game.playerOneWins)}</span>
-										{(game.otherWins > 0 || game.sameTeamCount > 0) && (
-											<span className="truncate font-normal text-white/60">
-												{[
-													game.otherWins > 0 && t("per-game.others", { count: game.otherWins }),
-													game.sameTeamCount > 0 && t("per-game.same-team-extra", { count: game.sameTeamCount }),
-												]
-													.filter(Boolean)
-													.join(" · ")}
-											</span>
-										)}
-										<span className="text-player-two">{integer(game.playerTwoWins)}</span>
+									<span className="col-start-3 row-start-1 justify-self-end whitespace-nowrap rounded-full bg-card-light px-2 py-0.5 text-xs font-semibold tabular-nums text-white/60 sm:col-start-4">
+										{letter(game.lastOutcome)} · {toDisplay(game.lastPlayed, dateFormat, uiLanguage)}
 									</span>
 								)}
-								<BgtProgressBar
-									size="thin"
-									animateOnMount
-									gapped
-									formatValue={integer}
-									formatLabel={() =>
-										coopOnly
-											? `${title}: ${teamText}`
-											: t("per-game.row", {
-													game: title,
-													playerOne: playerOne.name,
-													playerTwo: playerTwo.name,
-													one: integer(game.playerOneWins),
-													two: integer(game.playerTwoWins),
-													count: game.otherWins,
-												})
-									}
-									segments={[
-										{ key: "playerOne", label: playerOne.name, value: game.playerOneWins, tone: "playerOne" },
-										{ key: "others", label: t("record.someone-else"), value: game.otherWins, tone: "muted" },
-										{
-											key: "sameTeam",
-											label: t("record.same-team"),
-											value: game.sameTeamCount,
-											tone: "subtle",
-											pattern: "hatch",
-										},
-										{ key: "playerTwo", label: playerTwo.name, value: game.playerTwoWins, tone: "playerTwo" },
-									]}
-								/>
-							</span>
-							{game.lastOutcome === "sameTeam" ? (
-								<CoopResultPill
-									won={game.lastTeamWon === true}
-									className="col-start-3 row-start-1 justify-self-end sm:col-start-4"
-								/>
-							) : (
-								<span className="col-start-3 row-start-1 justify-self-end whitespace-nowrap rounded-full bg-card-light px-2 py-0.5 text-xs font-semibold tabular-nums text-white/60 sm:col-start-4">
-									{letter(game.lastOutcome)} · {toDisplay(game.lastPlayed, dateFormat, uiLanguage)}
-								</span>
-							)}
-						</li>
-					);
-				})}
-			</ul>
-			{sorted.length > VISIBLE_GAMES && (
-				<BgtButton variant="text" size="1" className="self-start" onClick={() => setShowAll((value) => !value)}>
-					{showAll ? t("per-game.show-less") : t("per-game.show-all", { count: sorted.length })}
-				</BgtButton>
-			)}
+							</li>
+						);
+					})}
+				</ul>
+				{sorted.length > VISIBLE_GAMES && (
+					<BgtButton variant="text" size="1" className="self-start" onClick={() => setShowAll((value) => !value)}>
+						{showAll ? t("per-game.show-less") : t("per-game.show-all", { count: sorted.length })}
+					</BgtButton>
+				)}
+			</div>
 		</section>
 	);
 };

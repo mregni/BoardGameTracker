@@ -6,8 +6,6 @@
   "updating": "Updating the comparison",
   "change-left": "Change left player, now {{player}}",
   "change-right": "Change right player, now {{player}}",
-  "player-summary_one": "{{count}} session · {{rate}} won",
-  "player-summary_other": "{{count}} sessions · {{rate}} won",
   "games_one": "{{count}} session",
   "games_other": "{{count}} sessions",
   "record": {
@@ -30,7 +28,6 @@
     "title_other": "Last {{count}} sessions together",
     "order": "(oldest → newest)",
     "label": "Last sessions together, oldest first: {{list}}",
-    "legend-coop": "=: co-op",
     "both": "both won",
     "other": "someone else",
     "streak_one": "{{player}} {{count}} in a row",
@@ -39,12 +36,12 @@
     "same-team-lost": "same team, lost"
   },
   "tiles": {
-    "games-together": "Sessions together",
+    "games-together": "Sessions",
     "since": "since {{date}}",
-    "time-together": "Time together",
+    "time-together": "Play time",
     "average": "avg {{duration}} a session",
     "most-played": "Most played",
-    "closest": "Closest session",
+    "closest": "Closest",
     "points_one": "{{value}} pt",
     "points_other": "{{value}} pts",
     "closest-winner": "{{game}} · {{player}} won",
@@ -60,8 +57,8 @@
     "last": "Last",
     "average": "avg {{one}} – {{two}}",
     "no-scores": "no scores",
-    "others_one": "+{{count}} other",
-    "others_other": "+{{count}} others",
+    "others_one": "{{count}} won by someone else",
+    "others_other": "{{count}} won by someone else",
     "row_one": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, someone else {{count}}",
     "row_other": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, someone else {{count}}",
     "show-all_one": "Show all {{count}} game",
@@ -75,6 +72,7 @@
     "scores": "{{one}} – {{two}}"
   },
   "best-worst": {
+    "title": "Best and worst games",
     "against": "{{player}} against {{opponent}}",
     "best": "Best",
     "worst": "Worst",
@@ -89,18 +87,13 @@
     "same-team": "same team"
   },
   "overall": {
-    "title": "Overall, not only together",
+    "title": "All sessions, not just together",
     "wins": "Wins",
     "win-rate": "Win rate",
     "games": "Sessions",
     "play-time": "Play time",
     "higher": "higher",
     "stat": "Stat"
-  },
-  "highlights": {
-    "title": "Highlights",
-    "first-game": "first session together · {{date}}",
-    "longest-game": "longest session · {{duration}}"
   },
   "no-games-together": {
     "title": "No sessions together yet",

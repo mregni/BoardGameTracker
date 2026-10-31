@@ -6,8 +6,6 @@
   "updating": "Actualizando la comparación",
   "change-left": "Cambiar jugador de la izquierda, ahora {{player}}",
   "change-right": "Cambiar jugador de la derecha, ahora {{player}}",
-  "player-summary_one": "{{count}} partida · {{rate}} ganadas",
-  "player-summary_other": "{{count}} partidas · {{rate}} ganadas",
   "games_one": "{{count}} partida",
   "games_other": "{{count}} partidas",
   "record": {
@@ -30,7 +28,6 @@
     "title_other": "Últimas {{count}} partidas juntos",
     "order": "(de la más antigua a la más reciente)",
     "label": "Últimas partidas juntos, la más antigua primero: {{list}}",
-    "legend-coop": "=: cooperativo",
     "both": "ganaron los dos",
     "other": "otra persona",
     "streak_one": "{{player}} {{count}} seguida",
@@ -39,12 +36,12 @@
     "same-team-lost": "mismo equipo, perdida"
   },
   "tiles": {
-    "games-together": "Partidas juntos",
+    "games-together": "Partidas",
     "since": "desde {{date}}",
-    "time-together": "Tiempo juntos",
+    "time-together": "Tiempo jugado",
     "average": "media {{duration}} por partida",
     "most-played": "Más jugado",
-    "closest": "Partida más reñida",
+    "closest": "Más reñida",
     "points_one": "{{value}} pt",
     "points_other": "{{value}} pts",
     "closest-winner": "{{game}} · ganó {{player}}",
@@ -60,8 +57,8 @@
     "last": "Última",
     "average": "media {{one}} – {{two}}",
     "no-scores": "sin puntuaciones",
-    "others_one": "+{{count}} otra",
-    "others_other": "+{{count}} otras",
+    "others_one": "{{count}} ganada por otra persona",
+    "others_other": "{{count}} ganadas por otra persona",
     "row_one": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, otra persona {{count}}",
     "row_other": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, otras personas {{count}}",
     "show-all_one": "Mostrar el {{count}} juego",
@@ -75,6 +72,7 @@
     "scores": "{{one}} – {{two}}"
   },
   "best-worst": {
+    "title": "Mejores y peores juegos",
     "against": "{{player}} contra {{opponent}}",
     "best": "Mejores",
     "worst": "Peores",
@@ -89,18 +87,13 @@
     "same-team": "mismo equipo"
   },
   "overall": {
-    "title": "En general, no solo juntos",
+    "title": "Todas las partidas, no solo juntos",
     "wins": "Victorias",
     "win-rate": "Porcentaje de victorias",
     "games": "Partidas",
     "play-time": "Tiempo de juego",
     "higher": "más alto",
     "stat": "Estadística"
-  },
-  "highlights": {
-    "title": "Destacados",
-    "first-game": "primera partida juntos · {{date}}",
-    "longest-game": "partida más larga · {{duration}}"
   },
   "no-games-together": {
     "title": "Todavía no hay partidas juntos",

@@ -6,8 +6,6 @@
   "updating": "Vergelijking wordt bijgewerkt",
   "change-left": "Linkse speler wijzigen, nu {{player}}",
   "change-right": "Rechtse speler wijzigen, nu {{player}}",
-  "player-summary_one": "{{count}} sessie · {{rate}} gewonnen",
-  "player-summary_other": "{{count}} sessies · {{rate}} gewonnen",
   "games_one": "{{count}} sessie",
   "games_other": "{{count}} sessies",
   "record": {
@@ -30,7 +28,6 @@
     "title_other": "Laatste {{count}} sessies samen",
     "order": "(oudste → nieuwste)",
     "label": "Laatste sessies samen, oudste eerst: {{list}}",
-    "legend-coop": "=: co-op",
     "both": "allebei gewonnen",
     "other": "iemand anders",
     "streak_one": "{{player}} {{count}} op rij",
@@ -39,12 +36,12 @@
     "same-team-lost": "zelfde team, verloren"
   },
   "tiles": {
-    "games-together": "Sessies samen",
+    "games-together": "Sessies",
     "since": "sinds {{date}}",
-    "time-together": "Tijd samen",
+    "time-together": "Speeltijd",
     "average": "gem. {{duration}} per sessie",
     "most-played": "Meest gespeeld",
-    "closest": "Spannendste sessie",
+    "closest": "Spannendste",
     "points_one": "{{value}} pt",
     "points_other": "{{value}} ptn",
     "closest-winner": "{{game}} · {{player}} won",
@@ -60,8 +57,8 @@
     "last": "Laatste",
     "average": "gem. {{one}} – {{two}}",
     "no-scores": "geen scores",
-    "others_one": "+{{count}} ander",
-    "others_other": "+{{count}} anderen",
+    "others_one": "{{count}} gewonnen door iemand anders",
+    "others_other": "{{count}} gewonnen door iemand anders",
     "row_one": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, iemand anders {{count}}",
     "row_other": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, iemand anders {{count}}",
     "show-all_one": "Toon alle {{count}} spel",
@@ -75,6 +72,7 @@
     "scores": "{{one}} – {{two}}"
   },
   "best-worst": {
+    "title": "Beste en slechtste spellen",
     "against": "{{player}} tegen {{opponent}}",
     "best": "Beste",
     "worst": "Slechtste",
@@ -89,18 +87,13 @@
     "same-team": "zelfde team"
   },
   "overall": {
-    "title": "Globaal, niet alleen samen",
+    "title": "Alle sessies, niet alleen samen",
     "wins": "Overwinningen",
     "win-rate": "Winstpercentage",
     "games": "Sessies",
     "play-time": "Speeltijd",
     "higher": "hoger",
     "stat": "Statistiek"
-  },
-  "highlights": {
-    "title": "Hoogtepunten",
-    "first-game": "eerste sessie samen · {{date}}",
-    "longest-game": "langste sessie · {{duration}}"
   },
   "no-games-together": {
     "title": "Nog geen sessies samen",

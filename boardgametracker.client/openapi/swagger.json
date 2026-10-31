@@ -6283,9 +6283,6 @@
           "preferredGame": {
             "$ref": "#/components/schemas/PreferredGame"
           },
-          "longestSessionTogether": {
-            "$ref": "#/components/schemas/LongestSession"
-          },
           "firstGameTogether": {
             "$ref": "#/components/schemas/FirstGameTogether"
           },
@@ -8387,20 +8384,6 @@
           },
           "user": {
             "$ref": "#/components/schemas/UserInfo"
-          }
-        },
-        "additionalProperties": false
-      },
-      "LongestSession": {
-        "type": "object",
-        "properties": {
-          "gameId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "minutes": {
-            "type": "integer",
-            "format": "int32"
           }
         },
         "additionalProperties": false

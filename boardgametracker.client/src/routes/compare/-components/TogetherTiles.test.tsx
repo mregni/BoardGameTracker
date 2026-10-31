@@ -80,7 +80,7 @@ describe("TogetherTiles", () => {
 		renderTiles({ preferredGame: null, closestGame: null, firstGameTogether: null });
 
 		expect(screen.queryByText("Most played")).toBeNull();
-		expect(screen.queryByText("Closest session")).toBeNull();
+		expect(screen.queryByText("Closest")).toBeNull();
 		expect(screen.queryByText(/since/)).toBeNull();
 	});
 });
