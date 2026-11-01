@@ -14,15 +14,18 @@ export const useInviteLink = (gameNight: Pick<GameNight, "linkId">) => {
 
 	const link = `${effectivePublicUrl(settings?.publicUrl, window.location.origin)}/rsvp?linkId=${gameNight.linkId}`;
 
-	const copy = () => {
+	const copy = () =>
 		Promise.resolve()
 			.then(() => navigator.clipboard.writeText(link))
 			.then(() => {
 				setCopied(true);
 				later(() => setCopied(false), 2000);
+				return true;
 			})
-			.catch(() => toast.error(t("card.copy-failed")));
-	};
+			.catch(() => {
+				toast.error(t("card.copy-failed"));
+				return false;
+			});
 
 	return { link, copied, copy };
 };

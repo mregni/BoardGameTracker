@@ -1,7 +1,8 @@
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -30,11 +31,12 @@ import { ManageRSVPsModal } from "./-modals/ManageRSVPsModal";
 import { PlaySessionSheet } from "./-modals/PlaySessionSheet";
 import { StartGameSheet } from "./-modals/StartGameSheet";
 import { deleteNightDescription } from "./-utils/deleteNightDescription";
-import { nightGameIds, nightTable } from "./-utils/gameNightPlay";
+import { freePlayerIds, nightGameIds, nightTable } from "./-utils/gameNightPlay";
 
 export const Route = createFileRoute("/game-nights/$gameNightId")({
 	component: RouteComponent,
 	params: gameNightIdParamSchema,
+	validateSearch: z.object({ start: z.boolean().optional() }),
 	beforeLoad: async ({ context: { queryClient } }) => {
 		const settings = await queryClient.query({ ...getSettings(), staleTime: "static" });
 		if (!settings.gameNightsEnabled) {
@@ -96,6 +98,19 @@ function RouteComponent() {
 	});
 
 	const closeSheet = () => setSheet(null);
+
+	const { start } = Route.useSearch();
+	useEffect(() => {
+		if (!start || !detail) return;
+		if (canWrite) {
+			setSheet({
+				kind: "start",
+				gameId: null,
+				playerIds: freePlayerIds(nightTable(detail).playerIds, detail.runningGames),
+			});
+		}
+		navigate({ to: ".", search: {}, replace: true });
+	}, [start, detail, canWrite, navigate]);
 
 	const handleDelete = async () => {
 		await deleteGameNight(gameNightId);

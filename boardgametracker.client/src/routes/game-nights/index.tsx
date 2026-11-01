@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import PlusIcon from "@/assets/icons/plus.svg?react";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
@@ -20,8 +21,9 @@ import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { GameNightCard } from "./-components/GameNightCard";
+import { GameNightListSkeleton } from "./-components/GameNightListSkeleton";
 import { NightSectionTitle } from "./-components/NightSectionTitle";
-import { PastGameNightItem } from "./-components/PastGameNightItem";
+import { PastGameNightList } from "./-components/PastGameNightList";
 import { GameNightStatsView } from "./-components/stats/GameNightStatsView";
 import { useGameNightActions } from "./-hooks/useGameNightActions";
 import { useGameNightData } from "./-hooks/useGameNightData";
@@ -73,6 +75,8 @@ function RouteComponent() {
 		games,
 		locations,
 		isLoading,
+		loadFailed,
+		retryLoad,
 		createGameNight,
 		deleteGameNight,
 		updateGameNight,
@@ -120,12 +124,25 @@ function RouteComponent() {
 		modals.deleteModal.show();
 	};
 
+	if (!isLoading && loadFailed) {
+		return (
+			<BgtEmptyPage
+				header={t("title")}
+				icon={Calendar}
+				title={t("load-error.title")}
+				description={t("load-error.description")}
+				action={{ label: t("load-error.retry"), onClick: () => void retryLoad() }}
+			/>
+		);
+	}
+
 	if (!isLoading && gameNights.length === 0) {
 		return (
 			<BgtEmptyPage
 				header={t("title")}
 				icon={Calendar}
 				title={t("empty.title")}
+				description={t("empty.description")}
 				action={canWrite ? { label: t("create.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<CreateGameNightModal
@@ -170,7 +187,11 @@ function RouteComponent() {
 					]}
 				/>
 			</BgtPageHeader>
-			<BgtPageContent isLoading={isLoading} data={{ settings, gameNights }}>
+			<BgtPageContent
+				isLoading={isLoading}
+				data={{ settings, gameNights }}
+				fallback={view === "nights" ? <GameNightListSkeleton /> : undefined}
+			>
 				{({ settings }) => (
 					<>
 						{view === "stats" ? (
@@ -213,9 +234,23 @@ function RouteComponent() {
 								<section className="flex flex-col gap-3" aria-labelledby="upcoming-game-nights">
 									<NightSectionTitle id="upcoming-game-nights">{t("upcoming")}</NightSectionTitle>
 									{upcomingGameNights.length === 0 ? (
-										<BgtText size="2" color="gray">
-											{t("empty.upcoming")}
-										</BgtText>
+										<div className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-white/15 p-4 sm:flex-row sm:items-center sm:justify-between">
+											<div className="flex flex-col gap-0.5">
+												<BgtText size="3" weight="bold">
+													{t("empty.upcoming")}
+												</BgtText>
+												{canWrite && (
+													<BgtText size="2" color="gray">
+														{t("empty.upcoming-hint")}
+													</BgtText>
+												)}
+											</div>
+											{canWrite && (
+												<BgtButton size="2" onClick={modals.createModal.show}>
+													{t("create.button")}
+												</BgtButton>
+											)}
+										</div>
 									) : (
 										upcomingGameNights.map((gameNight, index) => (
 											<GameNightCard
@@ -234,16 +269,14 @@ function RouteComponent() {
 								</section>
 
 								{pastGameNights.length > 0 && (
-									<section className="flex flex-col gap-2" aria-labelledby="past-game-nights">
+									<section className="flex flex-col gap-3" aria-labelledby="past-game-nights">
 										<NightSectionTitle id="past-game-nights">{t("past")}</NightSectionTitle>
-										{pastGameNights.map((gameNight) => (
-											<PastGameNightItem
-												key={gameNight.id}
-												gameNight={gameNight}
-												settings={settings}
-												players={players}
-											/>
-										))}
+										<PastGameNightList
+											gameNights={pastGameNights}
+											settings={settings}
+											players={players}
+											games={games}
+										/>
 									</section>
 								)}
 							</>

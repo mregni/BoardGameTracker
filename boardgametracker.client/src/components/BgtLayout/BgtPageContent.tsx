@@ -18,6 +18,7 @@ interface PropsWithoutGuard extends BaseProps {
 interface PropsWithGuard<T extends Record<string, unknown>> extends BaseProps {
 	isLoading: boolean;
 	data: T;
+	fallback?: ReactNode;
 	children: (data: RequiredData<T>) => ReactNode;
 	error?: unknown;
 	onRetry?: () => void;
@@ -42,6 +43,7 @@ export const BgtPageContent = <T extends Record<string, unknown> = Record<string
 					error={props.error}
 					onRetry={props.onRetry}
 					notFound={props.notFound}
+					fallback={props.fallback}
 				>
 					{(validatedData) => <>{props.children(validatedData)}</>}
 				</BgtDataGuard>

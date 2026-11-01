@@ -86,7 +86,7 @@ export const useGameNightData = () => {
 			return { previous };
 		},
 		onSuccess() {
-			successToast("game-nights:notifications.rsvp-updated");
+			successToast("game-nights:notifications.rsvp-updated", undefined, undefined, "rsvp-updated");
 		},
 		onError: (_error, _rsvp, context) => {
 			if (context?.previous) {
@@ -111,6 +111,8 @@ export const useGameNightData = () => {
 			playersQuery.isLoading ||
 			gamesQuery.isLoading ||
 			locationsQuery.isLoading,
+		loadFailed: gameNightsQuery.isError && gameNightsQuery.data === undefined,
+		retryLoad: gameNightsQuery.refetch,
 		createGameNight: createMutation.mutateAsync,
 		updateGameNight: (gameNight: UpdateGameNight) =>
 			updateMutation.mutateAsync(gameNight, {

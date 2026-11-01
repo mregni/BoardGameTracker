@@ -27,11 +27,17 @@
     "invite-link": "Invite link",
     "copy": "Copy",
     "no-answer": "No answer",
-    "not-coming": "Not coming"
+    "not-coming": "Not coming",
+    "avatar-label": "{{name}}: {{state}}",
+    "show-all": "Show all {{count}} invited",
+    "coming-of": "{{coming}} of {{total}} coming",
+    "host-name": "{{name}} (host)"
   },
   "empty": {
     "title": "No game nights yet",
-    "upcoming": "No upcoming game nights"
+    "upcoming": "No upcoming game nights",
+    "description": "Plan an evening, invite your group and see who's coming. What gets played shows up here afterwards.",
+    "upcoming-hint": "Pick a date and invite the group."
   },
   "delete": {
     "title": "Delete game night",
@@ -61,12 +67,18 @@
     "copy-failed": "Couldn't copy the link",
     "manage-rsvps": "Manage RSVPs",
     "email-invites": "Email invites",
-    "invites-sent": "Invites sent: {{sent}} sent",
+    "invites-sent": "Invites sent: {{sent}}",
     "invites-failed": "Failed to send invites",
     "when": "{{when}} · {{time}}",
     "host": "Host: {{host}}",
-    "open": "Open night",
-    "live": "Tonight · playing now"
+    "live": "Tonight · playing now",
+    "actions": "Actions for {{title}}",
+    "waiting": "Waiting on {{names}}",
+    "live-since": "Playing since {{time}}",
+    "running_one": "{{count}} game on the table",
+    "running_other": "{{count}} games on the table",
+    "maybe-names": "Maybe: {{names}}",
+    "declined-names": "Not coming: {{names}}"
   },
   "plan": {
     "starts": "Starts {{when}} · {{date}} · {{time}}",
@@ -134,10 +146,15 @@
   "past-night": {
     "attended-count_one": "{{count}} attended",
     "attended-count_other": "{{count}} attended",
-    "nothing-logged": "nothing logged yet",
+    "nothing-logged": "no games logged",
     "games-played_one": "{{count}} game played",
     "games-played_other": "{{count}} games played",
-    "winner": "winner {{names}}"
+    "most-wins": "Most wins",
+    "show-older_one": "Show {{count}} older night",
+    "show-older_other": "Show {{count}} older nights",
+    "shared-most-wins": "Shared most wins",
+    "show-fewer": "Show fewer nights",
+    "played": "Played: {{games}}"
   },
   "detail": {
     "back": "Game nights"
@@ -346,5 +363,11 @@
       "save-failed": "Failed to save attendance"
     },
     "playing": "Playing now"
-  }
+  },
+  "load-error": {
+    "title": "Couldn't load game nights",
+    "description": "The server didn't answer. Check your connection and try again.",
+    "retry": "Try again"
+  },
+  "loading": "Loading game nights…"
 }

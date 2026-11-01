@@ -27,11 +27,17 @@
     "invite-link": "Uitnodigingslink",
     "copy": "Kopiëren",
     "no-answer": "Geen antwoord",
-    "not-coming": "Komt niet"
+    "not-coming": "Komt niet",
+    "avatar-label": "{{name}}: {{state}}",
+    "show-all": "Alle {{count}} genodigden tonen",
+    "coming-of": "{{coming}} van {{total}} komen",
+    "host-name": "{{name}} (gastheer)"
   },
   "empty": {
     "title": "Nog geen spelavonden",
-    "upcoming": "Geen komende spelavonden"
+    "upcoming": "Geen komende spelavonden",
+    "description": "Plan een avond, nodig je groep uit en zie wie er komt. Wat er gespeeld wordt, verschijnt hier achteraf.",
+    "upcoming-hint": "Kies een datum en nodig de groep uit."
   },
   "delete": {
     "title": "Spelavond verwijderen",
@@ -65,8 +71,14 @@
     "invites-failed": "Uitnodigingen versturen mislukt",
     "when": "{{when}} · {{time}}",
     "host": "Gastheer: {{host}}",
-    "open": "Avond openen",
-    "live": "Vanavond · nu bezig"
+    "live": "Vanavond · nu bezig",
+    "actions": "Acties voor {{title}}",
+    "waiting": "Wachten op {{names}}",
+    "live-since": "Bezig sinds {{time}}",
+    "running_one": "{{count}} spel op tafel",
+    "running_other": "{{count}} spellen op tafel",
+    "maybe-names": "Misschien: {{names}}",
+    "declined-names": "Komt niet: {{names}}"
   },
   "plan": {
     "starts": "Begint {{when}} · {{date}} · {{time}}",
@@ -134,10 +146,15 @@
   "past-night": {
     "attended-count_one": "{{count}} aanwezig",
     "attended-count_other": "{{count}} aanwezig",
-    "nothing-logged": "nog niets gespeeld",
+    "nothing-logged": "geen spellen gelogd",
     "games-played_one": "{{count}} spel gespeeld",
     "games-played_other": "{{count}} spellen gespeeld",
-    "winner": "winnaar {{names}}"
+    "most-wins": "Meeste overwinningen",
+    "show-older_one": "{{count}} oudere avond tonen",
+    "show-older_other": "{{count}} oudere avonden tonen",
+    "shared-most-wins": "Gedeelde meeste overwinningen",
+    "show-fewer": "Minder avonden tonen",
+    "played": "Gespeeld: {{games}}"
   },
   "detail": {
     "back": "Spelavonden"
@@ -346,5 +363,11 @@
       "save-failed": "Aanwezigheid opslaan is mislukt"
     },
     "playing": "Speelt nu"
-  }
+  },
+  "load-error": {
+    "title": "Spelavonden konden niet geladen worden",
+    "description": "De server antwoordde niet. Controleer je verbinding en probeer opnieuw.",
+    "retry": "Opnieuw proberen"
+  },
+  "loading": "Spelavonden laden…"
 }
