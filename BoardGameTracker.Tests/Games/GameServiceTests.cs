@@ -6,7 +6,6 @@ using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
-using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.ChangeDetection.Interfaces;
 using BoardGameTracker.Core.Common;
@@ -135,21 +134,6 @@ public class GameServiceTests
         result.Should().HaveCount(2);
 
         _gameRepositoryMock.Verify(x => x.GetGamesOverviewList(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task GetPlaySummaries_ShouldReturnRepositoryResult()
-    {
-        var summaries = new List<GamePlaySummary> { new() { GameId = 1, PlayCount = 2 } };
-        _gameRepositoryMock
-            .Setup(x => x.GetPlaySummaries())
-            .ReturnsAsync(summaries);
-
-        var result = await _gameService.GetPlaySummaries();
-
-        result.Should().BeSameAs(summaries);
-        _gameRepositoryMock.Verify(x => x.GetPlaySummaries(), Times.Once);
         VerifyNoOtherCalls();
     }
 

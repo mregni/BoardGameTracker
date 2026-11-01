@@ -3,12 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { getGames } from "@/services/queries/games";
 
 export const useGamesData = () => {
-	const { data, isLoading, isError, refetch } = useQuery(getGames());
+	const { data, isLoading } = useQuery(getGames());
 
 	return {
 		isLoading,
-		isError: isError && data === undefined,
-		refetch,
 		games: data ?? [],
 	};
 };

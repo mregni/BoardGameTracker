@@ -712,31 +712,6 @@ public class GameControllerTests
 
     #endregion
 
-    #region Play Summary Tests
-
-    [Fact]
-    public async Task GetPlaySummaries_ShouldReturnOkWithSummaries()
-    {
-        var lastPlayed = new DateTime(2026, 10, 20, 19, 0, 0, DateTimeKind.Utc);
-        _gameServiceMock
-            .Setup(x => x.GetPlaySummaries())
-            .ReturnsAsync([new GamePlaySummary { GameId = 3, PlayCount = 12, LastPlayed = lastPlayed }]);
-
-        var result = await _controller.GetPlaySummaries();
-
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var summaries = okResult.Value.Should().BeAssignableTo<List<GamePlaySummaryDto>>().Subject;
-        summaries.Should().ContainSingle();
-        summaries[0].GameId.Should().Be(3);
-        summaries[0].PlayCount.Should().Be(12);
-        summaries[0].LastPlayed.Should().Be(lastPlayed);
-
-        _gameServiceMock.Verify(x => x.GetPlaySummaries(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    #endregion
-
     #region Shame Tests
 
     [Fact]

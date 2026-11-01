@@ -29,23 +29,16 @@ describe("BgtImageCard", () => {
 			expect(link).toHaveAttribute("href", "/games/1");
 		});
 
-		it("should show a cover tile with the title when no image", () => {
-			const { container } = renderWithTheme(<BgtImageCard {...defaultProps} image={null} />);
-			expect(container.querySelector('[aria-hidden="true"][style*="--fallback-color"]')).toBeInTheDocument();
-			expect(screen.getAllByText("Catan")).toHaveLength(2);
-		});
-
-		it("should render meta content", () => {
-			renderWithTheme(<BgtImageCard {...defaultProps} meta={<span>2–4</span>} />);
-			expect(screen.getByText("2–4")).toBeInTheDocument();
+		it("should display first letter when no image", () => {
+			renderWithTheme(<BgtImageCard {...defaultProps} image={null} />);
+			expect(screen.getByText("C")).toBeInTheDocument();
 		});
 	});
 
 	describe("Image Handling", () => {
-		it("should render a lazy async decorative image when image provided", () => {
-			const { container } = renderWithTheme(<BgtImageCard {...defaultProps} />);
-			const img = container.querySelector("img");
-			expect(img).toHaveAttribute("alt", "");
+		it("should render a lazy async image when image provided", () => {
+			renderWithTheme(<BgtImageCard {...defaultProps} />);
+			const img = screen.getByRole("img");
 			expect(img).toHaveAttribute("src", "/game.jpg");
 			expect(img).toHaveAttribute("loading", "lazy");
 			expect(img).toHaveAttribute("decoding", "async");
@@ -57,25 +50,19 @@ describe("BgtImageCard", () => {
 			expect(imageDiv).toBeInTheDocument();
 		});
 
-		it("should fall back to the cover tile when the image cannot be loaded", () => {
-			const { container } = renderWithTheme(<BgtImageCard {...defaultProps} />);
+		it("should fall back to the initial when the image cannot be loaded", () => {
+			renderWithTheme(<BgtImageCard {...defaultProps} />);
 
-			fireEvent.error(container.querySelector("img") as HTMLImageElement);
+			fireEvent.error(screen.getByRole("img"));
 
-			expect(container.querySelector("img")).not.toBeInTheDocument();
-			expect(container.querySelector('[style*="--fallback-color"]')).toBeInTheDocument();
+			expect(screen.getByText("C")).toBeInTheDocument();
 		});
 	});
 
 	describe("Game State", () => {
-		it("should render game state when not owned", () => {
-			renderWithTheme(<BgtImageCard {...defaultProps} state={GameState.Wanted} />);
-			expect(screen.getByText("game:state.wanted")).toBeInTheDocument();
-		});
-
-		it("should not render the owned state", () => {
+		it("should render game state when provided", () => {
 			renderWithTheme(<BgtImageCard {...defaultProps} state={GameState.Owned} />);
-			expect(screen.queryByText("game:state.owned")).not.toBeInTheDocument();
+			expect(screen.getByText("game:state.owned")).toBeInTheDocument();
 		});
 
 		it("should not render state when null", () => {
@@ -108,13 +95,13 @@ describe("BgtImageCard", () => {
 					title="Wingspan"
 					image="/wingspan.jpg"
 					link="/games/2"
-					state={GameState.ForTrade}
+					state={GameState.Owned}
 					isLoaned={false}
 				/>,
 			);
 
 			expect(screen.getByText(/Wingspan/)).toBeInTheDocument();
-			expect(screen.getByText("game:state.for-trade")).toBeInTheDocument();
+			expect(screen.getByText("game:state.owned")).toBeInTheDocument();
 			expect(screen.getByRole("link")).toHaveAttribute("href", "/games/2");
 		});
 	});

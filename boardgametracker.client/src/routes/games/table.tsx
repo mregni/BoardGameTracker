@@ -30,7 +30,6 @@ import { formatRange as formatValueRange } from "@/utils/rangeUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./-components/EditableNumberCell";
 import { EditableSelectCell } from "./-components/EditableSelectCell";
-import { GamesLoadError } from "./-components/GamesLoadError";
 import { GameTableCards, type GameTableColumn } from "./-components/GameTableCards";
 import { LivePrice, withStateChange } from "./-components/LivePrice";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
@@ -67,7 +66,7 @@ function RouteComponent() {
 	const { t, i18n } = useTranslation(["games", "game", "common", "dashboard"]);
 	const navigate = useNavigate();
 	const { q, state, language, inStock } = Route.useSearch();
-	const { games, isLoading, isError, refetch } = useGamesData();
+	const { games, isLoading } = useGamesData();
 	const { canWrite } = usePermissions();
 	const { updateGame } = useInlineGameUpdate();
 	const settingsQuery = useQuery(getSettings());
@@ -362,8 +361,6 @@ function RouteComponent() {
 	);
 
 	const columnWidths: (string | null)[] = [null, null, null, null, null, "w-52", "w-52"];
-
-	if (isError) return <GamesLoadError onRetry={() => refetch()} />;
 
 	if (!isLoading && games.length === 0) {
 		return (

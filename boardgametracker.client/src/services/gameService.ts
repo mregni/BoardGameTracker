@@ -1,27 +1,12 @@
 import type { CreateGame, Expansion, ExpansionData, ExpansionUpdate } from "@/models/";
 import type { ShameStatistics } from "@/models/Games/ShameStatistics";
-import type {
-	BggSearch,
-	Game,
-	GamePlaySummary,
-	GamePrice,
-	GameStatistics,
-	ImportGame,
-	Session,
-	Shame,
-} from "../models";
+import type { BggSearch, Game, GamePrice, GameStatistics, ImportGame, Session, Shame } from "../models";
 import { axiosInstance } from "../utils/axiosInstance";
 
 const domain = "game";
 
 export const getGamesCall = (): Promise<Game[]> => {
 	return axiosInstance.get<Game[]>(domain).then((response) => {
-		return response.data;
-	});
-};
-
-export const getGamePlaySummariesCall = (): Promise<GamePlaySummary[]> => {
-	return axiosInstance.get<GamePlaySummary[]>(`${domain}/plays`).then((response) => {
 		return response.data;
 	});
 };

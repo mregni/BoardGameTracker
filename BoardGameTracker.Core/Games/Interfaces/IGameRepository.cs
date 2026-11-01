@@ -23,7 +23,6 @@ public interface IGameRepository: IRepository<Game>
     Task<List<Game>> GetRecentlyAddedGames(int count, CancellationToken cancellationToken = default);
     Task<int> CountGamesWithNoRecentSessions(DateTime cutoffDate, CancellationToken cancellationToken = default);
     Task<List<ShameGame>> GetShameGames(DateTime cutoffDate);
-    Task<List<GamePlaySummary>> GetPlaySummaries();
     Task<OwnedCollectionSummary> GetOwnedCollectionSummary(CancellationToken cancellationToken = default);
     Task<List<Game>> GetByIdsAsync(IEnumerable<int> ids);
 }

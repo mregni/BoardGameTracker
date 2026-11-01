@@ -4,7 +4,6 @@ import {
 	getBggCollectionCall,
 	getGameCall,
 	getGameExpansionsCall,
-	getGamePlaySummariesCall,
 	getGamePriceCall,
 	getGameSessionsCall,
 	getGameStatisticsCall,
@@ -16,13 +15,6 @@ import {
 import { createEntityQuery, createListQuery, createNestedQuery, createNestedQueryWithKeys } from "./queryFactory";
 
 export const getGames = createListQuery(QUERY_KEYS.games, getGamesCall);
-
-export const getGamePlaySummaries = () =>
-	queryOptions({
-		queryKey: [QUERY_KEYS.games, QUERY_KEYS.plays],
-		queryFn: getGamePlaySummariesCall,
-		retry: false,
-	});
 
 export const getGame = createEntityQuery(QUERY_KEYS.game, getGameCall);
 

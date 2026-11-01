@@ -24,7 +24,6 @@ export * from "./Games/Expansion";
 export * from "./Games/ExpansionLink";
 export * from "./Games/Game";
 export * from "./Games/GameManual";
-export * from "./Games/GamePlaySummary";
 export * from "./Games/GamePrice";
 export * from "./Games/GameState";
 export * from "./Games/GameStatistics";

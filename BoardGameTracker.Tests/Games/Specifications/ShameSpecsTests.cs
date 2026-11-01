@@ -43,20 +43,6 @@ public class ShameSpecsTests
     ];
 
     [Fact]
-    public void GamePlaySummariesSpec_ShouldReturnPlayedGamesWithCountAndLatestStart()
-    {
-        var spec = new GamePlaySummariesSpec();
-
-        var result = spec.Evaluate(Fixture()).OrderBy(x => x.GameId).ToList();
-
-        result.Select(x => x.GameId).Should().Equal(2, 3, 5);
-        result.Single(x => x.GameId == 3).PlayCount.Should().Be(2);
-        result.Single(x => x.GameId == 3).LastPlayed.Should().Be(Cutoff.AddDays(-10));
-        result.Single(x => x.GameId == 5).LastPlayed.Should().Be(Cutoff.AddDays(1));
-        spec.AsNoTracking.Should().BeTrue();
-    }
-
-    [Fact]
     public void ShameGamesSpec_ShouldReturnOnlyOwnedGamesWithoutRecentSessions_OrderedByTitle()
     {
         var spec = new ShameGamesSpec(Cutoff);
