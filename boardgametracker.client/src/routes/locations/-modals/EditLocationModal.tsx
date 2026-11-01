@@ -1,3 +1,5 @@
+import { useStore } from "@tanstack/react-form";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtInputField } from "@/components/BgtForm";
@@ -21,6 +23,16 @@ export const EditLocationModal = (props: Props) => {
 		onUpdateSuccess: close,
 	});
 
+	const fieldsRef = useRef<HTMLDivElement>(null);
+
+	const focusName = (event: Event) => {
+		const field = fieldsRef.current?.querySelector("input");
+		if (field) {
+			event.preventDefault();
+			field.focus();
+		}
+	};
+
 	const form = useAppForm({
 		defaultValues: {
 			name: location.name,
@@ -35,25 +47,23 @@ export const EditLocationModal = (props: Props) => {
 		},
 	});
 
-	if (location === null) return null;
+	const unchanged = useStore(form.store, (state) => state.values.name.trim() === location.name);
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent>
+			<BgtDialogContent onOpenAutoFocus={focusName}>
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
 					<BgtDialogTitle>{t("edit.title")}</BgtDialogTitle>
-					<div className="flex flex-col gap-2 mb-3">
+					<div ref={fieldsRef} className="flex flex-col gap-2 mb-3">
 						<form.Field name="name" validators={zodValidator(CreateLocationSchema, "name")}>
-							{(field) => (
-								<BgtInputField field={field} type="text" label={t("new.name.placeholder")} disabled={isLoading} />
-							)}
+							{(field) => <BgtInputField field={field} type="text" label={t("new.name.label")} disabled={isLoading} />}
 						</form.Field>
 					</div>
 					<BgtDialogFooter
 						onCancel={close}
 						confirmLabel={t("common:save")}
 						confirmType="submit"
-						disabled={isLoading}
+						disabled={isLoading || unchanged}
 						cancelDisabled={isLoading}
 					/>
 				</form>

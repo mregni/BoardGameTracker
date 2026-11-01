@@ -1,14 +1,15 @@
 {
   "empty": {
-    "title": "Aún no hay ubicaciones"
+    "title": "Aún no hay ubicaciones",
+    "description": "Las ubicaciones son los lugares donde juegas: casa, la casa de un amigo, el café de juegos. Elige una al registrar una sesión."
   },
   "new": {
     "button": "Añadir ubicación",
     "title": "Añadir ubicación",
     "description": "Introduce el nombre de la ubicación para crear una nueva.",
     "name": {
-      "placeholder": "Nombre de la ubicación",
-      "required": "El nombre de la ubicación es obligatorio"
+      "required": "El nombre de la ubicación es obligatorio",
+      "label": "Nombre"
     },
     "save": "Añadir"
   },
@@ -25,17 +26,59 @@
     "delete-failed": "Error al eliminar la ubicación"
   },
   "delete": {
-    "description": "¿Seguro que quieres eliminar la ubicación '{{name}}'?",
-    "extra-description": "La ubicación está vinculada a {{count}} partidas, que se desvincularán."
+    "description": "¿Eliminar la ubicación '{{name}}'?",
+    "description-with-sessions_one": "¿Eliminar la ubicación '{{name}}'? Su {{count}} sesión se conserva, pero ya no estará vinculada a una ubicación.",
+    "description-with-sessions_other": "¿Eliminar la ubicación '{{name}}'? Sus {{count}} sesiones se conservan, pero ya no estarán vinculadas a una ubicación."
   },
-  "count_one": "{{count}} ubicación",
-  "count_other": "{{count}} ubicaciones",
   "detail": {
-    "label": "Ubicación",
     "back": "Volver a ubicaciones",
     "sessions": "Partidas",
     "games": "Juegos jugados",
     "players": "Jugadores",
-    "play-time": "Tiempo de juego"
+    "play-time": "Tiempo de juego",
+    "last-played": "Última partida {{when}}",
+    "never-played": "Aún no hay sesiones aquí",
+    "most-played": "Más jugados aquí",
+    "top-winners": "Mejores ganadores aquí",
+    "recent-sessions": "Sesiones recientes",
+    "show-all": "Mostrar las {{count}} sesiones",
+    "show-fewer": "Mostrar menos",
+    "winner": "Ganador:",
+    "no-winner": "Sin ganador",
+    "session-count_one": "{{count}} sesión",
+    "session-count_other": "{{count}} sesiones",
+    "win-count_one": "{{count}} victoria",
+    "win-count_other": "{{count}} victorias",
+    "not-found": {
+      "title": "Ubicación no encontrada",
+      "description": "Puede que se haya eliminado o que el enlace esté desactualizado."
+    },
+    "load-failed": {
+      "title": "No se pudo cargar esta ubicación",
+      "description": "Comprueba tu conexión e inténtalo de nuevo."
+    },
+    "more-games_one": "+{{count}} juego más",
+    "more-games_other": "+{{count}} juegos más",
+    "more-players_one": "+{{count}} jugador más",
+    "more-players_other": "+{{count}} jugadores más",
+    "all-sessions": "Todas las sesiones ({{count}})",
+    "no-sessions-hint": "Elige esta ubicación al registrar una sesión y aparecerá aquí."
+  },
+  "error": {
+    "title": "No se pudieron cargar las ubicaciones",
+    "description": "Comprueba tu conexión e inténtalo de nuevo."
+  },
+  "filter": {
+    "no-matches": "Ninguna ubicación coincide con “{{filter}}”",
+    "clear": "Borrar filtro"
+  },
+  "tile": {
+    "last-played": "última partida {{when}}"
+  },
+  "sort": {
+    "label": "Ordenar ubicaciones",
+    "recent": "Jugadas recientemente",
+    "most-played": "Más jugadas",
+    "name": "Nombre"
   }
 }

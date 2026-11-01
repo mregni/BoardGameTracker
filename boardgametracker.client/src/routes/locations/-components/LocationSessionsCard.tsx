@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
@@ -12,6 +14,8 @@ import type { Session } from "@/models";
 import { useGameById } from "@/routes/-hooks/useGameById";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
 import { toDisplay } from "@/utils/dateUtils";
+
+const RECENT_COUNT = 5;
 
 interface Props {
 	sessions: Session[];
@@ -26,29 +30,39 @@ export const LocationSessionsCard = (props: Props) => {
 	const shortDuration = useShortDuration();
 	const { gameById } = useGameById();
 	const { playerById } = usePlayerById();
+	const [showAll, setShowAll] = useState(false);
+	const visible = showAll ? sessions : sessions.slice(0, RECENT_COUNT);
 
 	return (
-		<BgtCard title={t("detail.sessions")} icon={Calendar}>
+		<BgtCard
+			title={showAll ? t("detail.all-sessions", { count: sessions.length }) : t("detail.recent-sessions")}
+			icon={Calendar}
+		>
 			{sessions.length === 0 ? (
-				<BgtNoData />
+				<BgtNoData message={t("detail.no-sessions-hint")} />
 			) : (
 				<ul className="flex flex-col divide-y divide-primary/10">
-					{sessions.map((session) => {
+					{visible.map((session) => {
 						const game = gameById(session.gameId);
 						const winnerSession = session.playerSessions.find((playerSession) => playerSession.won);
 						const winner = winnerSession ? playerById(winnerSession.playerId) : undefined;
 						const row = (
 							<>
 								<span className="flex min-w-0 flex-1 items-center gap-2">
-									<BgtAvatar image={game?.image} title={game?.title} size="medium" />
+									<span aria-hidden="true">
+										<BgtAvatar image={game?.image} title={game?.title} size="medium" />
+									</span>
 									<span className="truncate font-semibold">{game?.title}</span>
 									{session.isCoop ? (
 										<CoopResultPill won={session.teamWon === true} className="ml-auto" />
-									) : (
+									) : winner ? (
 										<span className="ml-auto flex min-w-0 shrink items-center gap-1">
-											{winner && <Crown className="size-4 shrink-0 text-yellow-400" />}
-											<span className="truncate">{winner?.name ?? "-"}</span>
+											<Crown aria-hidden="true" className="size-4 shrink-0 text-yellow-400" />
+											<span className="sr-only">{t("detail.winner")}</span>
+											<span className="truncate">{winner.name}</span>
 										</span>
+									) : (
+										<span className="ml-auto shrink-0 text-white/60">{t("detail.no-winner")}</span>
 									)}
 								</span>
 								<span className="flex justify-between gap-3 text-sm tabular-nums text-white/60 sm:contents">
@@ -78,6 +92,16 @@ export const LocationSessionsCard = (props: Props) => {
 						);
 					})}
 				</ul>
+			)}
+			{sessions.length > RECENT_COUNT && (
+				<BgtButton
+					variant="text"
+					onClick={() => setShowAll(!showAll)}
+					className="mt-2 self-start"
+					aria-expanded={showAll}
+				>
+					{showAll ? t("detail.show-fewer") : t("detail.show-all", { count: sessions.length })}
+				</BgtButton>
 			)}
 		</BgtCard>
 	);
