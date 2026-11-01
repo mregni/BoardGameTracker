@@ -8338,6 +8338,11 @@
           "playCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "lastPlayed": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false
