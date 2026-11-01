@@ -64,13 +64,13 @@ describe("RecordCard", () => {
 
 		expect(
 			screen.getByRole("img", {
-				name: "46 sessions together: Mikhaël won 23, someone else won 6, Kathleen won 17",
+				name: "46 sessions together: Mikhaël won 23, Kathleen won 17, 6 not won by either",
 			}),
 		).toBeInTheDocument();
 		const segments = screen.getAllByTestId("progress-segment");
 		expect(segments.map((segment) => segment.dataset.tone)).toEqual(["playerOne", "muted", "subtle", "playerTwo"]);
 		const legend = screen.getAllByRole("listitem").map((item) => item.textContent);
-		expect(legend).toEqual(["someone else won6"]);
+		expect(legend).toEqual(["not won by either6"]);
 	});
 
 	it("counts a game both won for both players without breaking the bar", () => {
@@ -88,7 +88,7 @@ describe("RecordCard", () => {
 
 		const bar = screen.getByRole("img", { name: /3 sessions together/ });
 		expect(bar).not.toHaveAttribute("data-overflow");
-		expect(screen.queryByText("someone else won")).toBeNull();
+		expect(screen.queryByText("not won by either")).toBeNull();
 	});
 
 	it("adds a hatched same co-op team part with its team result to the bar and the legend", () => {
@@ -101,13 +101,13 @@ describe("RecordCard", () => {
 		);
 
 		const bar = screen.getByRole("img", {
-			name: "49 sessions together: Mikhaël won 23, someone else won 6, Kathleen won 17, same co-op team 3 (won 2, lost 1)",
+			name: "49 sessions together: Mikhaël won 23, Kathleen won 17, 6 not won by either, same co-op team 3 (won 2, lost 1)",
 		});
 		const team = bar.querySelector('[data-tone="subtle"]');
 		expect(team).toHaveAttribute("data-pattern", "hatch");
 		expect(team).toHaveAttribute("data-visible", "true");
 		const legend = screen.getAllByRole("listitem");
-		expect(legend.map((item) => item.textContent)).toEqual(["someone else won6", "same co-op team3 (won 2, lost 1)"]);
+		expect(legend.map((item) => item.textContent)).toEqual(["not won by either6", "same co-op team3 (won 2, lost 1)"]);
 		expect(within(legend[1]).getByTestId("progress-legend-swatch")).toHaveAttribute("data-pattern", "hatch");
 	});
 

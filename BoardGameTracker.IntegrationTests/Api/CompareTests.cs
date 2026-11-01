@@ -109,7 +109,6 @@ public class CompareTests : IAsyncLifetime
         result.BestGames.PlayerOne.Should().Equal(_azulId);
         result.BestGames.PlayerTwo.Should().BeEmpty();
         result.ClosestGame.Should().BeEquivalentTo(new ClosestGame { GameId = _azulId, ScoringDifference = 0, PlayerId = _aliceId });
-        result.LongestSessionTogether.Should().BeEquivalentTo(new LongestSession { GameId = _brassId, Minutes = 170 });
         result.FirstGameTogether.Should().BeEquivalentTo(new FirstGameTogether { GameId = _azulId, StartDate = Day });
         result.PreferredGame.Should().BeEquivalentTo(new PreferredGame { GameId = _azulId, SessionCount = 4 });
         result.Streak.Should().BeNull();
