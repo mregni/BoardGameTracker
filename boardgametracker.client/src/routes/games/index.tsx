@@ -14,6 +14,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useDebouncedSearchQuery } from "@/hooks/useDebouncedSearchQuery";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePermissions } from "@/hooks/usePermissions";
 import { GameState } from "@/models";
@@ -31,7 +32,6 @@ import {
 } from "./-components/GamesFilters";
 import { GamesTableView } from "./-components/GamesTableView";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
-import { useDebouncedSearchQuery } from "./-hooks/useDebouncedSearchQuery";
 import { useGamesData } from "./-hooks/useGamesData";
 import {
 	filterByTitle,
