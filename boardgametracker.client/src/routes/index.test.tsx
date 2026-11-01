@@ -83,11 +83,11 @@ describe("Dashboard page", () => {
 		mocks.navigate.mockReset();
 	});
 
-	it("renders nothing while the data loads", () => {
+	it("shows a loading skeleton while the data loads", () => {
 		mocks.data = {};
-		const { container } = renderWithProviders(<mocks.captured.Page />);
+		renderWithProviders(<mocks.captured.Page />);
 
-		expect(container).toBeEmptyDOMElement();
+		expect(screen.getByRole("status", { name: "loading-data" })).toBeInTheDocument();
 	});
 
 	it("shows the empty page without games and sends the user to add a game", async () => {

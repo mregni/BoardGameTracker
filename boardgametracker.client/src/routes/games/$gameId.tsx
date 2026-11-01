@@ -95,10 +95,10 @@ function RouteComponent() {
 							<BgtDetailLayout
 								sidebar={
 									<>
-										<div className="hidden lg:block">
+										<div className="hidden lg:block motion-safe:animate-cover-settle">
 											<BgtPoster title={game.title} image={game.image} />
 										</div>
-										<div className="max-lg:order-3">
+										<div className="max-lg:order-3 motion-safe:animate-rise-in motion-safe:[animation-delay:120ms]">
 											<GameFactsCard
 												game={game}
 												currency={settings.currency}
@@ -125,7 +125,7 @@ function RouteComponent() {
 									</>
 								}
 							>
-								<div className="max-lg:order-1 flex items-start gap-3">
+								<div className="max-lg:order-1 flex items-start gap-3 motion-safe:animate-rise-in motion-safe:[animation-delay:60ms]">
 									<div className="size-16 shrink-0 lg:hidden">
 										<BgtPoster title={game.title} image={game.image} />
 									</div>

@@ -81,7 +81,10 @@ export const BgtBarChart = (props: Props) => {
 	if (!data || data.length === 0) return null;
 
 	return (
-		<div ref={containerRef} className="h-full min-h-64">
+		<div
+			ref={containerRef}
+			className="h-full min-h-64 [&_rect[data-testid^='bar.item']]:origin-bottom [&_rect[data-testid^='bar.item']]:[transform-box:fill-box] motion-safe:[&_rect[data-testid^='bar.item']]:animate-bar-grow"
+		>
 			<ResponsiveBar
 				data={data}
 				keys={keys}
@@ -108,6 +111,7 @@ export const BgtBarChart = (props: Props) => {
 				enableLabel={false}
 				enableGridY={true}
 				theme={theme}
+				animate={false}
 				tooltip={({ value, indexValue }) => (
 					<div className="bg-background border border-primary/30 rounded-lg p-3 shadow-lg min-w-32">
 						<BgtText color="white">{indexValue}</BgtText>

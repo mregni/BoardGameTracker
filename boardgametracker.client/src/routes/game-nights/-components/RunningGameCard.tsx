@@ -44,9 +44,15 @@ export const RunningGameCard = (props: Props) => {
 			<div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
 				<BgtAvatar size="large" title={game?.title} image={game?.image} />
 				<div className="flex min-w-0 flex-col gap-0.5">
-					<BgtText size="3" weight="bold" className="wrap-anywhere">
-						{t("play.now-playing", { game: game?.title ?? "" })}
-					</BgtText>
+					<div className="flex items-center gap-2">
+						<span aria-hidden="true" className="relative flex size-2 shrink-0">
+							<span className="absolute inset-0 rounded-full bg-ok motion-safe:animate-live-ping" />
+							<span className="relative size-2 rounded-full bg-ok" />
+						</span>
+						<BgtText size="3" weight="bold" className="wrap-anywhere">
+							{t("play.now-playing", { game: game?.title ?? "" })}
+						</BgtText>
+					</div>
 					<BgtText size="2" color="gray">
 						{t("play.running", {
 							time: toDisplayTime(runningGame.start, settings.timeFormat, settings.uiLanguage),

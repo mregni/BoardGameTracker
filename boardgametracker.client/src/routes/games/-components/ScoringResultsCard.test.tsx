@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { renderWithTheme, screen, within } from "@/test/test-utils";
+import { renderWithTheme, screen, waitFor, within } from "@/test/test-utils";
 import { ScoringResultsCard } from "./ScoringResultsCard";
 
 vi.mock("@/routes/-hooks/usePlayerById", () => ({
@@ -22,7 +22,7 @@ describe("ScoringResultsCard", () => {
 		expect(container).toBeEmptyDOMElement();
 	});
 
-	it("shows one labelled bar per result relative to the top score", () => {
+	it("shows one labelled bar per result relative to the top score", async () => {
 		renderWithTheme(<ScoringResultsCard scoreRankChart={chart} />);
 
 		const top = screen.getByRole("progressbar", { name: "charts.top-scoring.top-score" });
@@ -30,10 +30,12 @@ describe("ScoringResultsCard", () => {
 		expect(top).toHaveAttribute("max", "120");
 		expect(top).toHaveAttribute("aria-valuetext", "120");
 		expect(top.parentElement).toHaveClass("h-2", "bg-primary/10");
-		expect(within(top.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({
-			width: "100%",
-			backgroundColor: "#10b981",
-		});
+		await waitFor(() =>
+			expect(within(top.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({
+				width: "100%",
+				backgroundColor: "#10b981",
+			}),
+		);
 
 		const average = screen.getByRole("progressbar", { name: "charts.top-scoring.average" });
 		expect(average).toHaveAttribute("aria-valuetext", "90");

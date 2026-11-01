@@ -47,6 +47,7 @@ export const ScoringResultsCard = (props: Props) => {
 							value={item.score}
 							max={maxScore}
 							color={SCORING_COLORS[item.key]}
+							animateOnMount
 							aria-label={t(`charts.top-scoring.${item.key}`)}
 							aria-valuetext={integer(item.score)}
 						/>
