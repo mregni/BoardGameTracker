@@ -14,15 +14,20 @@ export type LoanStatus =
 	| { kind: "due"; date: Date }
 	| { kind: "no-due-date" };
 
-export type LoanStatusTone = "red" | "amber" | "neutral";
+export const LONG_OVERDUE_DAYS = 30;
 
-export const LOAN_STATUS_TONE: Record<LoanStatus["kind"], LoanStatusTone> = {
-	overdue: "red",
-	"due-today": "amber",
-	"due-soon": "amber",
-	due: "neutral",
-	"no-due-date": "neutral",
-	returned: "neutral",
+export type LoanStatusTone = "red" | "amber" | "soon" | "neutral";
+
+export const getLoanStatusTone = (status: LoanStatus): LoanStatusTone => {
+	switch (status.kind) {
+		case "overdue":
+			return status.days > LONG_OVERDUE_DAYS ? "red" : "amber";
+		case "due-today":
+		case "due-soon":
+			return "soon";
+		default:
+			return "neutral";
+	}
 };
 
 export type DuePreset = "one-week" | "two-weeks" | "one-month" | "none" | "custom";
@@ -58,9 +63,11 @@ export const getLoanStatus = (loan: Loan, now: Date = new Date()): LoanStatus =>
 };
 
 export const getLoanStats = (activeLoans: Loan[], now: Date = new Date()) => {
-	const kinds = activeLoans.map((loan) => getLoanStatus(loan, now).kind);
+	const statuses = activeLoans.map((loan) => getLoanStatus(loan, now));
+	const kinds = statuses.map((status) => status.kind);
 	return {
 		overdue: kinds.filter((kind) => kind === "overdue").length,
+		longOverdue: statuses.filter((status) => getLoanStatusTone(status) === "red").length,
 		dueThisWeek: kinds.filter((kind) => kind === "due-today" || kind === "due-soon").length,
 	};
 };
@@ -104,3 +111,21 @@ export const formatDayCount = (days: number, language: string): string =>
 
 export const formatLoanDate = (value: DateValue, dateFormat: string | null | undefined, language: string): string =>
 	toDisplay(value, dateFormat || DEFAULT_DATE_FORMAT, language);
+
+export type LoanFilter = "all" | "overdue" | "due-this-week";
+
+export const matchesLoanFilter = (loan: Loan, filter: LoanFilter, now: Date = new Date()): boolean => {
+	if (filter === "all") {
+		return true;
+	}
+	const kind = getLoanStatus(loan, now).kind;
+	return filter === "overdue" ? kind === "overdue" : kind === "due-today" || kind === "due-soon";
+};
+
+export const groupLoansByBorrower = (loans: Loan[]) => {
+	const groups = new Map<number, Loan[]>();
+	for (const loan of loans) {
+		groups.set(loan.playerId, [...(groups.get(loan.playerId) ?? []), loan]);
+	}
+	return [...groups].map(([playerId, playerLoans]) => ({ playerId, loans: playerLoans }));
+};

@@ -9,6 +9,7 @@ const buttonVariants = cva("font-bold rounded-sm inline-flex flex-row gap-1 just
 			secondary: "bg-primary/10 hover:bg-primary/25 text-white border border-primary/40",
 			error: "bg-error-strong hover:bg-error-strong/80 text-white [--focus-color:var(--color-bad)]",
 			text: "text-primary-text hover:text-indigo-300",
+			outline: "border border-primary/60 text-white hover:bg-primary/20",
 		},
 		size: {
 			"1": "py-2 px-2 text-xs",
@@ -33,6 +34,7 @@ const disabledVariantClasses: Record<NonNullable<VariantProps<typeof buttonVaria
 	secondary: "text-white/40 border border-white/20",
 	error: "bg-white/10 text-white/40",
 	text: "text-white/40",
+	outline: "text-white/40 border border-white/20",
 };
 
 interface Props

@@ -44,10 +44,11 @@ describe("LoanStatusPill", () => {
 	});
 
 	it.each([
-		["an overdue loan", loan({ dueDate: new Date(2026, 9, 8) }), "3 days overdue", "text-red-400"],
-		["a loan that is one day overdue", loan({ dueDate: new Date(2026, 9, 10) }), "1 day overdue", "text-red-400"],
-		["a loan due today", loan({ dueDate: new Date(2026, 9, 11) }), "Due today", "text-amber-400"],
-		["a loan due soon", loan({ dueDate: new Date(2026, 9, 15) }), "Due in 4 days", "text-amber-400"],
+		["an overdue loan", loan({ dueDate: new Date(2026, 9, 8) }), "3 days overdue", "text-warn"],
+		["a loan that is one day overdue", loan({ dueDate: new Date(2026, 9, 10) }), "1 day overdue", "text-warn"],
+		["a loan overdue for over a month", loan({ dueDate: new Date(2026, 8, 1) }), "40 days overdue", "text-bad"],
+		["a loan due today", loan({ dueDate: new Date(2026, 9, 11) }), "Due today", "text-stat-title"],
+		["a loan due soon", loan({ dueDate: new Date(2026, 9, 15) }), "Due in 4 days", "text-stat-title"],
 		["a loan due later", loan({ dueDate: new Date(2026, 9, 25) }), "Due 25-10-2026", "text-white/60"],
 		["a loan without a due date", loan(), "No due date", "text-white/60"],
 		["a returned loan", loan({ returnedDate: new Date(2026, 8, 14) }), "Returned 14-09-2026", "text-white/60"],

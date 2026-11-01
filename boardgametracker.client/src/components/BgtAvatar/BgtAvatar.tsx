@@ -96,7 +96,7 @@ export const BgtAvatar = (props: Props) => {
 		>
 			{showImage && (
 				<img
-					className={avatarClasses}
+					className={cx(avatarClasses, "bg-white/5")}
 					style={title ? { backgroundColor: StringToHsl(colorKey ?? title) } : undefined}
 					src={image}
 					alt={title || ""}
