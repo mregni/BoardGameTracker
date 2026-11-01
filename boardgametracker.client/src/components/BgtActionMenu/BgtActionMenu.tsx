@@ -82,6 +82,7 @@ export const BgtActionMenu = ({ label, items }: Props) => {
 					ref={menuRef}
 					id={menuId}
 					role="menu"
+					tabIndex={-1}
 					onKeyDown={handleMenuKey}
 					aria-label={label}
 					className="absolute right-0 z-30 mt-1 min-w-44 overflow-hidden rounded-lg border border-white/10 bg-background py-1 shadow-2xl"
