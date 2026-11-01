@@ -107,14 +107,14 @@ describe("co-op statistics", () => {
 	});
 
 	it("shows the co-op wins and losses of a player who played co-op", () => {
-		renderWithProviders(<PlayerStatisticsGrid statistics={playerStats(2, 1)} />);
+		renderWithProviders(<PlayerStatisticsGrid playerId={1} statistics={playerStats(2, 1)} />);
 
 		expect(screen.getByText("coop-record")).toBeInTheDocument();
 		expect(screen.getByText("coop-results")).toBeInTheDocument();
 	});
 
 	it("leaves the co-op stat out for a player who never played co-op", () => {
-		renderWithProviders(<PlayerStatisticsGrid statistics={playerStats(0, 0)} />);
+		renderWithProviders(<PlayerStatisticsGrid playerId={1} statistics={playerStats(0, 0)} />);
 
 		expect(screen.queryByText("coop-record")).not.toBeInTheDocument();
 	});

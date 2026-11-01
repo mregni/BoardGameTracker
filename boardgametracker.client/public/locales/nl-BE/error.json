@@ -126,5 +126,6 @@
   },
   "feature": {
     "disabled": "Deze functie staat uit in de instellingen"
-  }
+  },
+  "load-failed": "Deze pagina kon niet geladen worden"
 }
