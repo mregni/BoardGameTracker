@@ -85,14 +85,25 @@ export const sortGames = (games: Game[], sort: GameSort | undefined): Game[] => 
 
 export const isPlayable = (game: Game): boolean => game.state === GameState.Owned && !game.isLoaned;
 
-export const pickWheelGames = (games: Game[], max = 10, random = Math.random): Game[] => {
-	const playable = games.filter(isPlayable);
-	for (let i = playable.length - 1; i > 0; i--) {
-		const j = Math.floor(random() * (i + 1));
-		[playable[i], playable[j]] = [playable[j], playable[i]];
-	}
-	return playable.slice(0, max);
+const STALE_DAYS = 180;
+
+export const freshWeight = (game: Game, now = Date.now()): number => {
+	if (game.playCount === 0 || !game.lastPlayed) return 3;
+	return now - new Date(game.lastPlayed).getTime() > STALE_DAYS * 86_400_000 ? 2 : 1;
 };
+
+export const pickWheelGames = (
+	games: Game[],
+	max = 10,
+	random = Math.random,
+	weight: (game: Game) => number = () => 1,
+): Game[] =>
+	games
+		.filter(isPlayable)
+		.map((game) => ({ game, key: random() ** (1 / weight(game)) }))
+		.sort((a, b) => b.key - a.key)
+		.slice(0, max)
+		.map(({ game }) => game);
 
 export const ownedPriceStats = (games: Game[]) => {
 	const priced = games.filter((game) => game.state === GameState.Owned && (game.buyingPrice ?? 0) > 0);

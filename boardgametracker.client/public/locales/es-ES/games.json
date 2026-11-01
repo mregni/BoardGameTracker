@@ -126,6 +126,14 @@
     "exclude": "Este no",
     "candidates-capped": "{{count}} de {{total}} juegos en la ruleta",
     "restore_one": "Devolver {{count}} juego excluido",
-    "restore_other": "Devolver {{count}} juegos excluidos"
+    "restore_other": "Devolver {{count}} juegos excluidos",
+    "fresh": "Primero los no jugados",
+    "all-games": "Todos los juegos disponibles",
+    "adjust": "Ajustar",
+    "excluded": "Esta noche no",
+    "restore-one": "Devolver {{title}} a la ruleta",
+    "none-owned": "Ahora no hay ningún juego propio disponible. Los juegos prestados no entran en la ruleta.",
+    "to-games": "Ir a tus juegos",
+    "vetoed": "{{title}} sale de la ruleta. Girando otra vez…"
   }
 }

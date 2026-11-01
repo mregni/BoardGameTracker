@@ -51,9 +51,24 @@ describe("PickWheel", () => {
 		await vi.waitFor(() => expect(onExclude).toHaveBeenCalledOnce());
 	});
 
-	it("shows the only candidate straight away without a spin", () => {
-		renderWithTheme(<Harness games={[game(4, "Azul")]} onExclude={vi.fn()} />);
+	it("spins again on its own after a veto", async () => {
+		const Vetoing = () => {
+			const [games, setGames] = useState([game(4, "Azul"), game(5, "Catan"), game(6, "Brass")]);
+			return <Harness games={games} onExclude={(id) => setGames((all) => all.filter((g) => g.id !== id))} />;
+		};
+		const { container } = renderWithTheme(<Vetoing />);
 
+		await userEvent.click(screen.getByRole("button", { name: "pick.spin" }));
+		await userEvent.click(await screen.findByRole("button", { name: "pick.exclude" }));
+
+		await vi.waitFor(() => expect(container.querySelectorAll("image")).toHaveLength(2));
+		expect(await screen.findByRole("button", { name: "pick.open" })).toBeInTheDocument();
+	});
+
+	it("shows the only candidate straight away without a wheel", () => {
+		const { container } = renderWithTheme(<Harness games={[game(4, "Azul")]} onExclude={vi.fn()} />);
+
+		expect(container.querySelector("svg[viewBox]")).toBeNull();
 		expect(screen.getByRole("button", { name: "pick.open" })).toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "pick.exclude" })).not.toBeInTheDocument();
 	});

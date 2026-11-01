@@ -16,6 +16,7 @@ interface Props {
 	onSpinStart: () => void;
 	onResult: (gameId: number) => void;
 	onExclude: (gameId: number) => void;
+	weight?: (game: Game) => number;
 }
 
 export const PICK_ACTION_SELECTOR = "[data-pick-action]";
@@ -55,11 +56,9 @@ const segmentCoverBox = (start: number, end: number) => {
 	};
 };
 
-const restingRotation = (index: number, slice: number) => 360 - (index + 0.5) * slice;
-
 const normalise = (angle: number) => ((angle % 360) + 360) % 360;
 
-export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude }: Props) => {
+export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude, weight }: Props) => {
 	const { t } = useTranslation("games");
 	const navigate = useNavigate();
 	const { canWrite } = usePermissions();
@@ -68,12 +67,18 @@ export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude }:
 	const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
 	const wheelRef = useRef<SVGGElement>(null);
 	const cardRef = useRef<HTMLDivElement>(null);
-	const slice = 360 / Math.max(games.length, 1);
+	const weights = games.map((game) => weight?.(game) ?? 1);
+	const totalWeight = weights.reduce((sum, value) => sum + value, 0);
+	const sizes = weights.map((value) => (360 * value) / totalWeight);
+	const starts = sizes.map((_, index) => sizes.slice(0, index).reduce((sum, value) => sum + value, 0));
+	const restingRotation = (index: number) => 360 - (starts[index] + sizes[index] / 2);
 	const initialIndex = games.findIndex((game) => game.id === winnerId);
-	const rotationRef = useRef(restingRotation(Math.max(initialIndex, 0), slice));
+	const rotationRef = useRef(restingRotation(Math.max(initialIndex, 0)));
 	const spunRef = useRef(false);
+	const respinRef = useRef(false);
 	const [spinning, setSpinning] = useState(false);
 	const [vetoId, setVetoId] = useState<number>();
+	const [vetoedTitle, setVetoedTitle] = useState<string>();
 
 	const winnerIndex = spinning ? -1 : games.length === 1 ? 0 : games.findIndex((game) => game.id === winnerId);
 	const picked = winnerIndex >= 0 ? games[winnerIndex] : undefined;
@@ -89,9 +94,16 @@ export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude }:
 	const spin = () => {
 		const wheel = wheelRef.current;
 		if (!wheel || spinning || games.length < 2) return;
-		const next = Math.floor(Math.random() * games.length);
+		let draw = Math.random() * totalWeight;
+		const next = Math.max(
+			weights.findIndex((value) => {
+				draw -= value;
+				return draw < 0;
+			}),
+			0,
+		);
 		const from = rotationRef.current;
-		const to = from - (from % 360) + FULL_TURNS * 360 + restingRotation(next, slice);
+		const to = from - (from % 360) + FULL_TURNS * 360 + restingRotation(next);
 		rotationRef.current = to;
 		spunRef.current = true;
 		onSpinStart();
@@ -112,8 +124,22 @@ export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude }:
 		};
 	};
 
-	const veto = (gameId: number) => {
+	useEffect(() => {
+		if (!respinRef.current) return;
+		respinRef.current = false;
+		spin();
+	});
+
+	const spinAgain = () => {
+		setVetoedTitle(undefined);
+		spin();
+	};
+
+	const veto = (game: Game) => {
+		const gameId = game.id;
 		spunRef.current = true;
+		respinRef.current = games.length > 2;
+		setVetoedTitle(game.title);
 		setVetoId(gameId);
 		window.setTimeout(
 			() => {
@@ -129,11 +155,18 @@ export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude }:
 		return index === winnerIndex ? "fill-black/10" : "fill-black/75";
 	};
 
-	const chord = games.length === 1 ? RADIUS : 2 * RADIUS * 0.6 * Math.sin(((slice / 2) * Math.PI) / 180);
-	const fontSize = Math.max(6.5, Math.min(9.5, chord * 0.42));
-	const maxChars = Math.floor((RADIUS - HUB - 10) / (fontSize * 0.56));
-	const label = (title: string) => (title.length > maxChars ? `${title.slice(0, maxChars - 1)}…` : title);
+	const fontSizeFor = (size: number) =>
+		Math.max(6.5, Math.min(9.5, 2 * RADIUS * 0.6 * Math.sin((Math.min(size, 180) / 2) * (Math.PI / 180)) * 0.42));
+	const label = (title: string, fontSize: number) => {
+		const maxChars = Math.floor((RADIUS - HUB - 10) / (fontSize * 0.56));
+		return title.length > maxChars ? `${title.slice(0, maxChars - 1)}…` : title;
+	};
 	const labelDistance = (RADIUS + HUB) / 2;
+	const announcement = () => {
+		if (picked) return t("pick.result", { title: picked.title });
+		if (!spinning) return "";
+		return vetoedTitle ? t("pick.vetoed", { title: vetoedTitle }) : t("pick.spinning");
+	};
 
 	return (
 		<div className="flex flex-col items-center gap-4 w-full">
@@ -142,67 +175,69 @@ export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude }:
 					<li key={game.id}>{game.title}</li>
 				))}
 			</ul>
-			<svg
-				viewBox="-112 -112 224 224"
-				className={cx("w-full max-w-[480px] aspect-square", !picked && games.length > 1 && "cursor-pointer")}
-				aria-hidden="true"
-				onClick={picked ? undefined : spin}
-			>
-				<g ref={wheelRef} style={{ transformOrigin: "0 0", transform: `rotate(${rotationRef.current}deg)` }}>
-					{games.map((game, index) => {
-						const start = index * slice;
-						const box = segmentCoverBox(start, start + slice);
-						const clipId = `${clipPrefix}-${game.id}`;
-						const mid = start + slice / 2;
-						const upsideDown = normalise(mid + rotationRef.current) > 180;
-						return (
-							<g key={game.id} className={cx("wheel-slice", game.id === vetoId && "vetoed")}>
-								<clipPath id={clipId}>
-									<path d={segmentPath(start, start + slice)} />
-								</clipPath>
-								<g clipPath={`url(#${clipId})`}>
-									<rect x={-RADIUS} y={-RADIUS} width={RADIUS * 2} height={RADIUS * 2} className="fill-primary/40" />
-									{game.image && (
-										<image
-											href={game.image}
-											x={box.x}
-											y={box.y}
-											width={box.size}
-											height={box.size}
-											preserveAspectRatio="xMidYMid slice"
+			{games.length > 1 && (
+				<svg
+					viewBox="-112 -112 224 224"
+					className={cx("w-full max-w-[480px] aspect-square", !picked && "cursor-pointer")}
+					aria-hidden="true"
+					onClick={picked ? undefined : spinAgain}
+				>
+					<g ref={wheelRef} style={{ transformOrigin: "0 0", transform: `rotate(${rotationRef.current}deg)` }}>
+						{games.map((game, index) => {
+							const start = starts[index];
+							const end = start + sizes[index];
+							const box = segmentCoverBox(start, end);
+							const clipId = `${clipPrefix}-${game.id}`;
+							const mid = start + sizes[index] / 2;
+							const fontSize = fontSizeFor(sizes[index]);
+							const upsideDown = normalise(mid + rotationRef.current) > 180;
+							return (
+								<g key={game.id} className={cx("wheel-slice", game.id === vetoId && "vetoed")}>
+									<clipPath id={clipId}>
+										<path d={segmentPath(start, end)} />
+									</clipPath>
+									<g clipPath={`url(#${clipId})`}>
+										<rect x={-RADIUS} y={-RADIUS} width={RADIUS * 2} height={RADIUS * 2} className="fill-primary/40" />
+										{game.image && (
+											<image
+												href={game.image}
+												x={box.x}
+												y={box.y}
+												width={box.size}
+												height={box.size}
+												preserveAspectRatio="xMidYMid slice"
+											/>
+										)}
+										<rect
+											x={-RADIUS}
+											y={-RADIUS}
+											width={RADIUS * 2}
+											height={RADIUS * 2}
+											className={`${overlayClass(index)} transition-[fill] duration-500 motion-reduce:transition-none`}
 										/>
-									)}
-									<rect
-										x={-RADIUS}
-										y={-RADIUS}
-										width={RADIUS * 2}
-										height={RADIUS * 2}
-										className={`${overlayClass(index)} transition-[fill] duration-500 motion-reduce:transition-none`}
-									/>
+									</g>
+									<text
+										transform={
+											upsideDown
+												? `rotate(${mid + 90}) translate(${-labelDistance} 0)`
+												: `rotate(${mid - 90}) translate(${labelDistance} 0)`
+										}
+										textAnchor="middle"
+										dominantBaseline="middle"
+										paintOrder="stroke"
+										strokeWidth={fontSize * 0.28}
+										strokeLinejoin="round"
+										fontSize={fontSize}
+										className="fill-white stroke-black/80 font-bold"
+									>
+										<title>{game.title}</title>
+										{label(game.title, fontSize)}
+									</text>
 								</g>
-								<text
-									transform={
-										upsideDown
-											? `rotate(${mid + 90}) translate(${-labelDistance} 0)`
-											: `rotate(${mid - 90}) translate(${labelDistance} 0)`
-									}
-									textAnchor="middle"
-									dominantBaseline="middle"
-									paintOrder="stroke"
-									strokeWidth={fontSize * 0.28}
-									strokeLinejoin="round"
-									fontSize={fontSize}
-									className="fill-white stroke-black/80 font-bold"
-								>
-									<title>{game.title}</title>
-									{label(game.title)}
-								</text>
-							</g>
-						);
-					})}
-					{games.length > 1 &&
-						games.map((game, index) => {
-							const edge = point(index * slice, RADIUS);
+							);
+						})}
+						{games.map((game, index) => {
+							const edge = point(starts[index], RADIUS);
 							return (
 								<line
 									key={`divider-${game.id}`}
@@ -215,43 +250,43 @@ export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude }:
 								/>
 							);
 						})}
-					<circle r={RADIUS + 1} fill="none" className="stroke-primary" strokeWidth={3} />
-					{games.length > 1 &&
-						games.map((game, index) => {
-							const peg = point(index * slice, RADIUS + 1);
+						<circle r={RADIUS + 1} fill="none" className="stroke-primary" strokeWidth={3} />
+						{games.map((game, index) => {
+							const peg = point(starts[index], RADIUS + 1);
 							return <circle key={`peg-${game.id}`} cx={peg.x} cy={peg.y} r={1.6} className="fill-primary-text" />;
 						})}
-					{winnerIndex >= 0 && games.length > 1 && (
-						<path
-							d={segmentPath(winnerIndex * slice, (winnerIndex + 1) * slice)}
-							fill="none"
-							className="stroke-primary-text"
-							strokeWidth={1.5}
-							strokeLinejoin="round"
-						/>
-					)}
-				</g>
-				<circle r={HUB} className="fill-card stroke-primary" strokeWidth={2.5} />
-				<path
-					d="M -9 -111 L 9 -111 L 0 -90 Z"
-					className="fill-primary-text stroke-background"
-					strokeWidth={1.5}
-					strokeLinejoin="round"
-				/>
-			</svg>
+						{winnerIndex >= 0 && (
+							<path
+								d={segmentPath(starts[winnerIndex], starts[winnerIndex] + sizes[winnerIndex])}
+								fill="none"
+								className="stroke-primary-text"
+								strokeWidth={1.5}
+								strokeLinejoin="round"
+							/>
+						)}
+					</g>
+					<circle r={HUB} className="fill-card stroke-primary" strokeWidth={2.5} />
+					<path
+						d="M -9 -111 L 9 -111 L 0 -90 Z"
+						className="fill-primary-text stroke-background"
+						strokeWidth={1.5}
+						strokeLinejoin="round"
+					/>
+				</svg>
+			)}
 			<p className="sr-only" aria-live="polite">
-				{spunRef.current && (picked ? t("pick.result", { title: picked.title }) : spinning ? t("pick.spinning") : "")}
+				{spunRef.current && announcement()}
 			</p>
 			{picked ? (
 				<div
 					ref={cardRef}
-					className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-[480px] rounded-xl border border-primary/30 bg-primary/10 p-4 scroll-mb-28 md:scroll-mb-6"
+					className="pick-result flex flex-col gap-4 w-full max-w-[480px] rounded-xl border border-primary/30 bg-primary/10 p-4 scroll-mb-28 md:scroll-mb-6"
 				>
-					<div className="size-24 shrink-0 overflow-hidden rounded-lg">
-						<BgtFallbackImage title={picked.title} image={picked.image} decorative />
-					</div>
-					<div className="flex flex-col gap-3 min-w-0 flex-1 items-center sm:items-start text-center sm:text-left">
-						<div className="flex flex-col gap-1">
+					<div className="flex items-center gap-4 min-w-0">
+						<div className="size-20 shrink-0 overflow-hidden rounded-lg">
+							<BgtFallbackImage title={picked.title} image={picked.image} decorative />
+						</div>
+						<div className="flex flex-col gap-1 min-w-0">
 							<span className="text-sm text-white/60">{t("pick.tonight")}</span>
 							<span className="text-xl font-bold text-white">{picked.title}</span>
 							<span className="text-sm text-card-value">
@@ -260,41 +295,41 @@ export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude }:
 								{durationRange(picked.minPlayTime, picked.maxPlayTime) ?? "-"}
 							</span>
 						</div>
-						<div className="grid grid-cols-2 gap-2 w-full">
+					</div>
+					<div className="grid grid-cols-2 gap-2">
+						<BgtButton
+							data-pick-action
+							className="min-h-11"
+							onClick={() => navigate({ to: "/games/$gameId", params: { gameId: picked.id } })}
+						>
+							{t("pick.open")}
+						</BgtButton>
+						{canWrite && (
 							<BgtButton
-								data-pick-action
+								variant="cancel"
 								className="min-h-11"
-								onClick={() => navigate({ to: "/games/$gameId", params: { gameId: picked.id } })}
+								onClick={() => navigate({ to: "/sessions/new/$gameId", params: { gameId: picked.id } })}
 							>
-								{t("pick.open")}
+								{t("pick.log")}
 							</BgtButton>
-							{canWrite && (
-								<BgtButton
-									variant="cancel"
-									className="min-h-11"
-									onClick={() => navigate({ to: "/sessions/new/$gameId", params: { gameId: picked.id } })}
-								>
-									{t("pick.log")}
+						)}
+						{games.length > 1 && (
+							<>
+								<BgtButton variant="text" className="min-h-11" onClick={spinAgain}>
+									{t("pick.again")}
 								</BgtButton>
-							)}
-							{games.length > 1 && (
-								<>
-									<BgtButton variant="text" className="min-h-11" onClick={spin}>
-										{t("pick.again")}
-									</BgtButton>
-									<BgtButton variant="text" className="min-h-11" onClick={() => veto(picked.id)}>
-										{t("pick.exclude")}
-									</BgtButton>
-								</>
-							)}
-						</div>
+								<BgtButton variant="text" className="min-h-11" onClick={() => veto(picked)}>
+									{t("pick.exclude")}
+								</BgtButton>
+							</>
+						)}
 					</div>
 				</div>
 			) : (
 				<BgtButton
 					data-pick-action
 					aria-disabled={spinning || undefined}
-					onClick={spin}
+					onClick={spinAgain}
 					className={cx("min-h-11", spinning && "opacity-60 cursor-wait")}
 				>
 					{spinning ? t("pick.spinning") : t("pick.spin")}

@@ -126,6 +126,14 @@
     "exclude": "Niet deze",
     "candidates-capped": "{{count}} van {{total}} spellen op het wiel",
     "restore_one": "{{count}} uitgesloten spel terugzetten",
-    "restore_other": "{{count}} uitgesloten spellen terugzetten"
+    "restore_other": "{{count}} uitgesloten spellen terugzetten",
+    "fresh": "Ongespeeld eerst",
+    "all-games": "Alle beschikbare spellen",
+    "adjust": "Aanpassen",
+    "excluded": "Niet vanavond",
+    "restore-one": "{{title}} terug op het wiel zetten",
+    "none-owned": "Er is nu geen spel in bezit beschikbaar. Uitgeleende spellen komen niet op het wiel.",
+    "to-games": "Naar je spellen",
+    "vetoed": "{{title}} is van het wiel. Opnieuw draaien…"
   }
 }
