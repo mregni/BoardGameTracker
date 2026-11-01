@@ -1,10 +1,10 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
+import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import Trophy from "@/assets/icons/trophy.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
-import { BgtText } from "@/components/BgtText/BgtText";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { MostPlayedGame } from "@/models";
 
@@ -21,11 +21,13 @@ export const MostPlayedGamesCard = (props: Props) => {
 			{games.length === 0 ? (
 				<BgtNoData />
 			) : (
-				<div className="flex flex-col gap-3">
+				<ul className="-mt-2 flex flex-col divide-y divide-white/10">
 					{games.map((game) => (
-						<MostPlayedGameItem key={game.id} game={game} />
+						<li key={game.id}>
+							<MostPlayedGameItem game={game} />
+						</li>
 					))}
-				</div>
+				</ul>
 			)}
 		</BgtCard>
 	);
@@ -36,29 +38,29 @@ interface MostPlayedGameItemProps {
 }
 
 const MostPlayedGameItem = ({ game }: MostPlayedGameItemProps) => {
-	const navigate = useNavigate();
 	const { t } = useTranslation(["common", "player"]);
 	const { percent } = useNumberFormat();
 
 	return (
-		<BgtCard>
-			<div className="flex items-center gap-4">
-				<div className="w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/30 shrink-0">
-					<BgtAvatar
-						onClick={() => navigate({ to: `/games/${game.id}` })}
-						image={game.image}
-						title={game.title}
-						size="large"
-					/>
-				</div>
-				<div className="flex-1">
-					<BgtText color="white">{game.title}</BgtText>
-					<div className="text-white/50 text-sm">
-						{t("sessions", { count: game.totalSessions ?? 0 })} · {t("win", { count: game.totalWins ?? 0 })}
-					</div>
-				</div>
-				<div className="text-cyan-400 font-bold">{percent(game.winningPercentage / 100)}</div>
-			</div>
-		</BgtCard>
+		<Link
+			to="/games/$gameId"
+			params={{ gameId: game.id }}
+			className="-mx-2 flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-primary/10"
+		>
+			<span aria-hidden="true">
+				<BgtAvatar image={game.image} title={game.title} size="large" />
+			</span>
+			<span className="min-w-0 flex-1">
+				<span className="block truncate font-semibold">{game.title}</span>
+				<span className="block text-xs text-white/60">
+					{t("sessions", { count: game.totalSessions ?? 0 })} · {t("win", { count: game.totalWins ?? 0 })}
+				</span>
+			</span>
+			<span
+				className={cx("shrink-0 font-bold tabular-nums", game.winningPercentage >= 50 ? "text-ok" : "text-white/70")}
+			>
+				{percent(game.winningPercentage / 100)}
+			</span>
+		</Link>
 	);
 };

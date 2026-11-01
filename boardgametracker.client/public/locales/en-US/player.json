@@ -43,9 +43,7 @@
   },
   "cards": {
     "games": "Games",
-    "win-record": "Win/loss record",
-    "most-played-games": "Most played games",
-    "win-record-summary": "Wins: {{wins}}, losses: {{losses}}, total: {{total}}"
+    "most-played-games": "Most played games"
   },
   "titles": {
     "achievements": "Achievements"
@@ -55,7 +53,11 @@
     "feats": "Feats",
     "next": "Next: {{goal}}",
     "complete": "All levels earned",
-    "see-all": "See all achievements"
+    "locked": "Not earned yet",
+    "levels": "{{earned}} of {{total}} levels",
+    "show-locked_one": "Show {{count}} locked",
+    "show-locked_other": "Show {{count}} locked",
+    "hide-locked": "Hide locked"
   },
   "account": {
     "label": "Linked account",
@@ -65,5 +67,40 @@
     "uses-picture": "Uses {{username}}'s profile picture.",
     "own-picture": "Uses its own picture. Remove it to show {{username}}'s profile picture.",
     "link-failed": "Couldn't change the linked account"
+  },
+  "standing": {
+    "ranked": "#{{rank}} of {{count}} on the leaderboard",
+    "to-rank_one": "{{count}} more session to make the leaderboard",
+    "to-rank_other": "{{count}} more sessions to make the leaderboard"
+  },
+  "actions": {
+    "log-session": "Log a session",
+    "compare": "Compare"
+  },
+  "record": {
+    "win-rate": "{{value}} win rate",
+    "form_one": "Last session",
+    "form_other": "Last {{count}} sessions",
+    "form-summary": "{{won}} won, {{lost}} lost",
+    "form-win": "W",
+    "form-loss": "L",
+    "nemesis": "Nemesis"
+  },
+  "no-sessions": {
+    "title": "No games logged with {{name}} yet",
+    "description": "Log a session and their record, ranking and achievements show up here."
+  },
+  "missing": {
+    "title": "Player not found",
+    "description": "This player may have been deleted, or the link is wrong."
+  },
+  "session": {
+    "players_one": "{{count}} player",
+    "players_other": "{{count}} players",
+    "won-by": "{{names}} won"
+  },
+  "rivals": {
+    "title": "Head-to-head",
+    "record": "{{wins}} won, {{losses}} lost"
   }
 }

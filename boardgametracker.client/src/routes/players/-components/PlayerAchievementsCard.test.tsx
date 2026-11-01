@@ -1,20 +1,38 @@
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { renderWithTheme, screen, within } from "@/test/test-utils";
+import { renderWithTheme, screen } from "@/test/test-utils";
 import { allBadges, earnedBadges } from "../-hooks/achievementFixtures";
 import { PlayerAchievementsCard } from "./PlayerAchievementsCard";
-import { PlayerAchievementsSummary } from "./PlayerAchievementsSummary";
 
 describe("PlayerAchievementsCard", () => {
-	it("shows one milestone per badge type with its current level and the next goal", () => {
+	it("shows earned milestones with their level and the next goal", () => {
 		renderWithTheme(<PlayerAchievementsCard badges={allBadges} playerBadges={earnedBadges} />);
 
 		expect(screen.getByText("achievements.milestones")).toBeInTheDocument();
 		expect(screen.getByText("badges:sessions.blue.title")).toBeInTheDocument();
+		expect(screen.getByText("2/4")).toBeInTheDocument();
+		expect(screen.getByText("achievements.levels")).toHaveClass("sr-only");
+		expect(screen.getByText("achievements.next")).toHaveClass("line-clamp-2");
+		expect(screen.queryByText("badges:wins.green.title")).not.toBeInTheDocument();
+	});
+
+	it("reveals the locked achievements on request", async () => {
+		renderWithTheme(<PlayerAchievementsCard badges={allBadges} playerBadges={earnedBadges} />);
+
+		await userEvent.click(screen.getByRole("button", { name: "achievements.show-locked" }));
+
 		expect(screen.getByText("badges:wins.green.title")).toBeInTheDocument();
-		expect(screen.getAllByText("achievements.next")).toHaveLength(2);
-		expect(screen.getAllByText("achievements.next")[0]).toHaveClass("line-clamp-2");
-		expect(screen.getByRole("img", { name: "2/4" })).toBeInTheDocument();
-		expect(screen.getByRole("img", { name: "0/4" })).toBeInTheDocument();
+		expect(screen.getByRole("img", { name: "marathonRunner.title, player:achievements.locked" })).toHaveClass(
+			"grayscale",
+		);
+		expect(screen.getByRole("button", { name: "achievements.hide-locked" })).toHaveAttribute("aria-expanded", "true");
+	});
+
+	it("shows everything when nothing is earned yet", () => {
+		renderWithTheme(<PlayerAchievementsCard badges={allBadges} playerBadges={[]} />);
+
+		expect(screen.getByText("badges:wins.green.title")).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "achievements.show-locked" })).not.toBeInTheDocument();
 	});
 
 	it("says a milestone is complete once gold is earned", () => {
@@ -24,58 +42,13 @@ describe("PlayerAchievementsCard", () => {
 		expect(screen.getByText("achievements.complete")).toBeInTheDocument();
 	});
 
-	it("shows the feats with their descriptions on hover", () => {
+	it("names the earned feats", () => {
 		renderWithTheme(<PlayerAchievementsCard badges={allBadges} playerBadges={earnedBadges} />);
 
 		expect(screen.getByText("achievements.feats")).toBeInTheDocument();
-		expect(screen.getByText("firstTry.title").closest("li")).toHaveAttribute("title", "firstTry.description");
-		expect(screen.getByText("marathonRunner.title")).toBeInTheDocument();
-	});
-});
-
-describe("PlayerAchievementsSummary", () => {
-	it("shows the earned count, the progress, the earned badges and a link to the full list", () => {
-		renderWithTheme(<PlayerAchievementsSummary badges={allBadges} playerBadges={earnedBadges} />);
-
-		expect(screen.getByText("titles.achievements (2/4)")).toBeInTheDocument();
-		const progress = screen.getByRole("progressbar", { name: "titles.achievements" });
-		expect(progress).toHaveAttribute("value", "2");
-		expect(progress).toHaveAttribute("max", "4");
-		expect(within(progress.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({ width: "50%" });
-		expect(within(screen.getByRole("list")).getAllByRole("img")).toHaveLength(2);
-		expect(screen.getByRole("link", { name: "achievements.see-all" })).toHaveAttribute("href", "#player-achievements");
-	});
-
-	it("shows the highest earned level of each badge type, newest first", () => {
-		const playerBadges = allBadges.map((badge, index) => ({
-			...badge,
-			awardedAt: index === 0 ? null : `2026-01-${String(index + 1).padStart(2, "0")}T10:00:00Z`,
-		}));
-		renderWithTheme(<PlayerAchievementsSummary badges={allBadges} playerBadges={playerBadges} />);
-
-		const icons = within(screen.getByRole("list")).getAllByRole("img");
-		expect(icons.map((icon) => icon.getAttribute("src"))).toEqual([
-			"/images/badges/marathonRunner.png",
-			"/images/badges/firstTry.png",
-			"/images/badges/wins-gold.png",
-			"/images/badges/sessions-gold.png",
-		]);
-	});
-
-	it("shows no badge row when the player has not earned any", () => {
-		renderWithTheme(<PlayerAchievementsSummary badges={allBadges} playerBadges={[]} />);
-
-		expect(screen.queryByRole("list")).not.toBeInTheDocument();
-		expect(screen.queryAllByRole("img")).toHaveLength(0);
-		expect(screen.getByRole("link", { name: "achievements.see-all" })).toBeInTheDocument();
-	});
-
-	it("shows an empty progress bar when there are no badges", () => {
-		renderWithTheme(<PlayerAchievementsSummary badges={[]} playerBadges={[]} />);
-
-		const progress = screen.getByRole("progressbar", { name: "titles.achievements" });
-		expect(progress).toHaveAttribute("value", "0");
-		expect(progress).toHaveAttribute("max", "1");
-		expect(within(progress.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({ width: "0%" });
+		expect(screen.getByRole("img", { name: "firstTry.title" })).toBeInTheDocument();
+		expect(
+			screen.queryByRole("img", { name: "marathonRunner.title, player:achievements.locked" }),
+		).not.toBeInTheDocument();
 	});
 });
