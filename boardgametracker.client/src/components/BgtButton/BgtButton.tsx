@@ -1,32 +1,35 @@
 import { cva, cx, type VariantProps } from "class-variance-authority";
 import type { ComponentPropsWithoutRef } from "react";
 
-export const buttonVariants = cva("font-bold rounded-sm inline-flex flex-row gap-1 justify-center items-center align-middle", {
-	variants: {
-		variant: {
-			primary: "bg-primary/60 hover:bg-primary/50 text-white",
-			cancel: "hover:bg-cancel/10 text-cancel border border-cancel/60",
-			secondary: "bg-primary/10 hover:bg-primary/25 text-white border border-primary/40",
-			error: "bg-error-strong hover:bg-error-strong/80 text-white [--focus-color:var(--color-bad)]",
-			text: "text-primary-text hover:text-indigo-300",
-			outline: "border border-primary/60 text-white hover:bg-primary/20",
+export const buttonVariants = cva(
+	"font-bold rounded-sm inline-flex flex-row gap-1 justify-center items-center align-middle",
+	{
+		variants: {
+			variant: {
+				primary: "bg-primary/60 hover:bg-primary/50 text-white",
+				cancel: "hover:bg-cancel/10 text-cancel border border-cancel/60",
+				secondary: "bg-primary/10 hover:bg-primary/25 text-white border border-primary/40",
+				error: "bg-error-strong hover:bg-error-strong/80 text-white [--focus-color:var(--color-bad)]",
+				text: "text-primary-text hover:text-indigo-300",
+				outline: "border border-primary/60 text-white hover:bg-primary/20",
+			},
+			size: {
+				"1": "py-2 px-2 text-xs",
+				"2": "py-2 px-3",
+				"3": "py-3 px-8",
+			},
+			disabled: {
+				true: "cursor-not-allowed",
+				false: "hover:cursor-pointer",
+			},
 		},
-		size: {
-			"1": "py-2 px-2 text-xs",
-			"2": "py-2 px-3",
-			"3": "py-3 px-8",
-		},
-		disabled: {
-			true: "cursor-not-allowed",
-			false: "hover:cursor-pointer",
+		defaultVariants: {
+			variant: "primary",
+			size: "2",
+			disabled: false,
 		},
 	},
-	defaultVariants: {
-		variant: "primary",
-		size: "2",
-		disabled: false,
-	},
-});
+);
 
 const disabledVariantClasses: Record<NonNullable<VariantProps<typeof buttonVariants>["variant"]>, string> = {
 	primary: "bg-white/10 text-white/40",
