@@ -1,14 +1,15 @@
 {
   "empty": {
-    "title": "No locations yet"
+    "title": "No locations yet",
+    "description": "Locations are the places you play: home, a friend's place, the game café. Pick one when you log a session."
   },
   "new": {
     "button": "Add location",
     "title": "Add location",
     "description": "Enter the location name to create a new one.",
     "name": {
-      "placeholder": "Location name",
-      "required": "Location name is required"
+      "required": "Location name is required",
+      "label": "Name"
     },
     "save": "Add"
   },
@@ -25,17 +26,59 @@
     "delete-failed": "Failed deleting location"
   },
   "delete": {
-    "description": "Are you sure you want to delete location '{{name}}'?",
-    "extra-description": "The location is connected to {{count}} game sessions, they will be disconnected."
+    "description": "Delete location '{{name}}'?",
+    "description-with-sessions_one": "Delete location '{{name}}'? Its {{count}} session is kept, but no longer linked to a location.",
+    "description-with-sessions_other": "Delete location '{{name}}'? Its {{count}} sessions are kept, but no longer linked to a location."
   },
-  "count_one": "{{count}} location",
-  "count_other": "{{count}} locations",
   "detail": {
-    "label": "Location",
     "back": "Back to locations",
     "sessions": "Sessions",
     "games": "Games played",
     "players": "Players",
-    "play-time": "Play time"
+    "play-time": "Play time",
+    "last-played": "Last played {{when}}",
+    "never-played": "No sessions here yet",
+    "most-played": "Most played here",
+    "top-winners": "Top winners here",
+    "recent-sessions": "Recent sessions",
+    "show-all": "Show all {{count}} sessions",
+    "show-fewer": "Show fewer",
+    "winner": "Winner:",
+    "no-winner": "No winner",
+    "session-count_one": "{{count}} session",
+    "session-count_other": "{{count}} sessions",
+    "win-count_one": "{{count}} win",
+    "win-count_other": "{{count}} wins",
+    "not-found": {
+      "title": "Location not found",
+      "description": "It may have been deleted, or the link is out of date."
+    },
+    "load-failed": {
+      "title": "Couldn't load this location",
+      "description": "Check your connection and try again."
+    },
+    "more-games_one": "+{{count}} more game",
+    "more-games_other": "+{{count}} more games",
+    "more-players_one": "+{{count}} more player",
+    "more-players_other": "+{{count}} more players",
+    "all-sessions": "All sessions ({{count}})",
+    "no-sessions-hint": "Choose this location when you log a session and it shows up here."
+  },
+  "error": {
+    "title": "Couldn't load locations",
+    "description": "Check your connection and try again."
+  },
+  "filter": {
+    "no-matches": "No locations match “{{filter}}”",
+    "clear": "Clear filter"
+  },
+  "tile": {
+    "last-played": "last played {{when}}"
+  },
+  "sort": {
+    "label": "Sort locations",
+    "recent": "Recently played",
+    "most-played": "Most played",
+    "name": "Name"
   }
 }

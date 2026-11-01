@@ -2,16 +2,12 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import LogOut from "@/assets/icons/log-out.svg?react";
 import More from "@/assets/icons/more.svg?react";
-import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
-import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtMenuItem } from "@/components/BgtMenu/BgtMenuItem";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { useAuth } from "@/hooks/useAuth";
 import { useIsBottomNavHidden } from "@/hooks/useHideBottomNav";
-import { useLogout } from "@/hooks/useLogout";
 import { useMenuInfo } from "../-hooks/useMenuInfo";
+import { UserCard } from "./UserCard";
 
 export const BottomNav = () => {
 	const { t } = useTranslation(["version", "common"]);
@@ -19,10 +15,6 @@ export const BottomNav = () => {
 	const [showMoreMenu, setShowMoreMenu] = useState(false);
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname;
-	const user = useAuth((s) => s.user);
-	const isAuthenticated = useAuth((s) => s.isAuthenticated);
-	const authStatus = useAuth((s) => s.authStatus);
-	const handleLogout = useLogout();
 	const hidden = useIsBottomNavHidden();
 
 	const handleMoreClick = () => {
@@ -43,7 +35,6 @@ export const BottomNav = () => {
 		return null;
 	}
 
-	const showAuth = authStatus?.authEnabled;
 	return (
 		<>
 			{showMoreMenu && (
@@ -56,31 +47,16 @@ export const BottomNav = () => {
 
 			{showMoreMenu && (
 				<div className="fixed bottom-(--bottom-nav-h) w-full z-40 md:hidden border border-white/10 rounded-t-2xl overflow-hidden shadow-2xl bg-background/95">
-					<div className="px-4 py-3 border-b border-white/10 bg-background font-mono flex justify-between">
-						<BgtText color="white" opacity={40}>
+					<div className="px-4 py-2 border-b border-white/10 bg-background flex justify-between">
+						<BgtText color="white" size="1" opacity={60}>
 							{t("version")}
 						</BgtText>
-						<BgtText color="white" opacity={40}>
-							{versionInfo?.currentVersion}
+						<BgtText color="white" size="1" opacity={60} className="font-mono tabular-nums">
+							v{versionInfo?.currentVersion}
 						</BgtText>
 					</div>
 
-					{showAuth && isAuthenticated && user && (
-						<div className="px-2  bg-white/5 flex items-center gap-2 py-2">
-							<div className="shrink-0">
-								<BgtAvatar image={user.profileImage} title={user.displayName || user.username} colorKey={user.id} />
-							</div>
-							<div className="flex-1 min-w-0">
-								<div className="text-xs text-white/60 truncate">{user.displayName || user.username}</div>
-							</div>
-							<BgtIconButton
-								icon={<LogOut className="size-4" />}
-								onClick={handleLogout}
-								intent="subtile"
-								aria-label={t("common:logout")}
-							/>
-						</div>
-					)}
+					<UserCard />
 
 					<div>
 						{menuItems
@@ -101,9 +77,10 @@ export const BottomNav = () => {
 			<nav className="md:hidden fixed bottom-0 left-0 right-0 h-(--bottom-nav-h) pb-[env(safe-area-inset-bottom)] bg-background/95 backdrop-blur-lg border-t border-white/10 z-40">
 				<div className="flex h-full items-center justify-between">
 					{mobileMenuItems.map((item) => {
-						const isActive = item.path === "more" ? isMoreMenuActive || showMoreMenu : currentPath === item.path;
+						const isActive =
+							item.path === "more" ? isMoreMenuActive || showMoreMenu : !showMoreMenu && currentPath === item.path;
 						const itemClassName =
-							"relative flex flex-col items-center justify-center gap-1 py-2 flex-1 h-full transition-all active:scale-95";
+							"relative flex flex-col items-center justify-center gap-0.5 py-1 flex-1 h-full transition-all active:scale-95";
 
 						const content = (
 							<>
@@ -115,12 +92,17 @@ export const BottomNav = () => {
 									{isActive && <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full" />}
 									<item.icon
 										className={cx(
-											"relative transition-colors size-6",
+											"relative transition-colors size-5",
 											isActive ? "text-primary stroke-[2.5]" : "text-gray-400 stroke-2",
 										)}
 									/>
 								</div>
-								<BgtText size="1" color={isActive ? "primary" : "gray"} className={cx("text-center transition-colors")}>
+								<BgtText
+									size="1"
+									weight="medium"
+									color={isActive ? "primary" : "gray"}
+									className="text-center transition-colors"
+								>
 									{t(item.menuLabel)}
 								</BgtText>
 							</>

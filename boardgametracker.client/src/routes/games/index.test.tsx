@@ -205,8 +205,7 @@ describe("Games table sorting", () => {
 });
 
 describe("Games table inline editing", () => {
-	it("opens the price editor of only the clicked row and closes it again", async () => {
-		const user = userEvent.setup();
+	it("opens the price editor of only the clicked row and closes it again", () => {
 		mocks.games = [game(1, null), game(2, null)];
 		mocks.hideCards = true;
 		renderTable();
@@ -218,7 +217,7 @@ describe("Games table inline editing", () => {
 		expect(priceCell(1).getByRole("textbox", { name: "games:columns.price: Game 1" })).toHaveFocus();
 		expect(priceCell(2).queryByRole("textbox")).not.toBeInTheDocument();
 
-		await user.keyboard("{Escape}");
+		fireEvent.keyDown(priceCell(1).getByRole("textbox"), { key: "Escape" });
 
 		expect(priceCell(1).queryByRole("textbox")).not.toBeInTheDocument();
 	});

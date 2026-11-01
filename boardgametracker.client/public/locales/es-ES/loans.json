@@ -1,7 +1,8 @@
 {
   "title": "Préstamos",
   "empty": {
-    "title": "Aún no hay préstamos"
+    "title": "Aún no hay préstamos",
+    "description": "Presta un juego a un amigo y controla cuándo debe volver."
   },
   "statistics": {
     "returned": "Devueltos",
@@ -18,19 +19,25 @@
   "delete": {
     "button": "Eliminar",
     "title": "Eliminar préstamo de {{game}}",
-    "description": "¿Seguro que quieres eliminar este préstamo? Esta acción no se puede deshacer.",
+    "description": "Esto elimina el préstamo y su historial para siempre. Si el juego ha vuelto, usa Marcar devuelto.",
     "successfull": "Préstamo eliminado",
-    "failed": "Error al eliminar el préstamo, revisa los registros para más detalles."
+    "failed": "No se pudo eliminar el préstamo. Inténtalo de nuevo en un momento."
   },
   "return": {
     "successfull": "Marcado como devuelto",
-    "failed": "Error al marcar el juego como devuelto, revisa los registros para más detalles.",
+    "failed": "No se pudo marcar el juego como devuelto. Inténtalo de nuevo en un momento.",
     "title": "Devolver {{game}}",
-    "description": "¿Cuándo se devolvió el juego?",
+    "description_one": "¿Cuándo se devolvió el juego?",
+    "description_other": "¿Cuándo se devolvieron los juegos?",
     "date": "Devuelto el",
-    "confirm": "Marcar como devuelto",
+    "confirm": "Marcar devuelto",
     "required": "La fecha de devolución es obligatoria",
-    "before-start": "La fecha de devolución no puede ser anterior al inicio del préstamo"
+    "before-start": "La fecha de devolución no puede ser anterior al inicio del préstamo",
+    "title-all": "Devolver {{count}} juegos de {{name}}",
+    "games": "Juegos",
+    "undo": "Deshacer",
+    "undone": "Prestado de nuevo",
+    "undo-failed": "No se pudo deshacer la devolución. Inténtalo de nuevo en un momento."
   },
   "no-active-loans": "No hay préstamos activos en este momento.",
   "new": {
@@ -82,6 +89,39 @@
     "summary_one": "{{count}} préstamo devuelto",
     "summary_other": "{{count}} préstamos devueltos",
     "show": "Ver historial",
-    "hide": "Ocultar historial"
+    "hide": "Ocultar historial",
+    "summary-filtered_one": "{{matched}} de {{count}} préstamo devuelto",
+    "summary-filtered_other": "{{matched}} de {{count}} préstamos devueltos"
+  },
+  "group": {
+    "games_one": "{{count}} juego",
+    "games_other": "{{count}} juegos",
+    "overdue_one": "{{count}} con retraso",
+    "overdue_other": "{{count}} con retraso"
+  },
+  "mark-all-returned-button": "Marcar todo devuelto",
+  "row": {
+    "actions": "Acciones para {{game}}"
+  },
+  "unknown-game": "Juego desconocido",
+  "unknown-player": "Prestatario desconocido",
+  "search": {
+    "placeholder": "Buscar juego o prestatario"
+  },
+  "no-matches": "Ningún préstamo coincide con este filtro.",
+  "clear-filter": "Mostrar todos los préstamos",
+  "due": "vence el {{date}}",
+  "filter": {
+    "showing": "Mostrando: {{name}}",
+    "clear": "Quitar filtro"
+  },
+  "no-search-matches": "Ningún préstamo activo coincide con “{{query}}”.",
+  "chip": {
+    "on-loan_one": "{{count}} prestado",
+    "on-loan_other": "{{count}} prestados",
+    "overdue_one": "{{count}} con retraso",
+    "overdue_other": "{{count}} con retraso",
+    "due-this-week_one": "{{count}} esta semana",
+    "due-this-week_other": "{{count}} esta semana"
   }
 }

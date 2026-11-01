@@ -23,7 +23,7 @@ export const VersionCard = ({ versionInfo }: Props) => {
 					<BgtText size="2" weight="bold" color="white">
 						{t("new")}
 					</BgtText>
-					<BgtText size="1" color="white" opacity={80} className="font-mono">
+					<BgtText size="1" color="white" opacity={80} className="font-mono tabular-nums">
 						v{versionInfo.latestVersion}
 					</BgtText>
 				</div>
@@ -33,10 +33,10 @@ export const VersionCard = ({ versionInfo }: Props) => {
 
 	return (
 		<div className="flex items-center justify-between text-xs text-white/40 p-3 border-t border-white/10">
-			<BgtText color="white" size="3" opacity={60}>
+			<BgtText color="white" size="1" opacity={60}>
 				{t("version")}
 			</BgtText>
-			<BgtText color="white" opacity={60} className="font-mono">
+			<BgtText color="white" size="1" opacity={60} className="font-mono tabular-nums">
 				v{versionInfo.currentVersion}
 			</BgtText>
 		</div>
