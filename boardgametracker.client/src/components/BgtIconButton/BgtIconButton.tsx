@@ -8,6 +8,8 @@ const iconButtonVariants = cva("rounded-lg inline-flex items-center justify-cent
 			danger: "text-error bg-error/20 hover:bg-error/40 transition-colors [--focus-color:var(--color-bad)]",
 			header: "text-white hover:text-gray-400 transition-colors",
 			subtile: "text-white/40 hover:text-white transition-colors",
+			"subtile-danger":
+				"text-gray-400 bg-white/5 hover:text-error hover:bg-error/20 transition-colors [--focus-color:var(--color-bad)]",
 		},
 		size: {
 			"1": "h-8 w-8",

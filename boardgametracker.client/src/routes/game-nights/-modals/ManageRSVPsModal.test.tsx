@@ -146,10 +146,25 @@ describe("ManageRSVPsModal", () => {
 		expect(screen.getByText("rsvp.invited")).toBeInTheDocument();
 	});
 
+	it("asks once more before removing a guest, and keeps them when the focus moves on", async () => {
+		const user = userEvent.setup();
+		const { onUpdateGameNight } = renderModal();
+		const row = () => within(screen.getByTestId("rsvp-row-7"));
+
+		await user.click(row().getByRole("button", { name: "rsvp.remove" }));
+		expect(row().getByRole("button", { name: "rsvp.remove" })).toHaveTextContent("rsvp.confirm-remove");
+		expect(onUpdateGameNight).not.toHaveBeenCalled();
+
+		await user.tab();
+		expect(row().queryByText("rsvp.confirm-remove")).not.toBeInTheDocument();
+		expect(onUpdateGameNight).not.toHaveBeenCalled();
+	});
+
 	it("removes a guest by saving the game night without them", async () => {
 		const user = userEvent.setup();
 		const { onUpdateGameNight } = renderModal();
 
+		await user.click(within(screen.getByTestId("rsvp-row-7")).getByRole("button", { name: "rsvp.remove" }));
 		await user.click(within(screen.getByTestId("rsvp-row-7")).getByRole("button", { name: "rsvp.remove" }));
 
 		await waitFor(() =>
@@ -195,13 +210,13 @@ describe("ManageRSVPsModal", () => {
 		expect(await screen.findByRole("button", { name: "card.copied" })).toBeInTheDocument();
 	});
 
-	it("has done as the single footer button and closes with it", async () => {
+	it("has close as the single footer button and closes with it", async () => {
 		const user = userEvent.setup();
 		const { close } = renderModal();
 
 		const footer = document.querySelector("[data-slot='dialog-footer']") as HTMLElement;
 		const buttons = within(footer).getAllByRole("button");
-		expect(buttons.map((button) => button.textContent)).toEqual(["common:done"]);
+		expect(buttons.map((button) => button.textContent)).toEqual(["common:close"]);
 		expect(buttons[0]).toHaveClass("bg-primary/60");
 
 		await user.click(buttons[0]);
