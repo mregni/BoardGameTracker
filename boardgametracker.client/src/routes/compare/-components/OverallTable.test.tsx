@@ -1,6 +1,6 @@
 import type { i18n as I18n } from "i18next";
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { render, screen, userEvent, within } from "@/test/test-utils";
+import { render, screen, within } from "@/test/test-utils";
 import { compareResult, createCompareI18n, playerOne, playerTwo, translationFor } from "../-test/compareTestSetup";
 import { OverallTable } from "./OverallTable";
 
@@ -15,18 +15,11 @@ describe("OverallTable", () => {
 		i18n.instance = await createCompareI18n("en-US");
 	});
 
-	it("starts collapsed and opens on its summary", async () => {
-		const user = userEvent.setup();
-		const { container } = render(
-			<OverallTable compare={compareResult()} playerOne={playerOne} playerTwo={playerTwo} />,
-		);
-		const details = container.querySelector("details");
+	it("always shows the table under its section heading", () => {
+		render(<OverallTable compare={compareResult()} playerOne={playerOne} playerTwo={playerTwo} />);
 
-		expect(details).not.toHaveAttribute("open");
-
-		await user.click(screen.getByText("Overall, not only together"));
-
-		expect(details).toHaveAttribute("open");
+		expect(screen.getByRole("region", { name: "All sessions, not just together" })).toBeInTheDocument();
+		expect(screen.getAllByTestId("overall-row")).toHaveLength(4);
 	});
 
 	it("puts both players' overall stats in one three-column table and marks the higher value", () => {

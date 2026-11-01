@@ -28,7 +28,7 @@ const FormFieldWrapperComponent = ({
 				<BgtFieldLabel>{label}</BgtFieldLabel>
 			))}
 		{children}
-		{label && <BgtFormErrors errors={errors} />}
+		{label && <BgtFormErrors id={htmlFor && `${htmlFor}-error`} errors={errors} />}
 	</div>
 );
 

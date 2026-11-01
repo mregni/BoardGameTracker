@@ -11,6 +11,7 @@ interface CapturedRoute {
 const mocks = vi.hoisted(() => ({
 	captured: {} as { config: CapturedRoute },
 	sessions: [] as Session[],
+	locationError: null as unknown,
 	navigate: vi.fn(),
 	deleteLocationCall: vi.fn(),
 }));
@@ -48,7 +49,15 @@ vi.mock("@/services/locationService", () => ({
 vi.mock("@/services/queries/locations", () => ({
 	getLocation: (id: number) => ({
 		queryKey: ["locations", id],
-		queryFn: () => Promise.resolve({ id, name: "Café De Spelerij Gent-Sint-Pieters", playCount: 12 }),
+		queryFn: () =>
+			mocks.locationError
+				? Promise.reject(mocks.locationError)
+				: Promise.resolve({
+						id,
+						name: "Café De Spelerij Gent-Sint-Pieters",
+						playCount: 12,
+						lastPlayed: "2026-10-20T20:00:00",
+					}),
 	}),
 	getLocationStatistics: (id: number) => ({
 		queryKey: ["locations", id, "statistics"],
@@ -113,6 +122,7 @@ describe("Location detail page", () => {
 	beforeEach(() => {
 		mocks.navigate.mockReset().mockResolvedValue(undefined);
 		mocks.deleteLocationCall.mockReset().mockResolvedValue(undefined);
+		mocks.locationError = null;
 	});
 
 	it("prefetches the location, its statistics, sessions, games and players in the loader", () => {
@@ -145,7 +155,7 @@ describe("Location detail page", () => {
 		const user = userEvent.setup();
 		renderPage();
 
-		await user.click(await screen.findByRole("button", { name: "edit" }));
+		await user.click(await screen.findByRole("button", { name: "edit-named" }));
 
 		expect(await screen.findByDisplayValue("Café De Spelerij Gent-Sint-Pieters")).toBeInTheDocument();
 	});
@@ -154,8 +164,8 @@ describe("Location detail page", () => {
 		const user = userEvent.setup();
 		renderPage();
 
-		await user.click(await screen.findByRole("button", { name: "delete.button" }));
-		expect(await screen.findByText(/delete.extra-description/)).toBeInTheDocument();
+		await user.click(await screen.findByRole("button", { name: "delete.named" }));
+		expect(await screen.findByText(/delete.description-with-sessions/)).toBeInTheDocument();
 
 		const confirm = screen.getAllByRole("button", { name: "delete.button" }).at(-1);
 		await user.click(confirm as HTMLElement);
@@ -183,21 +193,49 @@ describe("Location detail page", () => {
 		expect(screen.getByText("5")).toBeInTheDocument();
 	});
 
-	it("lists the sessions newest first with game, winner and a link to the session", async () => {
+	it("shows the five newest sessions and expands to all of them", async () => {
+		const user = userEvent.setup();
+		renderPage();
+		const sessionLinks = () =>
+			screen.getAllByRole("link").filter((link) => link.getAttribute("href")?.startsWith("/sessions/update/"));
+
+		await screen.findByText("detail.recent-sessions");
+		await waitFor(() => expect(sessionLinks()).toHaveLength(5));
+		expect(sessionLinks()[0]).toHaveAttribute("href", "/sessions/update/1");
+		expect(sessionLinks()[0]).toHaveTextContent("20-10-2026");
+
+		await user.click(screen.getByRole("button", { name: "detail.show-all" }));
+
+		expect(sessionLinks()).toHaveLength(12);
+		expect(sessionLinks()[11]).toHaveTextContent("09-10-2026");
+	});
+
+	it("leads with the most played game and the top winner at this location", async () => {
 		renderPage();
 
-		expect(await screen.findAllByText("Carcassonne")).toHaveLength(12);
-		expect(screen.getAllByText("Mikhael")).toHaveLength(12);
-		const links = screen.getAllByRole("link");
-		expect(links[0]).toHaveAttribute("href", "/sessions/update/1");
-		expect(links[0]).toHaveTextContent("20-10-2026");
-		expect(links[11]).toHaveTextContent("09-10-2026");
+		expect(await screen.findByText("detail.most-played")).toBeInTheDocument();
+		expect(screen.getByText("detail.top-winners")).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: /Carcassonne\s*detail.session-count/ })).toHaveAttribute(
+			"href",
+			"/games/1",
+		);
+		expect(screen.getByRole("link", { name: /Mikhael\s*detail.win-count/ })).toHaveAttribute("href", "/players/7");
+	});
+
+	it("shows a not-found state with a way back instead of spinning forever", async () => {
+		mocks.locationError = { kind: "client", status: 404, message: "Not found" };
+		const user = userEvent.setup();
+		renderPage();
+
+		expect(await screen.findByText("detail.not-found.title")).toBeInTheDocument();
+		await user.click(screen.getByRole("button", { name: "detail.back" }));
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/locations", replace: true });
 	});
 
 	it("shows the edit and delete buttons for writers", async () => {
 		renderPage();
 
-		expect(await screen.findByRole("button", { name: "edit" })).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "delete.button" })).toBeInTheDocument();
+		expect(await screen.findByRole("button", { name: "edit-named" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "delete.named" })).toBeInTheDocument();
 	});
 });

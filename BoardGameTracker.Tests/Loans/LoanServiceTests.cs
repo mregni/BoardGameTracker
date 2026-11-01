@@ -366,6 +366,85 @@ public class LoanServiceTests
 
     #endregion
 
+    #region UndoReturn Tests
+
+    [Fact]
+    public async Task UndoReturn_ShouldPutLoanBackOnLoan_WhenGameIsFree()
+    {
+        var game = new Game("Catan") { Id = 1 };
+        var loan = game.LoanToPlayer(3, new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc));
+        loan.Id = 8;
+        loan.MarkAsReturned(new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc));
+        _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(game);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+
+        var result = await _loanService.UndoReturn(8);
+
+        result.ReturnedDate.Should().BeNull();
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UndoReturn_ShouldRefuse_WhenGameWasLoanedAgainSinceTheReturn()
+    {
+        var game = new Game("Catan") { Id = 1 };
+        var loan = game.LoanToPlayer(3, new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc));
+        loan.Id = 8;
+        loan.MarkAsReturned(new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc));
+        game.LoanToPlayer(2, new DateTime(2026, 9, 15, 0, 0, 0, DateTimeKind.Utc)).Id = 9;
+        _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(game);
+
+        var act = () => _loanService.UndoReturn(8);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(BoardGameTracker.Common.Constants.Errors.GameAlreadyOnLoan);
+        loan.ReturnedDate.Should().NotBeNull();
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UndoReturn_ShouldRefuse_WhenLoanWasNotReturned()
+    {
+        var game = new Game("Catan") { Id = 1 };
+        var loan = game.LoanToPlayer(3, new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc));
+        loan.Id = 8;
+        _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(game);
+
+        var act = () => _loanService.UndoReturn(8);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(BoardGameTracker.Common.Constants.Errors.LoanNotReturned);
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UndoReturn_ShouldThrowEntityNotFoundException_WhenLoanDoesNotExist()
+    {
+        _loanRepositoryMock.Setup(x => x.GetByIdAsync(999)).ReturnsAsync((Loan?)null);
+
+        var act = () => _loanService.UndoReturn(999);
+
+        await act.Should().ThrowAsync<EntityNotFoundException>();
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(999), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
     #region Update Tests
 
     [Fact]

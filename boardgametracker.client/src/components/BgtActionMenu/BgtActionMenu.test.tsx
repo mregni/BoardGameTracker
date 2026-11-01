@@ -70,4 +70,35 @@ describe("BgtActionMenu", () => {
 
 		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 	});
+
+	it("moves the focus into the menu and through the items with the arrow keys", async () => {
+		const user = userEvent.setup();
+		renderMenu();
+
+		await user.click(screen.getByRole("button", { name: "Actions for jane" }));
+		const edit = screen.getByRole("menuitem", { name: "Edit" });
+		const remove = screen.getByRole("menuitem", { name: "Delete" });
+		expect(edit).toHaveFocus();
+
+		await user.keyboard("{ArrowDown}");
+		expect(remove).toHaveFocus();
+		await user.keyboard("{ArrowDown}");
+		expect(edit).toHaveFocus();
+		await user.keyboard("{ArrowUp}");
+		expect(remove).toHaveFocus();
+		await user.keyboard("{Home}");
+		expect(edit).toHaveFocus();
+		await user.keyboard("{End}");
+		expect(remove).toHaveFocus();
+	});
+
+	it("closes when tabbing out of the menu", async () => {
+		const user = userEvent.setup();
+		renderMenu();
+
+		await user.click(screen.getByRole("button", { name: "Actions for jane" }));
+		await user.tab();
+
+		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+	});
 });

@@ -27,6 +27,7 @@ describe("EditLocationModal", () => {
 		id: 1,
 		name: "Living Room",
 		playCount: 0,
+		lastPlayed: null,
 	};
 
 	const defaultProps = {
@@ -69,7 +70,16 @@ describe("EditLocationModal", () => {
 			expect(buttons.map((button) => button.textContent)).toEqual(["common:cancel", "common:save"]);
 			expect(buttons[0]).toHaveAttribute("type", "button");
 			expect(buttons[1]).toHaveAttribute("type", "submit");
-			expect(buttons[1]).toHaveClass("bg-primary/60");
+			expect(buttons[1]).toBeDisabled();
+		});
+
+		it("enables save once the name changes", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<EditLocationModal {...defaultProps} />);
+
+			await user.type(screen.getByRole("textbox"), " 2");
+
+			expect(screen.getByRole("button", { name: "common:save" })).toBeEnabled();
 		});
 
 		it("should not render when open is false", () => {
@@ -116,6 +126,7 @@ describe("EditLocationModal", () => {
 					id: 1,
 					name: "Kitchen",
 					playCount: 0,
+					lastPlayed: null,
 				});
 			});
 		});
@@ -127,6 +138,7 @@ describe("EditLocationModal", () => {
 				id: 42,
 				name: "Basement",
 				playCount: 0,
+				lastPlayed: null,
 			};
 			renderWithTheme(<EditLocationModal {...defaultProps} location={location} />);
 
