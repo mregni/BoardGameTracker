@@ -70,6 +70,41 @@
     "own-picture": "Gebruikt een eigen foto. Verwijder die om de profielfoto van {{username}} te tonen.",
     "link-failed": "Kon het gekoppelde account niet wijzigen"
   },
+  "standing": {
+    "ranked": "#{{rank}} van {{count}} op de ranglijst",
+    "to-rank_one": "nog {{count}} sessie tot de ranglijst",
+    "to-rank_other": "nog {{count}} sessies tot de ranglijst"
+  },
+  "actions": {
+    "log-session": "Sessie registreren",
+    "compare": "Vergelijken"
+  },
+  "record": {
+    "win-rate": "{{value}} gewonnen",
+    "form_one": "Laatste sessie",
+    "form_other": "Laatste {{count}} sessies",
+    "form-summary": "{{won}} gewonnen, {{lost}} verloren",
+    "form-win": "W",
+    "form-loss": "V",
+    "nemesis": "Aartsrivaal"
+  },
+  "no-sessions": {
+    "title": "Nog geen sessies met {{name}} geregistreerd",
+    "description": "Registreer een sessie en de resultaten, de rangschikking en de prestaties verschijnen hier."
+  },
+  "missing": {
+    "title": "Speler niet gevonden",
+    "description": "Deze speler is misschien verwijderd, of de link klopt niet."
+  },
+  "session": {
+    "players_one": "{{count}} speler",
+    "players_other": "{{count}} spelers",
+    "won-by": "{{names}} won"
+  },
+  "rivals": {
+    "title": "Onderling",
+    "record": "{{wins}} gewonnen, {{losses}} verloren"
+  },
   "list": {
     "last-played": "laatst gespeeld",
     "record_one": "{{wins}} van {{count}} gewonnen",

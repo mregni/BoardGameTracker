@@ -70,6 +70,41 @@
     "own-picture": "Usa su propia foto. Elimínala para mostrar la foto de perfil de {{username}}.",
     "link-failed": "No se ha podido cambiar la cuenta vinculada"
   },
+  "standing": {
+    "ranked": "N.º {{rank}} de {{count}} en la clasificación",
+    "to-rank_one": "{{count}} partida más para entrar en la clasificación",
+    "to-rank_other": "{{count}} partidas más para entrar en la clasificación"
+  },
+  "actions": {
+    "log-session": "Registrar una partida",
+    "compare": "Comparar"
+  },
+  "record": {
+    "win-rate": "{{value}} de victorias",
+    "form_one": "Última partida",
+    "form_other": "Últimas {{count}} partidas",
+    "form-summary": "{{won}} ganadas, {{lost}} perdidas",
+    "form-win": "V",
+    "form-loss": "D",
+    "nemesis": "Némesis"
+  },
+  "no-sessions": {
+    "title": "Aún no hay partidas registradas con {{name}}",
+    "description": "Registra una partida y aquí aparecerán su historial, su clasificación y sus logros."
+  },
+  "missing": {
+    "title": "Jugador no encontrado",
+    "description": "Puede que este jugador se haya eliminado o que el enlace sea incorrecto."
+  },
+  "session": {
+    "players_one": "{{count}} jugador",
+    "players_other": "{{count}} jugadores",
+    "won-by": "Ganó {{names}}"
+  },
+  "rivals": {
+    "title": "Cara a cara",
+    "record": "{{wins}} ganadas, {{losses}} perdidas"
+  },
   "list": {
     "last-played": "última partida",
     "record_one": "{{wins}} de {{count}} victoria",
