@@ -10,8 +10,11 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { isNightInProgress } from "@/routes/game-nights/-utils/gameNightPlay";
-import { toDisplay } from "@/utils/dateUtils";
+import { toCalendarHref } from "@/utils/calendarFile";
+import { toDisplay, toDisplayTime, toDisplayWithWeekday } from "@/utils/dateUtils";
+import { effectivePublicUrl } from "@/utils/publicUrl";
 import { useSettingsData } from "../settings/-hooks/useSettingsData";
 import { RsvpEventDetails } from "./-components/RsvpEventDetails";
 import { RsvpGames } from "./-components/RsvpGames";
@@ -38,6 +41,7 @@ function RsvpPage() {
 	const authStatus = useAuth((s) => s.authStatus);
 	const { gameNight, manuals, isLoading, answer, isEditing, submitRsvp, isSubmitting, changeResponse } =
 		useRsvpData(linkId);
+	useDocumentTitle(gameNight?.title);
 
 	const requiresAuth = settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !isAuthenticated;
 
@@ -93,12 +97,25 @@ function RsvpPage() {
 					return (
 						<>
 							<RsvpEventDetails gameNight={gameNight} settings={settings} />
-							<RsvpWhosComing gameNight={gameNight} />
 							{answer && answeredPlayer && !isEditing ? (
 								<RsvpSuccessView
 									playerName={answeredPlayer.player.name}
 									response={answer.state}
 									hostNotified={answer.hostNotified}
+									whenAndWhere={[
+										toDisplayWithWeekday(gameNight.startDate, settings.dateFormat, settings.uiLanguage),
+										toDisplayTime(gameNight.startDate, settings.timeFormat, settings.uiLanguage),
+										gameNight.location.name,
+									].join(" · ")}
+									calendarHref={toCalendarHref({
+										uid: `${gameNight.linkId}@boardgametracker`,
+										title: gameNight.title,
+										start: gameNight.startDate,
+										location: gameNight.location.name,
+										description: gameNight.notes,
+										url: `${effectivePublicUrl(settings.publicUrl, window.location.origin)}/rsvp?linkId=${linkId}`,
+									})}
+									calendarFileName={`${gameNight.title}.ics`}
 									onChangeResponse={changeResponse}
 								/>
 							) : (
@@ -111,6 +128,7 @@ function RsvpPage() {
 								/>
 							)}
 							<RsvpGames linkId={linkId} games={gameNight.suggestedGames} manuals={manuals} />
+							<RsvpWhosComing gameNight={gameNight} />
 						</>
 					);
 				}}

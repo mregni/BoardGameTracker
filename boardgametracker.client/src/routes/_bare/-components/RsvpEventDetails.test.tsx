@@ -25,7 +25,7 @@ describe("RsvpEventDetails", () => {
 		renderWithTheme(<RsvpEventDetails gameNight={gameNight("")} settings={settings} />);
 
 		expect(screen.getByRole("heading", { name: "Strategy Night" })).toBeInTheDocument();
-		expect(screen.getByTestId("rsvp-date")).toHaveTextContent("11-10-2026");
+		expect(screen.getByTestId("rsvp-date")).toHaveTextContent("Sunday 11-10-2026");
 		expect(screen.queryByText("Sunday, October 11th, 2026")).not.toBeInTheDocument();
 		expect(screen.queryByText("Sun")).not.toBeInTheDocument();
 		expect(screen.getByText("Thuis")).toBeInTheDocument();

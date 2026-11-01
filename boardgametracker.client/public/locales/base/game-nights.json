@@ -19,6 +19,7 @@
     },
     "player-status": "RSVP of {{name}}",
     "remove": "Remove {{name}} from this night",
+    "confirm-remove": "Remove?",
     "invite-more": "Invite more players",
     "search-players": "Search players…",
     "no-players-found": "No players found",
@@ -70,6 +71,8 @@
   "plan": {
     "starts": "Starts {{when}} · {{date}} · {{time}}",
     "rsvps": "RSVPs",
+    "waiting_one": "{{count}} invitee hasn't answered yet. Send them the link.",
+    "waiting_other": "{{count}} invitees haven't answered yet. Send them the link.",
     "no-games": "No games planned yet"
   },
   "invites": {
@@ -206,7 +209,7 @@
     "nobody": "Nobody is here yet."
   },
   "planned": {
-    "title": "Planned",
+    "title": "Planned games",
     "played": "played",
     "playing": "playing now"
   },
