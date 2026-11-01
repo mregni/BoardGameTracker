@@ -37,24 +37,21 @@ describe("BestWorstCards", () => {
 		i18n.instance = await createCompareI18n("en-US");
 	});
 
-	it("shows each player's best games and their worst, which are the other's best", () => {
+	it("shows each player's strongest games with their record against the other", () => {
 		render(<BestWorstCards compare={compare} playerOne={playerOne} playerTwo={playerTwo} />);
 
-		const one = screen.getByRole("region", { name: "Mikhaël against Kathleen" });
-		const two = screen.getByRole("region", { name: "Kathleen against Mikhaël" });
-		const [oneBest, oneWorst] = within(one).getAllByRole("list");
-		const texts = (list: HTMLElement) =>
-			within(list)
+		expect(screen.getByRole("region", { name: "Strongest games" })).toBeInTheDocument();
+		const games = (side: string) =>
+			within(screen.getByTestId(`best-worst-${side}`))
 				.getAllByRole("listitem")
 				.map((item) => item.textContent?.slice(1));
-		expect(texts(oneBest)).toEqual(["Brass: Birmingham5 – 1", "Age of Inventors4 – 2"]);
-		expect(texts(oneWorst)).toEqual(["Azul4 – 7", "Carcassonne3 – 4"]);
-		const [twoBest] = within(two).getAllByRole("list");
-		expect(within(twoBest).getAllByRole("listitem")[0]).toHaveTextContent("Azul7 – 4");
+		expect(games("playerOne")).toEqual(["Brass: Birmingham5 – 1", "Age of Inventors4 – 2"]);
+		expect(games("playerTwo")).toEqual(["Azul7 – 4", "Carcassonne4 – 3"]);
+		expect(screen.getByTestId("best-worst-playerOne")).toHaveTextContent(/^Mikhaël/);
 		expect(screen.getByText("Only games played together at least 3 times.")).toBeInTheDocument();
 	});
 
-	it("says so when a player has no best games yet", () => {
+	it("says so when a player has no strongest games yet", () => {
 		render(
 			<BestWorstCards
 				compare={{ ...compare, bestGames: { playerOne: [12], playerTwo: [] } }}
@@ -63,7 +60,7 @@ describe("BestWorstCards", () => {
 			/>,
 		);
 
-		expect(screen.getAllByText("Nothing yet")).toHaveLength(2);
+		expect(within(screen.getByTestId("best-worst-playerTwo")).getByText("Nothing yet")).toBeInTheDocument();
 	});
 
 	it("is hidden when no game was played often enough", () => {
