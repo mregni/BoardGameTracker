@@ -5290,7 +5290,6 @@ export interface components {
             /** Format: int32 */
             minutesPlayed: number;
             preferredGame: components["schemas"]["PreferredGame"];
-            longestSessionTogether: components["schemas"]["LongestSession"];
             firstGameTogether: components["schemas"]["FirstGameTogether"];
             closestGame: components["schemas"]["ClosestGame"];
             streak: components["schemas"]["CompareStreak"];
@@ -5975,6 +5974,8 @@ export interface components {
             name: string;
             /** Format: int32 */
             playCount: number;
+            /** Format: date-time */
+            lastPlayed: string | null;
         };
         LocationStatisticsDto: {
             /** Format: int32 */
@@ -5993,12 +5994,6 @@ export interface components {
             /** Format: date-time */
             expiresAt: string;
             user: components["schemas"]["UserInfo"];
-        };
-        LongestSession: {
-            /** Format: int32 */
-            gameId: number;
-            /** Format: int32 */
-            minutes: number;
         };
         ManualDto: {
             /** Format: int32 */

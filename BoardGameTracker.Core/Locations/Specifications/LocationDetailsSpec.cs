@@ -16,7 +16,8 @@ public sealed class LocationDetailsSpec : Specification<Location, LocationDto>
         {
             Id = x.Id,
             Name = x.Name,
-            PlayCount = x.Sessions.Count
+            PlayCount = x.Sessions.Count,
+            LastPlayed = x.Sessions.Max(s => (DateTime?)s.Start)
         });
     }
 }

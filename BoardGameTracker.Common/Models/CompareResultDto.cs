@@ -14,7 +14,6 @@ public class CompareResultDto
     public int TotalSessionsTogether { get; set; }
     public int MinutesPlayed { get; set; }
     public PreferredGame? PreferredGame { get; set; }
-    public LongestSession? LongestSessionTogether { get; set; }
     public FirstGameTogether? FirstGameTogether { get; set; }
     public ClosestGame? ClosestGame { get; set; }
     public CompareStreak? Streak { get; set; }
