@@ -148,7 +148,8 @@
     "owned": "En propiedad",
     "previously-owned": "Tenido anteriormente",
     "wanted": "Deseado",
-    "on-loan": "Prestado"
+    "on-loan": "Prestado",
+    "on-loan-to": "Prestado a {{name}} · desde {{date}}"
   },
   "details": {
     "title": "Detalles de {{title}}"
@@ -169,7 +170,8 @@
       "average": "Media",
       "lowest-winning": "Menor puntuación ganadora",
       "lowest": "Mínima"
-    }
+    },
+    "top-scoring-help": "La mayor puntuación perdedora es la mejor puntuación que aun así perdió. La menor puntuación ganadora es la puntuación más baja que aun así ganó."
   },
   "top-players": {
     "trend-up": "Ganó más de las últimas {{sessions}} partidas que antes",
@@ -215,7 +217,9 @@
   },
   "facts": {
     "year": "Año de publicación",
-    "min-age": "Edad mínima"
+    "min-age": "Edad mínima",
+    "about": "Sobre el juego",
+    "your-copy": "Tu copia"
   },
   "about": {
     "show-more": "Mostrar más",
@@ -229,5 +233,19 @@
       "label": "Las sesiones nuevas empiezan en cooperativo"
     },
     "hint": "Solo afecta a las sesiones nuevas; las registradas se quedan como se jugaron."
+  },
+  "load-error": {
+    "not-found-description": "Puede que se haya eliminado o que el enlace esté desactualizado.",
+    "failed": "No se pudo cargar este juego",
+    "failed-description": "El servidor no respondió como se esperaba. Inténtalo de nuevo en un momento.",
+    "details-failed": "No se pudieron cargar las estadísticas de este juego.",
+    "back": "Volver a juegos",
+    "retry": "Reintentar"
+  },
+  "play-summary": {
+    "count_one": "Jugado una vez",
+    "count_other": "Jugado {{count}} veces",
+    "total": "{{duration}} en total",
+    "last": "última partida {{relative}}"
   }
 }

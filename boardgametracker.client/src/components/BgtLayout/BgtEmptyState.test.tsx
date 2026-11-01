@@ -23,4 +23,10 @@ describe("BgtEmptyState", () => {
 
 		expect(screen.getByText("Pick another period.")).toBeInTheDocument();
 	});
+
+	it("can be the page heading when the page has no header", () => {
+		renderWithTheme(<BgtEmptyState icon={Icon} title="Could not find game" titleAs="h1" />);
+
+		expect(screen.getByRole("heading", { level: 1, name: "Could not find game" })).toBeInTheDocument();
+	});
 });

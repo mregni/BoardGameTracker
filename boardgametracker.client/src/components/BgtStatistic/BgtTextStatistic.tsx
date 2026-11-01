@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
-import { cloneElement, isValidElement } from "react";
+import { type ComponentProps, cloneElement, isValidElement } from "react";
 import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
 import Plus from "@/assets/icons/plus.svg?react";
@@ -21,6 +21,7 @@ interface Props {
 	onClick?: () => void;
 	action?: React.ReactNode;
 	caption?: React.ReactNode;
+	valueColor?: ComponentProps<typeof BgtText>["color"];
 }
 
 const formatContent = (content: string | number, language: string | undefined): string =>
@@ -40,6 +41,7 @@ export const BgtTextStatistic = (props: Props) => {
 		onClick,
 		action,
 		caption,
+		valueColor = "cyan",
 	} = props;
 	const { i18n } = useTranslation();
 
@@ -72,7 +74,7 @@ export const BgtTextStatistic = (props: Props) => {
 					isInteractive && <CaretRight className="size-4 ml-auto shrink-0 text-primary" />
 				)}
 			</div>
-			<BgtText size={textSize} color="cyan" weight="bold">
+			<BgtText size={textSize} color={valueColor} weight="bold">
 				{formatContent(content, i18n.language)}
 				{suffix === "%" && "%"}
 				{suffix && suffix !== "%" && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
