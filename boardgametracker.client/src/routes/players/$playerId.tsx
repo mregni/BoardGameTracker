@@ -92,7 +92,7 @@ function RouteComponent() {
 				notFound={
 					<BgtEmptyState
 						icon={UsersIcon}
-						headingAs="h1"
+						titleAs="h1"
 						title={t("missing.title")}
 						description={t("missing.description")}
 						action={{ label: t("back"), onClick: actions.handleBackToPlayers }}
@@ -115,7 +115,7 @@ function RouteComponent() {
 								<BgtCard>
 									<BgtEmptyState
 										icon={Game}
-										headingAs="h2"
+										titleAs="h2"
 										title={t("no-sessions.title", { name: player.name })}
 										description={t("no-sessions.description")}
 										action={

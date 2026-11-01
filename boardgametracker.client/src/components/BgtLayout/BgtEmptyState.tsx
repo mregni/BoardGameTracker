@@ -6,21 +6,21 @@ interface Props {
 	icon: ComponentType<SVGProps<SVGSVGElement>>;
 	title: string;
 	description?: string;
-	headingAs?: "h1" | "h2" | "h3";
+	titleAs?: "h1" | "h2" | "h3";
 	action?: {
 		label: string;
 		onClick: () => void;
 	};
 }
 
-export const BgtEmptyState = ({ icon: Icon, title, description, headingAs: Heading = "h3", action }: Props) => {
+export const BgtEmptyState = ({ icon: Icon, title, description, titleAs: Title = "h3", action }: Props) => {
 	return (
 		<div className="flex items-center justify-center min-h-[400px] p-8">
 			<div className="text-center max-w-md">
 				<div className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 border-2 border-primary/20 rounded-xl mb-6">
 					<Icon className="text-primary size-14" />
 				</div>
-				<Heading className="text-2xl font-bold text-white mb-6">{title}</Heading>
+				<Title className="text-2xl font-bold text-white mb-6">{title}</Title>
 				{description && <p className="-mt-3 text-white/60 mb-6">{description}</p>}
 				{action && (
 					<BgtButton size="3" onClick={action.onClick}>
