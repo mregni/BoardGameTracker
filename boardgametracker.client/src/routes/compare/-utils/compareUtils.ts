@@ -52,8 +52,15 @@ export const sortGames = (games: CompareGame[], sort: GameSort): CompareGame[] =
 export const isSide = (outcome: CompareOutcome): outcome is CompareSide =>
 	outcome === "playerOne" || outcome === "playerTwo";
 
-const flip = (outcome: CompareOutcome): CompareOutcome =>
-	outcome === "playerOne" ? "playerTwo" : outcome === "playerTwo" ? "playerOne" : outcome;
+const flipped: Record<CompareOutcome, CompareOutcome> = {
+	playerOne: "playerTwo",
+	playerTwo: "playerOne",
+	both: "both",
+	other: "other",
+	sameTeam: "sameTeam",
+};
+
+const flip = (outcome: CompareOutcome): CompareOutcome => flipped[outcome];
 
 const swap = <T>(row: CompareRow<T>): CompareRow<T> => ({ playerOne: row.playerTwo, playerTwo: row.playerOne });
 
