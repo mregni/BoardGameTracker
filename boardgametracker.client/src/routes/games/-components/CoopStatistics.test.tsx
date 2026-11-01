@@ -40,12 +40,27 @@ describe("game statistics grid", () => {
 		expect(statisticsGridColumns(7)).toBe("md:grid-cols-4");
 	});
 
-	it("lays four tiles out as two by two, then four in a row", async () => {
-		const stats = { ...gameStats(0, 0), pricePerPlay: 12.5, lastPlayed: "2026-10-01T10:00:00Z" };
+	it("sums up the plays in one heading and leaves the tiles out when nothing else is known", async () => {
+		const stats = { ...gameStats(0, 0), lastPlayed: "2026-10-01T10:00:00Z" };
 		renderWithProviders(<GameStatisticsGrid gameStats={stats} currency="EUR" hasScoringResults />);
 
-		await screen.findByText("last-played");
-		expect(screen.getByTestId("game-statistics-grid")).toHaveClass("md:grid-cols-2", "xl:grid-cols-4");
+		expect(
+			await screen.findByRole("heading", { name: /game:play-summary\.count.*game:play-summary\.last/ }),
+		).toHaveTextContent("game:play-summary.total");
+		expect(screen.queryByTestId("game-statistics-grid")).not.toBeInTheDocument();
+	});
+
+	it("shows the price per play only after a few plays", async () => {
+		const { unmount } = renderWithProviders(
+			<GameStatisticsGrid gameStats={{ ...gameStats(0, 0), pricePerPlay: 12.5 }} currency="EUR" />,
+		);
+		expect(await screen.findByText("price-per-play")).toBeInTheDocument();
+		unmount();
+
+		renderWithProviders(
+			<GameStatisticsGrid gameStats={{ ...gameStats(0, 0), playCount: 1, pricePerPlay: 12.5 }} currency="EUR" />,
+		);
+		expect(screen.queryByText("price-per-play")).not.toBeInTheDocument();
 	});
 });
 

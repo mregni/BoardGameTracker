@@ -1,4 +1,4 @@
-import type { CompareGame, CompareOutcome, CompareRow, CompareSide } from "@/models";
+import type { CompareGame, CompareOutcome, CompareResult, CompareRow, CompareSide } from "@/models";
 
 export type GameSort = "most-played" | "biggest-lead";
 
@@ -51,3 +51,40 @@ export const sortGames = (games: CompareGame[], sort: GameSort): CompareGame[] =
 
 export const isSide = (outcome: CompareOutcome): outcome is CompareSide =>
 	outcome === "playerOne" || outcome === "playerTwo";
+
+const flipped: Record<CompareOutcome, CompareOutcome> = {
+	playerOne: "playerTwo",
+	playerTwo: "playerOne",
+	both: "both",
+	other: "other",
+	sameTeam: "sameTeam",
+};
+
+const flip = (outcome: CompareOutcome): CompareOutcome => flipped[outcome];
+
+const swap = <T>(row: CompareRow<T>): CompareRow<T> => ({ playerOne: row.playerTwo, playerTwo: row.playerOne });
+
+export const mirrorCompare = (result: CompareResult): CompareResult => ({
+	...result,
+	winCount: swap(result.winCount),
+	winPercentage: swap(result.winPercentage),
+	sessionCounts: swap(result.sessionCounts),
+	totalDuration: swap(result.totalDuration),
+	directWins: swap(result.directWins),
+	bestGames: swap(result.bestGames),
+	streak: result.streak && { ...result.streak, side: flip(result.streak.side) },
+	games: result.games.map((game) => ({
+		...game,
+		playerOneWins: game.playerTwoWins,
+		playerTwoWins: game.playerOneWins,
+		playerOneAverageScore: game.playerTwoAverageScore,
+		playerTwoAverageScore: game.playerOneAverageScore,
+		lastOutcome: flip(game.lastOutcome),
+	})),
+	recentSessions: result.recentSessions.map((session) => ({
+		...session,
+		playerOneScore: session.playerTwoScore,
+		playerTwoScore: session.playerOneScore,
+		outcome: flip(session.outcome),
+	})),
+});

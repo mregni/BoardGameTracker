@@ -3,7 +3,7 @@ import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import Game from "@/assets/icons/gamepad.svg?react";
+import Game from "@/assets/icons/dices.svg?react";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { CreateSession } from "@/models";
 import { getGames } from "@/services/queries/games";

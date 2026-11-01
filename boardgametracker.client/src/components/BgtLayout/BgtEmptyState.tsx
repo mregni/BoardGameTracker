@@ -13,7 +13,7 @@ interface Props {
 	};
 }
 
-export const BgtEmptyState = ({ icon: Icon, title, description, titleAs: Title = "h3", action }: Props) => {
+export const BgtEmptyState = ({ icon: Icon, title, description, action, titleAs: Title = "h3" }: Props) => {
 	return (
 		<div className="flex items-center justify-center min-h-[400px] p-8">
 			<div className="text-center max-w-md">

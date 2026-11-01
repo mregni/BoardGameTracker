@@ -1,4 +1,4 @@
-import type { FC, ReactNode } from "react";
+import { type FC, type ReactNode, useSyncExternalStore } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Shame, ShameStatistics } from "@/models";
 import { renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
@@ -25,12 +25,35 @@ const mocks = vi.hoisted(() => ({
 	plan: vi.fn(),
 	useShameData: vi.fn(),
 	redirect: vi.fn((options: unknown) => options),
+	search: {} as Record<string, unknown>,
+	listeners: new Set<() => void>(),
+	navigate: vi.fn(),
 }));
+
+type Search = Record<string, unknown>;
+
+const setSearch = (next: Search) => {
+	mocks.search = next;
+	for (const listener of mocks.listeners) listener();
+};
+
+const useMockSearch = () =>
+	useSyncExternalStore(
+		(listener) => {
+			mocks.listeners.add(listener);
+			return () => mocks.listeners.delete(listener);
+		},
+		() => mocks.search,
+	);
 
 vi.mock("@tanstack/react-router", () => ({
 	createFileRoute: () => (config: CapturedRoute) => {
 		mocks.captured.config = config;
-		return config;
+		return { ...config, useSearch: useMockSearch };
+	},
+	useNavigate: () => (options: { search: (current: Search) => Search; replace?: boolean }) => {
+		mocks.navigate(options);
+		setSearch(options.search(mocks.search));
 	},
 	redirect: mocks.redirect,
 	Link: ({
@@ -93,6 +116,35 @@ vi.mock("@/components/BgtForm/BgtSelect", () => ({
 				))}
 			</select>
 		</label>
+	),
+}));
+
+vi.mock("@/components/BgtForm/BgtSimpleSelect", () => ({
+	BgtSimpleSelect: ({
+		"aria-label": ariaLabel,
+		value,
+		items,
+		onValueChange,
+	}: {
+		"aria-label": string;
+		value: string | number;
+		items: { value: string | number; label: string }[];
+		onValueChange: (value: string | number) => void;
+	}) => (
+		<select
+			aria-label={ariaLabel}
+			value={String(value)}
+			onChange={(event) => {
+				const item = items.find((option) => String(option.value) === event.target.value);
+				if (item) onValueChange(item.value);
+			}}
+		>
+			{items.map((item) => (
+				<option key={item.value} value={String(item.value)}>
+					{item.label}
+				</option>
+			))}
+		</select>
 	),
 }));
 
@@ -162,6 +214,7 @@ const rowTitles = () =>
 describe("Shelf of shame page", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mocks.search = {};
 		mocks.canWrite = true;
 		mocks.canManageSettings = true;
 		mocks.shames = [root, everdell, wingspan];
@@ -175,10 +228,10 @@ describe("Shelf of shame page", () => {
 		};
 	});
 
-	it("shows the tiles, the rows and the money bar", () => {
+	it("shows the summary, the rows and the money bar", () => {
 		renderWithProviders(<Page />);
 
-		expect(screen.getByText("tiles.on-shelf")).toBeInTheDocument();
+		expect(screen.getByText(/^summary.on-shelf/)).toBeInTheDocument();
 		expect(rowTitles()).toEqual(["Root", "Everdell", "Wingspan"]);
 		expect(screen.getByRole("heading", { name: "money.title" })).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: "change-in-settings" })).toHaveAttribute(
@@ -224,6 +277,50 @@ describe("Shelf of shame page", () => {
 		await user.selectOptions(screen.getByRole("combobox", { name: "filters.not-played-in" }), "12");
 
 		expect(mocks.useShameData).toHaveBeenLastCalledWith(12);
+		expect(mocks.search).toEqual({ months: 12 });
+	});
+
+	it("keeps the filters in the address and leaves defaults out", async () => {
+		const user = userEvent.setup();
+		renderWithProviders(<Page />);
+
+		await user.click(screen.getByRole("button", { name: "filters.never 2" }));
+		await user.selectOptions(screen.getByRole("combobox", { name: "filters.sort" }), "title");
+		expect(mocks.search).toEqual({ show: "never", sort: "title" });
+		expect(mocks.navigate).toHaveBeenLastCalledWith(expect.objectContaining({ replace: true }));
+
+		await user.click(screen.getByRole("button", { name: "filters.all 3" }));
+		expect(mocks.search).toEqual({ sort: "title" });
+	});
+
+	it("starts from the filters in the address", () => {
+		mocks.search = { show: "played", months: 12 };
+		renderWithProviders(<Page />);
+
+		expect(rowTitles()).toEqual(["Wingspan"]);
+		expect(mocks.useShameData).toHaveBeenLastCalledWith(12);
+	});
+
+	it("drops invalid search values", () => {
+		const parse = (mocks.captured.config as unknown as { validateSearch: { parse: (input: unknown) => Search } })
+			.validateSearch.parse;
+
+		expect(parse({ show: "never", sort: "price", owned: "2y", months: 12 })).toEqual({
+			show: "never",
+			sort: "price",
+			owned: "2y",
+			months: 12,
+		});
+		expect(parse({ show: "nope", months: -3 })).toEqual({});
+	});
+
+	it("tells how many games the filters show", async () => {
+		const user = userEvent.setup();
+		renderWithProviders(<Page />);
+
+		await user.click(screen.getByRole("button", { name: "filters.played 1" }));
+
+		expect(screen.getAllByText("list.count")[0]).toBeInTheDocument();
 	});
 
 	it("never offers a period shorter than the setting", () => {
@@ -286,11 +383,11 @@ describe("Shelf of shame page", () => {
 		expect(screen.getByText("none.title")).toBeInTheDocument();
 		expect(screen.queryByRole("list", { name: "list.label" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("link", { name: "plan.plan-night" })).not.toBeInTheDocument();
-		expect(screen.getByText("tiles.on-shelf")).toBeInTheDocument();
+		expect(screen.queryByText(/summary.on-shelf/)).not.toBeInTheDocument();
 		expect(screen.getByRole("combobox", { name: "filters.not-played-in" })).toBeInTheDocument();
 	});
 
-	it("shows only the empty state without tiles, filters or money bar when no games are owned", () => {
+	it("shows only the empty state without summary, filters or money bar when no games are owned", () => {
 		mocks.shames = [];
 		mocks.statistics = {
 			...baseStatistics,
@@ -305,7 +402,7 @@ describe("Shelf of shame page", () => {
 		renderWithProviders(<Page />);
 
 		expect(screen.getByText("none.title")).toBeInTheDocument();
-		expect(screen.queryByText("tiles.on-shelf")).not.toBeInTheDocument();
+		expect(screen.queryByText(/summary.on-shelf/)).not.toBeInTheDocument();
 		expect(screen.queryByRole("combobox", { name: "filters.not-played-in" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("combobox", { name: "filters.sort" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("heading", { name: "money.title" })).not.toBeInTheDocument();

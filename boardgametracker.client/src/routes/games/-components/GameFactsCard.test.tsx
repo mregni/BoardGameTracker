@@ -41,13 +41,25 @@ describe("GameFactsCard", () => {
 		currency: "EUR",
 		uiLanguage: "en-US",
 		dateFormat: "yyyy-MM-dd",
-		manualCount: 2,
-		onOpenManuals: vi.fn(),
-		onOpenExpansions: vi.fn(),
 	};
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+	});
+
+	describe("Groups", () => {
+		it("should split facts about the game from facts about your copy", () => {
+			renderWithTheme(<GameFactsCard {...defaultProps} />);
+
+			expect(screen.getByRole("heading", { name: "game:facts.about" })).toBeInTheDocument();
+			expect(screen.getByRole("heading", { name: "game:facts.your-copy" })).toBeInTheDocument();
+		});
+
+		it("should hide your copy when there is nothing to show", () => {
+			renderWithTheme(<GameFactsCard {...defaultProps} game={createGame({ buyingPrice: null })} />);
+
+			expect(screen.queryByRole("heading", { name: "game:facts.your-copy" })).not.toBeInTheDocument();
+		});
 	});
 
 	describe("Players", () => {
@@ -168,6 +180,28 @@ describe("GameFactsCard", () => {
 
 			expect(screen.queryByText("game:current-price.title")).not.toBeInTheDocument();
 		});
+
+		it("should say in words whether the tracked game is in stock", () => {
+			renderWithTheme(
+				<GameFactsCard
+					{...defaultProps}
+					game={createGame({ changeDetectionWatchId: "e0808154-28da-4b85-9a71-24a409e694f1" })}
+					price={{ gameId: 3, available: true, price: 39.5, currency: "EUR", inStock: false } as never}
+				/>,
+			);
+
+			expect(screen.getByText("games:in-stock.no")).toBeInTheDocument();
+		});
+
+		it("should offer price tracking under your copy when allowed", async () => {
+			const user = userEvent.setup();
+			const onTrackPrice = vi.fn();
+			renderWithTheme(<GameFactsCard {...defaultProps} onTrackPrice={onTrackPrice} />);
+
+			await user.click(screen.getByRole("button", { name: /game:track-price\.button/ }));
+
+			expect(onTrackPrice).toHaveBeenCalledTimes(1);
+		});
 	});
 
 	describe("In collection", () => {
@@ -222,28 +256,6 @@ describe("GameFactsCard", () => {
 			expect(screen.queryByText("game:facts.min-age")).not.toBeInTheDocument();
 			expect(screen.queryByText("rating")).not.toBeInTheDocument();
 			expect(screen.queryByText("weight")).not.toBeInTheDocument();
-		});
-	});
-
-	describe("Manuals and expansions", () => {
-		it("should call onOpenManuals when the manuals row is clicked", async () => {
-			const user = userEvent.setup();
-			renderWithTheme(<GameFactsCard {...defaultProps} />);
-
-			await user.click(screen.getByRole("button", { name: /game:manuals\.title/ }));
-
-			expect(defaultProps.onOpenManuals).toHaveBeenCalledTimes(1);
-			expect(defaultProps.onOpenExpansions).not.toHaveBeenCalled();
-		});
-
-		it("should call onOpenExpansions when the expansions row is clicked", async () => {
-			const user = userEvent.setup();
-			renderWithTheme(<GameFactsCard {...defaultProps} />);
-
-			await user.click(screen.getByRole("button", { name: /game:expansions\.title/ }));
-
-			expect(defaultProps.onOpenExpansions).toHaveBeenCalledTimes(1);
-			expect(defaultProps.onOpenManuals).not.toHaveBeenCalled();
 		});
 	});
 });

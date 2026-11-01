@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import type { ComponentType, SVGProps } from "react";
 import { useTranslation } from "react-i18next";
-import Game from "@/assets/icons/gamepad.svg?react";
+import Game from "@/assets/icons/dices.svg?react";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { usePermissions } from "@/hooks/usePermissions";
 

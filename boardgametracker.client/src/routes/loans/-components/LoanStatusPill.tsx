@@ -1,15 +1,16 @@
 import { cva } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import type { Loan } from "@/models/Loan/Loan";
-import { formatDayCount, formatLoanDate, getLoanStatus, LOAN_STATUS_TONE } from "../-utils/loanStatus";
+import { formatDayCount, formatLoanDate, getLoanStatus, getLoanStatusTone } from "../-utils/loanStatus";
 
 const pillVariants = cva(
-	"inline-block max-w-full truncate rounded-full px-2.5 py-0.5 align-middle text-xs font-semibold whitespace-nowrap",
+	"inline-block max-w-full truncate rounded-full px-2.5 py-0.5 align-middle text-sm font-semibold whitespace-nowrap",
 	{
 		variants: {
 			tone: {
-				red: "bg-error/15 text-red-400",
-				amber: "bg-amber-400/15 text-amber-400",
+				red: "bg-error/15 text-bad",
+				amber: "bg-warn/15 text-warn",
+				soon: "bg-primary/15 text-stat-title",
 				neutral: "bg-white/5 text-white/60",
 			},
 		},
@@ -47,7 +48,7 @@ export const LoanStatusPill = ({ loan, dateFormat }: Props) => {
 	}
 
 	return (
-		<span title={text} className={pillVariants({ tone: LOAN_STATUS_TONE[status.kind] })}>
+		<span title={text} className={pillVariants({ tone: getLoanStatusTone(status) })}>
 			{text}
 		</span>
 	);

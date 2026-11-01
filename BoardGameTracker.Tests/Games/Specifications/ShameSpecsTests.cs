@@ -77,6 +77,17 @@ public class ShameSpecsTests
     }
 
     [Fact]
+    public void ShameGamesSpec_ShouldProjectZeroPriceAsMissing()
+    {
+        var fixture = Fixture();
+        fixture.Single(x => x.Id == 3).UpdateBuyingPrice(0m);
+
+        var result = new ShameGamesSpec(Cutoff).Evaluate(fixture).ToList();
+
+        result.Single(x => x.Id == 3).Price.Should().BeNull();
+    }
+
+    [Fact]
     public void ShameGamesSpec_ShouldProjectPlayCountPlayersAndPlayTime()
     {
         var fixture = Fixture();

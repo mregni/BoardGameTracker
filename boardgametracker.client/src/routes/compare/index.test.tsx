@@ -166,19 +166,15 @@ describe("Compare page", () => {
 		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/compare", search: { left: 2, right: 1 }, replace: true });
 	});
 
-	it("shows the record, the pickers with each player's summary and the collapsed overall table", async () => {
+	it("shows the record, the pickers and the overall table", async () => {
 		mocks.search = { left: 1, right: 2 };
 		renderPage();
 
 		expect(await screen.findByRole("region", { name: "Record over all sessions together" })).toBeInTheDocument();
-		expect(screen.getByRole("combobox", { name: "Change left player, now Mikhaël" })).toHaveTextContent(
-			"142 sessions · 38% won",
-		);
-		expect(screen.getByRole("combobox", { name: "Change right player, now Kathleen" })).toHaveTextContent(
-			"118 sessions · 41% won",
-		);
+		expect(screen.getByRole("combobox", { name: "Change left player, now Mikhaël" })).toHaveTextContent("Mikhaël");
+		expect(screen.getByRole("combobox", { name: "Change right player, now Kathleen" })).toHaveTextContent("Kathleen");
 		expect(screen.getByText("VS")).toBeInTheDocument();
-		expect(screen.getByText("Overall, not only together").closest("details")).not.toHaveAttribute("open");
+		expect(screen.getByRole("region", { name: "All sessions, not just together" })).toBeInTheDocument();
 	});
 
 	it("says when the two players never played together", async () => {

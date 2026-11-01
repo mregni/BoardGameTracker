@@ -1,11 +1,13 @@
 {
   "empty": {
     "title": "No players yet",
-    "button": "Add player"
+    "button": "Add player",
+    "description": "Add the people you play with to track wins and rivalries."
   },
   "back": "Back to players",
   "count_other": "{{count}} players",
   "count_one": "{{count}} player",
+  "count-filtered": "{{count}} of {{total}} players",
   "notifications": {
     "created": "Player added",
     "create-failed": "Failed creating player",
@@ -102,5 +104,23 @@
   "rivals": {
     "title": "Head-to-head",
     "record": "{{wins}} won, {{losses}} lost"
+  },
+  "list": {
+    "last-played": "last played",
+    "record_one": "{{wins}} of {{count}} win",
+    "record_other": "{{wins}} of {{count}} wins",
+    "sort": "Sort players",
+    "sort-sessions": "Sessions",
+    "sort-recent": "Recent",
+    "sort-name": "Name",
+    "no-match": "No players match “{{query}}”",
+    "clear": "Clear filter",
+    "error-title": "Couldn't load players",
+    "error-description": "The server didn't answer. Check that it is running, then try again.",
+    "win-rate": "win rate",
+    "sessions_one": "session",
+    "sessions_other": "sessions",
+    "not-played": "Not played yet",
+    "log-game": "Log a game"
   }
 }

@@ -50,7 +50,10 @@ describe("RulebookChatButton", () => {
 		it("should render a disabled button", () => {
 			renderWithTheme(<RulebookChatButton gameId={42} disabled={true} />);
 
-			expect(screen.getByRole("button", { name: "ask-button" })).toBeDisabled();
+			expect(screen.getByRole("button", { name: "ask-button. ask-button-disabled" })).toHaveAttribute(
+				"aria-disabled",
+				"true",
+			);
 		});
 
 		it("should show the disabled reason tooltip on keyboard focus", async () => {

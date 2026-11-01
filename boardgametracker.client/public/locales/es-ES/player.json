@@ -1,11 +1,13 @@
 {
   "empty": {
     "title": "Aún no hay jugadores",
-    "button": "Añadir jugador"
+    "button": "Añadir jugador",
+    "description": "Añade a las personas con las que juegas para seguir victorias y rivalidades."
   },
   "back": "Volver a jugadores",
   "count_other": "{{count}} jugadores",
   "count_one": "{{count}} jugador",
+  "count-filtered": "{{count}} de {{total}} jugadores",
   "notifications": {
     "created": "Jugador añadido",
     "create-failed": "Error al crear el jugador",
@@ -102,5 +104,23 @@
   "rivals": {
     "title": "Cara a cara",
     "record": "{{wins}} ganadas, {{losses}} perdidas"
+  },
+  "list": {
+    "last-played": "última partida",
+    "record_one": "{{wins}} de {{count}} victoria",
+    "record_other": "{{wins}} de {{count}} victorias",
+    "sort": "Ordenar jugadores",
+    "sort-sessions": "Sesiones",
+    "sort-recent": "Recientes",
+    "sort-name": "Nombre",
+    "no-match": "Ningún jugador coincide con “{{query}}”",
+    "clear": "Borrar filtro",
+    "error-title": "No se pudieron cargar los jugadores",
+    "error-description": "El servidor no respondió. Comprueba que está en marcha e inténtalo de nuevo.",
+    "win-rate": "de victorias",
+    "sessions_one": "sesión",
+    "sessions_other": "sesiones",
+    "not-played": "Aún sin jugar",
+    "log-game": "Registrar una partida"
   }
 }

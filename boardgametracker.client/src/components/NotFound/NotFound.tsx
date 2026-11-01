@@ -3,7 +3,7 @@ import type { ComponentType, SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 import ArrowLeft from "@/assets/icons/arrow-left.svg?react";
 import CalendarIcon from "@/assets/icons/calendar.svg?react";
-import Game from "@/assets/icons/gamepad.svg?react";
+import Game from "@/assets/icons/dices.svg?react";
 import HomeIcon from "@/assets/icons/home.svg?react";
 import MagnifyingGlass from "@/assets/icons/magnifying-glass.svg?react";
 import UsersIcon from "@/assets/icons/users.svg?react";

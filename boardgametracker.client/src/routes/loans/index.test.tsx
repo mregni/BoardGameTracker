@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
 	loans: [] as Loan[],
 	isLoading: false,
 	deleteLoan: vi.fn(() => Promise.resolve()),
-	returnLoan: vi.fn(() => Promise.resolve()),
+	returnLoans: vi.fn(() => Promise.resolve()),
 	updateLoan: vi.fn(() => Promise.resolve()),
 }));
 
@@ -45,7 +45,7 @@ vi.mock("@/routes/loans/-hooks/useLoans", () => ({
 		settings: { dateFormat: "dd-MM-yyyy" },
 		isLoading: mocks.isLoading,
 		deleteLoan: mocks.deleteLoan,
-		returnLoan: mocks.returnLoan,
+		returnLoans: mocks.returnLoans,
 		updateLoan: mocks.updateLoan,
 	}),
 }));
@@ -57,7 +57,10 @@ const games = [
 	{ id: 4, title: "Carcassonne", image: null },
 ] as unknown as Game[];
 
-const players = [{ id: 9, name: "Kathleen", image: null }] as unknown as Player[];
+const players = [
+	{ id: 9, name: "Kathleen", image: null },
+	{ id: 8, name: "Ruben", image: null },
+] as unknown as Player[];
 
 vi.mock("@/routes/-hooks/useGameById", () => ({
 	useGameById: () => ({ gameById: (id: number) => games.find((game) => game.id === id) ?? null }),
@@ -104,21 +107,29 @@ vi.mock("@/routes/loans/-modals/EditLoanModal", () => ({
 vi.mock("@/routes/loans/-modals/ReturnLoanModal", () => ({
 	ReturnLoanModal: ({
 		open,
-		loan,
-		gameTitle,
+		loans,
+		title,
 		close,
 		onReturn,
 	}: {
 		open: boolean;
-		loan: Loan | null;
-		gameTitle: string;
+		loans: Loan[];
+		title: string;
 		close: () => void;
-		onReturn: (loanId: number, date: Date) => Promise<void>;
+		onReturn: (loanIds: number[], date: Date) => Promise<void>;
 	}) =>
-		open && loan ? (
+		open ? (
 			<div>
-				<span>{`returning ${gameTitle}`}</span>
-				<button type="button" onClick={() => onReturn(loan.id, new Date(2026, 9, 11))}>
+				<span>{`returning ${title}`}</span>
+				<button
+					type="button"
+					onClick={() =>
+						onReturn(
+							loans.map((loan) => loan.id),
+							new Date(2026, 9, 11),
+						)
+					}
+				>
 					confirm-return
 				</button>
 				<button type="button" onClick={close}>
@@ -163,7 +174,12 @@ const renderPage = () => {
 	return renderWithProviders(<Page />);
 };
 
-const statistic = (title: string) => screen.getByText(title).closest("div.col-span-1") as HTMLElement;
+const statistic = (title: string) => screen.getByText(title).closest("button") as HTMLElement;
+
+const openMenu = async (game: string) => {
+	const row = screen.getByText(game).closest("li") as HTMLElement;
+	await userEvent.click(within(row).getByRole("button", { name: "row.actions" }));
+};
 
 describe("loans page", () => {
 	beforeEach(() => {
@@ -193,7 +209,114 @@ describe("loans page", () => {
 		expect(within(statistic("statistics.on-loan")).getByText("3")).toBeInTheDocument();
 		expect(within(statistic("statistics.overdue")).getByText("1")).toBeInTheDocument();
 		expect(within(statistic("statistics.due-this-week")).getByText("1")).toBeInTheDocument();
-		expect(within(statistic("statistics.returned")).getByText("1")).toBeInTheDocument();
+		expect(screen.queryByText("statistics.returned")).not.toBeInTheDocument();
+		expect(within(statistic("statistics.overdue")).getByText("1")).toHaveClass("text-amber-500");
+	});
+
+	it("groups the active loans per borrower with the overdue count", () => {
+		mocks.loans = [open, loan(5, 4, { playerId: 8 }), overdue];
+		renderPage();
+
+		const groups = screen.getAllByRole("region");
+		expect(groups.map((group) => within(group).getByRole("heading").textContent)).toEqual(["Kathleen", "Ruben"]);
+		expect(within(groups[0]).getByText("group.games")).toBeInTheDocument();
+		expect(within(groups[0]).getByText(/group.overdue/)).toBeInTheDocument();
+		expect(within(groups[1]).queryByText(/group.overdue/)).not.toBeInTheDocument();
+	});
+
+	it("returns every loan of a borrower at once", async () => {
+		renderPage();
+
+		await userEvent.click(screen.getByRole("button", { name: "mark-all-returned-button" }));
+		expect(screen.getByText("returning return.title-all")).toBeInTheDocument();
+
+		await userEvent.click(screen.getByRole("button", { name: "confirm-return" }));
+		expect(mocks.returnLoans).toHaveBeenCalledWith([1, 2, 3], new Date(2026, 9, 11));
+	});
+
+	it("offers no bulk return for a borrower with one loan", () => {
+		mocks.loans = [overdue];
+		renderPage();
+
+		expect(screen.queryByRole("button", { name: "mark-all-returned-button" })).not.toBeInTheDocument();
+	});
+
+	it("filters on a statistic and clears the filter when clicked again", async () => {
+		renderPage();
+
+		await userEvent.click(statistic("statistics.overdue"));
+		expect(statistic("statistics.overdue")).toHaveAttribute("aria-pressed", "true");
+		expect(screen.getByText("Azul")).toBeInTheDocument();
+		expect(screen.queryByText("Everdell")).not.toBeInTheDocument();
+
+		await userEvent.click(statistic("statistics.overdue"));
+		expect(statistic("statistics.on-loan")).toHaveAttribute("aria-pressed", "true");
+		expect(screen.getByText("Everdell")).toBeInTheDocument();
+	});
+
+	it("shows the active filter and clears it from there", async () => {
+		renderPage();
+
+		await userEvent.click(statistic("statistics.overdue"));
+		await userEvent.click(screen.getByRole("button", { name: /filter.showing/ }));
+
+		expect(screen.queryByRole("button", { name: /filter.showing/ })).not.toBeInTheDocument();
+		expect(screen.getByText("Everdell")).toBeInTheDocument();
+	});
+
+	it("filters from the compact chips as well", async () => {
+		renderPage();
+
+		await userEvent.click(screen.getByRole("button", { name: "chip.overdue" }));
+
+		expect(screen.getByRole("button", { name: "chip.overdue" })).toHaveAttribute("aria-pressed", "true");
+		expect(screen.queryByText("Everdell")).not.toBeInTheDocument();
+	});
+
+	it("turns a statistic without loans into a plain card", () => {
+		mocks.loans = [open];
+		renderPage();
+
+		expect(statistic("statistics.overdue")).toBeNull();
+		expect(screen.getByRole("button", { name: "chip.overdue" })).toBeDisabled();
+		expect(
+			within(screen.getByText("statistics.overdue").parentElement?.parentElement as HTMLElement).getByText("0"),
+		).toHaveClass("text-cyan-500");
+	});
+
+	it("turns the overdue count red once a loan is more than a month late", () => {
+		mocks.loans = [loan(1, 1, { dueDate: new Date(2026, 7, 1) })];
+		renderPage();
+
+		expect(within(statistic("statistics.overdue")).getByText("1")).toHaveClass("text-bad");
+	});
+
+	it("opens the history when a search only finds returned loans", async () => {
+		renderPage();
+
+		await userEvent.type(screen.getByPlaceholderText("search.placeholder"), "carc");
+
+		expect(screen.getByText("no-search-matches")).toBeInTheDocument();
+		expect(screen.getByText("history.summary-filtered")).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: "Carcassonne" })).toBeInTheDocument();
+	});
+
+	it("searches on game and borrower and offers a way back when nothing matches", async () => {
+		renderPage();
+		const search = screen.getByPlaceholderText("search.placeholder");
+
+		await userEvent.type(search, "ever");
+		expect(screen.getByText("Everdell")).toBeInTheDocument();
+		expect(screen.queryByText("Azul")).not.toBeInTheDocument();
+
+		await userEvent.clear(search);
+		await userEvent.type(search, "kath");
+		expect(screen.getByText("Azul")).toBeInTheDocument();
+
+		await userEvent.type(search, "zzz");
+		expect(screen.getByText("no-search-matches")).toBeInTheDocument();
+		await userEvent.click(screen.getByRole("button", { name: "clear-filter" }));
+		expect(screen.getByText("Azul")).toBeInTheDocument();
 	});
 
 	it("lists the active loans by due date and keeps the history closed", () => {
@@ -213,8 +336,12 @@ describe("loans page", () => {
 		await userEvent.click(toggle);
 
 		expect(screen.getByText("Carcassonne")).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "history.hide" })).toHaveAttribute("aria-expanded", "true");
-		expect(screen.getAllByRole("button", { name: "mark-returned-button" })).toHaveLength(3);
+		const hide = screen.getByRole("button", { name: "history.hide" });
+		expect(hide).toHaveAttribute("aria-expanded", "true");
+		expect(document.getElementById(hide.getAttribute("aria-controls") ?? "")).toContainElement(
+			screen.getByText("Carcassonne"),
+		);
+		expect(screen.getAllByRole("button", { name: /^mark-returned-button/ })).toHaveLength(3);
 
 		await userEvent.click(screen.getByRole("button", { name: "history.hide" }));
 		expect(screen.queryByText("Carcassonne")).not.toBeInTheDocument();
@@ -226,7 +353,8 @@ describe("loans page", () => {
 		await userEvent.click(screen.getByRole("button", { name: "history.show" }));
 
 		expect(screen.queryByRole("link")).not.toBeInTheDocument();
-		expect(screen.getAllByRole("button", { name: "edit.button" })).toHaveLength(2);
+		expect(screen.getAllByText("unknown-game")).toHaveLength(2);
+		expect(screen.getAllByRole("button", { name: "row.actions" })).toHaveLength(2);
 	});
 
 	it("says there are no active loans when everything was returned", () => {
@@ -249,22 +377,22 @@ describe("loans page", () => {
 	it("returns a loan through the return dialog", async () => {
 		renderPage();
 
-		await userEvent.click(screen.getAllByRole("button", { name: "mark-returned-button" })[0]);
-		expect(screen.getByText("returning Azul")).toBeInTheDocument();
+		await userEvent.click(screen.getAllByRole("button", { name: /^mark-returned-button/ })[0]);
+		expect(screen.getByText("returning return.title")).toBeInTheDocument();
 
 		await userEvent.click(screen.getByRole("button", { name: "confirm-return" }));
-		expect(mocks.returnLoan).toHaveBeenCalledWith(1, new Date(2026, 9, 11));
+		expect(mocks.returnLoans).toHaveBeenCalledWith([1], new Date(2026, 9, 11));
 
 		await userEvent.click(screen.getByRole("button", { name: "close-return" }));
-		expect(screen.queryByText("returning Azul")).not.toBeInTheDocument();
+		expect(screen.queryByText("returning return.title")).not.toBeInTheDocument();
 	});
 
 	it("edits a returned loan from the history", async () => {
 		renderPage();
 		await userEvent.click(screen.getByRole("button", { name: "history.show" }));
 
-		const editButtons = screen.getAllByRole("button", { name: "edit.button" });
-		await userEvent.click(editButtons[editButtons.length - 1]);
+		await openMenu("Carcassonne");
+		await userEvent.click(screen.getByRole("menuitem", { name: "edit.button" }));
 		expect(screen.getByText("editing 4")).toBeInTheDocument();
 
 		await userEvent.click(screen.getByRole("button", { name: "save-edit" }));
@@ -277,7 +405,8 @@ describe("loans page", () => {
 	it("deletes a loan after confirming", async () => {
 		renderPage();
 
-		await userEvent.click(screen.getAllByRole("button", { name: "delete.button" })[1]);
+		await openMenu("Everdell");
+		await userEvent.click(screen.getByRole("menuitem", { name: "delete.button" }));
 		expect(screen.getByText("delete.title")).toBeInTheDocument();
 
 		await userEvent.click(screen.getByRole("button", { name: "confirm-delete" }));
@@ -291,9 +420,9 @@ describe("loans page", () => {
 		await userEvent.click(screen.getByRole("button", { name: "history.show" }));
 
 		expect(screen.queryByRole("button", { name: "loans:new.button" })).not.toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "mark-returned-button" })).not.toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "edit.button" })).not.toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "delete.button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: /^mark-returned-button/ })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "row.actions" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "mark-all-returned-button" })).not.toBeInTheDocument();
 	});
 
 	describe("without loans", () => {

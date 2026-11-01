@@ -248,6 +248,22 @@ public class LoanControllerTests
     }
 
     [Fact]
+    public async Task UndoReturn_ShouldReturnOkWithLoanBackOnLoan()
+    {
+        var loan = new Loan(1, 1, DateTime.UtcNow.AddDays(-5)) { Id = 3 };
+        _loanServiceMock.Setup(x => x.UndoReturn(3)).ReturnsAsync(loan);
+
+        var result = await _controller.UndoReturn(3);
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var dto = okResult.Value.Should().BeAssignableTo<LoanDto>().Subject;
+        dto.Id.Should().Be(3);
+        dto.ReturnedDate.Should().BeNull();
+        _loanServiceMock.Verify(x => x.UndoReturn(3), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task DeleteLoan_ShouldReturnNoContent_WhenLoanIsDeleted()
     {
         // Arrange
