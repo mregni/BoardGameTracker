@@ -32,7 +32,10 @@ export const TogetherTiles = ({ compare, playerOne, playerTwo, dateFormat, uiLan
 		closest?.playerId === playerOne.id ? playerOne : closest?.playerId === playerTwo.id ? playerTwo : null;
 
 	return (
-		<div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+		<section aria-labelledby="tiles-title" className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+			<h2 id="tiles-title" className="sr-only">
+				{t("tiles.title")}
+			</h2>
 			<BgtTextStatistic
 				title={t("tiles.games-together")}
 				icon={<Users />}
@@ -70,6 +73,6 @@ export const TogetherTiles = ({ compare, playerOne, playerTwo, dateFormat, uiLan
 					}
 				/>
 			)}
-		</div>
+		</section>
 	);
 };

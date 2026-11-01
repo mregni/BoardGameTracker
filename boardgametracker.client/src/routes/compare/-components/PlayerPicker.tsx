@@ -54,7 +54,12 @@ export const PlayerPicker = ({ side, player, players, excludeId, onPlayerChange 
 			triggerClassName={pickerVariants({ side })}
 			trigger={
 				<>
-					<BgtAvatar image={player.image} title={player.name} size="large" />
+					<BgtAvatar
+						image={player.image}
+						title={player.name}
+						color={`color-mix(in oklab, var(--color-${side === "playerOne" ? "player-one" : "player-two"}) 55%, black)`}
+						size="large"
+					/>
 					<strong className="min-w-0 max-w-full truncate text-base font-extrabold sm:text-xl">{player.name}</strong>
 					<CaretDown aria-hidden="true" className="hidden size-5 text-white/60 sm:block" />
 				</>

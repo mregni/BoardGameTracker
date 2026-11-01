@@ -178,13 +178,7 @@ const Together = ({ compare, playerOne, playerTwo, dateFormat, uiLanguage, canOp
 				dateFormat={dateFormat}
 				uiLanguage={uiLanguage}
 			/>
-			<PerGameCard
-				games={compare.games}
-				playerOne={playerOne}
-				playerTwo={playerTwo}
-				dateFormat={dateFormat}
-				uiLanguage={uiLanguage}
-			/>
+			<PerGameCard games={compare.games} playerOne={playerOne} playerTwo={playerTwo} />
 			<BestWorstCards compare={compare} playerOne={playerOne} playerTwo={playerTwo} />
 			<RecentTogether
 				sessions={compare.recentSessions}

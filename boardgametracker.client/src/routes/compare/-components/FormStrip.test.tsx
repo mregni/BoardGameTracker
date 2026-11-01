@@ -34,7 +34,7 @@ describe("FormStrip", () => {
 		expect(tiles.map((tile) => tile.textContent)).toEqual(["M", "–", "+", "K", "K"]);
 		expect(tiles.map((tile) => tile.dataset.outcome)).toEqual(["playerOne", "other", "both", "playerTwo", "playerTwo"]);
 		expect(tiles[0]).toHaveAttribute("title", "Brass: Birmingham · Mikhaël");
-		expect(tiles[1]).toHaveAttribute("title", "Carcassonne · someone else");
+		expect(tiles[1]).toHaveAttribute("title", "Carcassonne · neither won");
 		expect(screen.getByText("Last 5 sessions together", { exact: false })).toBeInTheDocument();
 	});
 
@@ -43,7 +43,7 @@ describe("FormStrip", () => {
 
 		expect(
 			screen.getByRole("img", {
-				name: "Last sessions together, oldest first: Mikhaël, someone else, both won, Kathleen, Kathleen",
+				name: "Last sessions together, oldest first: Mikhaël, neither won, both won, Kathleen, Kathleen",
 			}),
 		).toBeInTheDocument();
 	});

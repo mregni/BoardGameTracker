@@ -33,10 +33,7 @@ const rows = [
 	gameRow({ gameId: 15, sessionCount: 1, playerTwoWins: 1 }),
 ];
 
-const renderCard = () =>
-	render(
-		<PerGameCard games={rows} playerOne={playerOne} playerTwo={playerTwo} dateFormat="dd-MM-yyyy" uiLanguage="en-US" />,
-	);
+const renderCard = () => render(<PerGameCard games={rows} playerOne={playerOne} playerTwo={playerTwo} />);
 
 const titles = () => screen.getAllByTestId("per-game-row").map((row) => row.querySelector("strong")?.textContent);
 
@@ -57,9 +54,9 @@ describe("PerGameCard", () => {
 		const user = userEvent.setup();
 		renderCard();
 
-		await user.click(screen.getByRole("button", { name: "Biggest lead" }));
+		await user.click(screen.getByRole("button", { name: "Biggest difference" }));
 
-		expect(screen.getByRole("button", { name: "Biggest lead" })).toHaveAttribute("aria-pressed", "true");
+		expect(screen.getByRole("button", { name: "Biggest difference" })).toHaveAttribute("aria-pressed", "true");
 		expect(titles()).toEqual(["Brass: Birmingham", "Azul", "Age of Inventors", "Carcassonne", "Cascadia"]);
 	});
 
@@ -89,8 +86,6 @@ describe("PerGameCard", () => {
 				]}
 				playerOne={playerOne}
 				playerTwo={playerTwo}
-				dateFormat="dd-MM-yyyy"
-				uiLanguage="en-US"
 			/>,
 		);
 
@@ -112,8 +107,6 @@ describe("PerGameCard", () => {
 				]}
 				playerOne={playerOne}
 				playerTwo={playerTwo}
-				dateFormat="dd-MM-yyyy"
-				uiLanguage="en-US"
 			/>,
 		);
 
@@ -121,19 +114,17 @@ describe("PerGameCard", () => {
 		expect(row.querySelector("small")).toHaveTextContent(/^3 sessions$/);
 	});
 
-	it("shows counts, averages, other winners and the last result per game", () => {
+	it("shows counts, averages and games not won by either", () => {
 		renderCard();
-		const [azul, carcassonne, brass, inventors] = screen.getAllByTestId("per-game-row");
+		const [azul, carcassonne, brass] = screen.getAllByTestId("per-game-row");
 
 		expect(azul).toHaveTextContent("11 sessions · avg 71 – 78.3");
-		expect(azul).toHaveTextContent("Kathleen · 13-10-2026");
-		expect(within(azul).getByRole("img", { name: "Azul: Mikhaël 4, Kathleen 7, someone else 0" })).toBeInTheDocument();
-		expect(carcassonne).toHaveTextContent("2 won by someone else");
-		expect(carcassonne).toHaveTextContent("– · 10-10-2026");
-		expect(brass).toHaveTextContent("1 won by someone else");
+		expect(
+			within(azul).getByRole("img", { name: "Azul: Mikhaël 4, Kathleen 7, not won by either 0" }),
+		).toBeInTheDocument();
+		expect(carcassonne).toHaveTextContent("2 not won by either");
+		expect(brass).toHaveTextContent("1 not won by either");
 		expect(brass).toHaveTextContent("7 sessions · no scores");
-		expect(brass).toHaveTextContent("Mikhaël · ");
-		expect(inventors).toHaveTextContent("+ · ");
 	});
 
 	it("shows a co-op game as same team with a hatched bar and the co-op result", () => {
@@ -152,15 +143,12 @@ describe("PerGameCard", () => {
 				]}
 				playerOne={playerOne}
 				playerTwo={playerTwo}
-				dateFormat="dd-MM-yyyy"
-				uiLanguage="en-US"
 			/>,
 		);
 
 		const [mixed, pandemic] = screen.getAllByTestId("per-game-row");
 		expect(pandemic).toHaveTextContent("3 sessions · co-op");
 		expect(pandemic).toHaveTextContent("Same team · won 2 of 3");
-		expect(pandemic).toHaveTextContent("Co-op · won");
 		const segments = within(pandemic)
 			.getAllByTestId("progress-segment")
 			.filter((s) => s.dataset.visible === "true");
@@ -169,41 +157,14 @@ describe("PerGameCard", () => {
 		expect(mixed).toHaveTextContent("+2 same team");
 	});
 
-	it("shows a lost co-op game as the last result", () => {
-		render(
-			<PerGameCard
-				games={[
-					gameRow({ gameId: 14, sessionCount: 1, sameTeamCount: 1, lastOutcome: "sameTeam", lastTeamWon: false }),
-				]}
-				playerOne={playerOne}
-				playerTwo={playerTwo}
-				dateFormat="dd-MM-yyyy"
-				uiLanguage="en-US"
-			/>,
-		);
-
-		expect(screen.getByText("Co-op · lost")).toBeInTheDocument();
-		expect(screen.getByText("Same team · won 0 of 1")).toBeInTheDocument();
-	});
-
 	it("hides the sort and show-all controls it does not need", () => {
-		render(
-			<PerGameCard
-				games={rows.slice(0, 2)}
-				playerOne={playerOne}
-				playerTwo={playerTwo}
-				dateFormat="dd-MM-yyyy"
-				uiLanguage="en-US"
-			/>,
-		);
+		render(<PerGameCard games={rows.slice(0, 2)} playerOne={playerOne} playerTwo={playerTwo} />);
 
 		expect(screen.queryByRole("button", { name: /Show all/ })).toBeNull();
 	});
 
 	it("renders nothing without games", () => {
-		const { container } = render(
-			<PerGameCard games={[]} playerOne={playerOne} playerTwo={playerTwo} dateFormat="dd-MM-yyyy" uiLanguage="en-US" />,
-		);
+		const { container } = render(<PerGameCard games={[]} playerOne={playerOne} playerTwo={playerTwo} />);
 
 		expect(container).toBeEmptyDOMElement();
 	});

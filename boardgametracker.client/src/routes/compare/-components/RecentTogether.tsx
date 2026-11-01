@@ -100,9 +100,9 @@ export const RecentTogether = ({ sessions, playerOne, playerTwo, dateFormat, uiL
 							<span className="col-start-1 row-span-2 row-start-1 sm:col-start-2 sm:row-span-1">
 								<BgtAvatar image={game?.image} title={game?.title ?? ""} size="medium" />
 							</span>
-							<span className="col-start-2 row-start-1 truncate font-semibold sm:col-start-3">
-								{game?.title}
-								{scores}
+							<span className="col-start-2 row-start-1 flex min-w-0 font-semibold sm:col-start-3">
+								<span className="truncate">{game?.title}</span>
+								<span className="shrink-0 whitespace-pre tabular-nums">{scores}</span>
 							</span>
 							<span className="col-start-3 row-start-1 sm:col-start-4">{winner(session)}</span>
 							<span className="col-start-3 row-start-2 justify-self-end text-xs tabular-nums text-white/60 sm:col-start-5 sm:row-start-1">

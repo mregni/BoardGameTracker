@@ -4,13 +4,11 @@ import { useTranslation } from "react-i18next";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtProgressBar } from "@/components/BgtProgressBar/BgtProgressBar";
-import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
-import type { CompareGame, CompareOutcome, Player } from "@/models";
+import type { CompareGame, Player } from "@/models";
 import { useGameById } from "@/routes/-hooks/useGameById";
-import { toDisplay } from "@/utils/dateUtils";
 import { MIN_SESSIONS_FOR_AVERAGE } from "@/utils/numberUtils";
-import { type GameSort, initialOf, sortGames } from "../-utils/compareUtils";
+import { type GameSort, sortGames } from "../-utils/compareUtils";
 import { SectionTitle } from "./SectionTitle";
 
 export const VISIBLE_GAMES = 5;
@@ -21,11 +19,9 @@ interface Props {
 	games: CompareGame[];
 	playerOne: Player;
 	playerTwo: Player;
-	dateFormat: string;
-	uiLanguage: string;
 }
 
-export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguage }: Props) => {
+export const PerGameCard = ({ games, playerOne, playerTwo }: Props) => {
 	const { t } = useTranslation("compare");
 	const { gameById } = useGameById();
 	const { integer, decimal } = useNumberFormat();
@@ -34,29 +30,11 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 
 	const sorted = useMemo(() => sortGames(games, sort), [games, sort]);
 	const visible = showAll ? sorted : sorted.slice(0, VISIBLE_GAMES);
+	const toggleShowAll = () => {
+		if (showAll) document.getElementById("per-game-title")?.scrollIntoView?.({ block: "start" });
+		setShowAll(!showAll);
+	};
 
-	const letter = (outcome: CompareOutcome) =>
-		({
-			playerOne: (
-				<>
-					<span aria-hidden="true" className="text-player-one">
-						{initialOf(playerOne.name)}
-					</span>
-					<span className="sr-only">{playerOne.name}</span>
-				</>
-			),
-			playerTwo: (
-				<>
-					<span aria-hidden="true" className="text-player-two">
-						{initialOf(playerTwo.name)}
-					</span>
-					<span className="sr-only">{playerTwo.name}</span>
-				</>
-			),
-			both: "+",
-			other: "–",
-			sameTeam: "=",
-		})[outcome];
 	const average = (value: number | null) => (value === null ? "–" : decimal(value, 1));
 	const scoreDetail = (game: CompareGame) => {
 		const scores = { one: average(game.playerOneAverageScore), two: average(game.playerTwoAverageScore) };
@@ -98,12 +76,11 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 				</div>
 				<div
 					aria-hidden="true"
-					className="hidden grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)_auto] gap-3 px-2 text-xs text-white/60 sm:grid"
+					className="hidden grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)] gap-3 px-2 text-xs text-white/60 sm:grid"
 				>
 					<span />
 					<span>{t("per-game.game")}</span>
 					<span>{t("per-game.wins")}</span>
-					<span className="text-right">{t("per-game.last")}</span>
 				</div>
 				<ul className="flex flex-col">
 					{visible.map((game) => {
@@ -115,7 +92,7 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 							<li
 								key={game.gameId}
 								data-testid="per-game-row"
-								className="grid grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 border-t border-card-border px-0.5 py-2 first:border-t-0 sm:grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)_auto] sm:px-2"
+								className="grid grid-cols-[28px_minmax(0,1fr)] items-center gap-x-3 gap-y-1 border-t border-card-border px-0.5 py-2 first:border-t-0 sm:grid-cols-[28px_minmax(0,1fr)_minmax(110px,1.2fr)] sm:px-2"
 							>
 								<span className="row-span-2 self-start sm:row-span-1 sm:self-center">
 									<BgtAvatar image={details?.image} title={title} size="medium" />
@@ -128,7 +105,7 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 											.join(" · ")}
 									</small>
 								</span>
-								<span className="col-span-2 col-start-2 row-start-2 flex min-w-0 flex-col gap-1 sm:col-span-1 sm:col-start-3 sm:row-start-1">
+								<span className="col-start-2 row-start-2 flex min-w-0 flex-col gap-1 sm:col-start-3 sm:row-start-1">
 									{coopOnly ? (
 										<span className="text-xs text-white/60">{teamText}</span>
 									) : (
@@ -178,22 +155,12 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 										]}
 									/>
 								</span>
-								{game.lastOutcome === "sameTeam" ? (
-									<CoopResultPill
-										won={game.lastTeamWon === true}
-										className="col-start-3 row-start-1 justify-self-end sm:col-start-4"
-									/>
-								) : (
-									<span className="col-start-3 row-start-1 justify-self-end whitespace-nowrap rounded-full bg-card-light px-2 py-0.5 text-xs font-semibold tabular-nums text-white/60 sm:col-start-4">
-										{letter(game.lastOutcome)} · {toDisplay(game.lastPlayed, dateFormat, uiLanguage)}
-									</span>
-								)}
 							</li>
 						);
 					})}
 				</ul>
 				{sorted.length > VISIBLE_GAMES && (
-					<BgtButton variant="text" size="1" className="self-start" onClick={() => setShowAll((value) => !value)}>
+					<BgtButton variant="text" size="1" className="self-start max-sm:min-h-11" onClick={toggleShowAll}>
 						{showAll ? t("per-game.show-less") : t("per-game.show-all", { count: sorted.length })}
 					</BgtButton>
 				)}
