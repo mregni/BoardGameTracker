@@ -4,4 +4,5 @@ export interface PlayerOverview {
 	image: string | null;
 	playCount: number;
 	winCount: number;
+	lastPlayed: string | null;
 }

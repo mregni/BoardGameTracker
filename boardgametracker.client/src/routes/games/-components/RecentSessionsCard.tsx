@@ -31,26 +31,26 @@ export const RecentSessionsCard = (props: Props) => {
 					{sessions.map((session) => {
 						const winnerSession = session.playerSessions.find((playerSession) => playerSession.won);
 						const winner = winnerSession ? playerById(winnerSession.playerId) : undefined;
+						const details = `${t("common:player", { count: session.playerSessions.length })} · ${shortDuration(session.minutes)}`;
 
 						return (
-							<li
-								key={session.id}
-								className="flex items-center gap-2 py-2"
-								title={`${t("common:player", { count: session.playerSessions.length })} · ${shortDuration(session.minutes)}`}
-							>
+							<li key={session.id} className="flex items-center gap-3 py-2">
 								<span className="shrink-0 text-sm tabular-nums text-white/60">
 									{toDisplay(session.start, dateFormat, i18n.language)}
 								</span>
-								{session.isCoop ? (
-									<span className="flex min-w-0 flex-1 items-center">
-										<CoopResultPill won={session.teamWon === true} />
-									</span>
-								) : (
-									<span className="flex min-w-0 flex-1 items-center gap-1">
-										{winner && <Crown className="size-4 shrink-0 text-yellow-400" />}
-										<span className="truncate">{winner?.name ?? "-"}</span>
-									</span>
-								)}
+								<span className="flex min-w-0 flex-1 flex-col">
+									{session.isCoop ? (
+										<span className="flex items-center">
+											<CoopResultPill won={session.teamWon === true} />
+										</span>
+									) : (
+										<span className="flex min-w-0 items-center gap-1">
+											{winner && <Crown className="size-4 shrink-0 text-yellow-400" />}
+											<span className="truncate">{winner?.name ?? "-"}</span>
+										</span>
+									)}
+									<span className="text-xs text-white/60">{details}</span>
+								</span>
 								{(session.isCoop ? session.teamScore : winnerSession?.score) != null && (
 									<span className="shrink-0 text-sm font-semibold text-card-value">
 										{session.isCoop ? session.teamScore : winnerSession?.score}

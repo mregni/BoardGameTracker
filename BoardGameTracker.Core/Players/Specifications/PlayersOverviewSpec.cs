@@ -19,7 +19,8 @@ public sealed class PlayersOverviewSpec : Specification<Player, PlayerOverviewDt
             Name = x.Name,
             Image = x.Image,
             PlayCount = x.PlayerSessions.Count,
-            WinCount = x.PlayerSessions.Count(ps => ps.Won)
+            WinCount = x.PlayerSessions.Count(ps => ps.Won),
+            LastPlayed = x.PlayerSessions.Max(ps => (DateTime?)ps.Session.Start)
         });
     }
 }

@@ -111,6 +111,7 @@ public static class Constants
         public const string LoanDueBeforeStart = "error.loan.due-before-start";
         public const string LoanReturnedBeforeStart = "error.loan.returned-before-start";
         public const string LoanAlreadyReturned = "error.loan.already-returned";
+        public const string LoanNotReturned = "error.loan.not-returned";
         public const string LocationUsedByGameNights = "error.location.used-by-game-nights";
         public const string PlayerHostsGameNights = "error.player.hosts-game-nights";
         public const string CompareSamePlayer = "error.compare.same-player";

@@ -38,7 +38,7 @@ export interface TopPlayer {
 }
 
 export interface PlayByDayChartData {
-	dayOfWeek: number;
+	dayOfWeek: string;
 	playCount: number;
 }
 

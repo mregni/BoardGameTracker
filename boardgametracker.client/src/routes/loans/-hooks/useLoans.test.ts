@@ -43,10 +43,11 @@ vi.mock("@/services/queries/settings", () => ({
 vi.mock("@/services/loanService", () => ({
 	deleteLoanCall: vi.fn(),
 	returnLoanCall: vi.fn(),
+	undoReturnLoanCall: vi.fn(),
 	updateLoanCall: vi.fn(),
 }));
 
-import { deleteLoanCall, returnLoanCall, updateLoanCall } from "@/services/loanService";
+import { deleteLoanCall, returnLoanCall, undoReturnLoanCall, updateLoanCall } from "@/services/loanService";
 import { useLoans } from "./useLoans";
 
 const createWrapper = () => {
@@ -84,16 +85,52 @@ describe("useLoans", () => {
 		expect(successToast).toHaveBeenCalledWith("loans:delete.successfull");
 	});
 
-	it("returns a loan on the given date", async () => {
+	it("returns every given loan on the same date with one toast", async () => {
 		vi.mocked(returnLoanCall).mockResolvedValue(loan);
 		const { result } = await renderUseLoans();
 		const returned = new Date("2026-09-20");
 
-		await act(() => result.current.returnLoan(7, returned));
+		await act(() => result.current.returnLoans([7, 8], returned));
 
-		expect(returnLoanCall).toHaveBeenCalledWith(7, returned);
+		expect(vi.mocked(returnLoanCall).mock.calls).toEqual([
+			[7, returned],
+			[8, returned],
+		]);
 		expect(invalidateLoan).toHaveBeenCalledWith(7, 3);
-		expect(successToast).toHaveBeenCalledWith("loans:return.successfull");
+		expect(invalidateLoan).toHaveBeenCalledWith(8, undefined);
+		expect(successToast).toHaveBeenCalledTimes(1);
+		expect(successToast).toHaveBeenCalledWith(
+			"loans:return.successfull",
+			expect.objectContaining({ label: "loans:return.undo" }),
+		);
+	});
+
+	it("puts the returned loans back on loan from the undo action", async () => {
+		vi.mocked(returnLoanCall).mockResolvedValue(loan);
+		vi.mocked(undoReturnLoanCall).mockResolvedValue(loan);
+		const { result } = await renderUseLoans();
+
+		await act(() => result.current.returnLoans([7, 8], new Date("2026-09-20")));
+		invalidateLoan.mockClear();
+		await act(() => successToast.mock.calls[0][1].onClick());
+
+		expect(vi.mocked(undoReturnLoanCall).mock.calls).toEqual([[7], [8]]);
+		expect(invalidateLoan).toHaveBeenCalledWith(7, 3);
+		expect(invalidateLoan).toHaveBeenCalledWith(8, undefined);
+		expect(successToast).toHaveBeenLastCalledWith("loans:return.undone");
+	});
+
+	it("shows the undo failure and still refreshes the loans", async () => {
+		vi.mocked(returnLoanCall).mockResolvedValue(loan);
+		vi.mocked(undoReturnLoanCall).mockRejectedValue(new Error("boom"));
+		const { result } = await renderUseLoans();
+
+		await act(() => result.current.returnLoans([7], new Date("2026-09-20")));
+		invalidateLoan.mockClear();
+		await act(() => successToast.mock.calls[0][1].onClick());
+
+		expect(errorToast).toHaveBeenCalledWith("loans:return.undo-failed");
+		expect(invalidateLoan).toHaveBeenCalledWith(7, 3);
 	});
 
 	it("updates a loan", async () => {
@@ -114,7 +151,7 @@ describe("useLoans", () => {
 		const { result } = await renderUseLoans();
 
 		await act(() => result.current.deleteLoan(7));
-		await act(() => result.current.returnLoan(7, new Date()));
+		await act(() => result.current.returnLoans([7], new Date()));
 		await act(() => result.current.updateLoan(loan));
 
 		expect(errorToast.mock.calls).toEqual([

@@ -89,7 +89,8 @@
   "delete": {
     "title": "Eliminar {{title}}",
     "description": "¿Seguro que quieres eliminar {{title}} con todo su contenido? Esta acción no se puede deshacer.",
-    "button": "Eliminar"
+    "button": "Eliminar",
+    "named": "Eliminar {{name}}"
   },
   "no-sessions": {
     "title": "Aún no hay partidas registradas",
@@ -131,7 +132,6 @@
   "tile": {
     "sessions_one": "partida",
     "sessions_other": "partidas",
-    "wins": "victorias",
     "no-sessions": "Aún no hay partidas"
   },
   "coop": {
@@ -146,5 +146,7 @@
     "last-12-months": "Últimos 12 meses",
     "last-12-months-short": "12 meses",
     "custom": "Personalizado"
-  }
+  },
+  "clear-search": "Borrar búsqueda",
+  "edit-named": "Editar {{name}}"
 }
