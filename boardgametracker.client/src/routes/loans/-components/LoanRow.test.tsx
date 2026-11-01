@@ -52,12 +52,18 @@ describe("LoanRow", () => {
 	});
 
 	it("shows the game, the borrower, the start date and the status", () => {
-		render(<LoanRow loan={activeLoan} game={game} player={player} dateFormat="dd-MM-yyyy" />);
+		render(<LoanRow loan={activeLoan} game={game} player={player} showBorrower dateFormat="dd-MM-yyyy" />);
 
 		expect(screen.getByRole("link", { name: "Carcassonne" })).toHaveAttribute("href", "/games/3");
 		expect(screen.getByRole("link", { name: "Kathleen" })).toHaveAttribute("href", "/players/4");
-		expect(screen.getByText("since")).toBeInTheDocument();
+		expect(screen.getByText(/since/)).toBeInTheDocument();
 		expect(screen.getByText("status.overdue")).toBeInTheDocument();
+	});
+
+	it("leaves the borrower out unless asked", () => {
+		render(<LoanRow loan={activeLoan} game={game} player={player} dateFormat="dd-MM-yyyy" />);
+
+		expect(screen.queryByText("Kathleen")).not.toBeInTheDocument();
 	});
 
 	it("passes the loan to the edit, delete and returned actions", async () => {
@@ -76,9 +82,12 @@ describe("LoanRow", () => {
 			/>,
 		);
 
-		await userEvent.click(screen.getByRole("button", { name: "edit.button" }));
-		await userEvent.click(screen.getByRole("button", { name: "delete.button" }));
-		await userEvent.click(screen.getByRole("button", { name: "mark-returned-button" }));
+		await userEvent.click(screen.getByRole("button", { name: "row.actions" }));
+		await userEvent.click(screen.getByRole("menuitem", { name: "edit.button" }));
+		await userEvent.click(screen.getByRole("button", { name: "row.actions" }));
+		expect(screen.getByRole("menuitem", { name: "delete.button" })).toHaveClass("text-bad");
+		await userEvent.click(screen.getByRole("menuitem", { name: "delete.button" }));
+		await userEvent.click(screen.getByRole("button", { name: /^mark-returned-button/ }));
 
 		expect(onEdit).toHaveBeenCalledWith(activeLoan);
 		expect(onDelete).toHaveBeenCalledWith(activeLoan);
@@ -98,7 +107,7 @@ describe("LoanRow", () => {
 			/>,
 		);
 
-		const button = screen.getByRole("button", { name: "mark-returned-button" });
+		const button = screen.getByRole("button", { name: "mark-returned-button Carcassonne" });
 		expect(button).toHaveTextContent(/^mark-returned-button$/);
 		expect(screen.queryByText("status.returned")).not.toBeInTheDocument();
 	});
@@ -116,8 +125,8 @@ describe("LoanRow", () => {
 		);
 
 		expect(screen.getByText("status.returned")).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "edit.button" })).toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "mark-returned-button" })).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "row.actions" })).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: /^mark-returned-button/ })).not.toBeInTheDocument();
 	});
 
 	it("shows no actions without write access", () => {
@@ -127,9 +136,11 @@ describe("LoanRow", () => {
 	});
 
 	it("shows plain names when the game or player is unknown", () => {
-		render(<LoanRow loan={activeLoan} game={undefined} player={undefined} dateFormat="dd-MM-yyyy" />);
+		render(<LoanRow loan={activeLoan} game={undefined} player={undefined} showBorrower dateFormat="dd-MM-yyyy" />);
 
 		expect(screen.queryByRole("link")).not.toBeInTheDocument();
+		expect(screen.getByText("unknown-game")).toBeInTheDocument();
+		expect(screen.getByText("unknown-player")).toBeInTheDocument();
 		expect(screen.getByText("status.overdue")).toBeInTheDocument();
 	});
 });

@@ -22,29 +22,35 @@ const ReturnLoanSchema = z.object({
 });
 
 interface Props {
-	loan: Loan | null;
-	gameTitle: string;
+	loans: Loan[];
+	title: string;
+	gameTitles: string[];
 	open: boolean;
 	close: () => void;
-	onReturn: (loanId: number, returnDate: Date) => Promise<void>;
+	onReturn: (loanIds: number[], returnDate: Date) => Promise<void>;
 }
 
 export const ReturnLoanModal = (props: Props) => {
-	const { loan, gameTitle, open, close, onReturn } = props;
+	const { loans, title, gameTitles, open, close, onReturn } = props;
 	const { t } = useTranslation(["loans", "common"]);
-	const loanStart = toInputDate(loan?.loanDate ?? undefined, false);
+	const loanStart = loans
+		.map((loan) => toInputDate(loan.loanDate, false))
+		.reduce((latest, start) => (start > latest ? start : latest), "");
 
 	const form = useAppForm({
 		defaultValues: {
 			returnDate: toInputDate(undefined, true),
 		},
 		onSubmit: async ({ value }) => {
-			if (loan === null) {
+			if (loans.length === 0) {
 				return;
 			}
 
 			const { returnDate } = ReturnLoanSchema.parse(value);
-			await onReturn(loan.id, returnDate);
+			await onReturn(
+				loans.map((loan) => loan.id),
+				returnDate,
+			);
 			close();
 		},
 	});
@@ -70,8 +76,20 @@ export const ReturnLoanModal = (props: Props) => {
 		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
-					<BgtDialogTitle>{t("return.title", { game: gameTitle })}</BgtDialogTitle>
-					<BgtDialogDescription>{t("return.description")}</BgtDialogDescription>
+					<BgtDialogTitle>{title}</BgtDialogTitle>
+					<BgtDialogDescription>{t("return.description", { count: loans.length })}</BgtDialogDescription>
+					{gameTitles.length > 1 && (
+						<ul aria-label={t("return.games")} className="mt-3 flex flex-wrap gap-2">
+							{gameTitles.map((gameTitle, index) => (
+								<li
+									key={`${gameTitle}-${loans[index]?.id}`}
+									className="rounded-full bg-primary/15 px-3 py-1 text-sm text-white"
+								>
+									{gameTitle}
+								</li>
+							))}
+						</ul>
+					)}
 					<div className="flex flex-col gap-3 mt-3 mb-3">
 						<form.Field name="returnDate" validators={{ onChange: validateReturnDate }}>
 							{(field: AnyFieldApi) => (
