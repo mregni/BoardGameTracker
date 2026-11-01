@@ -1,14 +1,16 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
+import { cx } from "class-variance-authority";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Badge } from "@/models";
 
 interface Props {
 	badge: Badge;
+	lockedLabel?: string;
 }
 
 export const BgtAchievementIcon = (props: Props) => {
-	const { badge } = props;
+	const { badge, lockedLabel } = props;
 	const { t } = useTranslation("badges");
 	const [open, setOpen] = useState(false);
 	const openAtPress = useRef<boolean | null>(null);
@@ -30,7 +32,11 @@ export const BgtAchievementIcon = (props: Props) => {
 							setOpen(!wasOpen);
 						}}
 					>
-						<img src={`/images/badges/${badge.image}`} alt={t(badge.titleKey)} className="h-10 aspect-square" />
+						<img
+							src={`/images/badges/${badge.image}`}
+							alt={lockedLabel ? `${t(badge.titleKey)}, ${lockedLabel}` : t(badge.titleKey)}
+							className={cx("h-10 aspect-square", lockedLabel && "opacity-40 grayscale")}
+						/>
 					</button>
 				</Tooltip.Trigger>
 				<Tooltip.Portal>
@@ -41,6 +47,7 @@ export const BgtAchievementIcon = (props: Props) => {
 						<div className="flex flex-col justify-center">
 							<div className="font-bold">{t(`${badge.titleKey}`)}</div>
 							<div className="text-xs">{t(`${badge.descriptionKey}`)}</div>
+							{lockedLabel && <div className="mt-1 text-xs text-white/60">{lockedLabel}</div>}
 						</div>
 					</Tooltip.Content>
 				</Tooltip.Portal>

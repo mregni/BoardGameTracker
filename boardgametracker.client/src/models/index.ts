@@ -40,7 +40,7 @@ export * from "./Location/LocationStatistics";
 export * from "./Menu/MenuItem";
 export * from "./Player/Player";
 export * from "./Player/PlayerOverview";
-export type { MostPlayedGame, PlayerStatistics } from "./Player/PlayerStatistics";
+export type { MostPlayedGame, PlayerRival, PlayerStatistics } from "./Player/PlayerStatistics";
 export * from "./Session/CreateSession";
 export * from "./Session/PlayerSession";
 export * from "./Session/Session";

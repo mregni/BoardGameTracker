@@ -6265,6 +6265,16 @@ export interface components {
             /** Format: date-time */
             lastPlayed: string | null;
         };
+        PlayerRival: {
+            /** Format: int32 */
+            playerId: number;
+            /** Format: int32 */
+            sessions: number;
+            /** Format: int32 */
+            wins: number;
+            /** Format: int32 */
+            losses: number;
+        };
         PlayerScoringPoint: {
             /** Format: date-time */
             dateTime: string;
@@ -6294,6 +6304,7 @@ export interface components {
             /** Format: int32 */
             coopLossCount: number;
             mostPlayedGames: components["schemas"]["MostPlayedGame"][];
+            rivals: components["schemas"]["PlayerRival"][];
         };
         PlayerStreakDto: {
             /** Format: int32 */

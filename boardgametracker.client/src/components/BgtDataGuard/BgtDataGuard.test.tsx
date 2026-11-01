@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@/test/test-utils";
+import { render, screen, userEvent } from "@/test/test-utils";
 import { BgtDataGuard } from "./BgtDataGuard";
 
 vi.mock("../BgtLoadingSpinner/BgtLoadingSpinner", () => ({
@@ -262,6 +262,57 @@ describe("BgtDataGuard", () => {
 			expect(screen.getByTestId("user-card")).toBeInTheDocument();
 			expect(screen.getByRole("heading", { name: "John" })).toBeInTheDocument();
 			expect(screen.getByText("User ID: 1")).toBeInTheDocument();
+		});
+	});
+
+	describe("Error State", () => {
+		const notFound = { kind: "client", status: 404, message: "Not found", url: "player/9" };
+
+		it("shows the not-found content when the data is missing because of a 404", () => {
+			render(
+				<BgtDataGuard
+					isLoading={false}
+					data={{ name: undefined }}
+					error={notFound}
+					notFound={<div>No such player</div>}
+				>
+					{({ name }) => <div>Hello {name}</div>}
+				</BgtDataGuard>,
+			);
+
+			expect(screen.getByText("No such player")).toBeInTheDocument();
+			expect(screen.queryByTestId("loading-spinner")).not.toBeInTheDocument();
+		});
+
+		it("offers a retry for other failures", async () => {
+			const onRetry = vi.fn();
+			render(
+				<BgtDataGuard
+					isLoading={false}
+					data={{ name: undefined }}
+					error={{ kind: "network", status: null, message: "Network error", url: "player/9" }}
+					onRetry={onRetry}
+					notFound={<div>No such player</div>}
+				>
+					{({ name }) => <div>Hello {name}</div>}
+				</BgtDataGuard>,
+			);
+
+			expect(screen.getByText("load-failed")).toBeInTheDocument();
+			expect(screen.getByText("network")).toBeInTheDocument();
+			expect(screen.queryByText("No such player")).not.toBeInTheDocument();
+			await userEvent.click(screen.getByRole("button", { name: "common:try-again" }));
+			expect(onRetry).toHaveBeenCalledOnce();
+		});
+
+		it("keeps showing loaded data when a refetch fails", () => {
+			render(
+				<BgtDataGuard isLoading={false} data={{ name: "John" }} error={notFound}>
+					{({ name }) => <div>Hello {name}</div>}
+				</BgtDataGuard>,
+			);
+
+			expect(screen.getByText("Hello John")).toBeInTheDocument();
 		});
 	});
 });

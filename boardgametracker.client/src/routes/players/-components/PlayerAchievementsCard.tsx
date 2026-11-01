@@ -1,6 +1,9 @@
 import { cx } from "class-variance-authority";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Award from "@/assets/icons/award.svg?react";
+import { BgtAchievementIcon } from "@/components/BgtAchievement/BgtAchievement";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { type Badge, BadgeLevel } from "@/models";
 import { type Feat, type Milestone, useAchievementProgress } from "../-hooks/useAchievementProgress";
@@ -33,36 +36,41 @@ const MilestoneTile = ({ milestone }: { milestone: Milestone }) => {
 					{goal}
 				</div>
 			</div>
-			<div
-				className="flex shrink-0 gap-0.5"
-				role="img"
-				aria-label={`${milestone.earnedLevels.length}/${milestone.levels.length}`}
-			>
-				{milestone.levels.map((level) => (
-					<span
-						key={level.id}
-						className={cx(
-							"h-1 w-2.5 rounded-full",
-							level.level && milestone.earnedLevels.includes(level.level) ? levelColors[level.level] : "bg-white/10",
-						)}
-					/>
-				))}
+			<div className="flex shrink-0 flex-col items-end gap-1">
+				<span className="text-xs tabular-nums text-white/60">
+					<span className="sr-only">
+						{t("achievements.levels", {
+							earned: milestone.earnedLevels.length,
+							total: milestone.levels.length,
+						})}
+					</span>
+					<span aria-hidden="true">
+						{milestone.earnedLevels.length}/{milestone.levels.length}
+					</span>
+				</span>
+				<div className="flex gap-0.5" aria-hidden="true">
+					{milestone.levels.map((level) => (
+						<span
+							key={level.id}
+							className={cx(
+								"h-1 w-2.5 rounded-full",
+								level.level && milestone.earnedLevels.includes(level.level) ? levelColors[level.level] : "bg-white/10",
+							)}
+						/>
+					))}
+				</div>
 			</div>
 		</li>
 	);
 };
 
 const FeatItem = ({ feat }: { feat: Feat }) => {
-	const { t } = useTranslation("badges");
+	const { t } = useTranslation(["badges", "player"]);
 
 	return (
-		<li className="flex w-20 flex-col items-center gap-1 text-center" title={t(feat.badge.descriptionKey)}>
-			<img
-				src={`/images/badges/${feat.badge.image}`}
-				alt=""
-				className={cx("size-10", !feat.earned && "opacity-40 grayscale")}
-			/>
-			<span className={cx("text-xs leading-tight", feat.earned ? "text-white" : "text-white/50")}>
+		<li className="flex w-20 flex-col items-center gap-1 text-center">
+			<BgtAchievementIcon badge={feat.badge} lockedLabel={feat.earned ? undefined : t("player:achievements.locked")} />
+			<span aria-hidden="true" className={cx("text-xs leading-tight", feat.earned ? "text-white" : "text-white/50")}>
 				{t(feat.badge.titleKey)}
 			</span>
 		</li>
@@ -78,27 +86,49 @@ export const PlayerAchievementsCard = (props: Props) => {
 	const { badges, playerBadges } = props;
 	const { t } = useTranslation("player");
 	const { milestones, feats } = useAchievementProgress(badges, playerBadges);
+	const [showLocked, setShowLocked] = useState(false);
+
+	const earnedMilestones = milestones.filter((milestone) => milestone.current !== null);
+	const earnedFeats = feats.filter((feat) => feat.earned);
+	const lockedCount = milestones.length - earnedMilestones.length + feats.length - earnedFeats.length;
+	const nothingEarned = earnedMilestones.length + earnedFeats.length === 0;
+	const showAll = showLocked || nothingEarned;
+	const shownMilestones = showAll ? milestones : earnedMilestones;
+	const shownFeats = showAll ? feats : earnedFeats;
 
 	return (
 		<BgtCard title={t("titles.achievements")} icon={Award}>
 			<div className="flex flex-col gap-4">
-				<section className="flex flex-col gap-2">
-					<h3 className="text-sm text-stat-title">{t("achievements.milestones")}</h3>
-					<ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-4">
-						{milestones.map((milestone) => (
-							<MilestoneTile key={milestone.type} milestone={milestone} />
-						))}
-					</ul>
-				</section>
-				{feats.length > 0 && (
+				{shownMilestones.length > 0 && (
+					<section className="flex flex-col gap-2">
+						<h3 className="text-sm text-stat-title">{t("achievements.milestones")}</h3>
+						<ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-4">
+							{shownMilestones.map((milestone) => (
+								<MilestoneTile key={milestone.type} milestone={milestone} />
+							))}
+						</ul>
+					</section>
+				)}
+				{shownFeats.length > 0 && (
 					<section className="flex flex-col gap-2">
 						<h3 className="text-sm text-stat-title">{t("achievements.feats")}</h3>
 						<ul className="flex flex-wrap gap-3">
-							{feats.map((feat) => (
+							{shownFeats.map((feat) => (
 								<FeatItem key={feat.badge.id} feat={feat} />
 							))}
 						</ul>
 					</section>
+				)}
+				{lockedCount > 0 && !nothingEarned && (
+					<BgtButton
+						variant="text"
+						size="1"
+						className="self-start"
+						aria-expanded={showLocked}
+						onClick={() => setShowLocked((value) => !value)}
+					>
+						{showLocked ? t("achievements.hide-locked") : t("achievements.show-locked", { count: lockedCount })}
+					</BgtButton>
 				)}
 			</div>
 		</BgtCard>

@@ -45,9 +45,7 @@
   },
   "cards": {
     "games": "Spellen",
-    "win-record": "Winst/verlies",
-    "most-played-games": "Meest gespeelde spellen",
-    "win-record-summary": "Gewonnen: {{wins}}, verloren: {{losses}}, totaal: {{total}}"
+    "most-played-games": "Meest gespeelde spellen"
   },
   "titles": {
     "achievements": "Prestaties"
@@ -57,7 +55,11 @@
     "feats": "Bijzondere prestaties",
     "next": "Volgende: {{goal}}",
     "complete": "Alle niveaus behaald",
-    "see-all": "Alle prestaties bekijken"
+    "locked": "Nog niet behaald",
+    "levels": "{{earned}} van {{total}} niveaus",
+    "show-locked_one": "Toon {{count}} vergrendelde",
+    "show-locked_other": "Toon {{count}} vergrendelde",
+    "hide-locked": "Verberg vergrendelde"
   },
   "account": {
     "label": "Gekoppeld account",
@@ -67,6 +69,41 @@
     "uses-picture": "Gebruikt de profielfoto van {{username}}.",
     "own-picture": "Gebruikt een eigen foto. Verwijder die om de profielfoto van {{username}} te tonen.",
     "link-failed": "Kon het gekoppelde account niet wijzigen"
+  },
+  "standing": {
+    "ranked": "#{{rank}} van {{count}} op de ranglijst",
+    "to-rank_one": "nog {{count}} sessie tot de ranglijst",
+    "to-rank_other": "nog {{count}} sessies tot de ranglijst"
+  },
+  "actions": {
+    "log-session": "Sessie registreren",
+    "compare": "Vergelijken"
+  },
+  "record": {
+    "win-rate": "{{value}} gewonnen",
+    "form_one": "Laatste sessie",
+    "form_other": "Laatste {{count}} sessies",
+    "form-summary": "{{won}} gewonnen, {{lost}} verloren",
+    "form-win": "W",
+    "form-loss": "V",
+    "nemesis": "Aartsrivaal"
+  },
+  "no-sessions": {
+    "title": "Nog geen sessies met {{name}} geregistreerd",
+    "description": "Registreer een sessie en de resultaten, de rangschikking en de prestaties verschijnen hier."
+  },
+  "missing": {
+    "title": "Speler niet gevonden",
+    "description": "Deze speler is misschien verwijderd, of de link klopt niet."
+  },
+  "session": {
+    "players_one": "{{count}} speler",
+    "players_other": "{{count}} spelers",
+    "won-by": "{{names}} won"
+  },
+  "rivals": {
+    "title": "Onderling",
+    "record": "{{wins}} gewonnen, {{losses}} verloren"
   },
   "list": {
     "last-played": "laatst gespeeld",
