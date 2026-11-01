@@ -7,4 +7,5 @@ public class PlayerOverviewDto
     public string? Image { get; set; }
     public int PlayCount { get; set; }
     public int WinCount { get; set; }
+    public DateTime? LastPlayed { get; set; }
 }

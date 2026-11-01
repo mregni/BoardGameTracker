@@ -6227,6 +6227,8 @@ export interface components {
             playCount: number;
             /** Format: int32 */
             winCount: number;
+            /** Format: date-time */
+            lastPlayed: string | null;
         };
         PlayerScoringPoint: {
             /** Format: date-time */

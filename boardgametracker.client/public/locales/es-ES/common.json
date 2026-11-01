@@ -131,7 +131,6 @@
   "tile": {
     "sessions_one": "partida",
     "sessions_other": "partidas",
-    "wins": "victorias",
     "no-sessions": "Aún no hay partidas"
   },
   "coop": {
@@ -146,5 +145,6 @@
     "last-12-months": "Últimos 12 meses",
     "last-12-months-short": "12 meses",
     "custom": "Personalizado"
-  }
+  },
+  "clear-search": "Borrar búsqueda"
 }
