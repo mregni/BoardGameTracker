@@ -9,7 +9,7 @@ export const Sidebar = () => {
 
 	return (
 		<div className="hidden md:block">
-			<aside className="w-56 bg-background h-full border-r border-white/10 flex flex-col gap-1">
+			<aside className="w-56 bg-background h-full border-r border-white/10 flex flex-col gap-1 [view-transition-name:app-sidebar]">
 				<div className="pt-2">
 					<BgtMenuLogo />
 				</div>

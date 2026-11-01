@@ -1,5 +1,6 @@
 import { ResponsivePie } from "@nivo/pie";
 import { useTranslation } from "react-i18next";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { type PieChartDatum, pieColors } from "@/models/Charts/PieChartDatum";
 import { BgtText } from "../BgtText/BgtText";
@@ -28,6 +29,7 @@ export const BgtPieChart = (props: Props) => {
 	const { data, showLegend = false, tooltipPrefix, ariaLabel } = props;
 	const { t } = useTranslation();
 	const { percent, integer } = useNumberFormat();
+	const animate = useMediaQuery("(prefers-reduced-motion: no-preference)");
 
 	if (!data || data.length === 0) return null;
 
@@ -59,6 +61,9 @@ export const BgtPieChart = (props: Props) => {
 							modifiers: [["darker", 0.9]],
 						}}
 						theme={theme}
+						animate={animate}
+						motionConfig="slow"
+						transitionMode="startAngle"
 						tooltip={({ datum }) => {
 							const percentage = percent(total === 0 ? 0 : datum.value / total);
 							return (

@@ -1,5 +1,6 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { cx } from "class-variance-authority";
+import { differenceInDays } from "date-fns";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Badge } from "@/models";
@@ -9,11 +10,17 @@ interface Props {
 	lockedLabel?: string;
 }
 
+const RECENT_DAYS = 7;
+
 export const BgtAchievementIcon = (props: Props) => {
 	const { badge, lockedLabel } = props;
 	const { t } = useTranslation("badges");
 	const [open, setOpen] = useState(false);
 	const openAtPress = useRef<boolean | null>(null);
+	const [isRecent] = useState(
+		() => !!badge.awardedAt && differenceInDays(new Date(), new Date(badge.awardedAt)) < RECENT_DAYS,
+	);
+	const imageUrl = `/images/badges/${badge.image}`;
 
 	return (
 		<Tooltip.Provider>
@@ -21,7 +28,7 @@ export const BgtAchievementIcon = (props: Props) => {
 				<Tooltip.Trigger asChild>
 					<button
 						type="button"
-						className="block rounded-md focus-visible:outline-2 focus-visible:outline-primary"
+						className="relative block overflow-hidden rounded-md focus-visible:outline-2 focus-visible:outline-primary"
 						onPointerDown={() => {
 							openAtPress.current = open;
 						}}
@@ -33,10 +40,20 @@ export const BgtAchievementIcon = (props: Props) => {
 						}}
 					>
 						<img
-							src={`/images/badges/${badge.image}`}
+							src={imageUrl}
 							alt={lockedLabel ? `${t(badge.titleKey)}, ${lockedLabel}` : t(badge.titleKey)}
 							className={cx("h-10 aspect-square", lockedLabel && "opacity-40 grayscale")}
 						/>
+						{isRecent && !lockedLabel && (
+							<span
+								aria-hidden="true"
+								data-testid="badge-shine"
+								className="pointer-events-none absolute inset-0 mask-contain mask-center mask-no-repeat motion-reduce:hidden"
+								style={{ maskImage: `url(${imageUrl})` }}
+							>
+								<span className="absolute inset-0 bg-linear-to-r from-transparent via-white/70 to-transparent motion-safe:animate-badge-shine" />
+							</span>
+						)}
 					</button>
 				</Tooltip.Trigger>
 				<Tooltip.Portal>

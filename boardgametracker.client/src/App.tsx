@@ -81,6 +81,7 @@ const router = createRouter({
 	defaultPreload: "intent",
 	defaultPendingComponent: BgtLoadingSpinner,
 	defaultPendingMinMs: 200,
+	defaultViewTransition: { types: ({ pathChanged }) => (pathChanged ? ["page"] : false) },
 	context: { queryClient },
 });
 trackHistory(router.history);
