@@ -126,6 +126,14 @@
     "exclude": "Not this one",
     "candidates-capped": "{{count}} of {{total}} games on the wheel",
     "restore_one": "Put {{count}} excluded game back",
-    "restore_other": "Put {{count}} excluded games back"
+    "restore_other": "Put {{count}} excluded games back",
+    "fresh": "Unplayed games first",
+    "all-games": "All available games",
+    "adjust": "Adjust",
+    "excluded": "Not tonight",
+    "restore-one": "Put {{title}} back on the wheel",
+    "none-owned": "No owned game is available right now. Lent games stay off the wheel.",
+    "to-games": "Go to your games",
+    "vetoed": "{{title}} is off the wheel. Spinning again…"
   }
 }

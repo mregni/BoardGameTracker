@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { type Game, GameState } from "@/models";
 import {
 	filterByTitle,
+	freshWeight,
 	hasActiveFilters,
 	ownedPriceStats,
 	parseGamesSearch,
@@ -123,6 +124,30 @@ describe("pickWheelGames", () => {
 		const games = Array.from({ length: 15 }, (_, i) => candidate(`Game ${i}`, GameState.Owned));
 
 		expect(pickWheelGames(games, 10)).toHaveLength(10);
+	});
+
+	it("gives heavier games the better draw", () => {
+		const games = [candidate("Played", GameState.Owned), candidate("Unplayed", GameState.Owned)];
+
+		const picked = pickWheelGames(
+			games,
+			1,
+			() => 0.5,
+			(g) => (g.title === "Unplayed" ? 3 : 1),
+		);
+
+		expect(picked.map((g) => g.title)).toEqual(["Unplayed"]);
+	});
+});
+
+describe("freshWeight", () => {
+	const now = new Date("2026-11-01").getTime();
+	const played = (playCount: number, lastPlayed?: string) => ({ playCount, lastPlayed }) as unknown as Game;
+
+	it("weights never played over long unplayed over recently played", () => {
+		expect(freshWeight(played(0), now)).toBe(3);
+		expect(freshWeight(played(4, "2026-01-01"), now)).toBe(2);
+		expect(freshWeight(played(4, "2026-10-20"), now)).toBe(1);
 	});
 });
 
