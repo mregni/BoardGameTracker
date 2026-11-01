@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { cva, cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
+import XIcon from "@/assets/icons/x.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { useDurationRange } from "@/hooks/useDurationRange";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
@@ -28,8 +29,17 @@ export const pillVariants = cva(
 	},
 );
 
-const actionClasses =
-	"inline-flex items-center justify-center rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-white transition-colors hover:border-primary/60 hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-50";
+const actionVariants = cva(
+	"inline-flex min-h-10 items-center justify-center rounded-md border px-3 text-xs font-semibold whitespace-nowrap text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 md:min-h-8",
+	{
+		variants: {
+			emphasis: {
+				primary: "border-primary/60 bg-primary/40 hover:bg-primary/60",
+				secondary: "border-white/15 bg-white/5 hover:border-primary/60 hover:bg-primary/20",
+			},
+		},
+	},
+);
 
 interface Props {
 	shame: Shame;
@@ -38,7 +48,10 @@ interface Props {
 	canWrite: boolean;
 	nextNight: ShameGameNight | null;
 	planning: boolean;
+	unplanning?: boolean;
+	quietNeverPlayed?: boolean;
 	onPlan: (shame: Shame, night: ShameGameNight) => void;
+	onUnplan: (shame: Shame) => void;
 	now?: Date;
 }
 
@@ -49,7 +62,10 @@ export const ShameRow = ({
 	canWrite,
 	nextNight,
 	planning,
+	unplanning = false,
+	quietNeverPlayed = false,
 	onPlan,
+	onUnplan,
 	now = new Date(),
 }: Props) => {
 	const { t, i18n } = useTranslation("shames");
@@ -79,7 +95,10 @@ export const ShameRow = ({
 			className={cx(
 				shameGridClasses,
 				"items-center gap-y-1.5 rounded-lg border bg-card px-3 py-2",
-				"[grid-template-areas:'av_name_price'_'av_last_act'] md:[grid-template-areas:'av_name_last_price_act']",
+				planned && canWrite
+					? "[grid-template-areas:'av_name_price'_'av_last_last'_'av_act_act']"
+					: "[grid-template-areas:'av_name_price'_'av_last_act']",
+				"md:[grid-template-areas:'av_name_last_price_act']",
 				planned ? "border-ok/45" : "border-card-border",
 			)}
 		>
@@ -101,10 +120,14 @@ export const ShameRow = ({
 					</small>
 				)}
 			</div>
-			<div className="min-w-0 justify-self-start [grid-area:last]">
-				<span className={pillVariants({ tone })}>{lastPlayed}</span>
+			<div className="min-w-0 [grid-area:last]">
+				<span className="sr-only">{t("list.last-played")}: </span>
+				<span className={pillVariants({ tone: quietNeverPlayed && tone === "bad" ? "neutral" : tone })}>
+					{lastPlayed}
+				</span>
 			</div>
 			<div className="text-right font-bold tabular-nums [grid-area:price]">
+				<span className="mr-1 text-xs font-normal text-white/50 md:sr-only">{t("list.paid")}</span>
 				{shame.price === null ? (
 					<span className="font-normal text-white/50" title={t("row.no-price")}>
 						<span aria-hidden="true">{EMPTY_PRICE}</span>
@@ -115,15 +138,31 @@ export const ShameRow = ({
 				)}
 			</div>
 			<div className="flex min-w-0 justify-end gap-1.5 [grid-area:act]">
-				{planned && shame.plannedFor && (
-					<span className={pillVariants({ tone: "ok" })}>
-						{t("row.planned", { date: toDisplay(shame.plannedFor, dateFormat, i18n.language) })}
-					</span>
-				)}
+				{planned &&
+					shame.plannedFor &&
+					(canWrite ? (
+						<button
+							type="button"
+							className={cx(
+								pillVariants({ tone: "ok" }),
+								"inline-flex min-h-10 items-center gap-1.5 transition-colors hover:bg-ok/25 disabled:cursor-not-allowed disabled:opacity-50 md:min-h-8",
+							)}
+							disabled={unplanning}
+							aria-label={t("row.unplan-label", { title: shame.title })}
+							onClick={() => onUnplan(shame)}
+						>
+							{t("row.planned", { date: toDisplay(shame.plannedFor, dateFormat, i18n.language) })}
+							<XIcon aria-hidden="true" className="size-3.5 shrink-0" />
+						</button>
+					) : (
+						<span className={pillVariants({ tone: "ok" })}>
+							{t("row.planned", { date: toDisplay(shame.plannedFor, dateFormat, i18n.language) })}
+						</span>
+					))}
 				{!planned && canWrite && nextNight && (
 					<button
 						type="button"
-						className={actionClasses}
+						className={actionVariants({ emphasis: "primary" })}
 						disabled={planning}
 						aria-label={t("row.plan-label", { title: shame.title, night: nextNight.title })}
 						onClick={() => onPlan(shame, nextNight)}
@@ -131,11 +170,11 @@ export const ShameRow = ({
 						{t("row.plan")}
 					</button>
 				)}
-				{!planned && canWrite && (
+				{canWrite && (
 					<Link
 						to="/sessions/new/$gameId"
 						params={{ gameId: shame.id }}
-						className={actionClasses}
+						className={actionVariants({ emphasis: nextNight && !planned ? "secondary" : "primary" })}
 						aria-label={t("row.log-play-label", { title: shame.title })}
 					>
 						{t("row.log-play")}

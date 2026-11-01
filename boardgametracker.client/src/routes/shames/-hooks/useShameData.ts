@@ -13,6 +13,11 @@ interface PlanArgs {
 	night: ShameGameNight;
 }
 
+interface UnplanArgs {
+	shame: Shame;
+	nightId: number;
+}
+
 export const useShameData = (months?: number) => {
 	const { i18n } = useTranslation();
 	const invalidator = useQueryInvalidator();
@@ -29,7 +34,7 @@ export const useShameData = (months?: number) => {
 	const refresh = () => Promise.all([invalidator.invalidateShames(), invalidator.invalidateGameNights()]);
 
 	const undoMutation = useMutation({
-		mutationFn: ({ shame, night }: PlanArgs) => removeSuggestedGameCall(night.id, shame.id),
+		mutationFn: ({ shame, nightId }: UnplanArgs) => removeSuggestedGameCall(nightId, shame.id),
 		onSuccess: (_, { shame }) => {
 			successToast("shames:plan.removed", undefined, { game: shame.title });
 			return refresh();
@@ -42,7 +47,10 @@ export const useShameData = (months?: number) => {
 		onSuccess: (_, args) => {
 			successToast(
 				"shames:plan.added",
-				{ label: "shames:plan.undo", onClick: () => undoMutation.mutate(args) },
+				{
+					label: "shames:plan.undo",
+					onClick: () => undoMutation.mutate({ shame: args.shame, nightId: args.night.id }),
+				},
 				{
 					game: args.shame.title,
 					night: args.night.title,
@@ -61,5 +69,9 @@ export const useShameData = (months?: number) => {
 		isLoading: shameQuery.isLoading || shameStatisticsQuery.isLoading || settingsQuery.isLoading,
 		plan: (shame: Shame, night: ShameGameNight) => planMutation.mutate({ shame, night }),
 		planningId: planMutation.isPending ? planMutation.variables?.shame.id : undefined,
+		unplan: (shame: Shame) => {
+			if (shame.plannedGameNightId !== null) undoMutation.mutate({ shame, nightId: shame.plannedGameNightId });
+		},
+		unplanningId: undoMutation.isPending ? undoMutation.variables?.shame.id : undefined,
 	};
 };

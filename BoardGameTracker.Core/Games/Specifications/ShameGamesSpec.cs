@@ -22,7 +22,7 @@ public sealed class ShameGamesSpec : Specification<Game, ShameGame>
             Title = g.Title,
             Image = g.Image,
             AdditionDate = g.AdditionDate,
-            Price = g.BuyingPrice != null ? g.BuyingPrice.Amount : null,
+            Price = g.BuyingPrice != null && g.BuyingPrice.Amount > 0 ? g.BuyingPrice.Amount : null,
             LastSessionDate = g.Sessions
                 .OrderByDescending(s => s.Start)
                 .Select(s => (DateTime?)s.Start)
