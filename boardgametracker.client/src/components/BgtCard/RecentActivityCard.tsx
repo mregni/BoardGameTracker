@@ -32,14 +32,14 @@ const RecentActivityCardComponent = <T,>({
 
 	return (
 		<BgtCard title={title} icon={icon}>
-			<div className="flex flex-col gap-3">
+			<ul className="-mt-2 flex flex-col divide-y divide-white/10">
 				{items.map((item) => (
-					<div key={getKey(item)}>{renderItem(item)}</div>
+					<li key={getKey(item)}>{renderItem(item)}</li>
 				))}
-				<BgtButton variant="primary" onClick={handleViewAll} className="flex-1 hidden md:flex">
-					{viewAllText ?? t("sessions")}
-				</BgtButton>
-			</div>
+			</ul>
+			<BgtButton variant="primary" onClick={handleViewAll} className="mt-3">
+				{viewAllText ?? t("sessions")}
+			</BgtButton>
 		</BgtCard>
 	);
 };

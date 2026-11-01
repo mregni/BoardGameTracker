@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@tanstack/react-router", () => ({
 	createFileRoute: (path: string) => (config: { component: FC }) => {
 		mocks.routes[path] = config;
-		return { ...config, useParams: () => mocks.params[path] };
+		return { ...config, useParams: () => mocks.params[path], useSearch: () => ({}) };
 	},
 	useNavigate: () => mocks.navigate,
 	useRouter: () => ({ history: { back: vi.fn(), canGoBack: () => false } }),

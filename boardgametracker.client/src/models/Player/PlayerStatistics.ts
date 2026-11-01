@@ -6,6 +6,14 @@ export interface PlayerStatistics {
 	distinctGameCount: number;
 	coopWinCount: number;
 	coopLossCount: number;
+	rivals: PlayerRival[];
+}
+
+export interface PlayerRival {
+	playerId: number;
+	sessions: number;
+	wins: number;
+	losses: number;
 }
 
 export interface MostPlayedGame {

@@ -89,7 +89,8 @@
   "delete": {
     "title": "Delete {{title}}",
     "description": "Are you sure you want to delete {{title}} and all its content? This cannot be undone.",
-    "button": "Delete"
+    "button": "Delete",
+    "named": "Delete {{name}}"
   },
   "no-sessions": {
     "title": "No sessions logged yet",
@@ -131,7 +132,6 @@
   "tile": {
     "sessions_one": "session",
     "sessions_other": "sessions",
-    "wins": "wins",
     "no-sessions": "No sessions yet"
   },
   "coop": {
@@ -146,5 +146,7 @@
     "last-12-months": "Last 12 months",
     "last-12-months-short": "12 mo",
     "custom": "Custom"
-  }
+  },
+  "clear-search": "Clear search",
+  "edit-named": "Edit {{name}}"
 }

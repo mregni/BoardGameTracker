@@ -101,6 +101,27 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
         return (results.Where(x => x.Won).Sum(x => x.Count), results.Where(x => !x.Won).Sum(x => x.Count));
     }
 
+    public async Task<List<PlayerRival>> GetRivals(int id)
+    {
+        return await (
+                from me in _dbContext.PlayerSessions
+                join opponent in _dbContext.PlayerSessions on me.SessionId equals opponent.SessionId
+                where me.PlayerId == id && opponent.PlayerId != id && !me.Session.IsCoop
+                group new { me.Won, OpponentWon = opponent.Won } by opponent.PlayerId
+                into rival
+                select new PlayerRival
+                {
+                    PlayerId = rival.Key,
+                    Sessions = rival.Count(),
+                    Wins = rival.Count(x => x.Won && !x.OpponentWon),
+                    Losses = rival.Count(x => x.OpponentWon && !x.Won)
+                })
+            .OrderByDescending(x => x.Sessions)
+            .ThenBy(x => x.PlayerId)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
     public async Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopPlayers(int count, CancellationToken cancellationToken = default)
     {
         var result = await PlayerTotals()

@@ -35,10 +35,11 @@ interface Props {
 	data: BarDatum[];
 	index: string;
 	keys: string[];
+	tickFormat?: (value: string | number) => string;
 }
 
 export const BgtBarChart = (props: Props) => {
-	const { data, index, keys } = props;
+	const { data, index, keys, tickFormat } = props;
 	const { t } = useTranslation();
 	const [isSmall, setIsSmall] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -80,6 +81,8 @@ export const BgtBarChart = (props: Props) => {
 
 	if (!data || data.length === 0) return null;
 
+	const rotateTicks = isSmall && !tickFormat;
+
 	return (
 		<div
 			ref={containerRef}
@@ -89,7 +92,7 @@ export const BgtBarChart = (props: Props) => {
 				data={data}
 				keys={keys}
 				indexBy={index}
-				margin={{ top: 20, right: 20, bottom: isSmall ? 70 : 50, left: 50 }}
+				margin={{ top: 20, right: 20, bottom: rotateTicks ? 70 : 50, left: 50 }}
 				padding={0.3}
 				colors="#22d3ee"
 				borderRadius={4}
@@ -98,7 +101,8 @@ export const BgtBarChart = (props: Props) => {
 				axisBottom={{
 					tickSize: 5,
 					tickPadding: 5,
-					tickRotation: isSmall ? -45 : 0,
+					tickRotation: rotateTicks ? -45 : 0,
+					format: tickFormat,
 				}}
 				axisLeft={{
 					tickSize: 5,

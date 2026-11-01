@@ -2,6 +2,14 @@ import { describe, expect, it, vi } from "vitest";
 import { renderWithTheme, screen, waitFor, within } from "@/test/test-utils";
 import { ScoringResultsCard } from "./ScoringResultsCard";
 
+vi.mock("@tanstack/react-router", () => ({
+	Link: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+		<a href="/players/1" className={className}>
+			{children}
+		</a>
+	),
+}));
+
 vi.mock("@/routes/-hooks/usePlayerById", () => ({
 	usePlayerById: () => ({
 		playerById: (id: number) =>
@@ -33,7 +41,7 @@ describe("ScoringResultsCard", () => {
 		await waitFor(() =>
 			expect(within(top.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({
 				width: "100%",
-				backgroundColor: "#10b981",
+				backgroundColor: "var(--color-card-value)",
 			}),
 		);
 
@@ -41,16 +49,22 @@ describe("ScoringResultsCard", () => {
 		expect(average).toHaveAttribute("aria-valuetext", "90");
 		expect(within(average.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({
 			width: "75.38%",
-			backgroundColor: "#f59e0b",
+			backgroundColor: "var(--color-card-value)",
 		});
 	});
 
 	it("shows the player and the rounded score", () => {
 		renderWithTheme(<ScoringResultsCard scoreRankChart={chart} />);
 
-		expect(screen.getByText("Kathleen")).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: "Kathleen" })).toBeInTheDocument();
 		expect(screen.getAllByText("Mikhaël")).toHaveLength(2);
 		expect(screen.getByText("90")).toBeInTheDocument();
+	});
+
+	it("explains what highest losing and lowest winning mean", () => {
+		renderWithTheme(<ScoringResultsCard scoreRankChart={chart} />);
+
+		expect(screen.getByText("charts.top-scoring-help")).toBeInTheDocument();
 	});
 
 	it("clamps a negative score to an empty bar", () => {

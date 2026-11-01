@@ -1,11 +1,13 @@
 {
   "empty": {
     "title": "Nog geen spelers",
-    "button": "Speler toevoegen"
+    "button": "Speler toevoegen",
+    "description": "Voeg de mensen toe met wie je speelt om overwinningen en rivaliteit bij te houden."
   },
   "back": "Terug naar spelers",
   "count_other": "{{count}} spelers",
   "count_one": "{{count}} speler",
+  "count-filtered": "{{count}} van {{total}} spelers",
   "notifications": {
     "created": "Speler toegevoegd",
     "create-failed": "Speler aanmaken mislukt",
@@ -43,9 +45,7 @@
   },
   "cards": {
     "games": "Spellen",
-    "win-record": "Winst/verlies",
-    "most-played-games": "Meest gespeelde spellen",
-    "win-record-summary": "Gewonnen: {{wins}}, verloren: {{losses}}, totaal: {{total}}"
+    "most-played-games": "Meest gespeelde spellen"
   },
   "titles": {
     "achievements": "Prestaties"
@@ -55,7 +55,11 @@
     "feats": "Bijzondere prestaties",
     "next": "Volgende: {{goal}}",
     "complete": "Alle niveaus behaald",
-    "see-all": "Alle prestaties bekijken"
+    "locked": "Nog niet behaald",
+    "levels": "{{earned}} van {{total}} niveaus",
+    "show-locked_one": "Toon {{count}} vergrendelde",
+    "show-locked_other": "Toon {{count}} vergrendelde",
+    "hide-locked": "Verberg vergrendelde"
   },
   "account": {
     "label": "Gekoppeld account",
@@ -65,5 +69,58 @@
     "uses-picture": "Gebruikt de profielfoto van {{username}}.",
     "own-picture": "Gebruikt een eigen foto. Verwijder die om de profielfoto van {{username}} te tonen.",
     "link-failed": "Kon het gekoppelde account niet wijzigen"
+  },
+  "standing": {
+    "ranked": "#{{rank}} van {{count}} op de ranglijst",
+    "to-rank_one": "nog {{count}} sessie tot de ranglijst",
+    "to-rank_other": "nog {{count}} sessies tot de ranglijst"
+  },
+  "actions": {
+    "log-session": "Sessie registreren",
+    "compare": "Vergelijken"
+  },
+  "record": {
+    "win-rate": "{{value}} gewonnen",
+    "form_one": "Laatste sessie",
+    "form_other": "Laatste {{count}} sessies",
+    "form-summary": "{{won}} gewonnen, {{lost}} verloren",
+    "form-win": "W",
+    "form-loss": "V",
+    "nemesis": "Aartsrivaal"
+  },
+  "no-sessions": {
+    "title": "Nog geen sessies met {{name}} geregistreerd",
+    "description": "Registreer een sessie en de resultaten, de rangschikking en de prestaties verschijnen hier."
+  },
+  "missing": {
+    "title": "Speler niet gevonden",
+    "description": "Deze speler is misschien verwijderd, of de link klopt niet."
+  },
+  "session": {
+    "players_one": "{{count}} speler",
+    "players_other": "{{count}} spelers",
+    "won-by": "{{names}} won"
+  },
+  "rivals": {
+    "title": "Onderling",
+    "record": "{{wins}} gewonnen, {{losses}} verloren"
+  },
+  "list": {
+    "last-played": "laatst gespeeld",
+    "record_one": "{{wins}} van {{count}} gewonnen",
+    "record_other": "{{wins}} van {{count}} gewonnen",
+    "sort": "Spelers sorteren",
+    "sort-sessions": "Sessies",
+    "sort-recent": "Recent",
+    "sort-name": "Naam",
+    "no-match": "Geen spelers gevonden voor “{{query}}”",
+    "clear": "Filter wissen",
+    "error-title": "Spelers konden niet geladen worden",
+    "error-description": "De server antwoordde niet. Controleer of hij draait en probeer het opnieuw.",
+    "win-rate": "gewonnen",
+    "sessions_one": "sessie",
+    "sessions_other": "sessies",
+    "not-played": "Nog niet gespeeld",
+    "log-game": "Sessie toevoegen"
   }
 }

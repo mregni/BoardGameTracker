@@ -65,6 +65,10 @@ describe("leaderboardSearch", () => {
 			).toEqual({});
 		});
 
+		it("should drop a minimum the filter does not offer", () => {
+			expect(leaderboardSearchSchema.parse({ min: 20 })).toEqual({});
+		});
+
 		it("should keep valid values", () => {
 			const search = { range: "custom", from: "2026-01-01", to: "2026-02-01", game: 3, min: 3, rank: "sessions" };
 			expect(leaderboardSearchSchema.parse(search)).toEqual(search);

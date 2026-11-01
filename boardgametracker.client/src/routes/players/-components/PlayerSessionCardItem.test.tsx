@@ -7,6 +7,10 @@ vi.mock("@tanstack/react-router", () => ({
 	useNavigate: () => vi.fn(),
 }));
 
+vi.mock("@/routes/-hooks/usePlayerById", () => ({
+	usePlayerById: () => ({ playerById: (id: number) => ({ id, name: id === 8 ? "Kathleen" : "Ben" }) }),
+}));
+
 const session = (overrides: Partial<Session>) =>
 	({
 		id: 1,
@@ -42,5 +46,20 @@ describe("PlayerSessionCardItem", () => {
 		expect(screen.getByText("won")).toBeInTheDocument();
 		expect(screen.queryByText(/coop\.label/)).not.toBeInTheDocument();
 		expect(screen.getByText("points")).toBeInTheDocument();
+	});
+
+	it("names the winners and the number of players when the player lost", () => {
+		renderItem(
+			session({
+				playerSessions: [
+					{ playerId: 7, won: false, score: 20 },
+					{ playerId: 8, won: true, score: 40 },
+					{ playerId: 9, won: false, score: 10 },
+				],
+			} as Partial<Session>),
+		);
+
+		expect(screen.getByText(/player:session\.players/)).toBeInTheDocument();
+		expect(screen.getByText(/player:session\.won-by/)).toBeInTheDocument();
 	});
 });

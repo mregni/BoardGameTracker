@@ -32,14 +32,13 @@ describe("PlayerPicker", () => {
 				player={playerOne}
 				players={[playerOne, playerTwo, reggi]}
 				excludeId={playerTwo.id}
-				summary="142 games · 38% won"
 				onPlayerChange={onPlayerChange}
 			/>,
 		);
 
 		const trigger = screen.getByRole("combobox", { name: "Change left player, now Mikhaël" });
-		expect(trigger).toHaveTextContent("Mikhaël142 games · 38% won");
-		expect(trigger.className).toContain("bg-player-one/10");
+		expect(trigger).toHaveTextContent("Mikhaël");
+		expect(trigger.className).toContain("from-player-one/30");
 
 		await user.click(trigger);
 		expect(screen.queryByRole("option", { name: /Kathleen/ })).toBeNull();
@@ -55,13 +54,12 @@ describe("PlayerPicker", () => {
 				player={playerTwo}
 				players={[playerOne, playerTwo]}
 				excludeId={playerOne.id}
-				summary="1 game · 0% won"
 				onPlayerChange={vi.fn()}
 			/>,
 		);
 
 		expect(screen.getByRole("combobox", { name: "Change right player, now Kathleen" }).className).toContain(
-			"bg-player-two/10",
+			"from-player-two/30",
 		);
 	});
 });

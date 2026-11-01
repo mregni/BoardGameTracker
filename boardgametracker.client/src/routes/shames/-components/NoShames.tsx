@@ -9,8 +9,8 @@ export const NoShames = () => {
 		<BgtCard>
 			<div className="p-8 text-center">
 				<Thumb className="text-white/40 mx-auto mb-4" />
-				<h3 className="text-xl text-white mb-2">{t("none.title")}</h3>
-				<p className="text-gray-400">{t("none.description")}</p>
+				<h2 className="text-xl text-white mb-2">{t("none.title")}</h2>
+				<p className="text-white/60">{t("none.description")}</p>
 			</div>
 		</BgtCard>
 	);

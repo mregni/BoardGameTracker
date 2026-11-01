@@ -34,7 +34,7 @@ describe("FormStrip", () => {
 		expect(tiles.map((tile) => tile.textContent)).toEqual(["M", "–", "+", "K", "K"]);
 		expect(tiles.map((tile) => tile.dataset.outcome)).toEqual(["playerOne", "other", "both", "playerTwo", "playerTwo"]);
 		expect(tiles[0]).toHaveAttribute("title", "Brass: Birmingham · Mikhaël");
-		expect(tiles[1]).toHaveAttribute("title", "Carcassonne · someone else");
+		expect(tiles[1]).toHaveAttribute("title", "Carcassonne · neither won");
 		expect(screen.getByText("Last 5 sessions together", { exact: false })).toBeInTheDocument();
 	});
 
@@ -43,7 +43,7 @@ describe("FormStrip", () => {
 
 		expect(
 			screen.getByRole("img", {
-				name: "Last sessions together, oldest first: Mikhaël, someone else, both won, Kathleen, Kathleen",
+				name: "Last sessions together, oldest first: Mikhaël, neither won, both won, Kathleen, Kathleen",
 			}),
 		).toBeInTheDocument();
 	});
@@ -82,20 +82,21 @@ describe("FormStrip", () => {
 		expect(tiles[2]).toHaveClass("bg-hatch");
 		expect(tiles[2]).toHaveAttribute("title", "Pandemic · same team, won");
 		expect(tiles[1]).toHaveAttribute("title", "Pandemic · same team, lost");
-		expect(screen.getByText("=: co-op")).toBeInTheDocument();
 	});
 
-	it("leaves out the co-op legend when no session was co-op", () => {
+	it("shows a player's picture instead of the initial when there is one", () => {
 		render(
 			<FormStrip
 				sessions={[sessionRow({ sessionId: 1, outcome: "playerOne" })]}
 				streak={{ side: "playerOne", count: 3 }}
-				playerOne={playerOne}
+				playerOne={{ ...playerOne, image: "/images/mikhael.png" }}
 				playerTwo={playerTwo}
 			/>,
 		);
 
-		expect(screen.queryByText("=: co-op")).not.toBeInTheDocument();
+		const [tile] = screen.getAllByTestId("form-tile");
+		expect(tile.textContent).toBe("");
+		expect(tile.querySelector("img")).toHaveAttribute("src", "/images/mikhael.png");
 		expect(screen.getByText("Mikhaël 3 in a row")).toBeInTheDocument();
 		expect(screen.getByText("Last session together", { exact: false })).toBeInTheDocument();
 	});

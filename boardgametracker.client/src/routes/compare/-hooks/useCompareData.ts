@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { getCompare, getDefaultComparePair } from "@/services/queries/compare";
 import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
-import { resolveComparePlayers } from "../-utils/compareUtils";
+import { mirrorCompare, resolveComparePlayers } from "../-utils/compareUtils";
 
 interface Props {
 	left: number | undefined;
@@ -35,16 +35,24 @@ export const useCompareData = ({ left, right }: Props) => {
 		return resolveComparePlayers(playerIds, left, right, preferred);
 	}, [pairKnown, pairQuery.data, playerIds, left, right]);
 
-	const compareQuery = useQuery(getCompare(leftId, rightId));
+	const compareQuery = useQuery({
+		...getCompare(leftId, rightId),
+		placeholderData: (previous) =>
+			previous?.playerOneId === rightId && previous.playerTwoId === leftId
+				? { playerOneId: leftId, playerTwoId: rightId, result: mirrorCompare(previous.result) }
+				: previous,
+	});
+	const shownLeftId = compareQuery.data?.playerOneId ?? 0;
+	const shownRightId = compareQuery.data?.playerTwoId ?? 0;
 
 	return {
 		players,
 		leftId,
 		rightId,
 		compare: compareQuery.data?.result,
-		shownLeftId: compareQuery.data?.playerOneId ?? 0,
-		shownRightId: compareQuery.data?.playerTwoId ?? 0,
-		isUpdating: compareQuery.isPlaceholderData,
+		shownLeftId,
+		shownRightId,
+		isUpdating: compareQuery.isPlaceholderData && (shownLeftId !== leftId || shownRightId !== rightId),
 		settings: settingsQuery.data,
 		isLoading:
 			playersQuery.isLoading ||

@@ -25,7 +25,7 @@ export const RecordCard = ({ compare, playerOne, playerTwo }: Props) => {
 			<span
 				data-testid={`record-${side}`}
 				className={cx(
-					"flex items-center gap-2 text-[32px] font-bold leading-none tabular-nums sm:text-[40px]",
+					"flex items-center gap-2 text-5xl font-black leading-none tracking-tight tabular-nums sm:text-7xl",
 					side === "playerOne" ? "text-player-one" : "flex-row-reverse text-player-two",
 				)}
 			>
@@ -34,11 +34,13 @@ export const RecordCard = ({ compare, playerOne, playerTwo }: Props) => {
 					<Crown
 						role="img"
 						aria-label={t("record.leads", { player: player.name })}
-						className="size-6 text-yellow-400"
+						className="size-8 text-yellow-400 sm:size-10"
 					/>
 				)}
 			</span>
-			<span className="text-xs text-white/60">{t("record.wins", { count: wins, player: player.name })}</span>
+			<span className="text-sm font-semibold text-white/60">
+				{t("record.wins", { count: wins, player: player.name })}
+			</span>
 		</div>
 	);
 
@@ -58,9 +60,12 @@ export const RecordCard = ({ compare, playerOne, playerTwo }: Props) => {
 
 	return (
 		<section
-			aria-label={t("record.label")}
-			className="flex flex-col gap-2.5 rounded-xl border border-card-border bg-card p-3.5"
+			aria-labelledby="record-title"
+			className="flex flex-col gap-3 rounded-xl border border-card-border bg-linear-to-r from-player-one/15 via-card to-player-two/15 p-4 sm:p-6"
 		>
+			<h2 id="record-title" className="sr-only">
+				{t("record.label")}
+			</h2>
 			<div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-3">
 				{score("playerOne", playerOne, one)}
 				<span aria-hidden="true" />

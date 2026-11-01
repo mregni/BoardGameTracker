@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Target from "@/assets/icons/target.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
@@ -5,7 +6,8 @@ import { BgtProgressBar } from "@/components/BgtProgressBar/BgtProgressBar";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { usePlayerById } from "../../-hooks/usePlayerById";
-import { SCORING_COLORS } from "../-utils/gameColorMappings";
+
+const SCORE_BAR_COLOR = "var(--color-card-value)";
 
 interface ScoreRankItem {
 	key: string;
@@ -28,16 +30,22 @@ export const ScoringResultsCard = (props: Props) => {
 	const maxScore = scoreRankChart[0].score;
 
 	return (
-		<BgtCard title={t("titles.scoring-results")} icon={Target}>
+		<BgtCard title={t("titles.scoring-results")} icon={Target} description={t("charts.top-scoring-help")}>
 			<div className="flex flex-col gap-3">
 				{scoreRankChart.map((item) => (
 					<div key={item.key} className="space-y-1">
 						<div className="flex items-center justify-between text-sm">
 							<div className="flex flex-col gap-0.5">
 								<BgtText className="text-white/70 text-xs">{t(`charts.top-scoring.${item.key}`)}</BgtText>
-								<BgtText color="primary">{playerById(item.playerId)?.name}</BgtText>
+								<Link
+									to="/players/$playerId"
+									params={{ playerId: item.playerId }}
+									className="text-primary-text hover:underline underline-offset-4"
+								>
+									{playerById(item.playerId)?.name}
+								</Link>
 							</div>
-							<BgtText size="5" weight="bold" color="cyan">
+							<BgtText size="5" weight="bold" className="tabular-nums">
 								{integer(item.score)}
 							</BgtText>
 						</div>
@@ -46,7 +54,7 @@ export const ScoringResultsCard = (props: Props) => {
 							track="primary"
 							value={item.score}
 							max={maxScore}
-							color={SCORING_COLORS[item.key]}
+							color={SCORE_BAR_COLOR}
 							animateOnMount
 							aria-label={t(`charts.top-scoring.${item.key}`)}
 							aria-valuetext={integer(item.score)}

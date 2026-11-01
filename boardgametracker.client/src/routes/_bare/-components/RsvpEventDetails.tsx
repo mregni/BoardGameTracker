@@ -5,7 +5,7 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { GameNight, Settings } from "@/models";
-import { toDisplay, toDisplayTime } from "@/utils/dateUtils";
+import { toDisplayTime, toDisplayWithWeekday } from "@/utils/dateUtils";
 import { relativeDay } from "@/utils/relativeDay";
 
 interface Props {
@@ -32,8 +32,8 @@ export const RsvpEventDetails = ({ gameNight, settings }: Props) => {
 					<BgtHeading as="h1" size="6" className="wrap-anywhere">
 						{gameNight.title}
 					</BgtHeading>
-					<BgtText size="2" color="gray" data-testid="rsvp-date">
-						{toDisplay(startDate, settings.dateFormat, uiLanguage)}
+					<BgtText size="2" color="gray" className="first-letter:uppercase" data-testid="rsvp-date">
+						{toDisplayWithWeekday(startDate, settings.dateFormat, uiLanguage)}
 					</BgtText>
 				</div>
 			</div>
@@ -45,7 +45,7 @@ export const RsvpEventDetails = ({ gameNight, settings }: Props) => {
 				</span>
 				<span className="inline-flex items-center gap-2">
 					<span className="text-gray-400">{t("hosted-by")}</span>
-					<BgtAvatar title={gameNight.host.name} image={gameNight.host.image} size="small" withTitle />
+					<BgtAvatar title={gameNight.host.name} image={gameNight.host.image} size="small" shape="round" withTitle />
 				</span>
 			</div>
 

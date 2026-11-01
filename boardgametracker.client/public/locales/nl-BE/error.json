@@ -105,7 +105,8 @@
     "game-already-on-loan": "Dit spel is in die periode al uitgeleend",
     "due-before-start": "De terugbrengdatum kan niet voor het begin van de uitlening liggen.",
     "returned-before-start": "Een uitlening kan niet teruggebracht worden voor ze begonnen is.",
-    "already-returned": "Deze uitlening is al teruggebracht."
+    "already-returned": "Deze uitlening is al teruggebracht.",
+    "not-returned": "Deze uitlening is nog niet teruggebracht."
   },
   "settings": {
     "invalid-public-url": "De publieke URL is ongeldig"
@@ -125,5 +126,6 @@
   },
   "feature": {
     "disabled": "Deze functie staat uit in de instellingen"
-  }
+  },
+  "load-failed": "Deze pagina kon niet geladen worden"
 }

@@ -40,6 +40,7 @@ describe("MoneyOnTheShelf", () => {
 				statistics={statistics}
 				shames={[shame(1, "Root", null), shame(2, "Everdell", 52)]}
 				currency="€"
+				canAddPrices
 				onSortByPrice={vi.fn()}
 			/>,
 		);
@@ -52,6 +53,8 @@ describe("MoneyOnTheShelf", () => {
 		expect(screen.getByText("€165")).toBeInTheDocument();
 		expect(screen.getByText("€875")).toBeInTheDocument();
 		expect(screen.getByText(/money\.unpriced-one/)).toBeInTheDocument();
+		expect(screen.getByText("€365")).toBeInTheDocument();
+		expect(screen.getByText("money.share")).toBeInTheDocument();
 	});
 
 	it("counts the unpriced games when there are several", () => {
@@ -60,6 +63,7 @@ describe("MoneyOnTheShelf", () => {
 				statistics={statistics}
 				shames={[shame(1, "Root", null), shame(2, "Azul", null)]}
 				currency="€"
+				canAddPrices
 				onSortByPrice={vi.fn()}
 			/>,
 		);
@@ -70,23 +74,41 @@ describe("MoneyOnTheShelf", () => {
 	it("sorts the list by price paid", async () => {
 		const user = userEvent.setup();
 		const onSortByPrice = vi.fn();
-		render(<MoneyOnTheShelf statistics={statistics} shames={[]} currency="€" onSortByPrice={onSortByPrice} />);
+		render(
+			<MoneyOnTheShelf statistics={statistics} shames={[]} currency="€" canAddPrices onSortByPrice={onSortByPrice} />,
+		);
 
 		await user.click(screen.getByRole("button", { name: "money.sort-by-price" }));
 
 		expect(onSortByPrice).toHaveBeenCalled();
 	});
 
-	it("stays hidden when no owned game has a price", () => {
+	it("stays hidden for readers when no owned game has a price", () => {
 		const { container } = render(
 			<MoneyOnTheShelf
 				statistics={{ ...statistics, collectionValue: 0, totalValue: null }}
 				shames={[]}
 				currency="€"
+				canAddPrices={false}
 				onSortByPrice={vi.fn()}
 			/>,
 		);
 
 		expect(container).toBeEmptyDOMElement();
+	});
+
+	it("asks for prices when no game on the shelf has a price", () => {
+		render(
+			<MoneyOnTheShelf
+				statistics={{ ...statistics, totalValue: null, pricedGameCount: 0 }}
+				shames={[shame(1, "Root", null)]}
+				currency="€"
+				canAddPrices
+				onSortByPrice={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByText("money.none")).toBeInTheDocument();
+		expect(screen.queryByRole("button")).not.toBeInTheDocument();
 	});
 });

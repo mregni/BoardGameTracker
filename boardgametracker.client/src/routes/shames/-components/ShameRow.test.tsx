@@ -51,6 +51,7 @@ const root: Shame = {
 
 const renderRow = (props: Partial<Parameters<typeof ShameRow>[0]> = {}) => {
 	const onPlan = vi.fn();
+	const onUnplan = vi.fn();
 	render(
 		<ul>
 			<ShameRow
@@ -61,12 +62,13 @@ const renderRow = (props: Partial<Parameters<typeof ShameRow>[0]> = {}) => {
 				nextNight={night}
 				planning={false}
 				onPlan={onPlan}
+				onUnplan={onUnplan}
 				now={now}
 				{...props}
 			/>
 		</ul>,
 	);
-	return { onPlan };
+	return { onPlan, onUnplan };
 };
 
 describe("ShameRow", () => {
@@ -76,6 +78,19 @@ describe("ShameRow", () => {
 		expect(screen.getByRole("link", { name: /Root/ })).toHaveAttribute("href", "/games/7");
 		expect(screen.getByText("row.owned-since · row.players · short-duration.hours-minutes")).toBeInTheDocument();
 		expect(screen.getByText("row.never-played")).toHaveClass("text-bad");
+	});
+
+	it("uses a grey never played pill when every row on the list is never played", () => {
+		renderRow({ quietNeverPlayed: true });
+
+		expect(screen.getByText("row.never-played")).toHaveClass("text-white/60");
+	});
+
+	it("gives Plan more weight than Log session when a night is coming up", () => {
+		renderRow();
+
+		expect(screen.getByRole("button", { name: "row.plan-label" })).toHaveClass("bg-primary/40");
+		expect(screen.getByRole("link", { name: "row.log-play-label" })).toHaveClass("bg-white/5");
 	});
 
 	it("shows a dash instead of a lone currency when there is no price", () => {
@@ -130,13 +145,31 @@ describe("ShameRow", () => {
 		expect(screen.getByRole("link", { name: "row.log-play-label" })).toBeInTheDocument();
 	});
 
-	it("shows a green planned pill instead of the actions", () => {
-		renderRow({ shame: { ...root, plannedGameNightId: 4, plannedFor: night.startDate } });
+	it("lets a writer unplan a planned game and still log a session", async () => {
+		const user = userEvent.setup();
+		const planned = { ...root, plannedGameNightId: 4, plannedFor: night.startDate };
+		const { onUnplan } = renderRow({ shame: planned });
+
+		await user.click(screen.getByRole("button", { name: "row.unplan-label" }));
+
+		expect(onUnplan).toHaveBeenCalledWith(planned);
+		expect(screen.getByRole("button", { name: "row.unplan-label" })).toHaveClass("text-ok");
+		expect(screen.queryByRole("button", { name: "row.plan-label" })).not.toBeInTheDocument();
+		expect(screen.getByRole("link", { name: "row.log-play-label" })).toHaveClass("bg-primary/40");
+		expect(screen.getByRole("listitem")).toHaveClass("border-ok/45");
+	});
+
+	it("disables unplan while the game is being taken off the night", () => {
+		renderRow({ shame: { ...root, plannedGameNightId: 4, plannedFor: night.startDate }, unplanning: true });
+
+		expect(screen.getByRole("button", { name: "row.unplan-label" })).toBeDisabled();
+	});
+
+	it("shows readers a plain planned pill", () => {
+		renderRow({ shame: { ...root, plannedGameNightId: 4, plannedFor: night.startDate }, canWrite: false });
 
 		expect(screen.getByText("row.planned")).toHaveClass("text-ok");
 		expect(screen.queryByRole("button")).not.toBeInTheDocument();
-		expect(screen.queryByRole("link", { name: "row.log-play-label" })).not.toBeInTheDocument();
-		expect(screen.getByRole("listitem")).toHaveClass("border-ok/45");
 	});
 
 	it("shows no actions to readers", () => {

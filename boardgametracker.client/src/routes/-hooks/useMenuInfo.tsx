@@ -4,7 +4,7 @@ import ArchiveIcon from "@/assets/icons/archive.svg?react";
 import CalendarIcon from "@/assets/icons/calendar.svg?react";
 import ChatIcon from "@/assets/icons/chat.svg?react";
 import CogIcon from "@/assets/icons/cog.svg?react";
-import Game from "@/assets/icons/gamepad.svg?react";
+import Game from "@/assets/icons/dices.svg?react";
 import HomeIcon from "@/assets/icons/home.svg?react";
 import LeftRightArrowIcon from "@/assets/icons/left-right-arrow.svg?react";
 import MapPinIcon from "@/assets/icons/map-pin.svg?react";

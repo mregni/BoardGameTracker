@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { gameRow } from "../-test/compareTestSetup";
-import { initialOf, isSide, leaderOf, resolveComparePlayers, sortGames } from "./compareUtils";
+import { compareResult, gameRow, sessionRow } from "../-test/compareTestSetup";
+import { initialOf, isSide, leaderOf, mirrorCompare, resolveComparePlayers, sortGames } from "./compareUtils";
 
 describe("resolveComparePlayers", () => {
 	const ids = [1, 2, 3, 4];
@@ -83,5 +83,41 @@ describe("sortGames", () => {
 	it("does not change the list it was given", () => {
 		sortGames(games, "biggest-lead");
 		expect(games.map((game) => game.gameId)).toEqual([1, 2, 3, 4]);
+	});
+});
+
+describe("mirrorCompare", () => {
+	it("swaps both sides so the reversed pair can show right away", () => {
+		const result = compareResult({
+			directWins: { playerOne: 7, playerTwo: 4 },
+			streak: { side: "playerOne", count: 2 },
+			bestGames: { playerOne: [12], playerTwo: [10] },
+			games: [
+				gameRow({
+					gameId: 10,
+					playerOneWins: 3,
+					playerTwoWins: 1,
+					playerOneAverageScore: 50,
+					playerTwoAverageScore: 40,
+					lastOutcome: "playerTwo",
+				}),
+			],
+			recentSessions: [sessionRow({ sessionId: 1, playerOneScore: 52, playerTwoScore: 41, outcome: "playerOne" })],
+		});
+
+		const mirrored = mirrorCompare(result);
+
+		expect(mirrored.directWins).toEqual({ playerOne: 4, playerTwo: 7 });
+		expect(mirrored.streak).toEqual({ side: "playerTwo", count: 2 });
+		expect(mirrored.bestGames).toEqual({ playerOne: [10], playerTwo: [12] });
+		expect(mirrored.games[0]).toMatchObject({
+			playerOneWins: 1,
+			playerTwoWins: 3,
+			playerOneAverageScore: 40,
+			lastOutcome: "playerOne",
+		});
+		expect(mirrored.recentSessions[0]).toMatchObject({ playerOneScore: 41, playerTwoScore: 52, outcome: "playerTwo" });
+		expect(mirrored.wonByOthers).toBe(result.wonByOthers);
+		expect(mirrorCompare(mirrored)).toEqual(result);
 	});
 });

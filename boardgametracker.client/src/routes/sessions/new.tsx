@@ -2,7 +2,8 @@ import { noop } from "@tanstack/react-query";
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
-import Game from "@/assets/icons/gamepad.svg?react";
+import { z } from "zod";
+import Game from "@/assets/icons/dices.svg?react";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { CreateSession } from "@/models";
 import { getGames } from "@/services/queries/games";
@@ -12,8 +13,13 @@ import { NoGamesEmptyPage } from "../-components/NoGamesEmptyPage";
 import { SessionForm } from "./-components/SessionForm";
 import { useNewSessionData } from "./-hooks/useNewSessionData";
 
+const newSessionSearchSchema = z.object({
+	player: z.number().int().positive().optional().catch(undefined),
+});
+
 export const Route = createFileRoute("/sessions/new")({
 	component: RouteComponent,
+	validateSearch: newSessionSearchSchema,
 	loader: ({ context: { queryClient } }) => {
 		queryClient.query(getGames()).catch(noop);
 		queryClient.query(getPlayers()).catch(noop);
@@ -23,6 +29,7 @@ export const Route = createFileRoute("/sessions/new")({
 
 function RouteComponent() {
 	const navigate = useNavigate();
+	const { player } = Route.useSearch();
 	const { t } = useTranslation("player-session");
 	const { canWrite } = usePermissions();
 	const { isPending, isLoading, saveSession, games } = useNewSessionData();
@@ -41,6 +48,7 @@ function RouteComponent() {
 	return (
 		<SessionForm
 			start={addMinutes(new Date(), -30)}
+			playerSessions={player ? [{ playerId: player, won: false, firstPlay: false, score: null }] : undefined}
 			buttonText={t("save-new")}
 			onClick={save}
 			disabled={isPending}

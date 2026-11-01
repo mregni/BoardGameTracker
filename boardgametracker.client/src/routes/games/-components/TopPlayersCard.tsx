@@ -55,7 +55,10 @@ export const TopPlayersCard = (props: Props) => {
 									className="flex items-center gap-2 py-2 hover:text-primary-text"
 								>
 									<BgtAvatar image={info?.image} title={info?.name} size="medium" />
-									<span className="min-w-0 flex-1 truncate">{info?.name}</span>
+									<span className="min-w-0 flex-1 truncate">
+										{info?.name}
+										<span className="sr-only">, {details}</span>
+									</span>
 									<span className="shrink-0 text-sm font-semibold tabular-nums">
 										{t("common:win", { count: player.wins })}
 									</span>

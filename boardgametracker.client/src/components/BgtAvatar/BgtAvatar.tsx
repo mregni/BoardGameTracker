@@ -24,8 +24,8 @@ const avatarVariants = cva("shadow-gray-800 shadow-md", {
 			false: "",
 		},
 		hasImage: {
-			true: "cursor-pointer",
-			false: "cursor-pointer flex justify-center items-center",
+			true: "",
+			false: "flex justify-center items-center",
 		},
 	},
 	compoundVariants: [
@@ -46,6 +46,7 @@ const avatarVariants = cva("shadow-gray-800 shadow-md", {
 export interface Props extends Omit<VariantProps<typeof avatarVariants>, "interactive" | "hasImage"> {
 	title?: string;
 	colorKey?: string;
+	color?: string;
 	image: string | undefined | null;
 	onClick?: () => void;
 	withTitle?: boolean;
@@ -59,7 +60,7 @@ const TEXT_SIZE_MAP: Record<string, "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8
 };
 
 export const BgtAvatar = (props: Props) => {
-	const { title, colorKey, image, onClick, size, shape, disabled, withTitle = false } = props;
+	const { title, colorKey, color, image, onClick, size, shape, disabled, withTitle = false } = props;
 	const [failedImage, setFailedImage] = useState<string | null>(null);
 	const showImage = !!image && failedImage !== image;
 
@@ -95,7 +96,8 @@ export const BgtAvatar = (props: Props) => {
 		>
 			{showImage && (
 				<img
-					className={avatarClasses}
+					className={cx(avatarClasses, "bg-white/5")}
+					style={title ? { backgroundColor: StringToHsl(colorKey ?? title) } : undefined}
 					src={image}
 					alt={title || ""}
 					loading="lazy"
@@ -104,7 +106,7 @@ export const BgtAvatar = (props: Props) => {
 			)}
 			{!showImage && title && (
 				<div
-					style={{ backgroundColor: StringToHsl(colorKey ?? title) }}
+					style={{ backgroundColor: color ?? StringToHsl(colorKey ?? title) }}
 					className={avatarClasses}
 					aria-hidden={onClick ? true : undefined}
 				>

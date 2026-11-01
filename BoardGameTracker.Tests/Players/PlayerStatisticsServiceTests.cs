@@ -59,6 +59,19 @@ public class PlayerStatisticsServiceTests
     }
 
     [Fact]
+    public async Task CalculateStatisticsAsync_ShouldReturnTheRivals()
+    {
+        var rivals = new List<PlayerRival> { new() { PlayerId = 2, Sessions = 6, Wins = 2, Losses = 4 } };
+        _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(1, 5)).ReturnsAsync([]);
+        _playerRepositoryMock.Setup(x => x.GetRivals(1)).ReturnsAsync(rivals);
+
+        var result = await _service.CalculateStatisticsAsync(1);
+
+        result.Rivals.Should().BeEquivalentTo(rivals);
+        _playerRepositoryMock.Verify(x => x.GetRivals(1), Times.Once);
+    }
+
+    [Fact]
     public async Task CalculateStatisticsAsync_ShouldReturnMostPlayedGames_WithWinningPercentage()
     {
         // Arrange

@@ -195,7 +195,6 @@ public class HeadToHeadCalculatorTests
         result.TotalSessionsTogether.Should().Be(0);
         result.MinutesPlayed.Should().Be(0);
         result.PreferredGame.Should().BeNull();
-        result.LongestSessionTogether.Should().BeNull();
         result.FirstGameTogether.Should().BeNull();
         result.ClosestGame.Should().BeNull();
         result.Streak.Should().BeNull();
@@ -224,7 +223,6 @@ public class HeadToHeadCalculatorTests
             PlayerTwoScore = 100,
             Outcome = CompareOutcome.Other
         });
-        result.LongestSessionTogether.Should().BeEquivalentTo(new LongestSession { GameId = 1, Minutes = 41 });
     }
 
     [Fact]

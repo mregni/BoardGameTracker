@@ -34,7 +34,7 @@
   --color-bad: #f87171;
   --color-gold: #facc15;
   --color-player-one: #f87171;
-  --color-player-two: #3b82f6;
+  --color-player-two: #60a5fa;
   --color-bar-muted: #475569;
   --color-bar-subtle: #334155;
   --color-bar-hatch: #64748b;
@@ -61,6 +61,7 @@
   --animate-value-flash: value-flash 1.4s ease-out;
   --animate-float: float 4s ease-in-out infinite;
   --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-podium-rise: podium-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @utility bg-hatch {
@@ -69,6 +70,15 @@
 
 @utility bg-overflow-stripes {
   background-image: repeating-linear-gradient(135deg, var(--color-warn) 0 3px, transparent 3px 6px);
+}
+
+@keyframes podium-rise {
+  from {
+    clip-path: inset(45% 0 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
 }
 
 @keyframes slide-in-right {

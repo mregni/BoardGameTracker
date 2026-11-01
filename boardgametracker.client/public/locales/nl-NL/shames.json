@@ -1,31 +1,13 @@
 {
   "subtitle_one": "Spellen in je bezit die je {{count}}+ maand niet speelde",
   "subtitle_other": "Spellen in je bezit die je {{count}}+ maanden niet speelde",
+  "subtitle-lead": "Spellen in je bezit, niet gespeeld in",
   "change-in-settings": "aanpassen in Instellingen",
   "none": {
     "title": "Niets op de plank",
     "description": "Spellen die je bezit en al een tijd niet gespeeld zijn, komen hier te staan."
   },
   "no-matches": "Geen spellen op de plank voor deze filters.",
-  "tiles": {
-    "on-shelf": "Op de plank",
-    "of-owned_one": "van {{total}} spel in bezit",
-    "of-owned_other": "van {{total}} spellen in bezit",
-    "never-played": "Nooit gespeeld",
-    "oldest": "oudste: {{title}}",
-    "oldest-since": "oudste: {{title}}, sinds {{date}}",
-    "paid-not-played": "Betaald, niet gespeeld",
-    "priced_one": "{{priced}} van {{total}} met prijs",
-    "priced_other": "{{priced}} van {{total}} met prijs",
-    "share": "{{share}} van {{total}}",
-    "no-prices": "geen prijzen ingevuld",
-    "planned": "Gepland",
-    "planned-for": "voor {{date}}",
-    "planned-next": "volgende op {{date}}",
-    "planned-across_one": "over {{count}} spelavond",
-    "planned-across_other": "over {{count}} spelavonden",
-    "no-night": "geen spelavond gepland"
-  },
   "filters": {
     "show": "Toon",
     "all": "Alle",
@@ -42,13 +24,18 @@
     "sort-unplayed": "Langst niet gespeeld",
     "sort-price": "Betaalde prijs",
     "sort-owned": "In bezit sinds",
-    "sort-title": "Titel"
+    "sort-title": "Titel",
+    "toggle": "Filters",
+    "toggle-active_one": "Filters ({{count}})",
+    "toggle-active_other": "Filters ({{count}})"
   },
   "list": {
     "label": "Spellen op de plank",
     "game": "Spel",
     "last-played": "Laatst gespeeld",
-    "paid": "Betaald"
+    "paid": "Betaald",
+    "count_one": "{{count}} van {{total}} spellen",
+    "count_other": "{{count}} van {{total}} spellen"
   },
   "row": {
     "owned-since": "in bezit sinds {{date}}",
@@ -62,7 +49,8 @@
     "plan": "Plan",
     "plan-label": "Plan {{title}} voor {{night}}",
     "log-play": "Sessie registreren",
-    "log-play-label": "Sessie van {{title}} registreren"
+    "log-play-label": "Sessie van {{title}} registreren",
+    "unplan-label": "{{title}} van de spelavond halen"
   },
   "plan": {
     "added": "{{game}} toegevoegd aan de suggesties voor {{night}} · {{date}}",
@@ -75,15 +63,31 @@
   },
   "money": {
     "title": "Geld op de plank",
-    "subtitle": "Spellen in bezit met prijs",
+    "share": "{{share}} van de {{total}} betaald voor spellen in bezit",
     "never-played": "Nooit gespeeld",
     "not-played_one": "Niet gespeeld in {{count}}+ maand",
     "not-played_other": "Niet gespeeld in {{count}}+ maanden",
-    "rest": "Niet op de plank",
+    "rest": "Onlangs gespeeld",
     "label": "Van {{total}} betaald voor spellen in bezit: {{parts}}",
     "unpriced-one": "{{title}} heeft geen prijs en telt dus niet mee.",
     "unpriced_one": "{{count}} spel op de plank heeft geen prijs en telt dus niet mee.",
     "unpriced_other": "{{count}} spellen op de plank hebben geen prijs en tellen dus niet mee.",
-    "sort-by-price": "Sorteer op betaalde prijs"
+    "sort-by-price": "Sorteer op betaalde prijs",
+    "none": "Vul in wat je voor je spellen betaalde om te zien hoeveel geld er op de plank ligt."
+  },
+  "nudge": {
+    "next": "Volgende spelavond: {{title}} op {{date}}.",
+    "pick": "Kies een spel van de plank met Plan.",
+    "planned_one": "{{count}} spel komt van de plank.",
+    "planned_other": "{{count}} spellen komen van de plank.",
+    "planned-across_one": "{{count}} spel komt van de plank, verspreid over {{nights}} spelavonden.",
+    "planned-across_other": "{{count}} spellen komen van de plank, verspreid over {{nights}} spelavonden."
+  },
+  "summary": {
+    "on-shelf": "{{count}} van {{total}} spellen in bezit op de plank",
+    "never-played_one": "{{count}} nooit gespeeld",
+    "never-played_other": "{{count}} nooit gespeeld",
+    "oldest": "oudste: {{title}}",
+    "oldest-since": "oudste: {{title}}, sinds {{date}}"
   }
 }

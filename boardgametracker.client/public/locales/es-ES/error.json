@@ -105,7 +105,8 @@
     "game-already-on-loan": "Este juego ya está prestado en ese periodo",
     "due-before-start": "La fecha de devolución no puede ser anterior al inicio del préstamo.",
     "returned-before-start": "Un préstamo no se puede devolver antes de que empiece.",
-    "already-returned": "Este préstamo ya se devolvió."
+    "already-returned": "Este préstamo ya se devolvió.",
+    "not-returned": "Este préstamo aún no se ha devuelto."
   },
   "settings": {
     "invalid-public-url": "La URL pública no es válida"
@@ -125,5 +126,6 @@
   },
   "feature": {
     "disabled": "Esta función está desactivada en los ajustes"
-  }
+  },
+  "load-failed": "No se pudo cargar esta página"
 }
