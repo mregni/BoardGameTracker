@@ -17,7 +17,11 @@ export const leaderboardSearchSchema = z.object({
 	from: isoDate.optional().catch(undefined),
 	to: isoDate.optional().catch(undefined),
 	game: z.number().int().positive().optional().catch(undefined),
-	min: z.number().int().min(1).max(1000).optional().catch(undefined),
+	min: z
+		.number()
+		.refine((value) => (MIN_SESSION_OPTIONS as readonly number[]).includes(value))
+		.optional()
+		.catch(undefined),
 	rank: z.enum(["wins", "winRate", "sessions"]).optional().catch(undefined),
 });
 
