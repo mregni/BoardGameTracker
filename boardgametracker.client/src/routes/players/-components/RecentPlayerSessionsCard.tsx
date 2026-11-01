@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import { RecentActivityCard } from "@/components/BgtCard/RecentActivityCard";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { Session } from "@/models/Session/Session";
 import { useGameById } from "@/routes/-hooks/useGameById";
 import { PlayerSessionCardItem } from "./PlayerSessionCardItem";
@@ -18,6 +19,7 @@ export const RecentPlayerSessionsCard = (props: Props) => {
 	const { t } = useTranslation("game");
 
 	const { gameById } = useGameById();
+	const { canWrite } = usePermissions();
 
 	const renderSession = useCallback(
 		(session: Session) => (
@@ -27,9 +29,10 @@ export const RecentPlayerSessionsCard = (props: Props) => {
 				dateFormat={dateFormat}
 				uiLanguage={uiLanguage}
 				playerId={playerId}
+				canOpen={canWrite}
 			/>
 		),
-		[dateFormat, uiLanguage, playerId, gameById],
+		[dateFormat, uiLanguage, playerId, gameById, canWrite],
 	);
 
 	const getSessionKey = useCallback((session: Session) => session.id, []);
