@@ -144,6 +144,42 @@ describe("Pick page", () => {
 		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games" });
 	});
 
+	it("keeps the landed game in the URL and swaps a vetoed game for a spare one", async () => {
+		mocks.games = [game(1), game(2), game(3), game(4)];
+		mocks.search = { wheel: [1, 2, 3] };
+		renderPage();
+
+		await userEvent.click(screen.getByRole("button", { name: /pick\.spin/ }));
+		expect(typeof lastSearch().pick).toBe("number");
+
+		mocks.navigate.mockReset();
+		mocks.search = { wheel: [1, 2, 3], pick: 2 };
+		renderPage();
+		await userEvent.click(screen.getByRole("button", { name: /pick\.exclude/ }));
+
+		await vi.waitFor(() =>
+			expect(
+				mocks.navigate.mock.calls.map(([options]) =>
+					(options as { search: (prev: Search) => Search }).search(mocks.search),
+				),
+			).toContainEqual(expect.objectContaining({ out: [2], wheel: [1, 4, 3] })),
+		);
+	});
+
+	it("lists categories alphabetically, goes back and jumps to the filters", async () => {
+		const scrollIntoView = vi.fn();
+		Element.prototype.scrollIntoView = scrollIntoView;
+		mocks.games = [game(1, { categories: [{ id: 2, name: "Party" }] }), game(2)];
+		mocks.search = { wheel: [1, 2] };
+		renderPage();
+
+		await userEvent.click(screen.getByRole("button", { name: /pick\.adjust/ }));
+		expect(scrollIntoView).toHaveBeenCalledOnce();
+
+		await userEvent.click(screen.getByRole("button", { name: "common:back" }));
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games" });
+	});
+
 	it("turns on unplayed games first and redraws the wheel", async () => {
 		mocks.search = { wheel: [1, 2], pick: 1 };
 		renderPage();

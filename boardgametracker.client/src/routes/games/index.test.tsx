@@ -121,6 +121,16 @@ describe("Games filters on a phone", () => {
 });
 
 describe("Games grid", () => {
+	it("opens the pick page with the player, time and category filters", async () => {
+		mocks.search = { players: 4, playTime: 60, weight: "light" };
+		mocks.games = [{ ...game(1, null), weight: 1.5 }];
+		renderTable();
+
+		await userEvent.click(screen.getByRole("button", { name: "pick.button" }));
+
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/pick", search: { players: 4, playTime: 60 } });
+	});
+
 	it("shows the play count on the cards and sorts by most played", () => {
 		mocks.search = { sort: "plays" };
 		mocks.games = [game(1, null, 0), game(2, null, 7)];

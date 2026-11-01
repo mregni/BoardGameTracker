@@ -64,6 +64,7 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 	const { t } = useTranslation(["game-nights", "common"]);
 	const { link, copied, copy } = useInviteLink(gameNight);
 	const [query, setQuery] = useState("");
+	const [confirmingRemove, setConfirmingRemove] = useState<number | null>(null);
 
 	const rsvps = useMemo(
 		() => sortRsvps(gameNight.invitedPlayers, gameNight.hostId, byName),
@@ -173,14 +174,29 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 														);
 													})}
 												</fieldset>
-												<BgtIconButton
-													intent="subtile"
-													className="col-start-3 row-start-1 md:col-start-4"
-													icon={<Cross className="size-4" />}
-													disabled={isLoading}
-													aria-label={t("rsvp.remove", { name: rsvp.player.name })}
-													onClick={() => handleRemove(rsvp.playerId)}
-												/>
+												{confirmingRemove === rsvp.playerId ? (
+													<BgtButton
+														variant="error"
+														size="1"
+														autoFocus
+														className="col-start-3 row-start-1 md:col-start-4"
+														disabled={isLoading}
+														aria-label={t("rsvp.remove", { name: rsvp.player.name })}
+														onBlur={() => setConfirmingRemove(null)}
+														onClick={() => handleRemove(rsvp.playerId)}
+													>
+														{t("rsvp.confirm-remove")}
+													</BgtButton>
+												) : (
+													<BgtIconButton
+														intent="subtile"
+														className="col-start-3 row-start-1 md:col-start-4"
+														icon={<Cross className="size-4" />}
+														disabled={isLoading}
+														aria-label={t("rsvp.remove", { name: rsvp.player.name })}
+														onClick={() => setConfirmingRemove(rsvp.playerId)}
+													/>
+												)}
 											</>
 										)}
 									</li>
@@ -242,7 +258,7 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 					</div>
 				</div>
 
-				<BgtDialogFooter confirmLabel={t("common:done")} onConfirm={close} />
+				<BgtDialogFooter confirmLabel={t("common:close")} onConfirm={close} />
 			</BgtDialogContent>
 		</BgtDialog>
 	);

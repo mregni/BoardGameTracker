@@ -2,8 +2,9 @@ import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
 import Download from "@/assets/icons/download.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { AvatarChip } from "@/components/GameNight/AvatarChip";
+import { PlannedGameList } from "@/components/GameNight/PlannedGameList";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { Game, GameNightManuals } from "@/models";
 import { manualInviteDownloadUrl } from "@/services/manualService";
@@ -27,14 +28,10 @@ export const RsvpGames = ({ linkId, games, manuals }: Props) => {
 		<BgtCard className="gap-3">
 			{games.length > 0 && (
 				<div className="flex flex-col gap-2">
-					<BgtText size="4" weight="bold">
+					<BgtHeading as="h2" size="4">
 						{t("suggested-games")}
-					</BgtText>
-					<div className="flex flex-wrap gap-2">
-						{games.map((game) => (
-							<AvatarChip key={game.id} title={game.title} image={game.image} />
-						))}
-					</div>
+					</BgtHeading>
+					<PlannedGameList games={games} />
 				</div>
 			)}
 
