@@ -15,13 +15,13 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useDebouncedSearchQuery } from "@/hooks/useDebouncedSearchQuery";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getGames, getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { NoGamesEmptyPage } from "../-components/NoGamesEmptyPage";
 import { filterGames, type GamesFilterSearch, GamesFilters } from "./-components/GamesFilters";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
-import { useDebouncedSearchQuery } from "./-hooks/useDebouncedSearchQuery";
 import { useGamesData } from "./-hooks/useGamesData";
 import { filterByTitle, hasGridFilters, parseGamesSearch, withoutUndefined } from "./-utils/gamesSearch";
 
