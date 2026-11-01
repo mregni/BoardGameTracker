@@ -49,6 +49,7 @@ interface SingleBarProps extends TrackVariants, ProgressPaint {
 	max?: number;
 	id?: string;
 	title?: string;
+	animateOnMount?: boolean;
 	"aria-label"?: string;
 	"aria-labelledby"?: string;
 	"aria-valuetext"?: string;
@@ -62,6 +63,7 @@ interface SegmentedBarProps extends TrackVariants {
 	formatLabel?: (summary: ProgressSummary) => string;
 	formatValue?: (value: number) => string;
 	animateOnMount?: boolean;
+	growFromEnds?: boolean;
 }
 
 interface FrameProps {
@@ -99,12 +101,14 @@ const SingleBar = (props: SingleBarProps) => {
 		pattern,
 		title,
 		id,
+		animateOnMount = false,
 		"aria-label": ariaLabel,
 		"aria-labelledby": ariaLabelledBy,
 		"aria-valuetext": ariaValueText,
 	} = props;
 	const safeMax = sanitize(max);
-	const percent = toPercent(value, safeMax);
+	const grown = useGrownOnMount(animateOnMount);
+	const percent = grown ? toPercent(value, safeMax) : 0;
 
 	return (
 		<div data-testid="progress-track" title={title} className={trackVariants({ size, track })}>
@@ -164,6 +168,7 @@ const SegmentedBar = (props: SegmentedBarProps) => {
 		formatLabel,
 		formatValue = defaultFormatValue,
 		animateOnMount = false,
+		growFromEnds = false,
 	} = props;
 	const grown = useGrownOnMount(animateOnMount);
 	const computed = computeSegments(segments, max);
@@ -184,7 +189,15 @@ const SegmentedBar = (props: SegmentedBarProps) => {
 			data-overflow={computed.overflow ? "true" : undefined}
 			className={trackVariants({ size, track })}
 		>
-			{computed.items.map((item, position) => (
+			{computed.items.map((item, position) => [
+				growFromEnds && position === computed.items.length - 1 && (
+					<span
+						key="grow-gap"
+						aria-hidden="true"
+						className={cx("block h-full shrink-0 basis-0", motion)}
+						style={{ flexGrow: grown ? 0 : 100 }}
+					/>
+				),
 				<span
 					key={item.segment.key ?? item.index}
 					aria-hidden={item.visible ? undefined : "true"}
@@ -206,13 +219,13 @@ const SegmentedBar = (props: SegmentedBarProps) => {
 						),
 					)}
 					style={{ ...paintStyle(item.segment), flexGrow: grown ? item.percent : 0 }}
-				/>
-			))}
+				/>,
+			])}
 			<span
 				aria-hidden="true"
 				data-testid="progress-rest"
 				className={cx("block h-full shrink-0 basis-0", motion)}
-				style={{ flexGrow: grown ? computed.rest : 100 }}
+				style={{ flexGrow: grown || growFromEnds ? computed.rest : 100 }}
 			/>
 			{computed.overflow && (
 				<span

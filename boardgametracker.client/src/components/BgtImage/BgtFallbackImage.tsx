@@ -12,16 +12,25 @@ interface Props {
 
 export const BgtFallbackImage = ({ title, image, className, lazy = false, decorative = false }: Props) => {
 	const [failedImage, setFailedImage] = useState<string | null>(null);
+	const [loadedImage, setLoadedImage] = useState<string | null>(null);
 	const showImage = !!image && failedImage !== image;
 
 	if (showImage) {
 		return (
 			<img
+				ref={(node) => {
+					if (node?.complete && node.naturalWidth > 0) setLoadedImage(image);
+				}}
 				src={image}
 				alt={decorative ? "" : title}
 				loading={lazy ? "lazy" : undefined}
 				decoding="async"
-				className={cx("w-full h-full object-cover", className)}
+				className={cx(
+					"w-full h-full object-cover transition-[opacity,filter] duration-500 ease-out",
+					loadedImage !== image && "opacity-0 motion-safe:blur-md",
+					className,
+				)}
+				onLoad={() => setLoadedImage(image)}
 				onError={() => setFailedImage(image)}
 			/>
 		);

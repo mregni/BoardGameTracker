@@ -11,6 +11,7 @@ import { useShortDuration } from "@/hooks/useShortDuration";
 import { getDashboardStatistics } from "@/services/queries/dashboard";
 import { CollectionCard } from "./-components/dashboard/CollectionCard";
 import { DashboardHeader } from "./-components/dashboard/DashboardHeader";
+import { DashboardSkeleton } from "./-components/dashboard/DashboardSkeleton";
 import { LastSessionsCard } from "./-components/dashboard/LastSessionsCard";
 import { MostPlayedCard } from "./-components/dashboard/MostPlayedCard";
 import { NextGameNightCard } from "./-components/dashboard/NextGameNightCard";
@@ -33,7 +34,7 @@ function RouteComponent() {
 	const shortDuration = useShortDuration();
 	const { integer } = useNumberFormat();
 
-	if (statistics === undefined || settings === undefined) return null;
+	if (statistics === undefined || settings === undefined) return <DashboardSkeleton />;
 
 	if (statistics.totalGames === 0) {
 		return <NoGamesEmptyPage header={t("common:dashboard")} icon={Home} />;

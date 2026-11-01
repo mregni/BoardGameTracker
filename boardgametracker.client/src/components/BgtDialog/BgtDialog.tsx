@@ -40,16 +40,22 @@ export const BgtDialog = (props: BgtDialogProps) => {
 	);
 };
 
+const pop =
+	"motion-safe:data-[state=open]:animate-dialog-in motion-safe:data-[state=closed]:animate-dialog-out motion-reduce:data-[state=open]:animate-fade-in motion-reduce:data-[state=closed]:animate-fade-out";
+
 const centered = "left-1/2 top-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl";
 
 const dialogContent = cva("fixed flex bg-dialog text-white shadow-2xl focus:outline-none", {
 	variants: {
 		size: {
-			default: [centered, "max-w-[600px]"],
-			wide: [centered, "max-w-[600px] lg:max-w-5xl"],
+			default: [centered, pop, "max-w-[600px]"],
+			wide: [centered, pop, "max-w-[600px] lg:max-w-5xl"],
 			sheet: [
 				"inset-x-0 bottom-0 w-full rounded-t-2xl",
 				"md:inset-x-auto md:bottom-auto md:left-1/2 md:top-1/2 md:w-[calc(100vw-2rem)] md:max-w-xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl",
+				"max-md:motion-safe:data-[state=open]:animate-sheet-in max-md:motion-safe:data-[state=closed]:animate-sheet-out",
+				"md:motion-safe:data-[state=open]:animate-dialog-in md:motion-safe:data-[state=closed]:animate-dialog-out",
+				"motion-reduce:data-[state=open]:animate-fade-in motion-reduce:data-[state=closed]:animate-fade-out",
 			],
 		},
 	},
@@ -94,7 +100,10 @@ export const BgtDialogContent = (props: BgtDialogContentProps) => {
 
 	return (
 		<Dialog.Portal>
-			<Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-[2px]" style={{ zIndex: overlayZIndex }} />
+			<Dialog.Overlay
+				className="fixed inset-0 bg-black/60 backdrop-blur-[2px] data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out"
+				style={{ zIndex: overlayZIndex }}
+			/>
 			<Dialog.Content
 				ref={(node) => setContainer(node ?? undefined)}
 				style={{ zIndex: overlayZIndex + 10, ...style }}

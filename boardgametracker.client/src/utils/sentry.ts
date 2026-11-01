@@ -19,6 +19,7 @@ export const initSentry = () => {
 		replaysSessionSampleRate: 0.1,
 		replaysOnErrorSampleRate: 1,
 		sendDefaultPii: false,
+		ignoreErrors: ["Transition was skipped", "Transition was aborted because of invalid state"],
 		beforeSend: scrubEvent,
 		beforeSendTransaction: scrubEvent,
 		beforeBreadcrumb: scrubBreadcrumb,

@@ -127,6 +127,7 @@ export const PerGameCard = ({ games, playerOne, playerTwo }: Props) => {
 									<BgtProgressBar
 										size="thin"
 										animateOnMount
+										growFromEnds
 										gapped
 										formatValue={integer}
 										formatLabel={() =>
