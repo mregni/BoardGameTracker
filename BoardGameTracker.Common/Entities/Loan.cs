@@ -36,6 +36,16 @@ public class Loan : HasId
         ReturnedDate = returnedDate;
     }
 
+    public void UndoReturn()
+    {
+        if (ReturnedDate == null)
+        {
+            throw new DomainException(Constants.Errors.LoanNotReturned);
+        }
+
+        ReturnedDate = null;
+    }
+
     public bool IsCurrentlyOnLoan(DateTime now)
     {
         return ReturnedDate == null && LoanDate <= now;
