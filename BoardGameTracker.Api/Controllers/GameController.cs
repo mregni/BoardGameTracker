@@ -46,6 +46,15 @@ public class GameController : ControllerBase
         return Ok(games.ToListDto());
     }
 
+    [HttpGet]
+    [Route("plays")]
+    [ProducesResponseType<List<GamePlaySummaryDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPlaySummaries()
+    {
+        var summaries = await _gameService.GetPlaySummaries();
+        return Ok(summaries.ToListDto());
+    }
+
     [HttpPost]
     [Route("")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]

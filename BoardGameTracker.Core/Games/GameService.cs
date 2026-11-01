@@ -64,6 +64,12 @@ public class GameService : IGameService
         return _gameRepository.GetGamesOverviewList();
     }
 
+    public Task<List<GamePlaySummary>> GetPlaySummaries()
+    {
+        _logger.LogDebug("Fetching play summaries");
+        return _gameRepository.GetPlaySummaries();
+    }
+
     public Task<Game?> GetGameById(int id)
     {
         _logger.LogDebug("Fetching game {GameId}", id);

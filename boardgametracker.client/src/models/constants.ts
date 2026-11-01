@@ -27,6 +27,7 @@ export const QUERY_KEYS = {
 	badges: "badges",
 	versionInfo: "versionInfo",
 	shames: "shames",
+	plays: "plays",
 	gameNights: "gameNights",
 	profile: "profile",
 	oidcProviders: "oidc-providers",

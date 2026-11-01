@@ -27,6 +27,7 @@ interface Props {
 	showAvatars?: boolean;
 	trigger?: ReactNode;
 	triggerClassName?: string;
+	valuePrefix?: string;
 	"aria-label"?: string;
 }
 
@@ -45,6 +46,7 @@ export const BgtSimpleSelect = (props: Props) => {
 		showAvatars = false,
 		trigger,
 		triggerClassName,
+		valuePrefix,
 		"aria-label": ariaLabel,
 	} = props;
 
@@ -126,6 +128,9 @@ export const BgtSimpleSelect = (props: Props) => {
 				>
 					{trigger ?? (
 						<>
+							{valuePrefix && currentValue !== undefined && (
+								<span className="mr-1.5 shrink-0 text-white/60">{valuePrefix}</span>
+							)}
 							<Select.Value placeholder={placeholder} className="min-w-0 flex-1 truncate text-left" />
 							<Select.Icon className="absolute right-3 top-1/2 -translate-y-1/2">
 								{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}

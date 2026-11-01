@@ -23,6 +23,7 @@ export const SearchInputField = (props: Props) => {
 			className={cx("border-primary/30 border bg-primary/10 w-full", className)}
 			inputClassName={cx("placeholder:text-primary-text", inputClassName)}
 			placeholder={placeholder || t("filter-name")}
+			ariaLabel={placeholder || t("filter-name")}
 			type="text"
 			prefixLabel={<SearchIcon className="text-primary size-5" />}
 		/>

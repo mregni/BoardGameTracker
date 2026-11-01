@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import BgtButton from "../BgtButton/BgtButton";
 import { BgtSpinner } from "../BgtLoadingSpinner/BgtSpinner";
 
-const footerButton = "min-h-10 flex-auto md:min-w-32 md:flex-none";
+const footerButton = "min-h-10 pointer-coarse:min-h-11 flex-auto md:min-w-32 md:flex-none";
 
 interface BgtDialogFooterProps {
 	confirmLabel?: ReactNode;

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import Clock from "@/assets/icons/clock.svg?react";
-import GamePad from "@/assets/icons/gamepad.svg?react";
+import GamePad from "@/assets/icons/dices.svg?react";
 import Target from "@/assets/icons/target.svg?react";
 import Users from "@/assets/icons/users.svg?react";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";

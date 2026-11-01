@@ -47,7 +47,7 @@ export const BgtPageHeader = (props: Props) => {
 							key={typeof action.content === "string" ? action.content : index}
 							variant={action.variant}
 							size="3"
-							className="max-lg:py-2 max-lg:px-2 max-lg:text-xs"
+							className="max-lg:py-2 max-lg:px-2 max-lg:text-xs pointer-coarse:min-h-11"
 							onClick={action.onClick}
 						>
 							{action.icon && <action.icon className="size-4" aria-hidden="true" />}

@@ -8,6 +8,7 @@ namespace BoardGameTracker.Core.Games.Interfaces;
 public interface IGameService
 {
     Task<List<Game>> GetGames();
+    Task<List<GamePlaySummary>> GetPlaySummaries();
     Task<Game?> GetGameById(int id);
     Task<bool> ExistsAsync(int id);
     Task<bool?> HasCoopModeAsync(int id);

@@ -168,6 +168,11 @@ public class GameRepository : EfRepository<Game>, IGameRepository
         return ListAsync(new ShameGamesSpec(cutoffDate));
     }
 
+    public Task<List<GamePlaySummary>> GetPlaySummaries()
+    {
+        return ListAsync(new GamePlaySummariesSpec());
+    }
+
     public async Task<OwnedCollectionSummary> GetOwnedCollectionSummary(CancellationToken cancellationToken = default)
     {
         var owned = _context.Games

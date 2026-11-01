@@ -1204,6 +1204,44 @@
         }
       }
     },
+    "/api/game/plays": {
+      "get": {
+        "tags": [
+          "Game"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GamePlaySummaryDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GamePlaySummaryDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GamePlaySummaryDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/game/{id}": {
       "delete": {
         "tags": [
@@ -7795,6 +7833,25 @@
           },
           "type": {
             "$ref": "#/components/schemas/PersonType"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GamePlaySummaryDto": {
+        "type": "object",
+        "properties": {
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastPlayed": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false

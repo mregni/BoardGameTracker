@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import CheckIcon from "@/assets/icons/check.svg?react";
 import CrownIcon from "@/assets/icons/crown.svg?react";
-import GamepadIcon from "@/assets/icons/gamepad.svg?react";
+import GamepadIcon from "@/assets/icons/dices.svg?react";
 import type { GameNightStreaks, PlayerStreak } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { StatFact, StatsCard, StatsEmpty, type StatsLookup } from "./StatsParts";

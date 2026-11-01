@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import Gamepad from "@/assets/icons/gamepad.svg?react";
+import Gamepad from "@/assets/icons/dices.svg?react";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
 

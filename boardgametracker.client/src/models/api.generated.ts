@@ -1158,6 +1158,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/game/plays": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GamePlaySummaryDto"][];
+                        "application/json": components["schemas"]["GamePlaySummaryDto"][];
+                        "text/json": components["schemas"]["GamePlaySummaryDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/game/{id}": {
         parameters: {
             query?: never;
@@ -5789,6 +5826,14 @@ export interface components {
             id: number;
             name: string;
             type: components["schemas"]["PersonType"];
+        };
+        GamePlaySummaryDto: {
+            /** Format: int32 */
+            gameId: number;
+            /** Format: int32 */
+            playCount: number;
+            /** Format: date-time */
+            lastPlayed: string | null;
         };
         GamePriceDto: {
             /** Format: int32 */
