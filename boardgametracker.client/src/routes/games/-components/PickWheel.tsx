@@ -138,11 +138,12 @@ export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude, w
 	const veto = (game: Game) => {
 		const gameId = game.id;
 		spunRef.current = true;
-		respinRef.current = games.length > 2;
+		const respin = games.length > 2;
 		setVetoedTitle(game.title);
 		setVetoId(gameId);
 		window.setTimeout(
 			() => {
+				respinRef.current = respin;
 				setVetoId(undefined);
 				onExclude(gameId);
 			},

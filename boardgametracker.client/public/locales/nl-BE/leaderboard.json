@@ -11,9 +11,11 @@
     "rank-by": "Rangschikken op",
     "rank-by-wins": "Overwinningen",
     "rank-by-win-rate": "Winstpercentage",
-    "rank-by-sessions": "Sessies"
+    "rank-by-sessions": "Sessies",
+    "more": "Meer filters"
   },
   "highlights": {
+    "title": "Records",
     "most-wins": "Meeste overwinningen",
     "most-sessions": "Meeste sessies",
     "best-win-rate": "Beste winstpercentage",
@@ -43,18 +45,25 @@
   "ranking": {
     "label": "Rangschikking",
     "not-ranked-rank": "Niet gerangschikt",
+    "podium": "Podium",
+    "place": "Plaats",
     "not-ranked_one": "Minder dan {{count}} sessie · niet gerangschikt",
     "not-ranked_other": "Minder dan {{count}} sessies · niet gerangschikt",
     "coop_one": "Coöperatieve overwinningen en verliezen tellen mee: een teamoverwinning is een overwinning voor iedereen aan tafel, een teamverlies een verlies ({{count}} van de {{total}} overwinningen).",
     "coop_other": "Coöperatieve overwinningen en verliezen tellen mee: een teamoverwinning is een overwinning voor iedereen aan tafel, een teamverlies een verlies ({{count}} van de {{total}} overwinningen).",
     "ties-wins": "Evenveel overwinningen: het hoogste winstpercentage eerst, dan de meeste sessies. Gelijke cijfers delen de rang.",
     "ties-win-rate": "Hetzelfde winstpercentage: de meeste overwinningen eerst, dan de meeste sessies. Gelijke cijfers delen de rang.",
-    "ties-sessions": "Evenveel sessies: de meeste overwinningen eerst. Gelijke cijfers delen de rang."
+    "ties-sessions": "Evenveel sessies: de meeste overwinningen eerst. Gelijke cijfers delen de rang.",
+    "how": "Hoe de rangschikking werkt",
+    "nobody-ranked_one": "Nog niemand heeft {{count}} sessie gespeeld, dus niemand is gerangschikt.",
+    "nobody-ranked_other": "Nog niemand heeft {{count}} sessies gespeeld, dus niemand is gerangschikt.",
+    "lower-minimum": "Verlaag het minimum naar {{count}}"
   },
   "empty": {
     "title": "Nog geen partijen geregistreerd",
     "description": "Registreer een paar sessies en de ranglijst vult zichzelf.",
     "filtered-title": "Geen sessies voor deze filters",
-    "filtered-description": "Kies een andere periode of een ander spel."
+    "filtered-description": "Kies een andere periode of een ander spel.",
+    "reset": "Filters wissen"
   }
 }

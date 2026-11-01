@@ -63,18 +63,8 @@ const players = [
 	}),
 ];
 
-const renderRanking = (list: LeaderboardEntry[] = players, coopWinCount = 0, rankBy: LeaderboardRankBy = "wins") =>
-	renderWithTheme(
-		<LeaderboardRanking
-			players={list}
-			rankBy={rankBy}
-			minimumSessions={5}
-			minimumPlayersForPodium={4}
-			label="Ranking"
-			winCount={149}
-			coopWinCount={coopWinCount}
-		/>,
-	);
+const renderRanking = (list: LeaderboardEntry[] = players, rankBy: LeaderboardRankBy = "wins") =>
+	renderWithTheme(<LeaderboardRanking players={list} rankBy={rankBy} minimumSessions={5} label="Ranking" />);
 
 describe("LeaderboardRanking", () => {
 	it("should keep the order and shared ranks of the ranked players", () => {
@@ -114,7 +104,8 @@ describe("LeaderboardRanking", () => {
 		const below = within(lists[1]).getByRole("link");
 		expect(below).toHaveTextContent("Bram");
 		expect(below).toHaveTextContent("ranking.not-ranked-rank");
-		expect(below).toHaveTextContent("values.to-rank");
+		expect(within(below).getAllByText("values.to-rank")).toHaveLength(1);
+		expect(within(below).getByText("values.to-rank")).toHaveClass("md:block");
 		expect(below.className).toContain("border-dashed");
 	});
 
@@ -138,7 +129,6 @@ describe("LeaderboardRanking", () => {
 		renderRanking(players.map((player) => ({ ...player, podiumCount: 0 })));
 
 		expect(screen.queryByText("columns.podiums")).not.toBeInTheDocument();
-		expect(screen.queryByText("columns.podiums-hint")).not.toBeInTheDocument();
 		const [first] = screen.getAllByTestId("leaderboard-row");
 		expect(first).not.toHaveTextContent("values.podiums");
 		expect(first.className).toContain(
@@ -146,27 +136,10 @@ describe("LeaderboardRanking", () => {
 		);
 	});
 
-	it("should explain the podium column and that ties share the rank", () => {
-		renderRanking();
-
-		expect(screen.getAllByText("columns.podiums-hint").length).toBeGreaterThan(0);
-		expect(screen.getByText("ranking.ties-wins")).toBeInTheDocument();
-	});
-
-	it.each([
-		["winRate", "ranking.ties-win-rate"],
-		["sessions", "ranking.ties-sessions"],
-	] as const)("should name the tiebreak of ranking by %s", (rankBy, key) => {
-		renderRanking(players, 0, rankBy);
-
-		expect(screen.getByText(key)).toBeInTheDocument();
-	});
-
 	it("should leave out the divider when everybody is ranked", () => {
 		renderRanking(players.slice(0, 1));
 
 		expect(screen.queryByRole("heading", { name: "ranking.not-ranked" })).not.toBeInTheDocument();
-		expect(screen.queryByText("ranking.ties-wins")).not.toBeInTheDocument();
 	});
 
 	it("should only show the divider when nobody is ranked yet", () => {
@@ -176,22 +149,12 @@ describe("LeaderboardRanking", () => {
 		expect(screen.getByRole("heading", { name: "ranking.not-ranked" })).toBeInTheDocument();
 	});
 
-	it("should explain co-op wins when some wins come from co-op sessions", () => {
-		renderRanking(players, 24);
+	it("should mark only the metric it ranks by", () => {
+		renderRanking([players[0]], "winRate");
 
-		expect(screen.getByText("ranking.coop ranking.ties-wins")).toBeInTheDocument();
-	});
-
-	it("should leave out the co-op note without co-op wins", () => {
-		renderRanking(players, 0);
-
-		expect(screen.queryByText(/ranking\.coop/)).not.toBeInTheDocument();
-	});
-
-	it("should show the co-op note alone when there are no ties to explain", () => {
-		renderRanking(players.slice(0, 1), 3);
-
-		expect(screen.getByText("ranking.coop")).toBeInTheDocument();
+		const row = screen.getByTestId("leaderboard-row");
+		expect(within(row).getByText("142")).not.toHaveClass("text-card-value");
+		expect(within(row).getAllByText("38%")[0]).toHaveClass("font-bold", "text-card-value");
 	});
 
 	it.each([
@@ -201,7 +164,7 @@ describe("LeaderboardRanking", () => {
 	] as const)(
 		"should show the rank-by metric as the prominent mobile value when ranking by %s",
 		(rankBy, value, details) => {
-			renderRanking([players[0]], 0, rankBy);
+			renderRanking([players[0]], rankBy);
 
 			expect(screen.getByTestId("leaderboard-mobile-value")).toHaveTextContent(value);
 			expect(screen.getByTestId("leaderboard-mobile-value")).toHaveClass("md:hidden");
