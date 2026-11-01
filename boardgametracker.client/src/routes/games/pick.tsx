@@ -63,7 +63,10 @@ function RouteComponent() {
 
 	const playable = useMemo(() => games.filter(isPlayable), [games]);
 	const categories = useMemo(
-		() => [...new Set(playable.flatMap((game) => game.categories.map((cat) => cat.name)))].sort(),
+		() =>
+			[...new Set(playable.flatMap((game) => game.categories.map((cat) => cat.name)))].sort((a, b) =>
+				a.localeCompare(b),
+			),
 		[playable],
 	);
 
