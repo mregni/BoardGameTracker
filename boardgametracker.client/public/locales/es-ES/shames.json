@@ -1,31 +1,13 @@
 {
   "subtitle_one": "Juegos en propiedad sin jugar en {{count}}+ mes",
   "subtitle_other": "Juegos en propiedad sin jugar en {{count}}+ meses",
+  "subtitle-lead": "Juegos en propiedad sin jugar en",
   "change-in-settings": "cambiar en Ajustes",
   "none": {
     "title": "No hay nada en la estantería",
     "description": "Aquí aparecen los juegos que tienes y que llevan tiempo sin jugarse."
   },
   "no-matches": "Ningún juego de la estantería coincide con estos filtros.",
-  "tiles": {
-    "on-shelf": "En la estantería",
-    "of-owned_one": "de {{total}} juego en propiedad",
-    "of-owned_other": "de {{total}} juegos en propiedad",
-    "never-played": "Nunca jugados",
-    "oldest": "el más antiguo: {{title}}",
-    "oldest-since": "el más antiguo: {{title}}, desde {{date}}",
-    "paid-not-played": "Pagado, sin jugar",
-    "priced_one": "{{priced}} de {{total}} con precio",
-    "priced_other": "{{priced}} de {{total}} con precio",
-    "share": "{{share}} de {{total}}",
-    "no-prices": "sin precios",
-    "planned": "Planificados",
-    "planned-for": "para el {{date}}",
-    "planned-next": "la próxima el {{date}}",
-    "planned-across_one": "en {{count}} noche de juego",
-    "planned-across_other": "en {{count}} noches de juego",
-    "no-night": "no hay noche de juego prevista"
-  },
   "filters": {
     "show": "Mostrar",
     "all": "Todos",
@@ -42,13 +24,18 @@
     "sort-unplayed": "Más tiempo sin jugar",
     "sort-price": "Precio pagado",
     "sort-owned": "En propiedad desde",
-    "sort-title": "Título"
+    "sort-title": "Título",
+    "toggle": "Filtros",
+    "toggle-active_one": "Filtros ({{count}})",
+    "toggle-active_other": "Filtros ({{count}})"
   },
   "list": {
     "label": "Juegos en la estantería",
     "game": "Juego",
     "last-played": "Última partida",
-    "paid": "Pagado"
+    "paid": "Pagado",
+    "count_one": "{{count}} de {{total}} juegos",
+    "count_other": "{{count}} de {{total}} juegos"
   },
   "row": {
     "owned-since": "en propiedad desde {{date}}",
@@ -62,7 +49,8 @@
     "plan": "Planificar",
     "plan-label": "Planificar {{title}} para {{night}}",
     "log-play": "Registrar partida",
-    "log-play-label": "Registrar una partida de {{title}}"
+    "log-play-label": "Registrar una partida de {{title}}",
+    "unplan-label": "Quitar {{title}} de la noche de juegos"
   },
   "plan": {
     "added": "{{game}} añadido a las sugerencias de {{night}} · {{date}}",
@@ -75,15 +63,31 @@
   },
   "money": {
     "title": "Dinero en la estantería",
-    "subtitle": "Juegos en propiedad con precio",
+    "share": "{{share}} de los {{total}} pagados por juegos en propiedad",
     "never-played": "Nunca jugados",
     "not-played_one": "Sin jugar en {{count}}+ mes",
     "not-played_other": "Sin jugar en {{count}}+ meses",
-    "rest": "Fuera de la estantería",
+    "rest": "Jugados hace poco",
     "label": "De {{total}} pagados por juegos en propiedad: {{parts}}",
     "unpriced-one": "{{title}} no tiene precio, así que no cuenta.",
     "unpriced_one": "{{count}} juego de la estantería no tiene precio, así que no cuenta.",
     "unpriced_other": "{{count}} juegos de la estantería no tienen precio, así que no cuentan.",
-    "sort-by-price": "Ordenar por precio pagado"
+    "sort-by-price": "Ordenar por precio pagado",
+    "none": "Añade lo que pagaste por tus juegos para ver cuánto dinero hay en la estantería."
+  },
+  "nudge": {
+    "next": "Próxima noche de juego: {{title}} el {{date}}.",
+    "pick": "Elige un juego de la estantería con Planificar.",
+    "planned_one": "{{count}} juego sale de la estantería.",
+    "planned_other": "{{count}} juegos salen de la estantería.",
+    "planned-across_one": "{{count}} juego sale de la estantería en {{nights}} noches de juego.",
+    "planned-across_other": "{{count}} juegos salen de la estantería en {{nights}} noches de juego."
+  },
+  "summary": {
+    "on-shelf": "{{count}} de {{total}} juegos en propiedad en la estantería",
+    "never-played_one": "{{count}} nunca jugado",
+    "never-played_other": "{{count}} nunca jugados",
+    "oldest": "el más antiguo: {{title}}",
+    "oldest-since": "el más antiguo: {{title}}, desde {{date}}"
   }
 }
