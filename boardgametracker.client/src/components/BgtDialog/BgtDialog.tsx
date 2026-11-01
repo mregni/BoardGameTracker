@@ -109,7 +109,7 @@ export const BgtDialogContent = (props: BgtDialogContentProps) => {
 						type="button"
 						onClick={onClose}
 						aria-label={t("close")}
-						className="absolute top-1 right-1 p-1 hover:bg-transparent rounded-lg cursor-pointer hover:scale-110 transition-transform"
+						className="absolute top-1 right-1 p-1 pointer-coarse:p-3 hover:bg-transparent rounded-lg cursor-pointer hover:scale-110 transition-transform"
 					>
 						<Cross className="size-5" />
 					</button>
