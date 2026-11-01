@@ -125,5 +125,6 @@
   },
   "feature": {
     "disabled": "Esta función está desactivada en los ajustes"
-  }
+  },
+  "load-failed": "No se pudo cargar esta página"
 }

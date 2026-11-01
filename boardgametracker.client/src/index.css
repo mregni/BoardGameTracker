@@ -47,6 +47,7 @@
 
   /* Animations */
   --animate-slide-in-right: slide-in-right 0.3s ease-out;
+  --animate-podium-rise: podium-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @utility bg-hatch {
@@ -55,6 +56,15 @@
 
 @utility bg-overflow-stripes {
   background-image: repeating-linear-gradient(135deg, var(--color-warn) 0 3px, transparent 3px 6px);
+}
+
+@keyframes podium-rise {
+  from {
+    clip-path: inset(45% 0 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
 }
 
 @keyframes slide-in-right {

@@ -9,4 +9,5 @@ public class PlayerStatistics
     public int CoopWinCount { get; set; }
     public int CoopLossCount { get; set; }
     public List<MostPlayedGame> MostPlayedGames { get; set; } = [];
+    public List<PlayerRival> Rivals { get; set; } = [];
 }
