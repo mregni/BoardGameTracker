@@ -22,9 +22,16 @@ interface Props {
 	onClick?: () => void;
 	action?: React.ReactNode;
 	caption?: React.ReactNode;
-	valueColor?: ComponentProps<typeof BgtText>["color"];
+	valueColor?: NonNullable<ComponentProps<typeof BgtText>["color"]>;
 	pressed?: boolean;
 }
+
+const trailingIcon = (action: React.ReactNode, pressed: boolean | undefined, link: string | undefined) => {
+	if (action) return <span className="ml-auto flex shrink-0 items-center">{action}</span>;
+	if (pressed) return <Check className="size-4 ml-auto shrink-0 text-white" aria-hidden="true" />;
+	if (link) return <CaretRight className="size-4 ml-auto shrink-0 text-primary" />;
+	return null;
+};
 
 const formatContent = (content: string | number, language: string | undefined): string =>
 	typeof content === "number" ? formatNumber(content, language) : content;
@@ -73,13 +80,7 @@ export const BgtTextStatistic = (props: Props) => {
 				<span className="line-clamp-2 break-words" title={title}>
 					{title}
 				</span>
-				{action ? (
-					<span className="ml-auto flex shrink-0 items-center">{action}</span>
-				) : pressed ? (
-					<Check className="size-4 ml-auto shrink-0 text-white" aria-hidden="true" />
-				) : (
-					link && <CaretRight className="size-4 ml-auto shrink-0 text-primary" />
-				)}
+				{trailingIcon(action, pressed, link)}
 			</div>
 			<BgtText size={textSize} color={valueColor} weight="bold">
 				{formatContent(content, i18n.language)}

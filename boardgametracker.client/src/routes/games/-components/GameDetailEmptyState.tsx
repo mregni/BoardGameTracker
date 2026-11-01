@@ -18,12 +18,14 @@ export const GameDetailEmptyState = ({ wanted = false, onAddSession }: Props) =>
 			<BgtHeading as="h2" size="6">
 				{t(wanted ? "no-sessions.not-played" : "no-sessions.title")}
 			</BgtHeading>
-			<BgtText color="white" opacity={70} className="max-w-md leading-relaxed">
-				{t("no-sessions.description")}
-			</BgtText>
-			{onAddSession && (
+			{!wanted && (
+				<BgtText color="white" opacity={70} className="max-w-md leading-relaxed">
+					{t("no-sessions.description")}
+				</BgtText>
+			)}
+			{!wanted && onAddSession && (
 				<BgtButton variant="primary" onClick={onAddSession} className="mt-2">
-					{t("add")}
+					{t("first-play.action")}
 				</BgtButton>
 			)}
 		</div>

@@ -224,9 +224,8 @@ function RouteComponent() {
 								<span className="sr-only">{t("filter.clear")}</span>
 							</button>
 						)}
-						{activeLoans.length === 0 ? (
-							<p className="text-white/60">{t("no-active-loans")}</p>
-						) : groups.length === 0 ? (
+						{activeLoans.length === 0 && <p className="text-white/60">{t("no-active-loans")}</p>}
+						{activeLoans.length > 0 && groups.length === 0 && (
 							<div className="flex flex-wrap items-center gap-3 text-white/60">
 								<span>
 									{searching && filter === "all" ? t("no-search-matches", { query: search.trim() }) : t("no-matches")}
@@ -235,7 +234,8 @@ function RouteComponent() {
 									{t("clear-filter")}
 								</BgtButton>
 							</div>
-						) : (
+						)}
+						{groups.length > 0 && (
 							<div className="flex flex-col gap-4">
 								{groups.map((group) => (
 									<BorrowerLoanGroup

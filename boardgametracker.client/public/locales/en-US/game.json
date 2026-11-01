@@ -234,6 +234,9 @@
     },
     "hint": "Only affects new sessions; logged sessions keep how they were played."
   },
+  "first-play": {
+    "action": "Log the first play"
+  },
   "load-error": {
     "not-found-description": "It may have been deleted, or the link is out of date.",
     "failed": "This game could not be loaded",

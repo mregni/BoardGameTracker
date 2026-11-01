@@ -122,5 +122,40 @@
     "sessions_other": "sessions",
     "not-played": "Not played yet",
     "log-game": "Log a game"
+  },
+  "standing": {
+    "ranked": "#{{rank}} of {{count}} on the leaderboard",
+    "to-rank_one": "{{count}} more session to make the leaderboard",
+    "to-rank_other": "{{count}} more sessions to make the leaderboard"
+  },
+  "actions": {
+    "log-session": "Log a session",
+    "compare": "Compare"
+  },
+  "record": {
+    "win-rate": "{{value}} win rate",
+    "form_one": "Last session",
+    "form_other": "Last {{count}} sessions",
+    "form-summary": "{{won}} won, {{lost}} lost",
+    "form-win": "W",
+    "form-loss": "L",
+    "nemesis": "Nemesis"
+  },
+  "no-sessions": {
+    "title": "No games logged with {{name}} yet",
+    "description": "Log a session and their record, ranking and achievements show up here."
+  },
+  "missing": {
+    "title": "Player not found",
+    "description": "This player may have been deleted, or the link is wrong."
+  },
+  "session": {
+    "players_one": "{{count}} player",
+    "players_other": "{{count}} players",
+    "won-by": "{{names}} won"
+  },
+  "rivals": {
+    "title": "Head-to-head",
+    "record": "{{wins}} won, {{losses}} lost"
   }
 }

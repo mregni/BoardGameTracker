@@ -234,6 +234,9 @@
     },
     "hint": "Solo afecta a las sesiones nuevas; las registradas se quedan como se jugaron."
   },
+  "first-play": {
+    "action": "Registra la primera partida"
+  },
   "load-error": {
     "not-found-description": "Puede que se haya eliminado o que el enlace esté desactualizado.",
     "failed": "No se pudo cargar este juego",

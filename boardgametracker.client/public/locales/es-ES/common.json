@@ -147,6 +147,6 @@
     "last-12-months-short": "12 meses",
     "custom": "Personalizado"
   },
-  "clear-search": "Borrar búsqueda",
-  "edit-named": "Editar {{name}}"
+  "edit-named": "Editar {{name}}",
+  "clear-search": "Borrar búsqueda"
 }

@@ -99,7 +99,7 @@ describe("GameDetailEmptyState", () => {
 
 		expect(screen.getByText("no-sessions.title")).toBeInTheDocument();
 		expect(screen.getByText("no-sessions.description")).toBeInTheDocument();
-		await userEvent.click(screen.getByRole("button", { name: "add" }));
+		await userEvent.click(screen.getByRole("button", { name: "first-play.action" }));
 		expect(onAddSession).toHaveBeenCalledTimes(1);
 	});
 
@@ -107,6 +107,7 @@ describe("GameDetailEmptyState", () => {
 		renderWithTheme(<GameDetailEmptyState wanted />);
 
 		expect(screen.getByText("no-sessions.not-played")).toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "add" })).not.toBeInTheDocument();
+		expect(screen.queryByText("no-sessions.description")).not.toBeInTheDocument();
+		expect(screen.queryByRole("button")).not.toBeInTheDocument();
 	});
 });
