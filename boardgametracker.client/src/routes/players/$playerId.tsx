@@ -2,7 +2,7 @@ import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import Game from "@/assets/icons/gamepad.svg?react";
+import Game from "@/assets/icons/dices.svg?react";
 import UsersIcon from "@/assets/icons/users.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtDetailLayout } from "@/components/BgtLayout/BgtDetailLayout";
