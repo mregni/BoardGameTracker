@@ -2810,6 +2810,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/loans/{id}/undo-return": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LoanDto"];
+                        "application/json": components["schemas"]["LoanDto"];
+                        "text/json": components["schemas"]["LoanDto"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/location": {
         parameters: {
             query?: never;
