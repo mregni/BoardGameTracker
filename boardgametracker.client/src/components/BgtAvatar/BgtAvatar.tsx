@@ -95,7 +95,7 @@ export const BgtAvatar = (props: Props) => {
 		>
 			{showImage && (
 				<img
-					className={avatarClasses}
+					className={cx(avatarClasses, "bg-white/5")}
 					src={image}
 					alt={title || ""}
 					loading="lazy"
