@@ -125,5 +125,6 @@
   },
   "feature": {
     "disabled": "This feature is turned off in the settings"
-  }
+  },
+  "load-failed": "Couldn't load this page"
 }

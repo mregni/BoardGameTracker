@@ -9044,6 +9044,28 @@
         },
         "additionalProperties": false
       },
+      "PlayerRival": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sessions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wins": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "losses": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "PlayerScoringPoint": {
         "type": "object",
         "properties": {
@@ -9116,6 +9138,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MostPlayedGame"
+            }
+          },
+          "rivals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlayerRival"
             }
           }
         },
