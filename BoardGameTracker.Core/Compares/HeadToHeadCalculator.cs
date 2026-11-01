@@ -40,7 +40,6 @@ public static class HeadToHeadCalculator
         result.PreferredGame = games.Count == 0
             ? null
             : new PreferredGame { GameId = games[0].GameId, SessionCount = games[0].SessionCount };
-        result.LongestSessionTogether = Longest(sessions);
         result.FirstGameTogether = First(sessions);
         result.ClosestGame = Closest(sessions, playerOne, playerTwo);
         result.Streak = Streak(sessions);
@@ -159,12 +158,6 @@ public static class HeadToHeadCalculator
                 TeamWon = s.IsCoop ? s.TeamWon == true : null
             })
             .ToList();
-    }
-
-    private static LongestSession? Longest(IEnumerable<SessionTogether> sessions)
-    {
-        var longest = sessions.OrderByDescending(Minutes).ThenByDescending(s => s.Start).FirstOrDefault();
-        return longest == null ? null : new LongestSession { GameId = longest.GameId, Minutes = (int)Minutes(longest) };
     }
 
     private static FirstGameTogether? First(IEnumerable<SessionTogether> sessions)

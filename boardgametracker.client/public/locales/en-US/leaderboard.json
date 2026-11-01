@@ -11,9 +11,11 @@
     "rank-by": "Rank by",
     "rank-by-wins": "Wins",
     "rank-by-win-rate": "Win rate",
-    "rank-by-sessions": "Sessions"
+    "rank-by-sessions": "Sessions",
+    "more": "More filters"
   },
   "highlights": {
+    "title": "Records",
     "most-wins": "Most wins",
     "most-sessions": "Most sessions",
     "best-win-rate": "Best win rate",
@@ -43,18 +45,25 @@
   "ranking": {
     "label": "Ranking",
     "not-ranked-rank": "Not ranked",
+    "podium": "Podium",
+    "place": "Place",
     "not-ranked_one": "Fewer than {{count}} session · not ranked",
     "not-ranked_other": "Fewer than {{count}} sessions · not ranked",
     "coop_one": "Co-op wins and losses count: a team win is a win for everyone at the table, a team loss a loss ({{count}} of the {{total}} wins).",
     "coop_other": "Co-op wins and losses count: a team win is a win for everyone at the table, a team loss a loss ({{count}} of the {{total}} wins).",
     "ties-wins": "Equal wins: the higher win rate goes first, then more sessions. Identical stats share the rank.",
     "ties-win-rate": "Equal win rate: more wins go first, then more sessions. Identical stats share the rank.",
-    "ties-sessions": "Equal sessions: more wins go first. Identical stats share the rank."
+    "ties-sessions": "Equal sessions: more wins go first. Identical stats share the rank.",
+    "how": "How ranking works",
+    "nobody-ranked_one": "Nobody has played {{count}} session yet, so nobody is ranked.",
+    "nobody-ranked_other": "Nobody has played {{count}} sessions yet, so nobody is ranked.",
+    "lower-minimum": "Lower the minimum to {{count}}"
   },
   "empty": {
     "title": "No plays recorded yet",
     "description": "Log a few sessions and the leaderboard fills itself.",
     "filtered-title": "No sessions match these filters",
-    "filtered-description": "Pick another period or game."
+    "filtered-description": "Pick another period or game.",
+    "reset": "Reset filters"
   }
 }

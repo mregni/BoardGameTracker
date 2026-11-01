@@ -88,6 +88,23 @@ public class LoanService : ILoanService
         return loan;
     }
 
+    public async Task<Loan> UndoReturn(int id)
+    {
+        _logger.LogDebug("Undoing return of loan {LoanId}", id);
+        var loan = await _loanRepository.GetByIdAsync(id)
+            ?? throw new EntityNotFoundException(nameof(Loan), id);
+
+        var game = await _gameRepository.SingleOrDefaultAsync(new GameWithLoansSpec(loan.GameId))
+            ?? throw new EntityNotFoundException(nameof(Game), loan.GameId);
+        game.EnsureLoanDatesAreFree(loan, loan.LoanDate, null);
+
+        loan.UndoReturn();
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Loan {LoanId} is on loan again", id);
+
+        return loan;
+    }
+
     public async Task<Loan> Update(UpdateLoanCommand command)
     {
         _logger.LogDebug("Updating loan {LoanId}", command.Id);

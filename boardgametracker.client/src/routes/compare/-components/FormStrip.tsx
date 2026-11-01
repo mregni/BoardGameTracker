@@ -1,14 +1,14 @@
-import { cva } from "class-variance-authority";
+import { cva, cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import type { CompareOutcome, CompareSession, CompareStreak, Player } from "@/models";
 import { useGameById } from "@/routes/-hooks/useGameById";
 import { initialOf } from "../-utils/compareUtils";
 
-const tileVariants = cva("inline-grid size-6 place-items-center rounded-md text-[11px] font-bold", {
+const tileVariants = cva("inline-grid size-6 place-items-center rounded-md text-xs font-bold", {
 	variants: {
 		outcome: {
 			playerOne: "bg-player-one text-red-950",
-			playerTwo: "bg-player-two text-white",
+			playerTwo: "bg-player-two text-gray-950",
 			both: "bg-linear-to-br from-player-one from-50% to-player-two to-50% text-white",
 			other: "border border-card-border bg-card-light text-white/60",
 			sameTeam: "bg-hatch text-white",
@@ -32,10 +32,12 @@ export const FormStrip = ({ sessions, streak, playerOne, playerTwo }: Props) => 
 	}
 
 	const oldestFirst = [...sessions].reverse();
+	const face = (player: Player) =>
+		player.image ? <img src={player.image} alt="" className="size-5 rounded object-cover" /> : initialOf(player.name);
 	const letter = (outcome: CompareOutcome) =>
 		({
-			playerOne: initialOf(playerOne.name),
-			playerTwo: initialOf(playerTwo.name),
+			playerOne: face(playerOne),
+			playerTwo: face(playerTwo),
 			both: "+",
 			other: "–",
 			sameTeam: "=",
@@ -49,7 +51,6 @@ export const FormStrip = ({ sessions, streak, playerOne, playerTwo }: Props) => 
 			sameTeam: session.teamWon ? t("form.same-team-won") : t("form.same-team-lost"),
 		})[session.outcome];
 	const streakPlayer = streak?.side === "playerOne" ? playerOne : streak?.side === "playerTwo" ? playerTwo : null;
-	const hasSameTeam = sessions.some((session) => session.outcome === "sameTeam");
 
 	return (
 		<div className="flex flex-col gap-1">
@@ -76,12 +77,16 @@ export const FormStrip = ({ sessions, streak, playerOne, playerTwo }: Props) => 
 					))}
 				</div>
 				{streak && streakPlayer && (
-					<span className="ml-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-indigo-300">
+					<span
+						className={cx(
+							"ml-1 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+							streak.side === "playerOne" ? "bg-player-one/15 text-player-one" : "bg-player-two/15 text-player-two",
+						)}
+					>
 						{t("form.streak", { player: streakPlayer.name, count: streak.count })}
 					</span>
 				)}
 			</div>
-			{hasSameTeam && <span className="text-xs text-white/60">{t("form.legend-coop")}</span>}
 		</div>
 	);
 };

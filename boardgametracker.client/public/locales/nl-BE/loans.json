@@ -1,7 +1,8 @@
 {
   "title": "Uitleningen",
   "empty": {
-    "title": "Nog geen uitleningen"
+    "title": "Nog geen uitleningen",
+    "description": "Leen een spel uit aan een vriend en houd bij wanneer het terug moet komen."
   },
   "statistics": {
     "returned": "Teruggebracht",
@@ -18,19 +19,25 @@
   "delete": {
     "button": "Verwijderen",
     "title": "Uitlening van {{game}} verwijderen",
-    "description": "Weet je zeker dat je deze uitlening wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
+    "description": "Dit verwijdert de uitlening en de geschiedenis ervan definitief. Is het spel terug? Gebruik dan Terugbrengen.",
     "successfull": "Uitlening verwijderd",
-    "failed": "Uitlening verwijderen mislukt, bekijk de logs voor meer details."
+    "failed": "De uitlening kon niet verwijderd worden. Probeer het zo opnieuw."
   },
   "return": {
     "successfull": "Gemarkeerd als teruggebracht",
-    "failed": "Spel markeren als teruggebracht mislukt, bekijk de logs voor meer details.",
+    "failed": "Het spel kon niet als teruggebracht gemarkeerd worden. Probeer het zo opnieuw.",
     "title": "{{game}} terugbrengen",
-    "description": "Wanneer werd het spel teruggebracht?",
+    "description_one": "Wanneer werd het spel teruggebracht?",
+    "description_other": "Wanneer werden de spellen teruggebracht?",
     "date": "Teruggebracht op",
-    "confirm": "Markeren als teruggebracht",
+    "confirm": "Terugbrengen",
     "required": "De terugbrengdatum is verplicht",
-    "before-start": "De terugbrengdatum kan niet voor de start van de uitlening liggen"
+    "before-start": "De terugbrengdatum kan niet voor de start van de uitlening liggen",
+    "title-all": "{{count}} spellen van {{name}} terugbrengen",
+    "games": "Spellen",
+    "undo": "Ongedaan maken",
+    "undone": "Weer uitgeleend",
+    "undo-failed": "Terugbrengen ongedaan maken lukte niet. Probeer het zo meteen opnieuw."
   },
   "no-active-loans": "Er zijn momenteel geen lopende uitleningen.",
   "new": {
@@ -82,6 +89,39 @@
     "summary_one": "{{count}} teruggebrachte uitlening",
     "summary_other": "{{count}} teruggebrachte uitleningen",
     "show": "Geschiedenis tonen",
-    "hide": "Geschiedenis verbergen"
+    "hide": "Geschiedenis verbergen",
+    "summary-filtered_one": "{{matched}} van {{count}} teruggebrachte uitlening",
+    "summary-filtered_other": "{{matched}} van {{count}} teruggebrachte uitleningen"
+  },
+  "group": {
+    "games_one": "{{count}} spel",
+    "games_other": "{{count}} spellen",
+    "overdue_one": "{{count}} te laat",
+    "overdue_other": "{{count}} te laat"
+  },
+  "mark-all-returned-button": "Alles terugbrengen",
+  "row": {
+    "actions": "Acties voor {{game}}"
+  },
+  "unknown-game": "Onbekend spel",
+  "unknown-player": "Onbekende lener",
+  "search": {
+    "placeholder": "Zoek spel of lener"
+  },
+  "no-matches": "Geen uitleningen voor deze filter.",
+  "clear-filter": "Toon alle uitleningen",
+  "due": "terug op {{date}}",
+  "filter": {
+    "showing": "Toont: {{name}}",
+    "clear": "Filter wissen"
+  },
+  "no-search-matches": "Geen actieve uitleningen voor “{{query}}”.",
+  "chip": {
+    "on-loan_one": "{{count}} uitgeleend",
+    "on-loan_other": "{{count}} uitgeleend",
+    "overdue_one": "{{count}} te laat",
+    "overdue_other": "{{count}} te laat",
+    "due-this-week_one": "{{count}} deze week",
+    "due-this-week_other": "{{count}} deze week"
   }
 }

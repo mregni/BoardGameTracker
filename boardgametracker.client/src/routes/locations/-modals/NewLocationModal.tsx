@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtInputField } from "@/components/BgtForm";
@@ -20,6 +21,16 @@ export const NewLocationModal = (props: Props) => {
 		onSaveSuccess: close,
 	});
 
+	const fieldsRef = useRef<HTMLDivElement>(null);
+
+	const focusName = (event: Event) => {
+		const field = fieldsRef.current?.querySelector("input");
+		if (field) {
+			event.preventDefault();
+			field.focus();
+		}
+	};
+
 	const form = useAppForm({
 		defaultValues: {
 			name: "",
@@ -32,14 +43,12 @@ export const NewLocationModal = (props: Props) => {
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent>
+			<BgtDialogContent onOpenAutoFocus={focusName}>
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
 					<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
-					<div className="flex flex-col gap-2 mb-3">
+					<div ref={fieldsRef} className="flex flex-col gap-2 mb-3">
 						<form.Field name="name" validators={zodValidator(CreateLocationSchema, "name")}>
-							{(field) => (
-								<BgtInputField field={field} type="text" label={t("new.name.placeholder")} disabled={isLoading} />
-							)}
+							{(field) => <BgtInputField field={field} type="text" label={t("new.name.label")} disabled={isLoading} />}
 						</form.Field>
 					</div>
 					<BgtDialogFooter
