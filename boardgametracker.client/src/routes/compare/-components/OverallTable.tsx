@@ -27,13 +27,14 @@ export const OverallTable = ({ compare, playerOne, playerTwo }: Props) => {
 
 	const cell = (side: CompareSide, row: (typeof rows)[number]) => {
 		const higher = leaderOf(row.values) === side;
+		const sideColor = side === "playerOne" ? "text-player-one" : "text-player-two";
 		return (
 			<span
 				data-higher={higher ? "true" : undefined}
 				className={cx(
 					"flex items-center gap-1 font-bold tabular-nums",
 					side === "playerTwo" && "flex-row-reverse",
-					!higher ? "text-white/60" : side === "playerOne" ? "text-player-one" : "text-player-two",
+					higher ? sideColor : "text-white/60",
 				)}
 			>
 				{row.format(row.values[side])}
