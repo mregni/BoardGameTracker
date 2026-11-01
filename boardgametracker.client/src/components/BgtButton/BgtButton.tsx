@@ -1,7 +1,7 @@
 import { cva, cx, type VariantProps } from "class-variance-authority";
 import type { ComponentPropsWithoutRef } from "react";
 
-const buttonVariants = cva("font-bold rounded-sm inline-flex flex-row gap-1 justify-center items-center align-middle", {
+export const buttonVariants = cva("font-bold rounded-sm inline-flex flex-row gap-1 justify-center items-center align-middle", {
 	variants: {
 		variant: {
 			primary: "bg-primary/60 hover:bg-primary/50 text-white",

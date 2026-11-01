@@ -57,33 +57,6 @@ vi.mock("@/hooks/useMediaQuery", () => ({
 	useMediaQuery: () => false,
 }));
 
-vi.mock("@/components/BgtForm", async (importOriginal) => ({
-	...(await importOriginal<typeof import("@/components/BgtForm")>()),
-	BgtSelect: ({
-		label,
-		items,
-		value,
-		onValueChange,
-	}: {
-		label: string;
-		items: { value: number; label: string }[];
-		value: number | null;
-		onValueChange: (value: number) => void;
-	}) => (
-		<label>
-			{label}
-			<select value={String(value ?? "")} onChange={(event) => onValueChange(Number(event.target.value))}>
-				<option value="">-</option>
-				{items.map((item) => (
-					<option key={item.value} value={item.value}>
-						{item.label}
-					</option>
-				))}
-			</select>
-		</label>
-	),
-}));
-
 import "./rsvp";
 
 const player = (id: number, name: string) => ({ id, name, image: null }) as unknown as Player;
@@ -174,11 +147,11 @@ describe("RsvpPage", () => {
 		mocks.getGameNightByLinkCall.mockResolvedValue(gameNight(addDays(new Date(), 2)));
 
 		renderPage();
-		const select = await screen.findByRole("combobox", { name: "who-are-you" });
-		expect(within(select).queryByRole("option", { name: "Hank" })).not.toBeInTheDocument();
+		const names = await screen.findByRole("group", { name: "who-are-you" });
+		expect(within(names).queryByRole("button", { name: /Hank/ })).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "send-answer" })).toBeDisabled();
 
-		await user.selectOptions(select, "7");
+		await user.click(within(names).getByRole("button", { name: /Gina/ }));
 		await user.click(screen.getByRole("button", { name: "coming" }));
 		await user.click(screen.getByRole("button", { name: "send-answer" }));
 
@@ -188,16 +161,22 @@ describe("RsvpPage", () => {
 			playerId: 7,
 			state: GameNightRsvpState.Accepted,
 		});
-		const confirmation = await screen.findByRole("status");
+		const confirmation = await screen.findByTestId("rsvp-confirmation");
 		expect(confirmation).toHaveTextContent("answered-accepted");
 		expect(confirmation).toHaveTextContent("host-notified");
+		expect(within(confirmation).getByRole("link", { name: "add-to-calendar" })).toHaveAttribute(
+			"download",
+			"Strategy night.ics",
+		);
 		expect(screen.getByText("whos-coming")).toBeInTheDocument();
 		expect(mocks.getGameNightByLinkCall).toHaveBeenCalledTimes(2);
-		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+		expect(screen.queryByRole("group", { name: "who-are-you" })).not.toBeInTheDocument();
 
 		await user.click(within(confirmation).getByRole("button", { name: "change-response" }));
 
-		expect(screen.getByRole("combobox", { name: "who-are-you" })).toHaveValue("7");
+		expect(
+			within(screen.getByRole("group", { name: "who-are-you" })).getByRole("button", { name: /Gina/ }),
+		).toHaveAttribute("aria-pressed", "true");
 		expect(screen.getByRole("button", { name: "coming" })).toHaveAttribute("aria-pressed", "true");
 		expect(screen.getByRole("button", { name: "maybe" })).toHaveAttribute("aria-pressed", "false");
 	});
@@ -208,12 +187,13 @@ describe("RsvpPage", () => {
 		mocks.getGameNightByLinkCall.mockResolvedValue(gameNight(addDays(new Date(), 2)));
 
 		renderPage();
-		await user.selectOptions(await screen.findByRole("combobox", { name: "who-are-you" }), "8");
+		const names = await screen.findByRole("group", { name: "who-are-you" });
+		await user.click(within(names).getByRole("button", { name: /Olaf/ }));
 		await user.click(screen.getByRole("button", { name: "cant-come" }));
 		await user.click(screen.getByRole("button", { name: "send-answer" }));
 
 		expect(mocks.errorToast).toHaveBeenCalledWith("error.game-night.rsvp-closed");
-		expect(screen.getByRole("combobox", { name: "who-are-you" })).toBeInTheDocument();
+		expect(screen.getByRole("group", { name: "who-are-you" })).toBeInTheDocument();
 	});
 
 	it("shows only a message for a past game night", async () => {
@@ -226,7 +206,7 @@ describe("RsvpPage", () => {
 		expect(screen.queryByText("Sunday, January 5th, 2020")).not.toBeInTheDocument();
 		expect(screen.getByText("past-description")).toBeInTheDocument();
 		expect(screen.queryByText("whos-coming")).not.toBeInTheDocument();
-		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+		expect(screen.queryByRole("group", { name: "who-are-you" })).not.toBeInTheDocument();
 		expect(screen.queryByText("Carcassonne")).not.toBeInTheDocument();
 		expect(screen.queryByText("Bring snacks")).not.toBeInTheDocument();
 	});
@@ -239,7 +219,7 @@ describe("RsvpPage", () => {
 		expect(await screen.findByRole("heading", { level: 1, name: "in-progress-title" })).toBeInTheDocument();
 		expect(screen.getByText("in-progress-description")).toBeInTheDocument();
 		expect(screen.queryByText("past-title")).not.toBeInTheDocument();
-		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+		expect(screen.queryByRole("group", { name: "who-are-you" })).not.toBeInTheDocument();
 	});
 
 	it("only says the answer is saved when no host was notified", async () => {
@@ -248,11 +228,12 @@ describe("RsvpPage", () => {
 		mocks.getGameNightByLinkCall.mockResolvedValue(gameNight(addDays(new Date(), 2)));
 
 		renderPage();
-		await user.selectOptions(await screen.findByRole("combobox", { name: "who-are-you" }), "7");
+		const names = await screen.findByRole("group", { name: "who-are-you" });
+		await user.click(within(names).getByRole("button", { name: /Gina/ }));
 		await user.click(screen.getByRole("button", { name: "maybe" }));
 		await user.click(screen.getByRole("button", { name: "send-answer" }));
 
-		const confirmation = await screen.findByRole("status");
+		const confirmation = await screen.findByTestId("rsvp-confirmation");
 		expect(confirmation).toHaveTextContent("answer-saved");
 		expect(confirmation).not.toHaveTextContent("host-notified");
 	});

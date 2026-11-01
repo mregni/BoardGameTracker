@@ -63,7 +63,7 @@ export const GameNightDetailView = (props: Props) => {
 	const startWithAttendees = () => onStart(null, freePlayerIds(table.playerIds, runningGames));
 
 	return (
-		<div className={cx("flex flex-col gap-3 xl:gap-6", canPlay && "pb-16 md:pb-0")}>
+		<div className={cx("flex flex-col gap-3 xl:gap-6", canPlay && !isOver && "pb-16 md:pb-0")}>
 			<GameNightDetailHeader
 				gameNight={gameNight}
 				settings={settings}

@@ -1,12 +1,14 @@
 import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import MapPin from "@/assets/icons/map-pin.svg?react";
+import PencilIcon from "@/assets/icons/pencil.svg?react";
 import Play from "@/assets/icons/play.svg?react";
+import TrashIcon from "@/assets/icons/trash.svg?react";
 import User from "@/assets/icons/user.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
+import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
 import type { GameNight, Settings } from "@/models";
@@ -47,7 +49,7 @@ export const GameNightDetailHeader = (props: Props) => {
 		onStart,
 		onLog,
 	} = props;
-	const { t } = useTranslation("game-nights");
+	const { t } = useTranslation(["game-nights", "common"]);
 
 	const hasEnded = gameNight.endedAt !== null;
 	const canReopen = hasEnded && isInsidePlayWindow(gameNight);
@@ -71,7 +73,7 @@ export const GameNightDetailHeader = (props: Props) => {
 				<div className="flex min-w-0 flex-col items-start gap-1.5 self-center">
 					<span
 						className={cx(
-							"rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap tabular-nums first-letter:uppercase",
+							"rounded-2xl px-2.5 py-0.5 text-xs font-semibold tabular-nums first-letter:uppercase",
 							isOver ? "bg-white/10 text-gray-300" : "bg-primary/20 text-indigo-300",
 						)}
 					>
@@ -85,13 +87,20 @@ export const GameNightDetailHeader = (props: Props) => {
 										time: toDisplayTime(gameNight.startDate, settings.timeFormat, settings.uiLanguage),
 									})}
 					</span>
-					<BgtHeading size="5" className="wrap-anywhere">
+					<BgtHeading as="h1" size="5" className="wrap-anywhere">
 						{gameNight.title}
 					</BgtHeading>
 				</div>
 				{canWrite ? (
-					<div className="self-start">
-						<BgtEditDeleteButtons onEdit={onEdit} onDelete={onDelete} />
+					<div className="flex gap-2 self-start">
+						<BgtIconButton size="2" onClick={onEdit} icon={<PencilIcon />} aria-label={t("common:edit")} />
+						<BgtIconButton
+							size="2"
+							intent="subtile-danger"
+							onClick={onDelete}
+							icon={<TrashIcon />}
+							aria-label={t("common:delete.button")}
+						/>
 					</div>
 				) : (
 					<span />
@@ -117,8 +126,9 @@ export const GameNightDetailHeader = (props: Props) => {
 						{showLog && (
 							<div
 								className={cx(
-									"fixed inset-x-0 bottom-(--bottom-nav-h) z-20 grid gap-2 border-t border-white/10 bg-background/95 px-4 py-3 backdrop-blur-sm md:static md:flex md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none",
-									showStart ? "grid-cols-2" : "grid-cols-1",
+									showStart
+										? "fixed inset-x-0 bottom-(--bottom-nav-h) z-20 grid grid-cols-2 gap-2 border-t border-white/10 bg-background/95 px-4 py-3 backdrop-blur-sm md:static md:flex md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none"
+										: "flex",
 								)}
 							>
 								<BgtButton variant="cancel" size="1" className={phoneButton} onClick={onLog}>
@@ -141,7 +151,7 @@ export const GameNightDetailHeader = (props: Props) => {
 				)}
 				{gameNight.notes && (
 					<div className="col-span-3 rounded-lg border border-white/10 bg-white/5 p-3 md:col-span-2 md:col-start-2">
-						<BgtText size="2" color="gray">
+						<BgtText size="2" color="gray" className="whitespace-pre-line">
 							{gameNight.notes}
 						</BgtText>
 					</div>

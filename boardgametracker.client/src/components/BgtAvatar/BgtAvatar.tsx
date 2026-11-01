@@ -24,8 +24,8 @@ const avatarVariants = cva("shadow-gray-800 shadow-md", {
 			false: "",
 		},
 		hasImage: {
-			true: "cursor-pointer",
-			false: "cursor-pointer flex justify-center items-center",
+			true: "",
+			false: "flex justify-center items-center",
 		},
 	},
 	compoundVariants: [
