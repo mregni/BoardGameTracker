@@ -11,9 +11,11 @@
     "rank-by": "Ordenar por",
     "rank-by-wins": "Victorias",
     "rank-by-win-rate": "% de victorias",
-    "rank-by-sessions": "Partidas"
+    "rank-by-sessions": "Partidas",
+    "more": "Más filtros"
   },
   "highlights": {
+    "title": "Récords",
     "most-wins": "Más victorias",
     "most-sessions": "Más partidas",
     "best-win-rate": "Mejor % de victorias",
@@ -43,18 +45,25 @@
   "ranking": {
     "label": "Clasificación",
     "not-ranked-rank": "Sin clasificar",
+    "podium": "Podio",
+    "place": "Puesto",
     "not-ranked_one": "Menos de {{count}} partida · sin clasificar",
     "not-ranked_other": "Menos de {{count}} partidas · sin clasificar",
     "coop_one": "Las victorias y derrotas cooperativas cuentan: una victoria del equipo es una victoria para todos en la mesa y una derrota del equipo, una derrota ({{count}} de las {{total}} victorias).",
     "coop_other": "Las victorias y derrotas cooperativas cuentan: una victoria del equipo es una victoria para todos en la mesa y una derrota del equipo, una derrota ({{count}} de las {{total}} victorias).",
     "ties-wins": "Con las mismas victorias va primero el mayor porcentaje de victorias y luego más partidas. Las estadísticas idénticas comparten puesto.",
     "ties-win-rate": "Con el mismo porcentaje va primero quien tiene más victorias y luego más partidas. Las estadísticas idénticas comparten puesto.",
-    "ties-sessions": "Con las mismas partidas va primero quien tiene más victorias. Las estadísticas idénticas comparten puesto."
+    "ties-sessions": "Con las mismas partidas va primero quien tiene más victorias. Las estadísticas idénticas comparten puesto.",
+    "how": "Cómo funciona la clasificación",
+    "nobody-ranked_one": "Nadie ha jugado todavía {{count}} partida, así que nadie está clasificado.",
+    "nobody-ranked_other": "Nadie ha jugado todavía {{count}} partidas, así que nadie está clasificado.",
+    "lower-minimum": "Bajar el mínimo a {{count}}"
   },
   "empty": {
     "title": "Aún no hay partidas registradas",
     "description": "Registra algunas partidas y la clasificación se llenará sola.",
     "filtered-title": "Ninguna partida coincide con estos filtros",
-    "filtered-description": "Elige otro periodo u otro juego."
+    "filtered-description": "Elige otro periodo u otro juego.",
+    "reset": "Restablecer filtros"
   }
 }
