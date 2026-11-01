@@ -11,13 +11,17 @@ export interface ToastAction {
 export const useToasts = () => {
 	const { i18n } = useTranslation();
 
-	const successToast = (message: string, action?: ToastAction, values?: Record<string, unknown>) => {
+	const successToast = (message: string, action?: ToastAction, values?: Record<string, unknown>, id?: string) => {
 		const text = values ? i18n.t(message, values) : i18n.t(message);
 		if (action) {
 			toast.success(text, {
 				duration: ACTION_TOAST_DURATION,
 				action: { label: i18n.t(action.label), onClick: action.onClick },
 			});
+			return;
+		}
+		if (id) {
+			toast.success(text, { id });
 			return;
 		}
 		toast.success(text);

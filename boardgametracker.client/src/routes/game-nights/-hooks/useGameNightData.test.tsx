@@ -93,7 +93,12 @@ describe("useGameNightData rsvp updates", () => {
 
 		await act(async () => resolve({}));
 		await waitFor(() => expect(invalidateGameNights).toHaveBeenCalled());
-		expect(successToast).toHaveBeenCalledWith("game-nights:notifications.rsvp-updated");
+		expect(successToast).toHaveBeenCalledWith(
+			"game-nights:notifications.rsvp-updated",
+			undefined,
+			undefined,
+			"rsvp-updated",
+		);
 	});
 
 	it("rolls back when the update fails", async () => {

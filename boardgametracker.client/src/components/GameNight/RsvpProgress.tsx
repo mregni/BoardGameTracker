@@ -6,6 +6,7 @@ import { GameNightRsvpState, type GameNightRsvps } from "@/models";
 
 interface Props {
 	rsvps: GameNightRsvps[];
+	compact?: boolean;
 }
 
 const segments: { state: GameNightRsvpState; key: string; tone: ProgressTone }[] = [
@@ -16,7 +17,7 @@ const segments: { state: GameNightRsvpState; key: string; tone: ProgressTone }[]
 ];
 
 export const RsvpProgress = (props: Props) => {
-	const { rsvps } = props;
+	const { rsvps, compact = false } = props;
 	const { t } = useTranslation("game-nights");
 	const total = rsvps.length;
 
@@ -34,11 +35,13 @@ export const RsvpProgress = (props: Props) => {
 		<div className="flex flex-col gap-1.5">
 			<div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
 				<BgtText size="2" weight="bold">
-					{t("rsvp.invited", { count: total })}
+					{compact ? t("rsvp.coming-of", { coming: counts[0].count, total }) : t("rsvp.invited", { count: total })}
 				</BgtText>
-				<BgtText size="2" color="gray" data-testid="rsvp-summary">
-					{summary}
-				</BgtText>
+				{!compact && (
+					<BgtText size="2" color="gray" data-testid="rsvp-summary">
+						{summary}
+					</BgtText>
+				)}
 			</div>
 			<BgtProgressBar
 				size="thin"

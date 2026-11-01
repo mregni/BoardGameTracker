@@ -12,6 +12,9 @@ interface CapturedRoute {
 const mocks = vi.hoisted(() => ({
 	captured: {} as { config: CapturedRoute },
 	gameNights: [] as GameNight[],
+	loadFailed: false,
+	isLoading: false,
+	retryLoad: vi.fn(),
 	navigate: vi.fn(),
 	search: {} as { view?: string; period?: string },
 	statsView: vi.fn(),
@@ -40,7 +43,9 @@ vi.mock("./-hooks/useGameNightData", () => ({
 		players: [{ id: 1, name: "Mikhael", image: null }],
 		games: [],
 		locations: [],
-		isLoading: false,
+		isLoading: mocks.isLoading,
+		loadFailed: mocks.loadFailed,
+		retryLoad: mocks.retryLoad,
 		createGameNight: vi.fn(),
 		deleteGameNight: vi.fn(),
 		updateGameNight: vi.fn(),
@@ -55,6 +60,8 @@ vi.mock("./-modals/CreateGameNightModal", () => ({ CreateGameNightModal: () => n
 vi.mock("./-modals/EditGameNightModal", () => ({ EditGameNightModal: () => null }));
 vi.mock("./-modals/ManageRSVPsModal", () => ({ ManageRSVPsModal: () => null }));
 vi.mock("./-components/GameNightActions", () => ({ GameNightActions: () => null }));
+vi.mock("./-components/EmailInvitesButton", () => ({ EmailInvitesButton: () => null }));
+vi.mock("./-hooks/useInviteLink", () => ({ useInviteLink: () => ({ link: "", copied: false, copy: vi.fn() }) }));
 vi.mock("./-components/stats/GameNightStatsView", () => ({
 	GameNightStatsView: (props: { period: string; onPeriodChange: (period: string) => void }) => {
 		mocks.statsView(props.period);
@@ -92,6 +99,7 @@ const night = (id: number, title: string, startDate: Date, endedAt: Date | null 
 			runningGames: 0,
 			attendeeIds: [1],
 			attendanceRecorded: false,
+			playedGameIds: [],
 		},
 	}) as unknown as GameNight;
 
@@ -105,6 +113,18 @@ describe("Game nights overview", () => {
 		mocks.navigate.mockReset();
 		mocks.statsView.mockReset();
 		mocks.search = {};
+		mocks.loadFailed = false;
+		mocks.isLoading = false;
+		mocks.retryLoad.mockReset();
+	});
+
+	it("shows the shape of the list while it loads", () => {
+		mocks.isLoading = true;
+
+		renderPage();
+
+		expect(screen.getByTestId("game-nights-skeleton")).toHaveAttribute("aria-busy", "true");
+		expect(screen.getByText("loading")).toHaveClass("sr-only");
 	});
 
 	it("lists a night that is being played under playing now, and ended and old nights as past", () => {
@@ -121,16 +141,45 @@ describe("Game nights overview", () => {
 		const upcoming = screen.getByRole("region", { name: "upcoming" });
 		const past = screen.getByRole("region", { name: "past" });
 		expect(within(live).getByText("Tonight")).toBeInTheDocument();
-		expect(within(live).getByText("card.live")).toBeInTheDocument();
+		expect(within(live).getByText("card.live-since")).toBeInTheDocument();
 		expect(
 			within(upcoming)
 				.getAllByRole("heading", { level: 3 })
 				.map((x) => x.textContent),
 		).toEqual(["Next week"]);
-		expect(within(upcoming).queryByText("card.live")).not.toBeInTheDocument();
+		expect(within(upcoming).queryByText("card.live-since")).not.toBeInTheDocument();
 		expect(within(past).getByText("Ended early")).toBeInTheDocument();
 		expect(within(past).getByText("Last month")).toBeInTheDocument();
-		expect(within(upcoming).getAllByRole("button", { name: "card.open" })).toHaveLength(1);
+		expect(within(live).queryByRole("button")).not.toBeInTheDocument();
+		expect(within(upcoming).getByRole("link", { name: "Next week" })).toHaveAttribute("href", "/game-nights/3");
+	});
+
+	it("offers a retry instead of the empty page when the nights fail to load", async () => {
+		mocks.gameNights = [];
+		mocks.loadFailed = true;
+
+		renderPage();
+
+		expect(screen.getByText("load-error.title")).toBeInTheDocument();
+		expect(screen.queryByText("empty.title")).not.toBeInTheDocument();
+		await userEvent.click(screen.getByRole("button", { name: "load-error.retry" }));
+		expect(mocks.retryLoad).toHaveBeenCalled();
+	});
+
+	it("groups past nights by month and keeps older ones behind a button", async () => {
+		mocks.gameNights = Array.from({ length: 12 }, (_, index) =>
+			night(index + 1, `Night ${index + 1}`, addDays(new Date(), -7 * (index + 1))),
+		);
+
+		renderPage();
+
+		const past = screen.getByRole("region", { name: "past" });
+		expect(within(past).getAllByRole("link")).toHaveLength(10);
+		expect(within(past).getAllByRole("heading", { level: 3 }).length).toBeGreaterThan(1);
+		await userEvent.click(within(past).getByRole("button", { name: "past-night.show-older" }));
+		expect(within(past).getAllByRole("link")).toHaveLength(12);
+		await userEvent.click(within(past).getByRole("button", { name: "past-night.show-fewer" }));
+		expect(within(past).getAllByRole("link")).toHaveLength(10);
 	});
 
 	it("says there is nothing upcoming when every night is past", () => {

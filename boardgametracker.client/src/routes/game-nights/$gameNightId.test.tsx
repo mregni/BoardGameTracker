@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => ({
 	invalidateGameNights: vi.fn(),
 	onNewSessionSuccess: undefined as undefined | (() => void),
 	detail: undefined as unknown,
+	search: {} as { start?: boolean },
 }));
 
 vi.mock("./-hooks/useInviteLink", () => ({ useInviteLink: () => ({ link: "", copied: false, copy: vi.fn() }) }));
@@ -30,7 +31,7 @@ vi.mock("./-hooks/useInviteLink", () => ({ useInviteLink: () => ({ link: "", cop
 vi.mock("@tanstack/react-router", () => ({
 	createFileRoute: () => (config: CapturedRoute) => {
 		mocks.captured.config = config;
-		return { ...config, useParams: () => ({ gameNightId: 4 }) };
+		return { ...config, useParams: () => ({ gameNightId: 4 }), useSearch: () => mocks.search };
 	},
 	redirect: (options: unknown) => ({ redirect: options }),
 	useNavigate: () => mocks.navigate,
@@ -72,6 +73,7 @@ const detail = {
 			runningGames: 1,
 			attendeeIds: [1],
 			attendanceRecorded: false,
+			playedGameIds: [],
 		},
 	},
 	sessions: [],
@@ -175,6 +177,7 @@ describe("Game night detail page", () => {
 		mocks.endNight.mockResolvedValue(undefined);
 		mocks.saveSession.mockResolvedValue(undefined);
 		mocks.deleteGameNight.mockResolvedValue(undefined);
+		mocks.search = {};
 	});
 
 	it("prefetches the night, players, games and locations", () => {
@@ -215,6 +218,14 @@ describe("Game night detail page", () => {
 		await user.click(screen.getByRole("button", { name: "start-sheet" }));
 
 		expect(mocks.startGame).toHaveBeenCalledWith({ gameId: 7, playerIds: [1] });
+	});
+
+	it("opens the start sheet straight away when the overview asks for it, then clears the request", () => {
+		mocks.search = { start: true };
+		renderPage();
+
+		expect(screen.getByRole("button", { name: "start-sheet" })).toBeInTheDocument();
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: ".", search: {}, replace: true });
 	});
 
 	it("finishes the running game with the times from the sheet", async () => {

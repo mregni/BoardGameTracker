@@ -27,11 +27,17 @@
     "invite-link": "Enlace de invitación",
     "copy": "Copiar",
     "no-answer": "Sin respuesta",
-    "not-coming": "No viene"
+    "not-coming": "No viene",
+    "avatar-label": "{{name}}: {{state}}",
+    "show-all": "Mostrar los {{count}} invitados",
+    "coming-of": "{{coming}} de {{total}} vienen",
+    "host-name": "{{name}} (anfitrión)"
   },
   "empty": {
     "title": "Aún no hay noches de juego",
-    "upcoming": "No hay próximas noches de juego"
+    "upcoming": "No hay próximas noches de juego",
+    "description": "Planea una noche, invita a tu grupo y mira quién viene. Lo que se juegue aparecerá aquí después.",
+    "upcoming-hint": "Elige una fecha e invita al grupo."
   },
   "delete": {
     "title": "Eliminar noche de juego",
@@ -65,8 +71,14 @@
     "invites-failed": "No se pudieron enviar las invitaciones",
     "when": "{{when}} · {{time}}",
     "host": "Anfitrión: {{host}}",
-    "open": "Abrir la noche",
-    "live": "Esta noche · jugando ahora"
+    "live": "Esta noche · jugando ahora",
+    "actions": "Acciones para {{title}}",
+    "waiting": "Esperando a {{names}}",
+    "live-since": "Jugando desde las {{time}}",
+    "running_one": "{{count}} juego en la mesa",
+    "running_other": "{{count}} juegos en la mesa",
+    "maybe-names": "Quizás: {{names}}",
+    "declined-names": "No viene: {{names}}"
   },
   "plan": {
     "starts": "Empieza {{when}} · {{date}} · {{time}}",
@@ -134,10 +146,15 @@
   "past-night": {
     "attended-count_one": "{{count}} asistió",
     "attended-count_other": "{{count}} asistieron",
-    "nothing-logged": "aún no hay nada registrado",
+    "nothing-logged": "ningún juego registrado",
     "games-played_one": "{{count}} juego jugado",
     "games-played_other": "{{count}} juegos jugados",
-    "winner": "ganador {{names}}"
+    "most-wins": "Más victorias",
+    "show-older_one": "Mostrar {{count}} noche anterior",
+    "show-older_other": "Mostrar {{count}} noches anteriores",
+    "shared-most-wins": "Más victorias compartidas",
+    "show-fewer": "Mostrar menos noches",
+    "played": "Jugado: {{games}}"
   },
   "detail": {
     "back": "Noches de juego"
@@ -346,5 +363,11 @@
       "save-failed": "No se pudo guardar la asistencia"
     },
     "playing": "Jugando ahora"
-  }
+  },
+  "load-error": {
+    "title": "No se pudieron cargar las noches de juego",
+    "description": "El servidor no respondió. Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar"
+  },
+  "loading": "Cargando noches de juego…"
 }

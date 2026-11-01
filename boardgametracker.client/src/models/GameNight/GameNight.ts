@@ -43,6 +43,7 @@ export interface GameNightSummary {
 	runningGames: number;
 	attendeeIds: number[];
 	attendanceRecorded: boolean;
+	playedGameIds: number[];
 }
 
 export interface RunningGame {

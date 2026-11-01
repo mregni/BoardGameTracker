@@ -28,6 +28,7 @@ public class GameNightSummaryDto
     public int RunningGames { get; set; }
     public List<int> AttendeeIds { get; set; } = [];
     public bool AttendanceRecorded { get; set; }
+    public List<int> PlayedGameIds { get; set; } = [];
 }
 
 public class GameNightDetailDto
