@@ -45,12 +45,11 @@ export const statisticsGridColumns = (count: number) => {
 
 export const GameStatisticsGrid = (props: Props) => {
 	const { gameStats, currency, hasScoringResults = false } = props;
-	const { t } = useTranslation("statistics");
+	const { t, i18n } = useTranslation(["statistics", "game"]);
 	const { data: settings } = useQuery(getSettings());
 	const shortDuration = useShortDuration();
 
-	const lastPlayedRelative =
-		gameStats.lastPlayed && settings?.uiLanguage ? toRelative(gameStats.lastPlayed, settings.uiLanguage) : null;
+	const lastPlayedRelative = gameStats.lastPlayed ? toRelative(gameStats.lastPlayed, i18n.language) : null;
 
 	const decimalOrNull = (value: NumberValue) => (value == null ? null : formatDecimal(value, settings?.uiLanguage));
 
@@ -60,45 +59,67 @@ export const GameStatisticsGrid = (props: Props) => {
 	const showCoopRate = coopPlayCount >= MIN_COOP_SESSIONS_FOR_RATE;
 	const showScores = !hasScoringResults && gameStats.scoredSessionCount >= MIN_SESSIONS_FOR_AVERAGE;
 
-	const tileCount =
-		2 +
-		[
-			gameStats.pricePerPlay != null,
-			showScores && gameStats.highScore != null,
-			showScores && gameStats.averageScore != null,
-			lastPlayedRelative !== null,
-			showCoopRate,
-		].filter(Boolean).length;
+	const pricePerPlay =
+		gameStats.pricePerPlay && gameStats.playCount >= MIN_SESSIONS_FOR_AVERAGE
+			? formatPrice(gameStats.pricePerPlay, currency, settings?.uiLanguage)
+			: null;
+
+	const tileCount = [
+		pricePerPlay !== null,
+		showScores && gameStats.highScore != null,
+		showScores && gameStats.averageScore != null,
+		showCoopRate,
+	].filter(Boolean).length;
+
+	const summaryDetails = [
+		totalPlayedTime && t("game:play-summary.total", { duration: totalPlayedTime }),
+		lastPlayedRelative && t("game:play-summary.last", { relative: lastPlayedRelative }),
+	].filter(Boolean);
 
 	return (
-		<div
-			className={cx("grid grid-cols-2 gap-3 xl:gap-6", statisticsGridColumns(tileCount))}
-			data-testid="game-statistics-grid"
-		>
-			<BgtTextStatistic content={gameStats.playCount} title={t("play-count")} textSize="4" />
-			<BgtTextStatistic content={totalPlayedTime} title={t("total-play-time")} textSize="4" />
-			<BgtTextStatistic
-				content={
-					gameStats.pricePerPlay != null ? formatPrice(gameStats.pricePerPlay, currency, settings?.uiLanguage) : null
-				}
-				title={t("price-per-play")}
-				textSize="4"
-			/>
-			{showScores && (
-				<>
-					<BgtTextStatistic content={decimalOrNull(gameStats.highScore)} title={t("high-score")} textSize="4" />
-					<BgtTextStatistic content={decimalOrNull(gameStats.averageScore)} title={t("average-score")} textSize="4" />
-				</>
+		<section aria-labelledby="game-play-summary" className="flex flex-col gap-3 xl:gap-4">
+			<h2 id="game-play-summary" className="text-xl font-semibold text-white">
+				{t("game:play-summary.count", { count: gameStats.playCount })}
+				{summaryDetails.length > 0 && (
+					<span className="font-normal text-white/70"> · {summaryDetails.join(" · ")}</span>
+				)}
+			</h2>
+			{tileCount > 0 && (
+				<div
+					className={cx(
+						"grid grid-cols-2 gap-3 xl:gap-6 max-md:[&>:last-child:nth-child(odd)]:col-span-2",
+						statisticsGridColumns(tileCount),
+					)}
+					data-testid="game-statistics-grid"
+				>
+					<BgtTextStatistic content={pricePerPlay} title={t("price-per-play")} textSize="4" valueColor="white" />
+					{showScores && (
+						<>
+							<BgtTextStatistic
+								content={decimalOrNull(gameStats.highScore)}
+								title={t("high-score")}
+								textSize="4"
+								valueColor="white"
+							/>
+							<BgtTextStatistic
+								content={decimalOrNull(gameStats.averageScore)}
+								title={t("average-score")}
+								textSize="4"
+								valueColor="white"
+							/>
+						</>
+					)}
+					{showCoopRate && (
+						<BgtTextStatistic
+							content={formatRatio(gameStats.coopWinCount, coopPlayCount, settings?.uiLanguage)}
+							title={t("team-win-rate")}
+							caption={t("team-win-rate-count", { count: coopPlayCount, won: gameStats.coopWinCount })}
+							textSize="4"
+							valueColor="white"
+						/>
+					)}
+				</div>
 			)}
-			<BgtTextStatistic content={lastPlayedRelative} title={t("last-played")} textSize="4" />
-			{showCoopRate && (
-				<BgtTextStatistic
-					content={formatRatio(gameStats.coopWinCount, coopPlayCount, settings?.uiLanguage)}
-					title={t("team-win-rate")}
-					caption={t("team-win-rate-count", { count: coopPlayCount, won: gameStats.coopWinCount })}
-					textSize="4"
-				/>
-			)}
-		</div>
+		</section>
 	);
 };

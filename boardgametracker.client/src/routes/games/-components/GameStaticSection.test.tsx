@@ -49,6 +49,8 @@ describe("GameStaticSection", () => {
 		game: createGame(),
 		manualCount: 2,
 		ragEnabled: true,
+		onOpenManuals: vi.fn(),
+		onOpenExpansions: vi.fn(),
 	};
 
 	beforeEach(() => {
@@ -94,7 +96,10 @@ describe("GameStaticSection", () => {
 		it("should render a disabled chat button when there are no manuals", () => {
 			renderWithTheme(<GameStaticSection {...defaultProps} manualCount={0} />);
 
-			expect(screen.getByRole("button", { name: "ask-button" })).toBeDisabled();
+			expect(screen.getByRole("button", { name: "ask-button. ask-button-disabled" })).toHaveAttribute(
+				"aria-disabled",
+				"true",
+			);
 		});
 
 		it("should not render the chat button when rag is disabled", () => {
@@ -104,15 +109,25 @@ describe("GameStaticSection", () => {
 		});
 	});
 
-	describe("Track price button", () => {
-		it("should offer price tracking when allowed", async () => {
+	describe("Manuals and expansions", () => {
+		it("should call onOpenManuals when the manuals button is clicked", async () => {
 			const user = userEvent.setup();
-			const onTrackPrice = vi.fn();
-			renderWithTheme(<GameStaticSection {...defaultProps} canTrackPrice onTrackPrice={onTrackPrice} />);
+			renderWithTheme(<GameStaticSection {...defaultProps} />);
 
-			await user.click(screen.getByRole("button", { name: /track-price\.button/ }));
+			await user.click(screen.getByRole("button", { name: /manuals\.title/ }));
 
-			expect(onTrackPrice).toHaveBeenCalledTimes(1);
+			expect(defaultProps.onOpenManuals).toHaveBeenCalledTimes(1);
+			expect(defaultProps.onOpenExpansions).not.toHaveBeenCalled();
+		});
+
+		it("should call onOpenExpansions when the expansions button is clicked", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<GameStaticSection {...defaultProps} />);
+
+			await user.click(screen.getByRole("button", { name: /expansions\.title/ }));
+
+			expect(defaultProps.onOpenExpansions).toHaveBeenCalledTimes(1);
+			expect(defaultProps.onOpenManuals).not.toHaveBeenCalled();
 		});
 	});
 

@@ -22,7 +22,12 @@ export const LivePrice = ({ livePrice, currency, uiLanguage }: Props) => {
 	}
 
 	if (livePrice?.status === "pending") {
-		return <span title={t("games:tracked-pending")}>-</span>;
+		return (
+			<span title={t("games:tracked-pending")}>
+				<span aria-hidden="true">-</span>
+				<span className="sr-only">{t("games:tracked-pending")}</span>
+			</span>
+		);
 	}
 
 	if (!livePrice?.available || livePrice.price == null) {
