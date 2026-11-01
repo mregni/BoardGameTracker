@@ -183,7 +183,7 @@ function RouteComponent() {
 									key={option.value}
 									title={option.label}
 									content={option.count}
-									color={option.value === "overdue" ? overdueColor : "cyan"}
+									valueColor={option.value === "overdue" ? overdueColor : "cyan"}
 									onClick={canSelect(option) ? () => selectFilter(option.value) : undefined}
 									pressed={canSelect(option) ? filter === option.value : undefined}
 								/>
