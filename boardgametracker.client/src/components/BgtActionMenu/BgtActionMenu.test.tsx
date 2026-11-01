@@ -60,6 +60,52 @@ describe("BgtActionMenu", () => {
 		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 	});
 
+	it("moves the focus into the menu and through the items with the arrow keys", async () => {
+		const user = userEvent.setup();
+		renderMenu();
+
+		await user.click(screen.getByRole("button", { name: "Actions for jane" }));
+		expect(screen.getByRole("menuitem", { name: "Edit" })).toHaveFocus();
+
+		await user.keyboard("{ArrowDown}");
+		expect(screen.getByRole("menuitem", { name: "Delete" })).toHaveFocus();
+		await user.keyboard("{ArrowDown}");
+		expect(screen.getByRole("menuitem", { name: "Edit" })).toHaveFocus();
+		await user.keyboard("{End}");
+		expect(screen.getByRole("menuitem", { name: "Delete" })).toHaveFocus();
+		await user.keyboard("{Home}");
+		expect(screen.getByRole("menuitem", { name: "Edit" })).toHaveFocus();
+	});
+
+	it("opens on the last item with ArrowUp from the trigger", async () => {
+		const user = userEvent.setup();
+		renderMenu();
+
+		screen.getByRole("button", { name: "Actions for jane" }).focus();
+		await user.keyboard("{ArrowUp}");
+
+		expect(screen.getByRole("menuitem", { name: "Delete" })).toHaveFocus();
+	});
+
+	it("closes when Tab moves the focus away", async () => {
+		const user = userEvent.setup();
+		renderMenu();
+
+		await user.click(screen.getByRole("button", { name: "Actions for jane" }));
+		await user.tab();
+
+		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+	});
+
+	it("separates the destructive item from the others", async () => {
+		const user = userEvent.setup();
+		renderMenu();
+
+		await user.click(screen.getByRole("button", { name: "Actions for jane" }));
+
+		expect(screen.getByRole("separator")).toBeInTheDocument();
+	});
+
 	it("toggles closed from the trigger", async () => {
 		const user = userEvent.setup();
 		renderMenu();

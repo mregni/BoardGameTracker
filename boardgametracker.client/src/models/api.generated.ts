@@ -5783,6 +5783,7 @@ export interface components {
             runningGames: number;
             attendeeIds: number[];
             attendanceRecorded: boolean;
+            playedGameIds: number[];
         };
         GamePersonDto: {
             /** Format: int32 */

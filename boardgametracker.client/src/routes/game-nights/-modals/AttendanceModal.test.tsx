@@ -20,7 +20,7 @@ const detail = {
 			{ id: 12, playerId: 2, state: GameNightRsvpState.Accepted, player: players[1] },
 			{ id: 13, playerId: 4, state: GameNightRsvpState.Declined, player: players[3] },
 		],
-		summary: { attendeeIds: [1, 3], attendanceRecorded: false },
+		summary: { attendeeIds: [1, 3], attendanceRecorded: false, playedGameIds: [] },
 	},
 	sessions: [{ playerSessions: [{ playerId: 3 }] }],
 	runningGames: [{ gameId: 8, playerIds: [5, 3] }],

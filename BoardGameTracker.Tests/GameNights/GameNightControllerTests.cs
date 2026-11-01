@@ -176,6 +176,7 @@ public class GameNightControllerTests
         detail.Sessions.Select(x => x.Id).Should().Equal(3, 2, 1);
         detail.RunningGames.Should().ContainSingle(x => x.Id == 9 && x.GameId == 8);
         detail.GameNight.Summary.GamesPlayed.Should().Be(3);
+        detail.GameNight.Summary.PlayedGameIds.Should().Equal(7, 8);
         detail.GameNight.Summary.TotalMinutes.Should().Be(135);
         detail.GameNight.Summary.WinnerIds.Should().Equal(1);
         detail.GameNight.Summary.MostWins.Should().Be(2);

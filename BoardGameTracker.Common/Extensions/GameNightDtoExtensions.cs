@@ -35,7 +35,8 @@ public static class GameNightDtoExtensions
             WinnerIds = gameNight.GetNightWinnerIds(),
             RunningGames = gameNight.RunningGames.Count,
             AttendeeIds = gameNight.GetAttendeeIds(),
-            AttendanceRecorded = gameNight.Attendance.Count > 0
+            AttendanceRecorded = gameNight.Attendance.Count > 0,
+            PlayedGameIds = gameNight.Sessions.OrderBy(s => s.Start).Select(s => s.GameId).Distinct().ToList()
         };
     }
 

@@ -72,6 +72,7 @@ const buildDetail = (startDate: Date, sessions: Session[], running = true, ended
 					...new Set([1, ...sessions.flatMap((x) => x.playerSessions.map((p) => p.playerId)), ...(running ? [1] : [])]),
 				],
 				attendanceRecorded: false,
+				playedGameIds: [],
 			},
 		},
 		sessions,
@@ -349,8 +350,8 @@ describe("GameNightDetailView", () => {
 		const props = renderView(buildDetail(addHours(new Date(), 24 * 7), [], false));
 
 		expect(screen.getByTestId("night-plan")).toBeInTheDocument();
-		expect(screen.getByText("plan.rsvps")).not.toHaveClass("uppercase");
-		expect(screen.getByText("planned.title")).toHaveClass("uppercase");
+		expect(screen.getByText("plan.rsvps")).toHaveClass("font-semibold");
+		expect(screen.getByText("planned.title")).toHaveClass("font-semibold");
 		expect(screen.getByText("plan.starts")).toBeInTheDocument();
 		expect(screen.getByTestId("rsvp-summary")).toHaveTextContent("rsvp.summary.coming · rsvp.summary.declined");
 		expect(screen.getByText("Carcassonne")).toBeInTheDocument();

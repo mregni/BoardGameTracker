@@ -18,6 +18,7 @@ interface PropsWithoutGuard extends BaseProps {
 interface PropsWithGuard<T extends Record<string, unknown>> extends BaseProps {
 	isLoading: boolean;
 	data: T;
+	fallback?: ReactNode;
 	children: (data: RequiredData<T>) => ReactNode;
 }
 
@@ -33,7 +34,7 @@ export const BgtPageContent = <T extends Record<string, unknown> = Record<string
 	if (isPropsWithGuard(props)) {
 		return (
 			<div className={cx("flex flex-col gap-3 xl:gap-6", centered && "flex-1 justify-center items-center", className)}>
-				<BgtDataGuard isLoading={props.isLoading} data={props.data}>
+				<BgtDataGuard isLoading={props.isLoading} data={props.data} fallback={props.fallback}>
 					{(validatedData) => <>{props.children(validatedData)}</>}
 				</BgtDataGuard>
 			</div>

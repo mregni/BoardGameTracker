@@ -78,7 +78,10 @@ describe("gameNightPlay", () => {
 	});
 
 	it("shows the players who said yes as expected until somebody plays", () => {
-		const night = { ...gameNight, summary: { attendeeIds: [2], attendanceRecorded: false } } as unknown as GameNight;
+		const night = {
+			...gameNight,
+			summary: { attendeeIds: [2], attendanceRecorded: false, playedGameIds: [] },
+		} as unknown as GameNight;
 		const planned = { gameNight: night, sessions: [], runningGames: [] } as unknown as GameNightDetail;
 
 		expect(nightTable(planned)).toEqual({ expected: true, playerIds: [2, 5] });
@@ -87,7 +90,7 @@ describe("gameNightPlay", () => {
 	it("takes the table from who played once a game started", () => {
 		const night = {
 			...gameNight,
-			summary: { attendeeIds: [2, 6, 7], attendanceRecorded: false },
+			summary: { attendeeIds: [2, 6, 7], attendanceRecorded: false, playedGameIds: [] },
 		} as unknown as GameNight;
 		const playing = {
 			gameNight: night,
@@ -99,7 +102,10 @@ describe("gameNightPlay", () => {
 	});
 
 	it("takes the table from the recorded attendance even before a game", () => {
-		const night = { ...gameNight, summary: { attendeeIds: [2, 8], attendanceRecorded: true } } as unknown as GameNight;
+		const night = {
+			...gameNight,
+			summary: { attendeeIds: [2, 8], attendanceRecorded: true, playedGameIds: [] },
+		} as unknown as GameNight;
 		const marked = { gameNight: night, sessions: [], runningGames: [] } as unknown as GameNightDetail;
 
 		expect(nightTable(marked)).toEqual({ expected: false, playerIds: [2, 8] });

@@ -23,13 +23,11 @@ export const NightPlanPanel = ({ gameNight, canWrite, onManageRsvps }: Props) =>
 	return (
 		<div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:gap-6" data-testid="night-plan">
 			<section className="flex flex-col gap-2" aria-labelledby="night-rsvps">
-				<NightSectionTitle id="night-rsvps" keepCase>
-					{t("plan.rsvps")}
-				</NightSectionTitle>
+				<NightSectionTitle id="night-rsvps">{t("plan.rsvps")}</NightSectionTitle>
 				<BgtCard className="gap-3">
 					<RsvpProgress rsvps={gameNight.invitedPlayers} />
 					<div className="flex flex-wrap items-center justify-between gap-2">
-						<RsvpAvatarStack rsvps={sortRsvps(gameNight.invitedPlayers, gameNight.hostId)} />
+						<RsvpAvatarStack rsvps={sortRsvps(gameNight.invitedPlayers, gameNight.hostId)} hostId={gameNight.hostId} />
 						{canWrite && (
 							<BgtButton variant="cancel" size="1" onClick={onManageRsvps}>
 								{t("card.manage-rsvps")}
