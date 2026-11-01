@@ -7816,8 +7816,7 @@
           },
           "attendanceRecorded": {
             "type": "boolean"
-          }
-       ,
+          },
           "playedGameIds": {
             "type": "array",
             "items": {
