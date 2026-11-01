@@ -132,7 +132,6 @@
   "tile": {
     "sessions_one": "session",
     "sessions_other": "sessions",
-    "wins": "wins",
     "no-sessions": "No sessions yet"
   },
   "coop": {
@@ -148,5 +147,6 @@
     "last-12-months-short": "12 mo",
     "custom": "Custom"
   },
-  "edit-named": "Edit {{name}}"
+  "edit-named": "Edit {{name}}",
+  "clear-search": "Clear search"
 }

@@ -1,11 +1,13 @@
 {
   "empty": {
     "title": "Nog geen spelers",
-    "button": "Speler toevoegen"
+    "button": "Speler toevoegen",
+    "description": "Voeg de mensen toe met wie je speelt om overwinningen en rivaliteit bij te houden."
   },
   "back": "Terug naar spelers",
   "count_other": "{{count}} spelers",
   "count_one": "{{count}} speler",
+  "count-filtered": "{{count}} van {{total}} spelers",
   "notifications": {
     "created": "Speler toegevoegd",
     "create-failed": "Speler aanmaken mislukt",
@@ -65,5 +67,23 @@
     "uses-picture": "Gebruikt de profielfoto van {{username}}.",
     "own-picture": "Gebruikt een eigen foto. Verwijder die om de profielfoto van {{username}} te tonen.",
     "link-failed": "Kon het gekoppelde account niet wijzigen"
+  },
+  "list": {
+    "last-played": "laatst gespeeld",
+    "record_one": "{{wins}} van {{count}} gewonnen",
+    "record_other": "{{wins}} van {{count}} gewonnen",
+    "sort": "Spelers sorteren",
+    "sort-sessions": "Sessies",
+    "sort-recent": "Recent",
+    "sort-name": "Naam",
+    "no-match": "Geen spelers gevonden voor “{{query}}”",
+    "clear": "Filter wissen",
+    "error-title": "Spelers konden niet geladen worden",
+    "error-description": "De server antwoordde niet. Controleer of hij draait en probeer het opnieuw.",
+    "win-rate": "gewonnen",
+    "sessions_one": "sessie",
+    "sessions_other": "sessies",
+    "not-played": "Nog niet gespeeld",
+    "log-game": "Sessie toevoegen"
   }
 }

@@ -132,7 +132,6 @@
   "tile": {
     "sessions_one": "sessie",
     "sessions_other": "sessies",
-    "wins": "gewonnen",
     "no-sessions": "Nog geen sessies"
   },
   "coop": {
@@ -148,5 +147,6 @@
     "last-12-months-short": "12 mnd",
     "custom": "Aangepast"
   },
-  "edit-named": "{{name}} bewerken"
+  "edit-named": "{{name}} bewerken",
+  "clear-search": "Zoekopdracht wissen"
 }
