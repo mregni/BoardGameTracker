@@ -96,6 +96,20 @@ describe("useShameData", () => {
 		);
 	});
 
+	it("takes a planned game off its game night", async () => {
+		mocks.removeSuggestedGameCall.mockResolvedValue(undefined);
+		const { result } = renderHook(() => useShameData(), { wrapper });
+		await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+		act(() => result.current.unplan({ ...shame, plannedGameNightId: 9 }));
+
+		await waitFor(() => expect(mocks.removeSuggestedGameCall).toHaveBeenCalledWith(9, 7));
+		await waitFor(() =>
+			expect(mocks.successToast).toHaveBeenCalledWith("shames:plan.removed", undefined, { game: "Spirit Island" }),
+		);
+		expect(mocks.invalidateShames).toHaveBeenCalled();
+	});
+
 	it("tells the user when planning fails", async () => {
 		mocks.addSuggestedGameCall.mockRejectedValue(new Error("nope"));
 		const { result } = renderHook(() => useShameData(), { wrapper });
