@@ -28,6 +28,8 @@ public class GameDto
     public decimal? BuyingPrice { get; set; }
     public decimal? SoldPrice { get; set; }
     public DateTime? AdditionDate { get; set; }
+    public int PlayCount { get; set; }
+    public DateTime? LastPlayed { get; set; }
     public List<ExpansionDto>? Expansions { get; set; }
     public List<GameLinkDto>? Categories { get; set; }
     public List<GameLinkDto>? Mechanics { get; set; }

@@ -112,6 +112,15 @@ public class GameRepository : EfRepository<Game>, IGameRepository
         return ListAsync(new GamesOverviewSpec());
     }
 
+    public Task<Dictionary<int, GamePlayStats>> GetPlayStatsPerGame()
+    {
+        return _context.Sessions
+            .AsNoTracking()
+            .GroupBy(x => x.GameId)
+            .Select(g => new { GameId = g.Key, PlayCount = g.Count(), LastPlayed = g.Max(x => x.Start) })
+            .ToDictionaryAsync(x => x.GameId, x => new GamePlayStats(x.PlayCount, x.LastPlayed));
+    }
+
     public Task<List<Game>> GetTrackedGames()
     {
         return ListAsync(new TrackedGamesSpec());

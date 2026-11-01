@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
+import Check from "@/assets/icons/check.svg?react";
 import Target from "@/assets/icons/target.svg?react";
+import Cross from "@/assets/icons/x.svg?react";
 import { type GamePrice, isPriceError, priceErrorKey } from "@/models/Games/GamePrice";
 
 const iconClass = (livePrice: GamePrice | undefined): string => {
@@ -7,6 +9,11 @@ const iconClass = (livePrice: GamePrice | undefined): string => {
 	if (isPriceError(livePrice.status)) return "text-amber-400";
 	if (!livePrice.available || livePrice.inStock == null) return "text-white/40";
 	return livePrice.inStock ? "text-green-400" : "text-red-400";
+};
+
+const iconFor = (livePrice: GamePrice | undefined) => {
+	if (!livePrice || isPriceError(livePrice.status) || !livePrice.available || livePrice.inStock == null) return Target;
+	return livePrice.inStock ? Check : Cross;
 };
 
 const tooltipKey = (livePrice: GamePrice | undefined): string => {
@@ -33,6 +40,7 @@ export const TrackedPriceIcon = ({ livePrice, size = "4", variant = "inline" }: 
 	const { t } = useTranslation(["games", "game"]);
 
 	const label = t(tooltipKey(livePrice));
+	const Icon = iconFor(livePrice);
 	const wrapperClass =
 		variant === "overlay"
 			? "flex size-7 shrink-0 items-center justify-center rounded-full bg-black/60"
@@ -40,7 +48,7 @@ export const TrackedPriceIcon = ({ livePrice, size = "4", variant = "inline" }: 
 
 	return (
 		<span role="img" aria-label={label} title={label} className={wrapperClass}>
-			<Target aria-hidden="true" className={`${sizeClass[size]} ${iconClass(livePrice)}`} />
+			<Icon aria-hidden="true" className={`${sizeClass[size]} ${iconClass(livePrice)}`} />
 		</span>
 	);
 };

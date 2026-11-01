@@ -7399,6 +7399,15 @@
             "format": "date-time",
             "nullable": true
           },
+          "playCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastPlayed": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "expansions": {
             "type": "array",
             "items": {

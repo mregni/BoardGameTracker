@@ -1,55 +1,31 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import type { ColumnDef, RowData } from "@tanstack/react-table";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import GameIcon from "@/assets/icons/dices.svg?react";
 import Refresh from "@/assets/icons/refresh.svg?react";
 import SquareOutIcon from "@/assets/icons/square-out.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtSimpleSelect, SearchInputField } from "@/components/BgtForm";
-import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
-import { BgtPage } from "@/components/BgtLayout/BgtPage";
-import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
-import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
-import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
-import { useDebouncedSearchQuery } from "@/hooks/useDebouncedSearchQuery";
 import { useDurationRange } from "@/hooks/useDurationRange";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTimeouts } from "@/hooks/useTimeouts";
-import { type Game, GameState, QUERY_KEYS } from "@/models";
+import { type Game, type GamePrice, GameState, QUERY_KEYS } from "@/models";
 import { getTrackedPricesCall } from "@/services/gameService";
-import { getTrackedPrices } from "@/services/queries/games";
-import { getSettings } from "@/services/queries/settings";
 import { toDisplay } from "@/utils/dateUtils";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
-import { EMPTY_PRICE, formatDecimal, formatPrice, formatPriceOrEmpty } from "@/utils/numberUtils";
+import { formatDecimal, formatPrice, formatPriceOrEmpty } from "@/utils/numberUtils";
 import { formatRange as formatValueRange } from "@/utils/rangeUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
-import { EditableNumberCell } from "./-components/EditableNumberCell";
-import { EditableSelectCell } from "./-components/EditableSelectCell";
-import { GameTableCards, type GameTableColumn } from "./-components/GameTableCards";
-import { LivePrice, withStateChange } from "./-components/LivePrice";
-import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
-import { useGamesData } from "./-hooks/useGamesData";
-import { useInlineGameUpdate } from "./-hooks/useInlineGameUpdate";
-import {
-	filterByTitle,
-	type GamesTableSearch,
-	ownedPriceStats,
-	parseGamesTableSearch,
-	withoutUndefined,
-} from "./-utils/gamesSearch";
-
-export const Route = createFileRoute("/games/table")({
-	component: RouteComponent,
-	validateSearch: (search: Record<string, unknown>): GamesTableSearch => parseGamesTableSearch(search),
-});
-
-const ANY = "any";
+import { useInlineGameUpdate } from "../-hooks/useInlineGameUpdate";
+import { ownedPriceStats } from "../-utils/gamesSearch";
+import { EditableNumberCell } from "./EditableNumberCell";
+import { EditableSelectCell } from "./EditableSelectCell";
+import { GameTableCards, type GameTableColumn } from "./GameTableCards";
+import { LivePrice, withStateChange } from "./LivePrice";
+import { TrackedPriceIcon } from "./TrackedPriceIcon";
 
 declare module "@tanstack/react-table" {
 	interface TableMeta<TData extends RowData> {
@@ -62,33 +38,22 @@ interface EditingCell {
 	column: GameTableColumn;
 }
 
-function RouteComponent() {
-	const { t, i18n } = useTranslation(["games", "game", "common", "dashboard"]);
-	const navigate = useNavigate();
-	const { q, state, language, inStock } = Route.useSearch();
-	const { games, isLoading } = useGamesData();
+interface Props {
+	games: Game[];
+	priceMap: Map<number, GamePrice>;
+	showLivePrices: boolean;
+	inStock: boolean;
+	onInStockChange: (inStock: boolean) => void;
+	currency?: string;
+	uiLanguage?: string;
+	dateFormat?: string;
+}
+
+export const GamesTableView = (props: Props) => {
+	const { games, priceMap, showLivePrices, inStock, onInStockChange, currency, uiLanguage, dateFormat } = props;
+	const { t, i18n } = useTranslation(["games", "game", "common"]);
 	const { canWrite } = usePermissions();
 	const { updateGame } = useInlineGameUpdate();
-	const settingsQuery = useQuery(getSettings());
-	const currency = settingsQuery.data?.currency;
-	const uiLanguage = settingsQuery.data?.uiLanguage;
-	const dateFormat = settingsQuery.data?.dateFormat;
-	const changeDetectionConfigured = settingsQuery.data?.changeDetectionStatus?.isConfigured ?? false;
-
-	const stateFilter: string = state ?? ANY;
-	const languageFilter = language ?? ANY;
-	const inStockOnly = inStock === true;
-	const updateSearch = useCallback(
-		(partial: Partial<GamesTableSearch>) => {
-			navigate({
-				to: "/games/table",
-				search: (prev) => withoutUndefined({ ...prev, ...partial }),
-				replace: true,
-			});
-		},
-		[navigate],
-	);
-	const [filterValue, setFilterValue] = useDebouncedSearchQuery(q, (value) => updateSearch({ q: value }));
 	const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
 	const stopEdit = useCallback(() => setEditingCell(null), []);
 	const startEdit = useCallback((gameId: number, column: GameTableColumn) => setEditingCell({ gameId, column }), []);
@@ -99,12 +64,6 @@ function RouteComponent() {
 	const tableMeta = useMemo(() => ({ isEditing }), [isEditing]);
 
 	const queryClient = useQueryClient();
-	const showLivePrices = changeDetectionConfigured;
-	const trackedPricesQuery = useQuery({ ...getTrackedPrices(), enabled: showLivePrices });
-	const priceMap = useMemo(
-		() => new Map((trackedPricesQuery.data ?? []).map((price) => [price.gameId, price])),
-		[trackedPricesQuery.data],
-	);
 	const schedule = useTimeouts();
 	const refreshPricesMutation = useMutation({
 		mutationFn: () => getTrackedPricesCall(true),
@@ -129,36 +88,8 @@ function RouteComponent() {
 		[durationRange],
 	);
 
-	const filtered = useMemo(
-		() =>
-			filterByTitle(games, q).filter(
-				(game) =>
-					(stateFilter === ANY || game.state === stateFilter) &&
-					(languageFilter === ANY ||
-						(languageFilter === LANGUAGE_NONE ? !game.language : game.language === languageFilter)) &&
-					(!inStockOnly || !showLivePrices || priceMap.get(game.id)?.inStock === true),
-			),
-		[games, q, stateFilter, languageFilter, inStockOnly, showLivePrices, priceMap],
-	);
-
-	const ownedPrices = useMemo(() => ownedPriceStats(filtered), [filtered]);
-
-	const stateItems = useMemo(
-		() => [
-			{ value: ANY, label: t("games:filters.state-any") },
-			...Object.values(GameState).map((value) => ({ value, label: t(getItemStateTranslationKey(value, false)) })),
-		],
-		[t],
-	);
-	const languageItems = useMemo(
-		() => [
-			{ value: ANY, label: t("games:filters.language-any") },
-			{ value: LANGUAGE_NONE, label: t("game:language.none") },
-			{ value: LANGUAGE_INDEPENDENT, label: t("game:language-independent") },
-			...COMMON_LANGUAGE_CODES.map((code) => ({ value: code, label: getLanguageName(code, i18n.language) })),
-		],
-		[t, i18n.language],
-	);
+	const ownedPrices = useMemo(() => ownedPriceStats(games), [games]);
+	const hasPrices = ownedPrices.pricedCount > 0;
 
 	const stateEditItems = useMemo(
 		() => Object.values(GameState).map((value) => ({ value, label: t(getItemStateTranslationKey(value, false)) })),
@@ -362,115 +293,71 @@ function RouteComponent() {
 
 	const columnWidths: (string | null)[] = [null, null, null, null, null, "w-52", "w-52"];
 
-	if (!isLoading && games.length === 0) {
-		return (
-			<BgtEmptyPage
-				header={t("games:title")}
-				icon={GameIcon}
-				title={t("dashboard:empty.title")}
-				action={
-					canWrite ? { onClick: () => navigate({ to: "/games/add" }), label: t("dashboard:empty.button") } : undefined
-				}
-			/>
-		);
-	}
-
-	const hasPrices = ownedPrices.pricedCount > 0;
-
 	return (
-		<BgtPage>
-			<BgtPageHeader
-				header={t("games:title")}
-				icon={GameIcon}
-				actions={[
-					{
-						onClick: () => navigate({ to: "/games", search: q ? { q } : {} }),
-						variant: "cancel",
-						content: "games:view.grid",
-					},
-				]}
-			/>
-			<BgtPageContent>
-				<div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2">
-					<div className="w-full md:flex-1 md:min-w-[8rem]">
-						<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
-					</div>
-					<BgtSimpleSelect
-						className="w-full md:w-44"
-						value={stateFilter}
-						aria-label={t("games:columns.state")}
-						items={stateItems}
-						onValueChange={(value) => updateSearch({ state: value === ANY ? undefined : (String(value) as GameState) })}
-					/>
-					<BgtSimpleSelect
-						className="w-full md:w-44"
-						value={languageFilter}
-						aria-label={t("games:columns.language")}
-						items={languageItems}
-						onValueChange={(value) => updateSearch({ language: value === ANY ? undefined : String(value) })}
-					/>
-					{showLivePrices && (
-						<BgtButton
-							variant={inStockOnly ? "primary" : "cancel"}
-							className="w-full md:w-auto md:ml-auto"
-							onClick={() => updateSearch({ inStock: inStockOnly ? undefined : true })}
-						>
-							{t("games:filters.in-stock-only")}
-						</BgtButton>
+		<>
+			{(hasPrices || showLivePrices) && (
+				<div className="flex flex-col md:flex-row md:items-center gap-2">
+					{hasPrices && (
+						<p className="text-sm text-white/70 md:mr-auto">
+							{t("games:table.total-price-owned")}:{" "}
+							<span className="font-bold text-card-value">{formatPrice(ownedPrices.total, currency, uiLanguage)}</span>
+							{" · "}
+							{t("games:table.mean-price-owned", { count: ownedPrices.pricedCount })}:{" "}
+							<span className="font-bold text-card-value">{formatPrice(ownedPrices.mean, currency, uiLanguage)}</span>
+						</p>
 					)}
 					{showLivePrices && (
-						<BgtButton
-							variant="cancel"
-							className="w-full md:w-auto"
-							disabled={refreshPricesMutation.isPending}
-							onClick={() => refreshPricesMutation.mutate()}
-						>
-							<Refresh className={refreshPricesMutation.isPending ? "size-4 animate-spin" : "size-4"} />
-							{t("games:refresh-prices")}
-						</BgtButton>
+						<div className="flex gap-2 md:ml-auto">
+							<BgtButton
+								variant={inStock ? "primary" : "cancel"}
+								className="flex-1 md:flex-none"
+								onClick={() => onInStockChange(!inStock)}
+							>
+								{t("games:filters.in-stock-only")}
+							</BgtButton>
+							<BgtButton
+								variant="cancel"
+								className="flex-1 md:flex-none"
+								disabled={refreshPricesMutation.isPending}
+								onClick={() => refreshPricesMutation.mutate()}
+							>
+								<Refresh className={refreshPricesMutation.isPending ? "size-4 animate-spin" : "size-4"} />
+								{t("games:refresh-prices")}
+							</BgtButton>
+						</div>
 					)}
 				</div>
-				<div className="grid grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6">
-					<BgtTextStatistic title={t("games:table.total-games")} content={filtered.length} />
-					<BgtTextStatistic
-						title={t("games:table.total-price-owned")}
-						content={hasPrices ? formatPrice(ownedPrices.total, currency, uiLanguage) : EMPTY_PRICE}
-					/>
-					<BgtTextStatistic
-						title={t("games:table.mean-price-owned", { count: ownedPrices.pricedCount })}
-						content={hasPrices ? formatPrice(ownedPrices.mean, currency, uiLanguage) : EMPTY_PRICE}
-					/>
-				</div>
-				<div className="hidden md:block">
-					<BgtDataTable
-						columns={columns}
-						data={filtered}
-						meta={tableMeta}
-						isLoading={isLoading}
-						noDataMessage={t("games:table.empty")}
-						widths={columnWidths}
-					/>
-				</div>
-				<div className="md:hidden">
-					<GameTableCards
-						readOnly={!canWrite}
-						priceMap={showLivePrices ? priceMap : undefined}
-						uiLanguage={uiLanguage}
-						games={filtered}
-						isLoading={isLoading}
-						currency={currency}
-						dateFormat={dateFormat}
-						stateItems={stateEditItems}
-						languageItems={languageEditItems}
-						formatRange={formatRange}
-						formatDuration={formatDuration}
-						isEditing={isEditing}
-						startEdit={startEdit}
-						stopEdit={stopEdit}
-						updateGame={updateGame}
-					/>
-				</div>
-			</BgtPageContent>
-		</BgtPage>
+			)}
+			<div className="hidden md:block">
+				<BgtDataTable
+					columns={columns}
+					data={games}
+					meta={tableMeta}
+					enableSorting={false}
+					isLoading={false}
+					noDataMessage={t("games:table.empty")}
+					widths={columnWidths}
+				/>
+			</div>
+			<div className="md:hidden">
+				<GameTableCards
+					readOnly={!canWrite}
+					priceMap={showLivePrices ? priceMap : undefined}
+					uiLanguage={uiLanguage}
+					games={games}
+					isLoading={false}
+					currency={currency}
+					dateFormat={dateFormat}
+					stateItems={stateEditItems}
+					languageItems={languageEditItems}
+					formatRange={formatRange}
+					formatDuration={formatDuration}
+					isEditing={isEditing}
+					startEdit={startEdit}
+					stopEdit={stopEdit}
+					updateGame={updateGame}
+				/>
+			</div>
+		</>
 	);
-}
+};

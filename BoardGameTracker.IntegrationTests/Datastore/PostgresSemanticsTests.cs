@@ -101,6 +101,49 @@ public class PostgresSemanticsTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetPlayStatsPerGame_ShouldCountSessionsAndTakeTheLatestStart_OnlyForPlayedGames()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IGameRepository>();
+        var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+        var played = new Game("Played game");
+        var unplayed = new Game("Unplayed game");
+        db.AddRange(played, unplayed);
+        await db.SaveChangesAsync();
+        var latest = new DateTime(2026, 10, 1, 20, 0, 0, DateTimeKind.Utc);
+        db.AddRange(
+            new Session(played.Id, latest.AddDays(-7), latest.AddDays(-7).AddHours(1), string.Empty),
+            new Session(played.Id, latest, latest.AddHours(1), string.Empty));
+        await db.SaveChangesAsync();
+
+        var stats = await repository.GetPlayStatsPerGame();
+
+        stats.Should().ContainSingle();
+        stats[played.Id].PlayCount.Should().Be(2);
+        stats[played.Id].LastPlayed.Should().Be(latest);
+    }
+
+    [Fact]
+    public async Task GetGamesOverviewList_ShouldLoadLoans_SoLentGamesAreMarkedAsLoaned()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IGameRepository>();
+        var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+        var lent = new Game("Lent game");
+        var home = new Game("Home game");
+        var borrower = new Player("Borrower");
+        db.AddRange(lent, home, borrower);
+        await db.SaveChangesAsync();
+        db.Add(new Loan(lent.Id, borrower.Id, DateTime.UtcNow.AddDays(-1)));
+        await db.SaveChangesAsync();
+
+        var games = await repository.GetGamesOverviewList();
+
+        games.Single(g => g.Id == lent.Id).IsLoanedAt(DateTime.UtcNow).Should().BeTrue();
+        games.Single(g => g.Id == home.Id).IsLoanedAt(DateTime.UtcNow).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task CategoryName_ShouldBeUnique_AtTheDatabaseLevel()
     {
         await using var scope = _fixture.CreateScope();

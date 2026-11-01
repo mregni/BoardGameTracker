@@ -29,6 +29,7 @@
     "failed-unknown": "Failed importing games from BoardGameGeek, check logs for more details."
   },
   "title": "Games",
+  "load-error": "Your games could not be loaded. Check that the server is reachable and try again.",
   "new": "Add game",
   "count_other": "{{count}} games",
   "count_one": "{{count}} game",
@@ -53,12 +54,13 @@
     "age-7-9": "7 - 9",
     "age-10-12": "10 - 12",
     "age-13plus": "13+",
-    "show-more": "Show more filters",
-    "show-less": "Show less filters",
+    "show-more": "Filters",
+    "show-less": "Hide filters",
     "no-match": "No games match the current filters.",
     "clear": "Clear filters",
-    "state-any": "State: Any",
-    "language-any": "Language: Any"
+    "remove": "Remove filter {{name}}",
+    "group-game": "Game",
+    "group-copy": "Your copy"
   },
   "columns": {
     "title": "Title",
@@ -75,7 +77,6 @@
     "current-price": "Current price"
   },
   "table": {
-    "total-games": "Total games",
     "empty": "No games match the selected filters.",
     "total-price-owned": "Total price (owned)",
     "mean-price-owned_one": "Mean price (owned) · {{count}} priced game",
@@ -92,7 +93,47 @@
   "tracked": "Price tracking active",
   "tracked-pending": "Waiting for the first price check",
   "view": {
-    "table": "Table view",
-    "grid": "Grid view"
+    "grid": "Grid",
+    "table": "Table"
+  },
+  "plays_one": "{{count}} play",
+  "plays_other": "{{count}} plays",
+  "sort": {
+    "label": "Sort by",
+    "title": "Title",
+    "plays": "Most played",
+    "last-played": "Recently played",
+    "added": "Recently added",
+    "rating": "Rating",
+    "weight": "Weight"
+  },
+  "never-played": "Never played",
+  "pick": {
+    "button": "Pick for us",
+    "title": "What do we play?",
+    "description": "Tell the wheel how many of you are playing and how long you have. It only picks games you own that are not lent out.",
+    "spinning": "Spinning…",
+    "result": "Tonight: {{title}}",
+    "again": "Spin again",
+    "open": "Open game",
+    "spin": "Spin the wheel",
+    "candidates_one": "{{count}} game on the wheel",
+    "candidates_other": "{{count}} games on the wheel",
+    "none": "No game you own fits these choices. Loosen one of them.",
+    "tonight": "Tonight we play",
+    "players": "{{range}} players",
+    "log": "Log this play",
+    "exclude": "Not this one",
+    "candidates-capped": "{{count}} of {{total}} games on the wheel",
+    "restore_one": "Put {{count}} excluded game back",
+    "restore_other": "Put {{count}} excluded games back",
+    "fresh": "Unplayed games first",
+    "all-games": "All available games",
+    "adjust": "Adjust",
+    "excluded": "Not tonight",
+    "restore-one": "Put {{title}} back on the wheel",
+    "none-owned": "No owned game is available right now. Lent games stay off the wheel.",
+    "to-games": "Go to your games",
+    "vetoed": "{{title}} is off the wheel. Spinning again…"
   }
 }

@@ -27,6 +27,7 @@ interface Props {
 	showAvatars?: boolean;
 	trigger?: ReactNode;
 	triggerClassName?: string;
+	valuePrefix?: string;
 	"aria-label"?: string;
 }
 
@@ -45,6 +46,7 @@ export const BgtSimpleSelect = (props: Props) => {
 		showAvatars = false,
 		trigger,
 		triggerClassName,
+		valuePrefix,
 		"aria-label": ariaLabel,
 	} = props;
 
@@ -57,6 +59,7 @@ export const BgtSimpleSelect = (props: Props) => {
 	const { onPointerDownOutside, onTriggerPointerDown, onTriggerClick } = useTriggerToggle(triggerRef);
 
 	const currentValue = value?.toString();
+	const selectedLabel = items.find((item) => item.value.toString() === currentValue)?.label;
 	const filteredItems = items.filter((item) => {
 		if (item.value === value) {
 			return true;
@@ -120,13 +123,15 @@ export const BgtSimpleSelect = (props: Props) => {
 							? triggerClassName
 							: cx(
 									"relative w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
-									"pl-4 pr-9 py-2 h-9 shadow-none flex items-center leading-none text-[12px]",
+									"pl-4 pr-9 py-2 h-11 md:h-9 shadow-none flex items-center leading-none text-[12px]",
 								)
 					}
 				>
 					{trigger ?? (
 						<>
-							<Select.Value placeholder={placeholder} className="min-w-0 flex-1 truncate text-left" />
+							<Select.Value placeholder={placeholder} className="min-w-0 flex-1 truncate text-left">
+								{valuePrefix && selectedLabel ? `${valuePrefix} · ${selectedLabel}` : undefined}
+							</Select.Value>
 							<Select.Icon className="absolute right-3 top-1/2 -translate-y-1/2">
 								{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
 							</Select.Icon>
@@ -168,7 +173,7 @@ export const BgtSimpleSelect = (props: Props) => {
 									<Select.Item
 										value={item.value.toString()}
 										key={item.value}
-										className="text-[13px] leading-none rounded-lg h-9 flex items-center pr-[35px] pl-[25px] relative select-none data-[disabled]:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
+										className="text-[13px] leading-none rounded-lg h-11 md:h-9 flex items-center pr-[35px] pl-[25px] relative select-none data-[disabled]:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
 									>
 										<Select.ItemText>
 											<div className="flex flex-row justify-start items-center gap-2">

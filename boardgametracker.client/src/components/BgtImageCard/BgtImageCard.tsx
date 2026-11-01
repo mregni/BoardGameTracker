@@ -13,36 +13,40 @@ interface Props {
 	link: string;
 	isLoaned?: boolean;
 	badge?: ReactNode;
+	meta?: ReactNode;
 }
 
 export const BgtImageCard = (props: Props) => {
-	const { title, image, state, link, isLoaned = false, badge } = props;
+	const { title, image, state, link, isLoaned = false, badge, meta } = props;
 	const { t } = useTranslation();
 
 	return (
 		<Link to={link} from="/" className="[content-visibility:auto] [contain-intrinsic-size:auto_280px]">
 			<div className="bgt-image-card flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1">
-				<div className="aspect-square rounded-lg overflow-hidden transition-all duration-200 relative">
-					<BgtFallbackImage title={title} image={image} lazy />
-					{badge && <div className="absolute top-2 right-2">{badge}</div>}
+				<div className="bgt-image-card-cover aspect-square rounded-lg overflow-hidden transition-all duration-200 relative">
+					<BgtFallbackImage title={title} image={image} lazy decorative />
 				</div>
 				<div className="flex flex-row justify-between items-end">
-					<div className="flex flex-col items-start justify-start">
-						{state !== null && state !== undefined && (
-							<BgtText
-								size="1"
-								className="line-clamp-1 w-full"
-								weight="medium"
-								color={getColorFromGameState(state, isLoaned)}
-							>
-								{t(getItemStateTranslationKey(state, isLoaned))}
-							</BgtText>
-						)}
+					<div className="flex flex-col-reverse items-start justify-start w-full">
 						<BgtText size="4" className="line-clamp-1 w-full" weight="medium">
 							{title}
 						</BgtText>
+						<div className="flex justify-between items-center gap-2 w-full">
+							{state !== null && state !== undefined && (
+								<BgtText
+									size="1"
+									className="line-clamp-1 shrink-0"
+									weight="medium"
+									color={getColorFromGameState(state, isLoaned)}
+								>
+									{t(getItemStateTranslationKey(state, isLoaned))}
+								</BgtText>
+							)}
+							{meta}
+						</div>
 					</div>
 				</div>
+				{badge && <div className="absolute top-2 right-2">{badge}</div>}
 			</div>
 		</Link>
 	);

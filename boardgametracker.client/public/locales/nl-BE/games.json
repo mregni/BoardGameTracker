@@ -29,6 +29,7 @@
     "failed-unknown": "Importeren van spellen van BoardGameGeek mislukt, bekijk de logs voor meer details."
   },
   "title": "Spellen",
+  "load-error": "Je spellen konden niet geladen worden. Controleer of de server bereikbaar is en probeer opnieuw.",
   "new": "Spel toevoegen",
   "count_other": "{{count}} spellen",
   "count_one": "{{count}} spel",
@@ -53,12 +54,13 @@
     "age-7-9": "7 - 9",
     "age-10-12": "10 - 12",
     "age-13plus": "13+",
-    "show-more": "Meer filters tonen",
-    "show-less": "Minder filters tonen",
+    "show-more": "Filters",
+    "show-less": "Filters verbergen",
     "no-match": "Geen spellen gevonden voor de huidige filters.",
     "clear": "Filters wissen",
-    "state-any": "Status: alle",
-    "language-any": "Taal: alle"
+    "remove": "Filter {{name}} verwijderen",
+    "group-game": "Spel",
+    "group-copy": "Jouw exemplaar"
   },
   "columns": {
     "title": "Titel",
@@ -75,7 +77,6 @@
     "current-price": "Huidige prijs"
   },
   "table": {
-    "total-games": "Totaal aantal spellen",
     "empty": "Geen spellen die aan de gekozen filters voldoen.",
     "total-price-owned": "Totale prijs (in bezit)",
     "mean-price-owned_one": "Gemiddelde prijs (in bezit) · {{count}} spel met prijs",
@@ -92,7 +93,47 @@
   "tracked": "Prijs wordt gevolgd",
   "tracked-pending": "Wacht op de eerste prijscontrole",
   "view": {
-    "table": "Tabelweergave",
-    "grid": "Rasterweergave"
+    "grid": "Raster",
+    "table": "Tabel"
+  },
+  "plays_one": "{{count}} keer gespeeld",
+  "plays_other": "{{count}} keer gespeeld",
+  "sort": {
+    "label": "Sorteren op",
+    "title": "Titel",
+    "plays": "Meest gespeeld",
+    "last-played": "Laatst gespeeld",
+    "added": "Laatst toegevoegd",
+    "rating": "Beoordeling",
+    "weight": "Gewicht"
+  },
+  "never-played": "Nog nooit gespeeld",
+  "pick": {
+    "button": "Kies voor ons",
+    "title": "Wat spelen we?",
+    "description": "Vertel het wiel met hoeveel jullie zijn en hoeveel tijd je hebt. Het kiest alleen spellen die je bezit en die niet uitgeleend zijn.",
+    "spinning": "Het wiel draait…",
+    "result": "Vanavond: {{title}}",
+    "again": "Opnieuw draaien",
+    "open": "Open spel",
+    "spin": "Draai het wiel",
+    "candidates_one": "{{count}} spel op het wiel",
+    "candidates_other": "{{count}} spellen op het wiel",
+    "none": "Geen enkel spel dat je bezit past bij deze keuzes. Maak er een ruimer.",
+    "tonight": "Vanavond spelen we",
+    "players": "{{range}} spelers",
+    "log": "Log dit spel",
+    "exclude": "Niet deze",
+    "candidates-capped": "{{count}} van {{total}} spellen op het wiel",
+    "restore_one": "{{count}} uitgesloten spel terugzetten",
+    "restore_other": "{{count}} uitgesloten spellen terugzetten",
+    "fresh": "Ongespeeld eerst",
+    "all-games": "Alle beschikbare spellen",
+    "adjust": "Aanpassen",
+    "excluded": "Niet vanavond",
+    "restore-one": "{{title}} terug op het wiel zetten",
+    "none-owned": "Er is nu geen spel in bezit beschikbaar. Uitgeleende spellen komen niet op het wiel.",
+    "to-games": "Naar je spellen",
+    "vetoed": "{{title}} is van het wiel. Opnieuw draaien…"
   }
 }

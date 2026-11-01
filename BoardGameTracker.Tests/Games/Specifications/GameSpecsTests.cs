@@ -80,7 +80,7 @@ public class GameSpecsTests
 
         spec.Evaluate(new[] { banana, apple }).Select(x => x.Title).Should().ContainInOrder("Apple", "Banana");
         spec.AsNoTracking.Should().BeTrue();
-        spec.ShouldIncludeExactly("Expansions", "Categories");
+        spec.ShouldIncludeExactly("Expansions", "Categories", "Loans");
     }
 
     public static TheoryData<Specification<Game>, Specification<Game>, bool> DetailSpecs => new()

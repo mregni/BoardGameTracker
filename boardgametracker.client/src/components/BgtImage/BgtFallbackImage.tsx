@@ -7,9 +7,10 @@ interface Props {
 	image: string | null | undefined;
 	className?: string;
 	lazy?: boolean;
+	decorative?: boolean;
 }
 
-export const BgtFallbackImage = ({ title, image, className, lazy = false }: Props) => {
+export const BgtFallbackImage = ({ title, image, className, lazy = false, decorative = false }: Props) => {
 	const [failedImage, setFailedImage] = useState<string | null>(null);
 	const showImage = !!image && failedImage !== image;
 
@@ -17,7 +18,7 @@ export const BgtFallbackImage = ({ title, image, className, lazy = false }: Prop
 		return (
 			<img
 				src={image}
-				alt={title}
+				alt={decorative ? "" : title}
 				loading={lazy ? "lazy" : undefined}
 				decoding="async"
 				className={cx("w-full h-full object-cover", className)}
@@ -28,8 +29,7 @@ export const BgtFallbackImage = ({ title, image, className, lazy = false }: Prop
 
 	return (
 		<div
-			role="img"
-			aria-label={title}
+			{...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": title })}
 			style={{ "--fallback-color": StringToRgb(title) } as CSSProperties}
 			className={cx("w-full h-full flex flex-col justify-center bg-(--fallback-color)", className)}
 		>

@@ -25,7 +25,7 @@ import { Route as GamesGameIdRouteImport } from './routes/games/$gameId'
 import { Route as GamesAddRouteImport } from './routes/games/add'
 import { Route as GamesBggRouteImport } from './routes/games/bgg'
 import { Route as GamesNewRouteImport } from './routes/games/new'
-import { Route as GamesTableRouteImport } from './routes/games/table'
+import { Route as GamesPickRouteImport } from './routes/games/pick'
 import { Route as LeaderboardIndexRouteImport } from './routes/leaderboard/index'
 import { Route as LoansIndexRouteImport } from './routes/loans/index'
 import { Route as LocationsIndexRouteImport } from './routes/locations/index'
@@ -123,9 +123,9 @@ const GamesNewRoute = GamesNewRouteImport.update({
   path: '/games/new',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GamesTableRoute = GamesTableRouteImport.update({
-  id: '/games/table',
-  path: '/games/table',
+const GamesPickRoute = GamesPickRouteImport.update({
+  id: '/games/pick',
+  path: '/games/pick',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeaderboardIndexRoute = LeaderboardIndexRouteImport.update({
@@ -226,7 +226,7 @@ export interface FileRoutesByFullPath {
   '/games/add': typeof GamesAddRoute
   '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
-  '/games/table': typeof GamesTableRoute
+  '/games/pick': typeof GamesPickRoute
   '/locations/$locationId': typeof LocationsLocationIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/players/new': typeof PlayersNewRoute
@@ -261,7 +261,7 @@ export interface FileRoutesByTo {
   '/games/add': typeof GamesAddRoute
   '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
-  '/games/table': typeof GamesTableRoute
+  '/games/pick': typeof GamesPickRoute
   '/locations/$locationId': typeof LocationsLocationIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/players/new': typeof PlayersNewRoute
@@ -298,7 +298,7 @@ export interface FileRoutesById {
   '/games/add': typeof GamesAddRoute
   '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
-  '/games/table': typeof GamesTableRoute
+  '/games/pick': typeof GamesPickRoute
   '/locations/$locationId': typeof LocationsLocationIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/players/new': typeof PlayersNewRoute
@@ -335,7 +335,7 @@ export interface FileRouteTypes {
     | '/games/add'
     | '/games/bgg'
     | '/games/new'
-    | '/games/table'
+    | '/games/pick'
     | '/locations/$locationId'
     | '/players/$playerId'
     | '/players/new'
@@ -370,7 +370,7 @@ export interface FileRouteTypes {
     | '/games/add'
     | '/games/bgg'
     | '/games/new'
-    | '/games/table'
+    | '/games/pick'
     | '/locations/$locationId'
     | '/players/$playerId'
     | '/players/new'
@@ -406,7 +406,7 @@ export interface FileRouteTypes {
     | '/games/add'
     | '/games/bgg'
     | '/games/new'
-    | '/games/table'
+    | '/games/pick'
     | '/locations/$locationId'
     | '/players/$playerId'
     | '/players/new'
@@ -438,7 +438,7 @@ export interface RootRouteChildren {
   GamesAddRoute: typeof GamesAddRoute
   GamesBggRoute: typeof GamesBggRoute
   GamesNewRoute: typeof GamesNewRoute
-  GamesTableRoute: typeof GamesTableRoute
+  GamesPickRoute: typeof GamesPickRoute
   LocationsLocationIdRoute: typeof LocationsLocationIdRoute
   PlayersPlayerIdRoute: typeof PlayersPlayerIdRoute
   PlayersNewRoute: typeof PlayersNewRoute
@@ -576,11 +576,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesNewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/games/table': {
-      id: '/games/table'
-      path: '/games/table'
-      fullPath: '/games/table'
-      preLoaderRoute: typeof GamesTableRouteImport
+    '/games/pick': {
+      id: '/games/pick'
+      path: '/games/pick'
+      fullPath: '/games/pick'
+      preLoaderRoute: typeof GamesPickRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/leaderboard/': {
@@ -731,7 +731,7 @@ const rootRouteChildren: RootRouteChildren = {
   GamesAddRoute: GamesAddRoute,
   GamesBggRoute: GamesBggRoute,
   GamesNewRoute: GamesNewRoute,
-  GamesTableRoute: GamesTableRoute,
+  GamesPickRoute: GamesPickRoute,
   LocationsLocationIdRoute: LocationsLocationIdRoute,
   PlayersPlayerIdRoute: PlayersPlayerIdRoute,
   PlayersNewRoute: PlayersNewRoute,

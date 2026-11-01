@@ -148,3 +148,55 @@ body {
 .bgt-image-card:hover img {
 	scale: 1.05;
 }
+
+.wheel-slice {
+	transform-box: view-box;
+	transform-origin: 0 0;
+	transition: transform 320ms cubic-bezier(0.4, 0, 1, 1);
+	animation: wheel-slice-in 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wheel-slice.vetoed {
+	transform: scale(0);
+}
+
+@keyframes wheel-slice-in {
+	from {
+		transform: scale(0);
+	}
+}
+
+.pick-result {
+	animation: pick-result-in 480ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes pick-result-in {
+	from {
+		opacity: 0;
+		transform: translateY(12px) scale(0.97);
+		filter: blur(4px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.wheel-slice,
+	.pick-result {
+		transition: none;
+		animation: none;
+	}
+}
+
+.bgt-image-card-cover {
+	outline: 1px solid transparent;
+	transition:
+		outline-color 200ms ease,
+		box-shadow 200ms ease;
+}
+
+.bgt-image-card:hover .bgt-image-card-cover,
+a:focus-visible .bgt-image-card-cover {
+	outline-color: rgb(99 102 241 / 0.6);
+	box-shadow:
+		0 10px 15px -3px rgb(0 0 0 / 0.1),
+		0 4px 6px -4px rgb(0 0 0 / 0.1);
+}

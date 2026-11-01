@@ -5681,6 +5681,10 @@ export interface components {
             soldPrice: number | null;
             /** Format: date-time */
             additionDate: string | null;
+            /** Format: int32 */
+            playCount: number;
+            /** Format: date-time */
+            lastPlayed: string | null;
             expansions: components["schemas"]["ExpansionDto"][] | null;
             categories: components["schemas"]["GameLinkDto"][] | null;
             mechanics: components["schemas"]["GameLinkDto"][] | null;

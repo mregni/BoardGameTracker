@@ -33,7 +33,7 @@ export const getColorFromGameState = (
 		case GameState.Owned:
 			return "green";
 		case GameState.PreviouslyOwned:
-			return "red";
+			return "purple";
 		case GameState.ForTrade:
 			return "blue";
 		default:
