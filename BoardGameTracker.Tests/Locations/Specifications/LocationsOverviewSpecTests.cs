@@ -23,6 +23,8 @@ public class LocationsOverviewSpecTests
         result.Select(x => x.Name).Should().Equal("Alpha", "Zebra");
         result[0].PlayCount.Should().Be(2);
         result[1].PlayCount.Should().Be(0);
+        result[0].LastPlayed.Should().Be(new DateTime(2030, 1, 2));
+        result[1].LastPlayed.Should().BeNull();
         spec.AsNoTracking.Should().BeTrue();
     }
 }

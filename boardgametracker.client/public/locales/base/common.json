@@ -89,7 +89,8 @@
   "delete": {
     "title": "Delete {{title}}",
     "description": "Are you sure you want to delete {{title}} and all its content? This cannot be undone.",
-    "button": "Delete"
+    "button": "Delete",
+    "named": "Delete {{name}}"
   },
   "no-sessions": {
     "title": "No sessions logged yet",
@@ -146,5 +147,6 @@
     "last-12-months": "Last 12 months",
     "last-12-months-short": "12 mo",
     "custom": "Custom"
-  }
+  },
+  "edit-named": "Edit {{name}}"
 }

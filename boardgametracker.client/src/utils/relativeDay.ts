@@ -1,10 +1,11 @@
 import { differenceInCalendarDays, differenceInCalendarMonths } from "date-fns";
 
 const unitFor = (target: Date, now: Date): [number, Intl.RelativeTimeFormatUnit] => {
-	const days = Math.max(0, differenceInCalendarDays(target, now));
-	if (days < 14) return [days, "day"];
-	if (days < 60) return [Math.floor(days / 7), "week"];
-	return [Math.max(2, differenceInCalendarMonths(target, now)), "month"];
+	const days = differenceInCalendarDays(target, now);
+	if (Math.abs(days) < 14) return [days, "day"];
+	if (Math.abs(days) < 60) return [Math.trunc(days / 7), "week"];
+	const months = differenceInCalendarMonths(target, now);
+	return [Math.sign(days) * Math.max(2, Math.abs(months)), "month"];
 };
 
 export const relativeDay = (date: Date | string, uiLanguage: string, now: Date = new Date()): string => {
