@@ -15,25 +15,25 @@ const places = [
 	{
 		order: "order-2",
 		avatar: "big",
-		value: "text-2xl md:text-3xl",
+		value: "text-3xl md:text-4xl",
 		ring: "ring-gold",
-		step: "h-36 border-gold/60 border-t-gold from-gold/15 to-gold/[0.03] text-gold md:h-40",
+		step: "h-32 border-gold/60 border-t-gold from-gold/15 to-gold/[0.03] text-gold md:h-36",
 		delay: "motion-safe:[animation-delay:240ms]",
 	},
 	{
 		order: "order-1",
 		avatar: "large",
-		value: "text-xl md:text-2xl",
+		value: "text-2xl md:text-3xl",
 		ring: "ring-primary-text/70",
-		step: "h-32 border-primary/40 border-t-primary-text from-primary/30 to-primary/5 text-white md:h-36",
+		step: "h-28 border-primary/40 border-t-primary-text from-primary/30 to-primary/5 text-white md:h-32",
 		delay: "motion-safe:[animation-delay:120ms]",
 	},
 	{
 		order: "order-3",
 		avatar: "large",
-		value: "text-xl md:text-2xl",
+		value: "text-2xl md:text-3xl",
 		ring: "ring-primary/50",
-		step: "h-28 border-primary/25 border-t-primary/70 from-primary/20 to-primary/5 text-white/80 md:h-[7.75rem]",
+		step: "h-[6.75rem] border-primary/25 border-t-primary/70 from-primary/20 to-primary/5 text-white/80 md:h-28",
 		delay: "",
 	},
 ] as const;
@@ -44,12 +44,17 @@ const metricLabel: Record<LeaderboardRankBy, string> = {
 	sessions: "columns.sessions",
 };
 
+export const podiumPlayers = (players: LeaderboardEntry[]) => {
+	const top = players.filter((entry) => entry.isRanked).slice(0, places.length);
+	return top.length < 2 ? [] : top;
+};
+
 export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 	const { t } = useTranslation("leaderboard");
 	const format = useNumberFormat();
-	const top = players.filter((entry) => entry.isRanked).slice(0, places.length);
+	const top = podiumPlayers(players);
 
-	if (top.length < 2) return null;
+	if (top.length === 0) return null;
 
 	const metric = (entry: LeaderboardEntry) => {
 		if (rankBy === "winRate") return format.percent(entry.winPercentage / 100);
@@ -66,6 +71,7 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 
 	return (
 		<section aria-label={t("ranking.podium")} className="py-2 md:py-4">
+			<h2 className="sr-only">{t("ranking.podium")}</h2>
 			<ol
 				className={cx(
 					"isolate mx-auto grid w-full items-end gap-2 border-b-2 border-primary/40 sm:gap-4",
@@ -75,7 +81,7 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 				{top.map((entry, index) => {
 					const place = places[index];
 					return (
-						<li key={entry.playerId} className={cx("relative min-w-0", place.order)}>
+						<li key={entry.playerId} className={cx("relative min-w-0", top.length === 3 && place.order)}>
 							{index === 0 && (
 								<span
 									aria-hidden="true"
@@ -85,6 +91,7 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 							<Link
 								to="/players/$playerId"
 								params={{ playerId: entry.playerId }}
+								aria-label={`${t("ranking.place")} ${entry.rank}, ${entry.name}, ${metric(entry)} ${t(metricLabel[rankBy])}, ${details(entry)}`}
 								className="group flex min-w-0 flex-col items-center text-center"
 							>
 								<CrownIcon
@@ -105,14 +112,11 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 										place.delay,
 									)}
 								>
-									<span className="text-4xl font-bold leading-none md:text-5xl">
-										<span className="sr-only">{t("ranking.place")} </span>
-										{entry.rank}
-									</span>
-									<span className={cx("mt-1 font-bold leading-tight text-card-value", place.value)}>
+									<span className="text-sm font-bold leading-none">{entry.rank}</span>
+									<span className={cx("mt-1 font-bold leading-none text-card-value", place.value)}>
 										{metric(entry)}
-										<span className="sr-only"> {t(metricLabel[rankBy])}</span>
 									</span>
+									<span className="mt-0.5 text-xs text-white/80">{t(metricLabel[rankBy])}</span>
 									<small className="max-w-full truncate text-xs text-white/60">{details(entry)}</small>
 								</span>
 							</Link>

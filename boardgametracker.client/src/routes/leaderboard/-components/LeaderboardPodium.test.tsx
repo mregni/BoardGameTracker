@@ -66,6 +66,10 @@ describe("LeaderboardPodium", () => {
 		);
 
 		expect(screen.getAllByRole("listitem")).toHaveLength(2);
+		expect(screen.getAllByRole("link")[0]).toHaveAccessibleName(
+			"ranking.place 1, Mikhaël, 8 columns.wins, 40% · values.sessions",
+		);
+		expect(screen.getAllByRole("listitem")[0].className).not.toContain("order-");
 		expect(screen.queryByText("reggi")).not.toBeInTheDocument();
 	});
 
@@ -85,5 +89,16 @@ describe("LeaderboardPodium", () => {
 		renderWithTheme(<LeaderboardPodium players={players} rankBy={rankBy} />);
 
 		expect(screen.getAllByText(details)).toHaveLength(3);
+	});
+
+	it.each([
+		["wins", "8", "columns.wins"],
+		["winRate", "40%", "columns.win-rate"],
+		["sessions", "20", "columns.sessions"],
+	] as const)("should label the score it ranks by %s", (rankBy, score, unit) => {
+		renderWithTheme(<LeaderboardPodium players={players} rankBy={rankBy} />);
+
+		expect(screen.getAllByText(score)[0]).toHaveClass("text-card-value");
+		expect(screen.getAllByText(unit)).toHaveLength(3);
 	});
 });

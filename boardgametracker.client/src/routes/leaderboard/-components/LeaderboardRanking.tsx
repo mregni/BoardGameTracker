@@ -7,16 +7,12 @@ import { BgtProgressBar } from "@/components/BgtProgressBar/BgtProgressBar";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { useShortDuration } from "@/hooks/useShortDuration";
 import type { LeaderboardEntry, LeaderboardRankBy } from "@/models";
-import { HeaderWithHint } from "./HeaderWithHint";
 
 interface Props {
 	players: LeaderboardEntry[];
 	rankBy: LeaderboardRankBy;
 	minimumSessions: number;
-	minimumPlayersForPodium: number;
 	label: string;
-	winCount: number;
-	coopWinCount: number;
 }
 
 const baseColumns = "grid items-center gap-x-3 gap-y-1 grid-cols-[1.375rem_1.75rem_minmax(0,1fr)_auto_0.875rem]";
@@ -27,13 +23,7 @@ const withoutPodiums =
 const columnsFor = (showPodiums: boolean) => cx(baseColumns, showPodiums ? withPodiums : withoutPodiums);
 
 const desktopOnly = "hidden md:block";
-const columnLabel = "text-xs font-medium uppercase tracking-wider text-white/60";
-
-const tieRule: Record<LeaderboardRankBy, string> = {
-	wins: "ranking.ties-wins",
-	winRate: "ranking.ties-win-rate",
-	sessions: "ranking.ties-sessions",
-};
+export const columnLabel = "text-xs font-medium text-white/60";
 
 interface RowProps {
 	entry: LeaderboardEntry;
@@ -46,7 +36,7 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 	const format = useNumberFormat();
 	const duration = useShortDuration();
 	const rate = format.percent(entry.winPercentage / 100);
-	const isTop = entry.rank !== null && entry.rank <= 3;
+	const ranked = cx("font-bold", entry.isRanked ? "text-card-value" : "text-white/60");
 
 	const wins = t("values.wins", { count: entry.winCount });
 	const sessions = t("values.sessions", { count: entry.playCount });
@@ -59,6 +49,18 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 	const details = [rankBy === "wins" ? rate : wins, rankBy === "sessions" ? rate : sessions, standing]
 		.filter(Boolean)
 		.join(" · ");
+	const spoken = [
+		entry.rank === null ? t("ranking.not-ranked-rank") : `${t("ranking.place")} ${entry.rank}`,
+		entry.name,
+		wins,
+		sessions,
+		`${t("columns.win-rate")} ${rate}`,
+		showPodiums && entry.isRanked ? t("values.podiums", { count: entry.podiumCount }) : null,
+		entry.isRanked ? null : t("values.to-rank", { count: entry.sessionsToRank }),
+		`${t("columns.time")} ${duration(entry.minutesPlayed)}`,
+	]
+		.filter(Boolean)
+		.join(", ");
 
 	return (
 		<li>
@@ -66,13 +68,19 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 				to="/players/$playerId"
 				params={{ playerId: entry.playerId }}
 				data-testid="leaderboard-row"
+				aria-label={spoken}
 				className={cx(
 					columnsFor(showPodiums),
 					"rounded-[10px] border px-2.5 py-2 tabular-nums transition-colors hover:border-primary/60 md:px-3",
 					entry.isRanked ? "border-card-border bg-card" : "border-dashed border-card-border bg-transparent",
 				)}
 			>
-				<span className={cx("text-right font-bold", isTop ? "text-yellow-400" : "text-white/60")}>
+				<span
+					className={cx(
+						"text-right font-bold",
+						entry.rank === 1 ? "text-gold" : entry.rank !== null && entry.rank <= 3 ? "text-white" : "text-white/60",
+					)}
+				>
 					{entry.rank ?? (
 						<>
 							<span aria-hidden="true">–</span>
@@ -80,15 +88,22 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 						</>
 					)}
 				</span>
-				<BgtAvatar image={entry.image} title={entry.name} size="medium" />
+				<span aria-hidden="true">
+					<BgtAvatar image={entry.image} title={entry.name} size="medium" />
+				</span>
 				<span className="min-w-0">
 					<strong className="block truncate">{entry.name}</strong>
 					<small className="block text-xs text-white/60 md:hidden">{details}</small>
+					{!entry.isRanked && (
+						<small className="hidden text-xs text-white/60 md:block">
+							{t("values.to-rank", { count: entry.sessionsToRank })}
+						</small>
+					)}
 				</span>
-				<span className={cx(desktopOnly, "text-right", rankBy === "wins" && "font-bold")}>
+				<span className={cx(desktopOnly, "text-right", rankBy === "wins" && ranked)}>
 					{format.integer(entry.winCount)}
 				</span>
-				<span className={cx(desktopOnly, "text-right", rankBy === "sessions" && "font-bold")}>
+				<span className={cx(desktopOnly, "text-right", rankBy === "sessions" && ranked)}>
 					{format.integer(entry.playCount)}
 				</span>
 				<span className="grid grid-cols-1 items-center gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem]">
@@ -101,13 +116,7 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 						aria-label={t("columns.win-rate")}
 						aria-valuetext={rate}
 					/>
-					<span
-						className={cx(
-							"hidden text-right md:block",
-							rankBy === "winRate" && "font-bold",
-							entry.isRanked ? "text-card-value" : "text-white/60",
-						)}
-					>
+					<span className={cx("hidden text-right md:block", rankBy === "winRate" ? ranked : "text-white/80")}>
 						{rate}
 					</span>
 					<b
@@ -125,15 +134,7 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 	);
 };
 
-export const LeaderboardRanking = ({
-	players,
-	rankBy,
-	minimumSessions,
-	minimumPlayersForPodium,
-	label,
-	winCount,
-	coopWinCount,
-}: Props) => {
+export const LeaderboardRanking = ({ players, rankBy, minimumSessions, label }: Props) => {
 	const { t } = useTranslation("leaderboard");
 	const ranked = players.filter((entry) => entry.isRanked);
 	const unranked = players.filter((entry) => !entry.isRanked);
@@ -141,6 +142,7 @@ export const LeaderboardRanking = ({
 
 	return (
 		<section aria-label={label} className="flex flex-col gap-1.5">
+			<h2 className="sr-only">{label}</h2>
 			<div
 				aria-hidden="true"
 				className={cx(columnsFor(showPodiums), columnLabel, "hidden px-3 md:grid [&>span]:whitespace-nowrap")}
@@ -151,14 +153,7 @@ export const LeaderboardRanking = ({
 				<span className="text-right">{t("columns.wins")}</span>
 				<span className="text-right">{t("columns.sessions")}</span>
 				<span>{t("columns.win-rate")}</span>
-				{showPodiums && (
-					<span className="text-right">
-						<HeaderWithHint
-							label={t("columns.podiums")}
-							hint={t("columns.podiums-hint", { count: minimumPlayersForPodium })}
-						/>
-					</span>
-				)}
+				{showPodiums && <span className="text-right">{t("columns.podiums")}</span>}
 				<span className="text-right">{t("columns.time")}</span>
 				<span />
 			</div>
@@ -178,16 +173,6 @@ export const LeaderboardRanking = ({
 						))}
 					</ul>
 				</>
-			)}
-			{(coopWinCount > 0 || ranked.length > 1) && (
-				<p className="max-w-[75ch] pt-1 text-xs leading-5 text-pretty text-white/60">
-					{[
-						coopWinCount > 0 ? t("ranking.coop", { count: coopWinCount, total: winCount }) : null,
-						ranked.length > 1 ? t(tieRule[rankBy]) : null,
-					]
-						.filter(Boolean)
-						.join(" ")}
-				</p>
 			)}
 		</section>
 	);

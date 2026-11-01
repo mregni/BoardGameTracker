@@ -107,22 +107,35 @@ const rankingNames = async () => {
 		.map((row) => row.querySelector("strong")?.textContent);
 };
 
+const podiumNames = () =>
+	within(screen.getByRole("region", { name: "ranking.podium" }))
+		.getAllByRole("link")
+		.map((link) => link.querySelector("strong")?.textContent);
+
 describe("Leaderboard page", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mocks.search = {};
 	});
 
-	it("should ask for the default filters and show the podium, the tiles and the table", async () => {
+	it("should ask for the default filters and continue the table after the podium", async () => {
 		mocks.getLeaderboardCall.mockResolvedValue(leaderboard(byWins));
 
 		renderPage();
 
-		expect(await rankingNames()).toHaveLength(4);
-		expect(screen.getByRole("region", { name: "ranking.podium" })).toBeInTheDocument();
-		expect(screen.queryByRole("note")).not.toBeInTheDocument();
+		expect(await rankingNames()).toEqual(["Anna"]);
+		expect(podiumNames()).toEqual(["Mikhaël", "Kathleen", "reggi"]);
+		expect(screen.getByText("ranking.how")).toBeInTheDocument();
 		expect(mocks.getLeaderboardCall).toHaveBeenCalledWith({ minSessions: 5, rankBy: "wins" });
-		expect(await rankingNames()).toEqual(["Mikhaël", "Kathleen", "reggi", "Anna"]);
+	});
+
+	it("should leave out the table when everybody stands on the podium", async () => {
+		mocks.getLeaderboardCall.mockResolvedValue(leaderboard(byWins.slice(0, 3)));
+
+		renderPage();
+
+		await screen.findByRole("region", { name: "ranking.podium" });
+		expect(screen.queryByRole("region", { name: /^ranking\.label/ })).not.toBeInTheDocument();
 	});
 
 	it.each([
@@ -141,7 +154,8 @@ describe("Leaderboard page", () => {
 
 		renderPage();
 
-		expect(await rankingNames()).toEqual(order);
+		const table = await rankingNames();
+		expect([...podiumNames(), ...table]).toEqual(order);
 		expect(mocks.getLeaderboardCall).toHaveBeenCalledWith({ minSessions: 5, rankBy: rank });
 	});
 
@@ -166,7 +180,7 @@ describe("Leaderboard page", () => {
 		});
 	});
 
-	it("should link the tiles and every row to the player", async () => {
+	it("should link the podium, the remaining record and the remaining row to the player", async () => {
 		mocks.getLeaderboardCall.mockResolvedValue(leaderboard(byWins));
 
 		renderPage();
@@ -174,7 +188,7 @@ describe("Leaderboard page", () => {
 		await rankingNames();
 		const hrefs = screen.getAllByRole("link").map((link) => link.getAttribute("href"));
 		expect(hrefs.every((href) => href?.startsWith("/players/"))).toBe(true);
-		expect(hrefs).toHaveLength(3 + 4 + 4);
+		expect(hrefs).toHaveLength(3 + 1 + 1);
 	});
 
 	it("should update the search when a filter changes", async () => {
@@ -182,7 +196,7 @@ describe("Leaderboard page", () => {
 
 		renderPage();
 
-		await userEvent.click(await screen.findByRole("button", { name: "common:period.last-12-months" }));
+		await userEvent.click(await screen.findByRole("radio", { name: "common:period.last-12-months" }));
 
 		expect(mocks.navigate).toHaveBeenCalledWith({ search: expect.any(Function), replace: true });
 		const [{ search }] = mocks.navigate.mock.calls[0];
@@ -195,7 +209,7 @@ describe("Leaderboard page", () => {
 		renderPage();
 
 		expect(await screen.findByText("empty.title")).toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "common:period.all-time" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("radio", { name: "common:period.all-time" })).not.toBeInTheDocument();
 	});
 
 	it("should keep the filters when nothing matches them", async () => {
@@ -205,6 +219,29 @@ describe("Leaderboard page", () => {
 		renderPage();
 
 		expect(await screen.findByText("empty.filtered-title")).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "common:period.all-time" })).toBeInTheDocument();
+		expect(screen.getByRole("radio", { name: "common:period.all-time" })).toBeInTheDocument();
+
+		await userEvent.click(screen.getByRole("button", { name: "empty.reset" }));
+
+		expect(mocks.navigate).toHaveBeenCalledWith({ search: {}, replace: true });
+	});
+
+	it("should offer a lower minimum when nobody is ranked yet", async () => {
+		mocks.search = { min: 10 };
+		const unranked = [
+			entry(1, "Mikhaël", { rank: null, isRanked: false, playCount: 7 }),
+			entry(2, "Kathleen", { rank: null, isRanked: false, playCount: 4 }),
+		];
+		mocks.getLeaderboardCall.mockResolvedValue(leaderboard(unranked, { minimumSessions: 10 }));
+
+		renderPage();
+
+		expect(await screen.findByRole("status")).toHaveTextContent("ranking.nobody-ranked");
+		expect(screen.queryByRole("region", { name: "ranking.podium" })).not.toBeInTheDocument();
+
+		await userEvent.click(screen.getByRole("button", { name: "ranking.lower-minimum" }));
+
+		const [{ search }] = mocks.navigate.mock.calls[0];
+		expect(search({ min: 10 })).toEqual({ min: undefined });
 	});
 });
