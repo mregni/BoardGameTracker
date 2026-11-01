@@ -55,6 +55,6 @@ describe("useGameData load states", () => {
 		act(() => result.current.retry());
 
 		await waitFor(() => expect(result.current.detailsFailed).toBe(false));
-		expect(vi.mocked(getGameCall).mock.calls.length).toBe(gameCalls);
+		expect(vi.mocked(getGameCall).mock.calls).toHaveLength(gameCalls);
 	});
 });

@@ -13,10 +13,10 @@ export const GameDetailsStatus = ({ failed, onRetry }: Props) => {
 
 	if (!failed) {
 		return (
-			<div role="status" className="flex justify-center py-10">
+			<output className="flex justify-center py-10">
 				<BgtSpinner className="size-8 border-4 text-primary" />
 				<span className="sr-only">{t("common:loading-data")}</span>
-			</div>
+			</output>
 		);
 	}
 
