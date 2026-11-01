@@ -148,7 +148,8 @@
     "owned": "In bezit",
     "previously-owned": "Vroeger in bezit",
     "wanted": "Gewenst",
-    "on-loan": "Uitgeleend"
+    "on-loan": "Uitgeleend",
+    "on-loan-to": "Uitgeleend aan {{name}} · sinds {{date}}"
   },
   "details": {
     "title": "Details van {{title}}"
@@ -169,7 +170,8 @@
       "average": "Gemiddelde",
       "lowest-winning": "Laagste winnende score",
       "lowest": "Laagste"
-    }
+    },
+    "top-scoring-help": "Hoogste verliezende score is de beste score waarmee iemand toch verloor. Laagste winnende score is de laagste score waarmee iemand toch won."
   },
   "top-players": {
     "trend-up": "Won meer van de laatste {{sessions}} sessies dan daarvoor",
@@ -215,7 +217,9 @@
   },
   "facts": {
     "year": "Jaar van uitgave",
-    "min-age": "Minimumleeftijd"
+    "min-age": "Minimumleeftijd",
+    "about": "Over het spel",
+    "your-copy": "Jouw exemplaar"
   },
   "about": {
     "show-more": "Meer tonen",
@@ -230,7 +234,18 @@
     },
     "hint": "Geldt alleen voor nieuwe sessies; gelogde sessies blijven zoals ze gespeeld zijn."
   },
-  "first-play": {
-    "action": "Log het eerste spel"
+  "load-error": {
+    "not-found-description": "Misschien is het verwijderd, of is de link verouderd.",
+    "failed": "Dit spel kon niet geladen worden",
+    "failed-description": "De server antwoordde niet zoals verwacht. Probeer het zo meteen opnieuw.",
+    "details-failed": "De statistieken van dit spel konden niet geladen worden.",
+    "back": "Terug naar spellen",
+    "retry": "Opnieuw proberen"
+  },
+  "play-summary": {
+    "count_one": "1 keer gespeeld",
+    "count_other": "{{count}} keer gespeeld",
+    "total": "{{duration}} in totaal",
+    "last": "laatst gespeeld {{relative}}"
   }
 }

@@ -148,7 +148,8 @@
     "owned": "Owned",
     "previously-owned": "Previously owned",
     "wanted": "Wanted",
-    "on-loan": "On loan"
+    "on-loan": "On loan",
+    "on-loan-to": "On loan to {{name}} · since {{date}}"
   },
   "details": {
     "title": "{{title}} details"
@@ -169,7 +170,8 @@
       "average": "Average",
       "lowest-winning": "Lowest winning",
       "lowest": "Lowest"
-    }
+    },
+    "top-scoring-help": "Highest losing is the best score that still lost. Lowest winning is the lowest score that still won."
   },
   "top-players": {
     "trend-up": "Won more of the last {{sessions}} sessions than before",
@@ -215,7 +217,9 @@
   },
   "facts": {
     "year": "Year published",
-    "min-age": "Minimum age"
+    "min-age": "Minimum age",
+    "about": "About the game",
+    "your-copy": "Your copy"
   },
   "about": {
     "show-more": "Show more",
@@ -230,7 +234,18 @@
     },
     "hint": "Only affects new sessions; logged sessions keep how they were played."
   },
-  "first-play": {
-    "action": "Log the first play"
+  "load-error": {
+    "not-found-description": "It may have been deleted, or the link is out of date.",
+    "failed": "This game could not be loaded",
+    "failed-description": "The server did not answer as expected. Try again in a moment.",
+    "details-failed": "The statistics for this game could not be loaded.",
+    "back": "Back to games",
+    "retry": "Try again"
+  },
+  "play-summary": {
+    "count_one": "Played once",
+    "count_other": "Played {{count}} times",
+    "total": "{{duration}} in total",
+    "last": "last played {{relative}}"
   }
 }

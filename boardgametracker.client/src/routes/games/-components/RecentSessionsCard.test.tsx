@@ -46,7 +46,7 @@ describe("RecentSessionsCard", () => {
 		expect(row).toHaveTextContent("Kathleen");
 		expect(row).toHaveTextContent("20");
 		expect(row).not.toHaveTextContent("Mikhaël");
-		expect(row).toHaveAttribute("title", "common:player · short-duration.hours-minutes");
+		expect(row).toHaveTextContent("common:player · short-duration.hours-minutes");
 	});
 
 	it("leaves out the score for a game without scoring", () => {
@@ -58,7 +58,9 @@ describe("RecentSessionsCard", () => {
 			/>,
 		);
 
-		expect(screen.getByRole("listitem")).toHaveTextContent(/^26-10-05Mikhaël$/);
+		expect(screen.getByRole("listitem")).toHaveTextContent(
+			/^26-10-05Mikhaëlcommon:player · short-duration.hours-minutes$/,
+		);
 	});
 
 	it("shows the team result and team score instead of a winner for a co-op session", () => {

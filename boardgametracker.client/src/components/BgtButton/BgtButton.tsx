@@ -6,6 +6,7 @@ const buttonVariants = cva("font-bold rounded-sm inline-flex flex-row gap-1 just
 		variant: {
 			primary: "bg-primary/60 hover:bg-primary/50 text-white",
 			cancel: "hover:bg-cancel/10 text-cancel border border-cancel/60",
+			secondary: "bg-primary/10 hover:bg-primary/25 text-white border border-primary/40",
 			error: "bg-error-strong hover:bg-error-strong/80 text-white [--focus-color:var(--color-bad)]",
 			text: "text-primary-text hover:text-indigo-300",
 			outline: "border border-primary/60 text-white hover:bg-primary/20",
@@ -30,6 +31,7 @@ const buttonVariants = cva("font-bold rounded-sm inline-flex flex-row gap-1 just
 const disabledVariantClasses: Record<NonNullable<VariantProps<typeof buttonVariants>["variant"]>, string> = {
 	primary: "bg-white/10 text-white/40",
 	cancel: "text-white/40 border border-white/20",
+	secondary: "text-white/40 border border-white/20",
 	error: "bg-white/10 text-white/40",
 	text: "text-white/40",
 	outline: "text-white/40 border border-white/20",

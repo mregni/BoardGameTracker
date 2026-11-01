@@ -1,7 +1,7 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useTimeouts } from "@/hooks/useTimeouts";
-import { QUERY_KEYS } from "@/models";
+import { isApiError, QUERY_KEYS } from "@/models";
 import { isPriceError, isPriceSettingsError, priceErrorKey } from "@/models/Games/GamePrice";
 import { useIntegrationSettings } from "@/routes/-hooks/useIntegrationSettings";
 import { useToasts } from "@/routes/-hooks/useToasts";
@@ -37,8 +37,15 @@ export const useGameData = (props: UseGameDataProps) => {
 	const settings = settingsQuery.data;
 	const statistics = statisticsQuery.data;
 	const sessions = sessionsQuery.data;
-	const isLoading =
-		gameQuery.isLoading || settingsQuery.isLoading || sessionsQuery.isLoading || statisticsQuery.isLoading;
+	const isLoading = gameQuery.isLoading || settingsQuery.isLoading;
+	const loadFailed = gameQuery.isError || settingsQuery.isError;
+	const isNotFound = isApiError(gameQuery.error) && gameQuery.error.status === 404;
+	const detailsFailed = statisticsQuery.isError || sessionsQuery.isError;
+	const retry = () => {
+		for (const query of [gameQuery, settingsQuery, statisticsQuery, sessionsQuery]) {
+			if (query.isError) void query.refetch();
+		}
+	};
 
 	const schedule = useTimeouts();
 	const priceQuery = useQuery({
@@ -134,6 +141,10 @@ export const useGameData = (props: UseGameDataProps) => {
 
 	return {
 		isLoading,
+		loadFailed,
+		isNotFound,
+		detailsFailed,
+		retry,
 		game,
 		deleteGame,
 		settings,

@@ -1,46 +1,31 @@
-import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Gamepad from "@/assets/icons/gamepad.svg?react";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { usePermissions } from "@/hooks/usePermissions";
 
 interface Props {
-	gameId: number;
 	wanted?: boolean;
+	onAddSession?: () => void;
 }
 
-export const GameDetailEmptyState = ({ gameId, wanted = false }: Props) => {
+export const GameDetailEmptyState = ({ wanted = false, onAddSession }: Props) => {
 	const { t } = useTranslation("game");
-	const { canWrite } = usePermissions();
 
 	return (
-		<div className="flex items-center justify-center min-h-[60vh]">
-			<div className="text-center max-w-lg flex flex-col gap-3">
-				<div className="mb-6 flex justify-center">
-					<div className="w-24 h-24 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
-						<Gamepad className="text-primary/50 size-12" />
-					</div>
-				</div>
-
-				<BgtHeading className="mb-3">{t(wanted ? "no-sessions.not-played" : "no-sessions.title")}</BgtHeading>
-
-				{!wanted && (
-					<BgtText color="white" opacity={60} className="leading-relaxed">
-						{t("no-sessions.description")}
-					</BgtText>
-				)}
-
-				{!wanted && canWrite && (
-					<Link
-						to="/sessions/new/$gameId"
-						params={{ gameId }}
-						className="self-center mt-3 px-4 py-2 rounded font-bold bg-primary/60 hover:bg-primary/50 text-white"
-					>
-						{t("first-play.action")}
-					</Link>
-				)}
-			</div>
+		<div className="flex flex-col items-center gap-3 rounded-lg border border-primary/20 bg-primary/10 px-4 py-10 text-center">
+			<Gamepad className="text-primary size-10" />
+			<BgtHeading as="h2" size="6">
+				{t(wanted ? "no-sessions.not-played" : "no-sessions.title")}
+			</BgtHeading>
+			<BgtText color="white" opacity={70} className="max-w-md leading-relaxed">
+				{t("no-sessions.description")}
+			</BgtText>
+			{onAddSession && (
+				<BgtButton variant="primary" onClick={onAddSession} className="mt-2">
+					{t("add")}
+				</BgtButton>
+			)}
 		</div>
 	);
 };
