@@ -2,7 +2,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import Target from "@/assets/icons/target.svg?react";
+import List from "@/assets/icons/list.svg?react";
+import Package from "@/assets/icons/package.svg?react";
 import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtText } from "@/components/BgtText/BgtText";
@@ -13,14 +14,14 @@ interface Props {
 	game: Game;
 	manualCount: number;
 	ragEnabled: boolean;
-	canTrackPrice?: boolean;
-	onTrackPrice?: () => void;
+	onOpenManuals: () => void;
+	onOpenExpansions: () => void;
 }
 
 const LONG_DESCRIPTION_LENGTH = 180;
 
 export const GameStaticSection = (props: Props) => {
-	const { game, manualCount, ragEnabled, canTrackPrice = false, onTrackPrice } = props;
+	const { game, manualCount, ragEnabled, onOpenManuals, onOpenExpansions } = props;
 	const { t } = useTranslation("game");
 	const navigate = useNavigate();
 	const [expanded, setExpanded] = useState(false);
@@ -60,23 +61,37 @@ export const GameStaticSection = (props: Props) => {
 						aria-expanded={expanded}
 						aria-controls={`game-description-${game.id}`}
 						onClick={() => setExpanded((value) => !value)}
-						className="text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
+						className="text-sm text-primary-text hover:text-indigo-300 cursor-pointer pointer-coarse:min-h-11"
 					>
 						{expanded ? t("about.show-less") : t("about.show-more")}
 					</button>
 				)}
 			</div>
-			{(ragEnabled || canTrackPrice) && (
-				<div className="flex gap-2">
-					{ragEnabled && <RulebookChatButton gameId={game.id} disabled={manualCount === 0} />}
-					{canTrackPrice && (
-						<BgtButton variant="cancel" size="1" onClick={onTrackPrice}>
-							<Target className="size-4" />
-							{t("track-price.button")}
-						</BgtButton>
-					)}
-				</div>
-			)}
+			<div className="flex flex-wrap gap-2">
+				<BgtButton
+					variant="secondary"
+					size="1"
+					onClick={onOpenManuals}
+					aria-label={`${t("manuals.title")} (${manualCount})`}
+					className="pointer-coarse:min-h-11"
+				>
+					<List className="size-4" />
+					{t("manuals.title")}
+					<span className="tabular-nums text-white/70">{manualCount}</span>
+				</BgtButton>
+				{ragEnabled && <RulebookChatButton gameId={game.id} disabled={manualCount === 0} />}
+				<BgtButton
+					variant="secondary"
+					size="1"
+					onClick={onOpenExpansions}
+					aria-label={`${t("expansions.title")} (${game.expansions.length})`}
+					className="pointer-coarse:min-h-11"
+				>
+					<Package className="size-4" />
+					{t("expansions.title")}
+					<span className="tabular-nums text-white/70">{game.expansions.length}</span>
+				</BgtButton>
+			</div>
 		</div>
 	);
 };

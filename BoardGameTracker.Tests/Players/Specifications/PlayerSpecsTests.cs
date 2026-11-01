@@ -81,10 +81,10 @@ public class PlayerSpecsTests
         var alice = new Player("Alice") { Id = 2 };
         var bob = new Player("Bob") { Id = 3 };
         var carl = new Player("Carl") { Id = 4 };
-        carl.PlayerSessions.Add(new PlayerSession(4, won: false));
-        alice.PlayerSessions.Add(new PlayerSession(2, won: true));
-        alice.PlayerSessions.Add(new PlayerSession(2, won: false));
-        alice.PlayerSessions.Add(new PlayerSession(2, won: true));
+        carl.PlayerSessions.Add(PlayedOn(4, false, new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc)));
+        alice.PlayerSessions.Add(PlayedOn(2, true, new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+        alice.PlayerSessions.Add(PlayedOn(2, false, new DateTime(2024, 5, 1, 0, 0, 0, DateTimeKind.Utc)));
+        alice.PlayerSessions.Add(PlayedOn(2, true, new DateTime(2024, 2, 1, 0, 0, 0, DateTimeKind.Utc)));
 
         var spec = new PlayersOverviewSpec();
         var result = spec.Evaluate([zoe, carl, bob, alice]).ToList();
@@ -95,6 +95,18 @@ public class PlayerSpecsTests
         result[1].PlayCount.Should().Be(1);
         result[3].PlayCount.Should().Be(0);
         result[3].WinCount.Should().Be(0);
+        result[0].LastPlayed.Should().Be(new DateTime(2024, 5, 1, 0, 0, 0, DateTimeKind.Utc));
+        result[1].LastPlayed.Should().Be(new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc));
+        result[3].LastPlayed.Should().BeNull();
         spec.AsNoTracking.Should().BeTrue();
+    }
+
+    private static PlayerSession PlayedOn(int playerId, bool won, DateTime start)
+    {
+        var session = new Session(1, start, start.AddHours(1), string.Empty);
+        session.AddPlayerSession(playerId, null, false, won);
+        var playerSession = session.PlayerSessions.Single();
+        typeof(PlayerSession).GetProperty(nameof(PlayerSession.Session))!.SetValue(playerSession, session);
+        return playerSession;
     }
 }

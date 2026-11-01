@@ -1,31 +1,13 @@
 {
   "subtitle_one": "Owned games not played in {{count}}+ month",
   "subtitle_other": "Owned games not played in {{count}}+ months",
+  "subtitle-lead": "Owned games not played in",
   "change-in-settings": "change in Settings",
   "none": {
     "title": "Nothing on the shelf",
     "description": "Owned games that haven't been played in a while show up here."
   },
   "no-matches": "No games on the shelf match these filters.",
-  "tiles": {
-    "on-shelf": "On the shelf",
-    "of-owned_one": "of {{total}} owned game",
-    "of-owned_other": "of {{total}} owned games",
-    "never-played": "Never played",
-    "oldest": "oldest: {{title}}",
-    "oldest-since": "oldest: {{title}}, since {{date}}",
-    "paid-not-played": "Paid, not played",
-    "priced_one": "{{priced}} of {{total}} priced",
-    "priced_other": "{{priced}} of {{total}} priced",
-    "share": "{{share}} of {{total}}",
-    "no-prices": "no prices entered",
-    "planned": "Planned",
-    "planned-for": "for {{date}}",
-    "planned-next": "next on {{date}}",
-    "planned-across_one": "across {{count}} game night",
-    "planned-across_other": "across {{count}} game nights",
-    "no-night": "no game night coming up"
-  },
   "filters": {
     "show": "Show",
     "all": "All",
@@ -42,13 +24,18 @@
     "sort-unplayed": "Longest unplayed",
     "sort-price": "Price paid",
     "sort-owned": "Owned since",
-    "sort-title": "Title"
+    "sort-title": "Title",
+    "toggle": "Filters",
+    "toggle-active_one": "Filters ({{count}})",
+    "toggle-active_other": "Filters ({{count}})"
   },
   "list": {
     "label": "Games on the shelf",
     "game": "Game",
     "last-played": "Last played",
-    "paid": "Paid"
+    "paid": "Paid",
+    "count_one": "{{count}} of {{total}} games",
+    "count_other": "{{count}} of {{total}} games"
   },
   "row": {
     "owned-since": "owned since {{date}}",
@@ -62,7 +49,8 @@
     "plan": "Plan",
     "plan-label": "Plan {{title}} for {{night}}",
     "log-play": "Log session",
-    "log-play-label": "Log a session of {{title}}"
+    "log-play-label": "Log a session of {{title}}",
+    "unplan-label": "Remove {{title}} from the game night"
   },
   "plan": {
     "added": "{{game}} added to the suggestions for {{night}} · {{date}}",
@@ -75,15 +63,31 @@
   },
   "money": {
     "title": "Money on the shelf",
-    "subtitle": "Priced owned games",
+    "share": "{{share}} of the {{total}} paid for owned games",
     "never-played": "Never played",
     "not-played_one": "Not played in {{count}}+ month",
     "not-played_other": "Not played in {{count}}+ months",
-    "rest": "Not on the shelf",
+    "rest": "Played recently",
     "label": "Of {{total}} paid for owned games: {{parts}}",
     "unpriced-one": "{{title}} has no price, so it isn't in the money.",
     "unpriced_one": "{{count}} game on the shelf has no price, so it isn't in the money.",
     "unpriced_other": "{{count}} games on the shelf have no price, so they aren't in the money.",
-    "sort-by-price": "Sort by price paid"
+    "sort-by-price": "Sort by price paid",
+    "none": "Add what you paid for your games to see how much money sits on the shelf."
+  },
+  "nudge": {
+    "next": "Next game night: {{title}} on {{date}}.",
+    "pick": "Pick a game from the shelf with Plan.",
+    "planned_one": "{{count}} game is coming off the shelf.",
+    "planned_other": "{{count}} games are coming off the shelf.",
+    "planned-across_one": "{{count}} game is coming off the shelf across {{nights}} game nights.",
+    "planned-across_other": "{{count}} games are coming off the shelf across {{nights}} game nights."
+  },
+  "summary": {
+    "on-shelf": "{{count}} of {{total}} owned games on the shelf",
+    "never-played_one": "{{count}} never played",
+    "never-played_other": "{{count}} never played",
+    "oldest": "oldest: {{title}}",
+    "oldest-since": "oldest: {{title}}, since {{date}}"
   }
 }

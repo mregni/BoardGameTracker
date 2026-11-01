@@ -5,8 +5,18 @@ import { renderWithTheme, screen } from "@/test/test-utils";
 import { LeaderboardTiles } from "./LeaderboardTiles";
 
 vi.mock("@tanstack/react-router", () => ({
-	Link: ({ to, children, ...rest }: { to: string; children: ReactNode; className?: string }) => (
-		<a href={to} {...rest}>
+	Link: ({
+		to,
+		params,
+		children,
+		...rest
+	}: {
+		to: string;
+		params?: { playerId: number };
+		children: ReactNode;
+		className?: string;
+	}) => (
+		<a href={to.replace("$playerId", String(params?.playerId))} {...rest}>
 			{children}
 		</a>
 	),
@@ -44,38 +54,66 @@ const leaderboard = (overrides: Partial<Leaderboard> = {}): Leaderboard => ({
 });
 
 describe("LeaderboardTiles", () => {
-	it("should show four tiles that link to their player", () => {
-		renderWithTheme(<LeaderboardTiles leaderboard={leaderboard()} />);
+	it("should leave out the record that repeats the ranking and link the rest to their player", () => {
+		renderWithTheme(<LeaderboardTiles leaderboard={leaderboard()} podium={[]} />);
 
 		const links = screen.getAllByRole("link");
-		expect(links.map((link) => link.getAttribute("href"))).toEqual([
-			"/players/7",
-			"/players/3",
-			"/players/4",
-			"/players/5",
-		]);
-		expect(screen.getByText("1,054")).toBeInTheDocument();
+		expect(links.map((link) => link.getAttribute("href"))).toEqual(["/players/3", "/players/4", "/players/5"]);
+		expect(screen.queryByText("highlights.most-wins")).not.toBeInTheDocument();
 		expect(screen.getByText("142")).toBeInTheDocument();
 		expect(screen.getByText("41%")).toBeInTheDocument();
 		expect(screen.getByText("short-duration.hours")).toBeInTheDocument();
+		expect(screen.getByRole("heading", { name: "highlights.title" })).toBeInTheDocument();
 	});
 
-	it("should name the holder and the minimum on the win rate tile", () => {
-		renderWithTheme(<LeaderboardTiles leaderboard={leaderboard()} />);
+	it.each([
+		["winRate", "highlights.best-win-rate", "1,054"],
+		["sessions", "highlights.most-sessions", "41%"],
+	] as const)("should leave out the repeated record when ranking by %s", (rankBy, hidden, shown) => {
+		renderWithTheme(<LeaderboardTiles leaderboard={leaderboard({ rankBy })} podium={[]} />);
 
-		expect(screen.getByText("Mikhaël")).toBeInTheDocument();
-		expect(screen.getByText("reggi · highlights.min-sessions")).toBeInTheDocument();
+		expect(screen.getAllByRole("listitem")).toHaveLength(3);
+		expect(screen.queryByText(hidden, { exact: false })).not.toBeInTheDocument();
+		expect(screen.getByText(shown)).toBeInTheDocument();
 	});
 
-	it("should show unlinked tiles when nobody holds a record yet", () => {
+	it("should name the holder and the minimum on the win rate record", () => {
+		renderWithTheme(<LeaderboardTiles leaderboard={leaderboard()} podium={[]} />);
+
+		expect(screen.getByText("reggi")).toBeInTheDocument();
+		expect(screen.getByText("highlights.best-win-rate · highlights.min-sessions")).toBeInTheDocument();
+	});
+
+	it("should show unlinked records when nobody holds one yet", () => {
 		renderWithTheme(
 			<LeaderboardTiles
 				leaderboard={leaderboard({ mostWins: null, mostPlays: null, bestWinRate: null, mostTimePlayed: null })}
+				podium={[]}
 			/>,
 		);
 
 		expect(screen.queryAllByRole("link")).toHaveLength(0);
 		expect(screen.getAllByText("highlights.nobody-yet")).toHaveLength(3);
-		expect(screen.getByText("highlights.nobody-yet · highlights.min-sessions")).toBeInTheDocument();
+	});
+
+	it("should leave out records the podium already shows but keep the time played", () => {
+		const board = leaderboard();
+		renderWithTheme(
+			<LeaderboardTiles
+				leaderboard={board}
+				podium={[board.mostPlays, board.mostTimePlayed].filter((x) => x !== null)}
+			/>,
+		);
+
+		expect(screen.getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual(["/players/4", "/players/5"]);
+		expect(screen.queryByText("highlights.most-sessions")).not.toBeInTheDocument();
+	});
+
+	it("should give each record link one clear name", () => {
+		renderWithTheme(<LeaderboardTiles leaderboard={leaderboard()} podium={[]} />);
+
+		expect(
+			screen.getByRole("link", { name: "highlights.best-win-rate, highlights.min-sessions: reggi, 41%" }),
+		).toBeInTheDocument();
 	});
 });

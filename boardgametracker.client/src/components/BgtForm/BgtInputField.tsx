@@ -99,6 +99,8 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 					onChange={(event) => handleChange(event.target.value)}
 					onBlur={handleBlur}
 					placeholder={placeholder}
+					aria-invalid={hasErrors || undefined}
+					aria-describedby={hasErrors && label ? `${id}-error` : undefined}
 				/>
 			</BgtInputContainer>
 		</FormFieldWrapper>

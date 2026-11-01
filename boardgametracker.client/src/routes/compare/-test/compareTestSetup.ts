@@ -80,7 +80,6 @@ export const compareResult = (overrides: Partial<CompareResult> = {}): CompareRe
 	totalSessionsTogether: 46,
 	minutesPlayed: 2410,
 	preferredGame: { gameId: 10, sessionCount: 11 },
-	longestSessionTogether: { gameId: 12, minutes: 170 },
 	firstGameTogether: { gameId: 11, startDate: new Date(2025, 2, 12) },
 	closestGame: { gameId: 12, playerId: 1, scoringDifference: 1 },
 	streak: { side: "playerTwo", count: 2 },

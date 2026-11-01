@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
-import { cloneElement, isValidElement } from "react";
+import { type ComponentProps, cloneElement, isValidElement } from "react";
 import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
+import Check from "@/assets/icons/check.svg?react";
 import Plus from "@/assets/icons/plus.svg?react";
 import { formatNumber } from "@/utils/numberUtils";
 import { BgtCard } from "../BgtCard/BgtCard";
@@ -21,6 +22,8 @@ interface Props {
 	onClick?: () => void;
 	action?: React.ReactNode;
 	caption?: React.ReactNode;
+	valueColor?: ComponentProps<typeof BgtText>["color"];
+	pressed?: boolean;
 }
 
 const formatContent = (content: string | number, language: string | undefined): string =>
@@ -40,6 +43,8 @@ export const BgtTextStatistic = (props: Props) => {
 		onClick,
 		action,
 		caption,
+		valueColor = "cyan",
+		pressed,
 	} = props;
 	const { i18n } = useTranslation();
 
@@ -58,7 +63,9 @@ export const BgtTextStatistic = (props: Props) => {
 		<BgtCard
 			className={cx(
 				"col-span-1 h-full",
-				isInteractive && "border-primary/25 transition-colors hover:border-primary/60 cursor-pointer",
+				isInteractive && "transition-colors cursor-pointer",
+				isInteractive &&
+					(pressed ? "border-primary bg-primary/30 ring-1 ring-primary" : "border-primary/25 hover:border-primary/60"),
 			)}
 		>
 			<div className="flex min-h-6 items-center gap-2 text-stat-title mb-2">
@@ -68,11 +75,13 @@ export const BgtTextStatistic = (props: Props) => {
 				</span>
 				{action ? (
 					<span className="ml-auto flex shrink-0 items-center">{action}</span>
+				) : pressed ? (
+					<Check className="size-4 ml-auto shrink-0 text-white" aria-hidden="true" />
 				) : (
-					isInteractive && <CaretRight className="size-4 ml-auto shrink-0 text-primary" />
+					link && <CaretRight className="size-4 ml-auto shrink-0 text-primary" />
 				)}
 			</div>
-			<BgtText size={textSize} color="cyan" weight="bold">
+			<BgtText size={textSize} color={valueColor} weight="bold">
 				{formatContent(content, i18n.language)}
 				{suffix === "%" && "%"}
 				{suffix && suffix !== "%" && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
@@ -119,7 +128,7 @@ export const BgtTextStatistic = (props: Props) => {
 
 	if (onClick) {
 		return (
-			<button type="button" onClick={onClick} className="col-span-1 h-full text-left">
+			<button type="button" onClick={onClick} aria-pressed={pressed} className="col-span-1 h-full text-left">
 				{card}
 			</button>
 		);

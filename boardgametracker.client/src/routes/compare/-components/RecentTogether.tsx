@@ -19,7 +19,8 @@ const pillVariants = cva(
 	{
 		variants: {
 			tone: {
-				ok: "bg-ok/15 text-ok",
+				playerOne: "bg-player-one/15 text-player-one",
+				playerTwo: "bg-player-two/15 text-player-two",
 				neutral: "bg-card-light text-white/60",
 			},
 		},
@@ -55,7 +56,7 @@ export const RecentTogether = ({ sessions, playerOne, playerTwo, dateFormat, uiL
 		if (session.outcome === "playerOne" || session.outcome === "playerTwo") {
 			const player = session.outcome === "playerOne" ? playerOne : playerTwo;
 			return (
-				<span className={pillVariants({ tone: "ok" })}>
+				<span className={pillVariants({ tone: session.outcome })}>
 					<Crown aria-hidden="true" className="size-3.5" />
 					{player.name}
 				</span>
@@ -67,7 +68,7 @@ export const RecentTogether = ({ sessions, playerOne, playerTwo, dateFormat, uiL
 		}
 
 		if (session.outcome === "both") {
-			return <span className={pillVariants({ tone: "ok" })}>{t("recent.both-won")}</span>;
+			return <span className={pillVariants({ tone: "neutral" })}>{t("recent.both-won")}</span>;
 		}
 
 		const other = session.otherWinnerId ? playerById(session.otherWinnerId) : null;
@@ -99,9 +100,9 @@ export const RecentTogether = ({ sessions, playerOne, playerTwo, dateFormat, uiL
 							<span className="col-start-1 row-span-2 row-start-1 sm:col-start-2 sm:row-span-1">
 								<BgtAvatar image={game?.image} title={game?.title ?? ""} size="medium" />
 							</span>
-							<span className="col-start-2 row-start-1 truncate font-semibold sm:col-start-3">
-								{game?.title}
-								{scores}
+							<span className="col-start-2 row-start-1 flex min-w-0 font-semibold sm:col-start-3">
+								<span className="truncate">{game?.title}</span>
+								<span className="shrink-0 whitespace-pre tabular-nums">{scores}</span>
 							</span>
 							<span className="col-start-3 row-start-1 sm:col-start-4">{winner(session)}</span>
 							<span className="col-start-3 row-start-2 justify-self-end text-xs tabular-nums text-white/60 sm:col-start-5 sm:row-start-1">

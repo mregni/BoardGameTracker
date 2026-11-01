@@ -5,8 +5,10 @@ import {
 	formatLoanDate,
 	getLoanStats,
 	getLoanStatus,
+	getLoanStatusTone,
 	getPresetDueDate,
-	LOAN_STATUS_TONE,
+	groupLoansByBorrower,
+	matchesLoanFilter,
 	partitionLoans,
 } from "./loanStatus";
 
@@ -28,21 +30,26 @@ describe("getLoanStatus", () => {
 		const status = getLoanStatus(loan({ dueDate: new Date(2026, 9, 8) }), now);
 
 		expect(status).toEqual({ kind: "overdue", days: 3 });
-		expect(LOAN_STATUS_TONE[status.kind]).toBe("red");
+		expect(getLoanStatusTone(status)).toBe("amber");
+	});
+
+	it("turns red once a loan is more than a month overdue", () => {
+		expect(getLoanStatusTone({ kind: "overdue", days: 30 })).toBe("amber");
+		expect(getLoanStatusTone({ kind: "overdue", days: 31 })).toBe("red");
 	});
 
 	it("marks a loan due today", () => {
 		const status = getLoanStatus(loan({ dueDate: new Date(2026, 9, 11) }), now);
 
 		expect(status).toEqual({ kind: "due-today" });
-		expect(LOAN_STATUS_TONE[status.kind]).toBe("amber");
+		expect(getLoanStatusTone(status)).toBe("soon");
 	});
 
 	it("marks a loan due within a week as due soon", () => {
 		const status = getLoanStatus(loan({ dueDate: new Date(2026, 9, 15) }), now);
 
 		expect(status).toEqual({ kind: "due-soon", days: 4 });
-		expect(LOAN_STATUS_TONE[status.kind]).toBe("amber");
+		expect(getLoanStatusTone(status)).toBe("soon");
 	});
 
 	it("still counts a loan due in exactly seven days as due soon", () => {
@@ -54,14 +61,14 @@ describe("getLoanStatus", () => {
 		const status = getLoanStatus(loan({ dueDate }), now);
 
 		expect(status).toEqual({ kind: "due", date: dueDate });
-		expect(LOAN_STATUS_TONE[status.kind]).toBe("neutral");
+		expect(getLoanStatusTone(status)).toBe("neutral");
 	});
 
 	it("handles a loan without a due date", () => {
 		const status = getLoanStatus(loan(), now);
 
 		expect(status).toEqual({ kind: "no-due-date" });
-		expect(LOAN_STATUS_TONE[status.kind]).toBe("neutral");
+		expect(getLoanStatusTone(status)).toBe("neutral");
 	});
 
 	it("treats a returned loan as returned even when it was overdue", () => {
@@ -81,17 +88,64 @@ describe("getLoanStats", () => {
 	it("counts overdue loans and loans due this week", () => {
 		const loans = [
 			loan({ id: 1, dueDate: new Date(2026, 9, 8) }),
+			loan({ id: 6, dueDate: new Date(2026, 7, 1) }),
 			loan({ id: 2, dueDate: new Date(2026, 9, 11) }),
 			loan({ id: 3, dueDate: new Date(2026, 9, 15) }),
 			loan({ id: 4, dueDate: new Date(2026, 10, 30) }),
 			loan({ id: 5 }),
 		];
 
-		expect(getLoanStats(loans, now)).toEqual({ overdue: 1, dueThisWeek: 2 });
+		expect(getLoanStats(loans, now)).toEqual({ overdue: 2, longOverdue: 1, dueThisWeek: 2 });
 	});
 
 	it("returns zeros without loans", () => {
-		expect(getLoanStats([], now)).toEqual({ overdue: 0, dueThisWeek: 0 });
+		expect(getLoanStats([], now)).toEqual({ overdue: 0, longOverdue: 0, dueThisWeek: 0 });
+	});
+});
+
+describe("matchesLoanFilter", () => {
+	const overdue = loan({ dueDate: new Date(2026, 9, 8) });
+	const today = loan({ dueDate: new Date(2026, 9, 11) });
+	const later = loan({ dueDate: new Date(2026, 10, 30) });
+	const open = loan();
+
+	it("keeps every loan without a filter", () => {
+		expect([overdue, today, later, open].every((x) => matchesLoanFilter(x, "all", now))).toBe(true);
+	});
+
+	it("keeps only overdue loans for the overdue filter", () => {
+		expect([overdue, today, later, open].map((x) => matchesLoanFilter(x, "overdue", now))).toEqual([
+			true,
+			false,
+			false,
+			false,
+		]);
+	});
+
+	it("keeps loans due today or within the week for the due this week filter", () => {
+		const soon = loan({ dueDate: new Date(2026, 9, 15) });
+		expect([overdue, today, soon, later, open].map((x) => matchesLoanFilter(x, "due-this-week", now))).toEqual([
+			false,
+			true,
+			true,
+			false,
+			false,
+		]);
+	});
+});
+
+describe("groupLoansByBorrower", () => {
+	it("groups loans per borrower in the order the borrowers first appear", () => {
+		const loans = [loan({ id: 1, playerId: 5 }), loan({ id: 2, playerId: 3 }), loan({ id: 3, playerId: 5 })];
+
+		expect(groupLoansByBorrower(loans)).toEqual([
+			{ playerId: 5, loans: [loans[0], loans[2]] },
+			{ playerId: 3, loans: [loans[1]] },
+		]);
+	});
+
+	it("returns no groups without loans", () => {
+		expect(groupLoansByBorrower([])).toEqual([]);
 	});
 });
 

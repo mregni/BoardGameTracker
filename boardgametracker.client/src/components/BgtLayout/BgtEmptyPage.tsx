@@ -26,7 +26,15 @@ export const BgtEmptyPage = (props: Props) => {
 		<BgtPage>
 			{showHeader ? <BgtPageHeader header={header} icon={icon} /> : null}
 			<BgtPageContent centered>
-				{resolvedIcon && <BgtEmptyState icon={resolvedIcon} title={title} description={description} action={action} />}
+				{resolvedIcon && (
+					<BgtEmptyState
+						icon={resolvedIcon}
+						title={title}
+						description={description}
+						action={action}
+						titleAs={showHeader && header ? "h2" : "h1"}
+					/>
+				)}
 				{children}
 			</BgtPageContent>
 		</BgtPage>

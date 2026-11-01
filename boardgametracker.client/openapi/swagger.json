@@ -3287,6 +3287,46 @@
         }
       }
     },
+    "/api/loans/{id}/undo-return": {
+      "put": {
+        "tags": [
+          "Loan"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoanDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoanDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoanDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/location": {
       "get": {
         "tags": [
@@ -6283,9 +6323,6 @@
           "preferredGame": {
             "$ref": "#/components/schemas/PreferredGame"
           },
-          "longestSessionTogether": {
-            "$ref": "#/components/schemas/LongestSession"
-          },
           "firstGameTogether": {
             "$ref": "#/components/schemas/FirstGameTogether"
           },
@@ -8332,6 +8369,11 @@
           "playCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "lastPlayed": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -8378,20 +8420,6 @@
           },
           "user": {
             "$ref": "#/components/schemas/UserInfo"
-          }
-        },
-        "additionalProperties": false
-      },
-      "LongestSession": {
-        "type": "object",
-        "properties": {
-          "gameId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "minutes": {
-            "type": "integer",
-            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -9038,6 +9066,11 @@
           "winCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "lastPlayed": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false

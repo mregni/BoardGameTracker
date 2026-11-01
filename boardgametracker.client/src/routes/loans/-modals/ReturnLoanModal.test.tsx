@@ -22,8 +22,9 @@ const loan: Loan = {
 
 const renderModal = (overrides: Partial<Parameters<typeof ReturnLoanModal>[0]> = {}) => {
 	const props = {
-		loan,
-		gameTitle: "Everdell",
+		loans: [loan],
+		title: "Return Everdell",
+		gameTitles: ["Everdell"],
 		open: true,
 		close: vi.fn(),
 		onReturn: vi.fn(() => Promise.resolve()),
@@ -48,6 +49,8 @@ describe("ReturnLoanModal", () => {
 	it("puts cancel on the left and the return submit on the right", () => {
 		renderModal();
 
+		expect(screen.queryByRole("list")).not.toBeInTheDocument();
+
 		const buttons = within(footer()).getAllByRole("button");
 		expect(buttons.map((button) => button.textContent)).toEqual(["common:cancel", "return.confirm"]);
 		expect(buttons[1]).toHaveAttribute("type", "submit");
@@ -68,16 +71,31 @@ describe("ReturnLoanModal", () => {
 
 		await userEvent.click(within(footer()).getByRole("button", { name: "return.confirm" }));
 
-		await waitFor(() => expect(onReturn).toHaveBeenCalledWith(7, new Date(2026, 9, 11)));
+		await waitFor(() => expect(onReturn).toHaveBeenCalledWith([7], new Date(2026, 9, 11)));
 		await waitFor(() => expect(close).toHaveBeenCalledTimes(1));
 	});
 
+	it("returns several loans at once and lists their games", async () => {
+		const { onReturn } = renderModal({ loans: [loan, { ...loan, id: 8 }], gameTitles: ["Everdell", "Azul"] });
+
+		const games = screen.getByRole("list", { name: "return.games" });
+		expect(
+			within(games)
+				.getAllByRole("listitem")
+				.map((item) => item.textContent),
+		).toEqual(["Everdell", "Azul"]);
+
+		await userEvent.click(within(footer()).getByRole("button", { name: "return.confirm" }));
+
+		await waitFor(() => expect(onReturn).toHaveBeenCalledWith([7, 8], new Date(2026, 9, 11)));
+	});
+
 	it("does not return anything without a loan", async () => {
-		const { onReturn } = renderModal({ loan: null });
+		const { onReturn } = renderModal({ loans: [] });
 
 		await userEvent.click(within(footer()).getByRole("button", { name: "return.confirm" }));
 
 		await waitFor(() => expect(onReturn).not.toHaveBeenCalled());
-		expect(screen.getByText("return.title")).toBeInTheDocument();
+		expect(screen.getByText("Return Everdell")).toBeInTheDocument();
 	});
 });

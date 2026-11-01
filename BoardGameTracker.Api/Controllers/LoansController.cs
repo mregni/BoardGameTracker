@@ -72,6 +72,15 @@ public class LoanController : ControllerBase
         return Ok(updatedLoan.ToDto(_dateTimeProvider.UtcNow));
     }
 
+    [HttpPut("{id:int}/undo-return")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<LoanDto>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> UndoReturn(int id)
+    {
+        var loan = await _loanService.UndoReturn(id);
+        return Ok(loan.ToDto(_dateTimeProvider.UtcNow));
+    }
+
     [HttpDelete("{id:int}")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

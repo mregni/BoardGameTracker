@@ -1,19 +1,19 @@
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { type GamePrice, GameState } from "@/models";
+import { GameState } from "@/models";
 import { getColorFromGameState, getItemStateTranslationKey } from "@/utils/ItemStateUtils";
-import { TrackedPriceIcon } from "./TrackedPriceIcon";
 
 interface Props {
 	gameTitle: string;
 	gameState: GameState;
 	isLoaned: boolean;
-	hasPriceWatch?: boolean;
-	livePrice?: GamePrice;
+	loan?: { playerName: string; since: string };
 	canWrite: boolean;
+	showAddSession?: boolean;
 	onAddSession: () => void;
 	onMarkOwned?: () => void;
 	onEdit: () => void;
@@ -25,9 +25,9 @@ export const GameHeader = (props: Props) => {
 		gameTitle,
 		gameState,
 		isLoaned,
-		hasPriceWatch = false,
-		livePrice,
+		loan,
 		canWrite,
+		showAddSession = true,
 		onAddSession,
 		onMarkOwned,
 		onEdit,
@@ -37,24 +37,36 @@ export const GameHeader = (props: Props) => {
 	const offerMarkOwned = gameState === GameState.Wanted && onMarkOwned !== undefined;
 
 	return (
-		<div className="flex md:flex-row flex-col justify-between">
-			<div className="flex flex-col-reverse xl:flex-row xl:gap-3 gap-1">
+		<div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+			<div className="flex min-w-0 flex-col xl:flex-row xl:items-center xl:gap-3 gap-1">
 				<div className="flex items-center gap-2 shrink-0">
-					<BgtHeading size="8">{gameTitle}</BgtHeading>
-					{hasPriceWatch && <TrackedPriceIcon livePrice={livePrice} size="6" />}
+					<BgtHeading as="h1" size="8">
+						{gameTitle}
+					</BgtHeading>
 				</div>
 				<BgtText size="2" className="line-clamp-1" weight="medium" color={getColorFromGameState(gameState, isLoaned)}>
-					{t(getItemStateTranslationKey(gameState, isLoaned))}
+					{isLoaned && loan ? (
+						<Link to="/loans" className="underline-offset-4 hover:underline">
+							{t("state.on-loan-to", { name: loan.playerName, date: loan.since })}
+						</Link>
+					) : (
+						t(getItemStateTranslationKey(gameState, isLoaned))
+					)}
 				</BgtText>
 			</div>
 			{canWrite && (
-				<div className="flex gap-3 justify-between md:justify-start items-center pt-2 md:pt-0">
-					{offerMarkOwned ? (
-						<BgtButton variant="primary" onClick={onMarkOwned}>
+				<div className="flex flex-wrap gap-3 items-center max-md:w-full max-md:justify-between">
+					{offerMarkOwned && (
+						<BgtButton variant="primary" onClick={onMarkOwned} className="whitespace-nowrap">
 							{t("mark-owned")}
 						</BgtButton>
-					) : (
-						<BgtButton variant="primary" onClick={onAddSession}>
+					)}
+					{showAddSession && (
+						<BgtButton
+							variant={offerMarkOwned ? "secondary" : "primary"}
+							onClick={onAddSession}
+							className="whitespace-nowrap"
+						>
 							{t("add")}
 						</BgtButton>
 					)}
