@@ -97,6 +97,12 @@ export const toDisplay = (date: Date | string | undefined | null, dateFormat: st
 	return format(dateObj, normalizeDateFnsFormat(dateFormat, DEFAULT_DATE_FORMAT), { locale });
 };
 
+export const toDisplayWithWeekday = (date: Date | string, dateFormat: string, uiLanguage: string): string => {
+	const dateObj = typeof date === "string" ? parseISO(date) : date;
+	const weekday = format(dateObj, "EEEE", { locale: getDateFnsLocale(uiLanguage) });
+	return `${weekday} ${toDisplay(dateObj, dateFormat, uiLanguage)}`;
+};
+
 export const toDisplayDateTime = (
 	date: Date | string | undefined,
 	dateFormat: string,

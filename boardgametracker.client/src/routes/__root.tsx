@@ -112,7 +112,7 @@ function RootComponent() {
 		>
 			<Sidebar />
 
-			<main className="flex-1 min-w-0 pb-(--bottom-nav-h) md:pb-0 min-h-dvh md:min-h-0 md:h-dvh md:overflow-auto md:[scrollbar-gutter:stable] bg-background">
+			<main className="relative flex-1 min-w-0 pb-(--bottom-nav-h) md:pb-0 min-h-dvh md:min-h-0 md:h-dvh md:overflow-auto md:[scrollbar-gutter:stable] bg-background">
 				<ErrorBoundary FallbackComponent={ErrorFallback}>
 					<Outlet />
 				</ErrorBoundary>

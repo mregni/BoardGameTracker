@@ -31,3 +31,9 @@ export const returnLoanCall = (id: number, returnDate: Date): Promise<Loan> => {
 		return response.data;
 	});
 };
+
+export const undoReturnLoanCall = (id: number): Promise<Loan> => {
+	return axiosInstance.put<Loan>(`${domain}/${id}/undo-return`).then((response) => {
+		return response.data;
+	});
+};

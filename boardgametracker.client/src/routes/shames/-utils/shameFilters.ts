@@ -2,9 +2,13 @@ import { subYears } from "date-fns";
 import type { Shame } from "@/models";
 import { monthsSince } from "@/utils/dateUtils";
 
-export type ShameShow = "all" | "never" | "played";
-export type ShameOwned = "any" | "1y" | "2y";
-export type ShameSort = "unplayed" | "price" | "owned" | "title";
+export const SHAME_SHOWS = ["all", "never", "played"] as const;
+export const SHAME_OWNED = ["any", "1y", "2y"] as const;
+export const SHAME_SORTS = ["unplayed", "price", "owned", "title"] as const;
+
+export type ShameShow = (typeof SHAME_SHOWS)[number];
+export type ShameOwned = (typeof SHAME_OWNED)[number];
+export type ShameSort = (typeof SHAME_SORTS)[number];
 
 export interface ShameFilterState {
 	show: ShameShow;

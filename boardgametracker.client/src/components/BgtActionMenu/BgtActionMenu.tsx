@@ -87,7 +87,7 @@ export const BgtActionMenu = ({ label, items }: Props) => {
 				aria-controls={open ? menuId : undefined}
 				onClick={() => (open ? close(false) : setFocusIndex(0))}
 				onKeyDown={handleTriggerKey}
-				className="flex size-11 items-center justify-center rounded-md border border-white/10 text-white/70 hover:bg-white/10 hover:text-white md:size-9"
+				className="flex size-11 items-center justify-center rounded-md border border-white/10 text-white/70 hover:bg-white/10 hover:text-white sm:size-9"
 			>
 				<Dots className="size-5" aria-hidden="true" />
 			</button>

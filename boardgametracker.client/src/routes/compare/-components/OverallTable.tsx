@@ -1,11 +1,11 @@
 import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
-import CaretRight from "@/assets/icons/caret-right.svg?react";
 import Crown from "@/assets/icons/crown.svg?react";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { useShortDuration } from "@/hooks/useShortDuration";
 import type { CompareResult, CompareRow, CompareSide, Player } from "@/models";
 import { leaderOf } from "../-utils/compareUtils";
+import { SectionTitle } from "./SectionTitle";
 
 interface Props {
 	compare: CompareResult;
@@ -27,13 +27,14 @@ export const OverallTable = ({ compare, playerOne, playerTwo }: Props) => {
 
 	const cell = (side: CompareSide, row: (typeof rows)[number]) => {
 		const higher = leaderOf(row.values) === side;
+		const sideColor = side === "playerOne" ? "text-player-one" : "text-player-two";
 		return (
 			<span
 				data-higher={higher ? "true" : undefined}
 				className={cx(
 					"flex items-center gap-1 font-bold tabular-nums",
 					side === "playerTwo" && "flex-row-reverse",
-					higher ? "text-card-value" : "text-white/60",
+					higher ? sideColor : "text-white/60",
 				)}
 			>
 				{row.format(row.values[side])}
@@ -48,12 +49,9 @@ export const OverallTable = ({ compare, playerOne, playerTwo }: Props) => {
 	};
 
 	return (
-		<details className="group rounded-xl border border-card-border bg-card">
-			<summary className="flex cursor-pointer list-none items-center justify-between gap-2.5 px-3.5 py-3 font-bold [&::-webkit-details-marker]:hidden">
-				<span>{t("overall.title")}</span>
-				<CaretRight aria-hidden="true" className="size-4 text-white/60 transition-transform group-open:rotate-90" />
-			</summary>
-			<table className="w-full">
+		<section aria-labelledby="overall-title" className="flex flex-col gap-1.5">
+			<SectionTitle id="overall-title">{t("overall.title")}</SectionTitle>
+			<table className="w-full rounded-xl border border-card-border bg-card">
 				<thead className="sr-only">
 					<tr>
 						<th scope="col">{playerOne.name}</th>
@@ -66,7 +64,7 @@ export const OverallTable = ({ compare, playerOne, playerTwo }: Props) => {
 						<tr
 							key={row.key}
 							data-testid="overall-row"
-							className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)] items-center gap-2.5 border-t border-card-border px-3.5 py-2"
+							className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)] items-center gap-2.5 border-t border-card-border px-3.5 py-2 first:border-t-0"
 						>
 							<td>{cell("playerOne", row)}</td>
 							<th scope="row" className="text-center text-xs font-normal text-white/60">
@@ -77,6 +75,6 @@ export const OverallTable = ({ compare, playerOne, playerTwo }: Props) => {
 					))}
 				</tbody>
 			</table>
-		</details>
+		</section>
 	);
 };

@@ -12,6 +12,8 @@ import { act, renderWithProviders, screen, userEvent, within } from "@/test/test
 
 const navigate = vi.hoisted(() => vi.fn());
 
+vi.mock("../-hooks/useInviteLink", () => ({ useInviteLink: () => ({ link: "", copied: false, copy: vi.fn() }) }));
+
 vi.mock("@tanstack/react-router", () => ({
 	useNavigate: () => navigate,
 	Link: ({ children, to, params }: { children: React.ReactNode; to: string; params: { sessionId: number } }) => (
@@ -336,7 +338,7 @@ describe("GameNightDetailView", () => {
 
 		const buttons = within(screen.getByTestId("night-actions")).getAllByRole("button");
 		expect(buttons.map((x) => x.textContent)).toEqual(["play.log.button"]);
-		expect(buttons[0].parentElement).toHaveClass("grid-cols-1");
+		expect(buttons[0].parentElement).not.toHaveClass("fixed");
 	});
 
 	it("shows no night actions to readers", () => {
@@ -354,6 +356,10 @@ describe("GameNightDetailView", () => {
 		expect(screen.getByText("planned.title")).toHaveClass("font-semibold");
 		expect(screen.getByText("plan.starts")).toBeInTheDocument();
 		expect(screen.getByTestId("rsvp-summary")).toHaveTextContent("rsvp.summary.coming · rsvp.summary.declined");
+		expect(within(screen.getByRole("region", { name: "group.coming" })).getAllByRole("listitem")).toHaveLength(2);
+		expect(
+			within(screen.getByRole("region", { name: "group.declined" })).getByText(players[2].name),
+		).toBeInTheDocument();
 		expect(screen.getByText("Carcassonne")).toBeInTheDocument();
 		expect(screen.queryByTestId("night-actions")).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "end.button" })).not.toBeInTheDocument();

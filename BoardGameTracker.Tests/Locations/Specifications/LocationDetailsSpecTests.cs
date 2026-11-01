@@ -23,6 +23,7 @@ public class LocationDetailsSpecTests
         result[0].Id.Should().Be(1);
         result[0].Name.Should().Be("Home");
         result[0].PlayCount.Should().Be(1);
+        result[0].LastPlayed.Should().Be(new DateTime(2030, 1, 1));
         spec.AsNoTracking.Should().BeTrue();
     }
 

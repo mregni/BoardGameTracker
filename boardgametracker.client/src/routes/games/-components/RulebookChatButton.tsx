@@ -15,7 +15,12 @@ export const RulebookChatButton = ({ gameId, disabled }: Props) => {
 
 	if (!disabled) {
 		return (
-			<BgtButton size="1" onClick={() => navigate({ to: "/chat", search: { gameId } })}>
+			<BgtButton
+				variant="secondary"
+				size="1"
+				className="pointer-coarse:min-h-11"
+				onClick={() => navigate({ to: "/chat", search: { gameId } })}
+			>
 				<Chat className="size-4" />
 				{t("ask-button")}
 			</BgtButton>
@@ -26,9 +31,22 @@ export const RulebookChatButton = ({ gameId, disabled }: Props) => {
 		<Tooltip.Provider delayDuration={150}>
 			<Tooltip.Root>
 				<Tooltip.Trigger asChild>
-					{/* biome-ignore lint/a11y/noNoninteractiveTabindex: focusable wrapper so keyboard users can reveal the disabled-reason tooltip */}
-					<span tabIndex={0} className="inline-flex cursor-not-allowed">
-						<BgtButton size="1" disabled aria-disabled className="pointer-events-none">
+					{/* biome-ignore lint/a11y/useSemanticElements: a disabled native button cannot take focus to reveal the reason */}
+					<span
+						role="button"
+						tabIndex={0}
+						aria-disabled="true"
+						aria-label={`${t("ask-button")}. ${t("ask-button-disabled")}`}
+						className="inline-flex cursor-not-allowed"
+					>
+						<BgtButton
+							variant="secondary"
+							size="1"
+							disabled
+							aria-hidden="true"
+							tabIndex={-1}
+							className="pointer-events-none pointer-coarse:min-h-11"
+						>
 							<Chat className="size-4" />
 							{t("ask-button")}
 						</BgtButton>

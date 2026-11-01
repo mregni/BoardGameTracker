@@ -6,6 +6,7 @@ import { z } from "zod";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useModalState } from "@/hooks/useModalState";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
@@ -90,6 +91,7 @@ function RouteComponent() {
 		saveAttendance,
 		isPending,
 	} = useGameNightDetail(gameNightId);
+	useDocumentTitle(detail?.gameNight.title);
 	const endModal = useModalState();
 	const { saveSession, isPending: isSaving } = useNewSessionData({
 		onSuccess: () => invalidator.invalidateGameNights(),

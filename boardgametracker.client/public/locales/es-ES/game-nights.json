@@ -19,6 +19,7 @@
     },
     "player-status": "RSVP de {{name}}",
     "remove": "Quitar a {{name}} de esta noche",
+    "confirm-remove": "¿Quitar?",
     "invite-more": "Invitar a más jugadores",
     "search-players": "Buscar jugadores…",
     "no-players-found": "No se encontraron jugadores",
@@ -82,6 +83,8 @@
   "plan": {
     "starts": "Empieza {{when}} · {{date}} · {{time}}",
     "rsvps": "RSVP",
+    "waiting_one": "{{count}} invitado aún no ha respondido. Envíale el enlace.",
+    "waiting_other": "{{count}} invitados aún no han respondido. Envíales el enlace.",
     "no-games": "Todavía no hay juegos planificados"
   },
   "invites": {
@@ -223,7 +226,7 @@
     "nobody": "Todavía no hay nadie."
   },
   "planned": {
-    "title": "Planificados",
+    "title": "Juegos planificados",
     "played": "jugado",
     "playing": "en juego"
   },

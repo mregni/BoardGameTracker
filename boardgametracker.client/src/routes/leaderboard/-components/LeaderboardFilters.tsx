@@ -1,6 +1,7 @@
 import { cx } from "class-variance-authority";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import CaretDown from "@/assets/icons/caret-down.svg?react";
 import { BgtDatePicker } from "@/components/BgtForm/BgtDatePicker";
 import { BgtSelect } from "@/components/BgtForm/BgtSelect";
 import type { BgtSelectImageItem, BgtSelectItem, Game } from "@/models";
@@ -31,6 +32,8 @@ interface Props {
 export const LeaderboardFilters = ({ search, games, onChange }: Props) => {
 	const { t } = useTranslation("leaderboard");
 	const period: LeaderboardPeriod = search.range ?? "all";
+	const [moreOpen, setMoreOpen] = useState(false);
+	const activeMore = [search.game, search.min, search.rank].filter((value) => value !== undefined).length;
 
 	const periodLabels: Record<LeaderboardPeriod, string> = {
 		all: t("common:period.all-time"),
@@ -70,61 +73,85 @@ export const LeaderboardFilters = ({ search, games, onChange }: Props) => {
 
 	return (
 		<div className="flex flex-col gap-3">
-			<div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,auto)_minmax(0,1fr)_minmax(0,11rem)_minmax(0,11rem)] xl:items-end">
-				<fieldset className="min-w-0">
+			<div className="grid grid-cols-2 gap-3 xl:grid-cols-[minmax(0,auto)_minmax(0,1fr)_minmax(0,11rem)_minmax(0,11rem)] xl:items-end">
+				<fieldset className="col-span-2 min-w-0 md:col-span-1">
 					<legend className="p-0 text-[15px] font-medium leading-7">{t("common:period.label")}</legend>
 					<div className="grid h-11 grid-cols-4 gap-1 rounded-lg border border-primary/30 bg-background p-1 md:h-10">
 						{PERIODS.map((option) => (
-							<button
+							<label
 								key={option}
-								type="button"
-								aria-pressed={period === option}
-								onClick={() => selectPeriod(option)}
-								aria-label={periodLabels[option]}
 								className={cx(
-									"min-w-0 truncate rounded-md px-1 text-sm transition-colors sm:px-3",
-									period === option ? "bg-primary text-white" : "text-white/70 hover:bg-primary/20 hover:text-white",
+									"flex min-w-0 cursor-pointer items-center justify-center rounded-md px-1 text-sm transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary sm:px-3",
+									period === option
+										? "bg-primary-strong text-white"
+										: "text-white/70 hover:bg-primary/20 hover:text-white",
 								)}
 							>
-								{shortLabels[option] ? (
-									<>
-										<span aria-hidden="true" className="sm:hidden">
-											{shortLabels[option]}
-										</span>
-										<span aria-hidden="true" className="hidden sm:inline">
-											{periodLabels[option]}
-										</span>
-									</>
-								) : (
-									periodLabels[option]
-								)}
-							</button>
+								<input
+									type="radio"
+									name="leaderboard-period"
+									className="sr-only"
+									checked={period === option}
+									onChange={() => selectPeriod(option)}
+									aria-label={periodLabels[option]}
+								/>
+								<span aria-hidden="true" className="truncate">
+									{shortLabels[option] ? (
+										<>
+											<span className="sm:hidden md:inline xl:hidden">{shortLabels[option]}</span>
+											<span className="hidden sm:inline md:hidden xl:inline">{periodLabels[option]}</span>
+										</>
+									) : (
+										periodLabels[option]
+									)}
+								</span>
+							</label>
 						))}
 					</div>
 				</fieldset>
-				<BgtSelect
-					label={t("filters.game")}
-					items={gameItems}
-					value={search.game ?? ALL_GAMES}
-					hasSearch
-					onValueChange={(value) => onChange({ game: Number(value) === ALL_GAMES ? undefined : Number(value) })}
-				/>
-				<BgtSelect
-					label={t("filters.min-sessions")}
-					items={minItems}
-					value={search.min ?? DEFAULT_MIN_SESSIONS}
-					onValueChange={(value) =>
-						onChange({ min: Number(value) === DEFAULT_MIN_SESSIONS ? undefined : Number(value) })
-					}
-				/>
-				<BgtSelect
-					label={t("filters.rank-by")}
-					items={rankItems}
-					value={search.rank ?? DEFAULT_RANK_BY}
-					onValueChange={(value) =>
-						onChange({ rank: value === DEFAULT_RANK_BY ? undefined : (value as LeaderboardSearch["rank"]) })
-					}
-				/>
+				<button
+					type="button"
+					aria-expanded={moreOpen}
+					aria-controls="leaderboard-more-filters"
+					onClick={() => setMoreOpen(!moreOpen)}
+					className="col-span-2 flex h-11 items-center justify-between rounded-lg border border-primary/30 bg-background px-3 text-sm transition-colors hover:border-primary/60 md:hidden"
+				>
+					<span>
+						{t("filters.more")}
+						{activeMore > 0 && <span className="ml-1.5 text-primary-text">({activeMore})</span>}
+					</span>
+					<CaretDown aria-hidden="true" className={cx("size-4 transition-transform", moreOpen && "rotate-180")} />
+				</button>
+				<div
+					id="leaderboard-more-filters"
+					className={cx("col-span-2 grid-cols-2 gap-3 md:contents", moreOpen ? "grid" : "hidden")}
+				>
+					<div className="col-span-2 min-w-0 md:col-span-1">
+						<BgtSelect
+							label={t("filters.game")}
+							items={gameItems}
+							value={search.game ?? ALL_GAMES}
+							hasSearch
+							onValueChange={(value) => onChange({ game: Number(value) === ALL_GAMES ? undefined : Number(value) })}
+						/>
+					</div>
+					<BgtSelect
+						label={t("filters.min-sessions")}
+						items={minItems}
+						value={search.min ?? DEFAULT_MIN_SESSIONS}
+						onValueChange={(value) =>
+							onChange({ min: Number(value) === DEFAULT_MIN_SESSIONS ? undefined : Number(value) })
+						}
+					/>
+					<BgtSelect
+						label={t("filters.rank-by")}
+						items={rankItems}
+						value={search.rank ?? DEFAULT_RANK_BY}
+						onValueChange={(value) =>
+							onChange({ rank: value === DEFAULT_RANK_BY ? undefined : (value as LeaderboardSearch["rank"]) })
+						}
+					/>
+				</div>
 			</div>
 			{period === "custom" && (
 				<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:max-w-xl">

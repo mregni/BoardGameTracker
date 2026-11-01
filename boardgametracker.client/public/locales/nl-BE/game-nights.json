@@ -19,6 +19,7 @@
     },
     "player-status": "RSVP van {{name}}",
     "remove": "{{name}} verwijderen van deze avond",
+    "confirm-remove": "Verwijderen?",
     "invite-more": "Meer spelers uitnodigen",
     "search-players": "Spelers zoeken…",
     "no-players-found": "Geen spelers gevonden",
@@ -82,6 +83,8 @@
   "plan": {
     "starts": "Begint {{when}} · {{date}} · {{time}}",
     "rsvps": "RSVP's",
+    "waiting_one": "{{count}} genodigde heeft nog niet geantwoord. Stuur de link door.",
+    "waiting_other": "{{count}} genodigden hebben nog niet geantwoord. Stuur hen de link.",
     "no-games": "Nog geen spellen gepland"
   },
   "invites": {
@@ -223,7 +226,7 @@
     "nobody": "Nog niemand aanwezig."
   },
   "planned": {
-    "title": "Gepland",
+    "title": "Geplande spellen",
     "played": "gespeeld",
     "playing": "wordt nu gespeeld"
   },

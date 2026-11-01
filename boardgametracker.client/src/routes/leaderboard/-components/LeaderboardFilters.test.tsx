@@ -38,27 +38,52 @@ describe("LeaderboardFilters", () => {
 		renderFilters();
 
 		expect(screen.getByRole("group", { name: "common:period.label" })).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "common:period.all-time" })).toHaveAttribute("aria-pressed", "true");
-		expect(screen.getByRole("button", { name: "common:period.this-year" })).toHaveAttribute("aria-pressed", "false");
-		const twelve = screen.getByRole("button", { name: "common:period.last-12-months" });
-		expect(within(twelve).getByText("common:period.last-12-months-short")).toHaveClass("sm:hidden");
+		expect(screen.getByRole("radio", { name: "common:period.all-time" })).toBeChecked();
+		expect(screen.getByRole("radio", { name: "common:period.this-year" })).not.toBeChecked();
+		const twelve = screen.getByRole("radio", { name: "common:period.last-12-months" }).closest("label");
+		expect(within(twelve as HTMLElement).getByText("common:period.last-12-months-short")).toHaveClass(
+			"sm:hidden md:inline xl:hidden",
+		);
 		expect(screen.queryByText("filters.from")).not.toBeInTheDocument();
+	});
+
+	it("should move between periods with the arrow keys", async () => {
+		const onChange = renderFilters();
+
+		screen.getByRole("radio", { name: "common:period.all-time" }).focus();
+		await userEvent.keyboard("{ArrowRight}");
+
+		expect(onChange).toHaveBeenLastCalledWith({ range: "year", from: undefined, to: undefined });
+	});
+
+	it("should fold the other filters behind a toggle that counts the active ones", async () => {
+		renderFilters({ game: 2, rank: "sessions" });
+
+		const toggle = screen.getByRole("button", { name: /filters\.more/ });
+		expect(toggle).toHaveTextContent("(2)");
+		expect(toggle).toHaveAttribute("aria-expanded", "false");
+		expect(document.getElementById("leaderboard-more-filters")).toHaveClass("hidden");
+
+		await userEvent.click(toggle);
+
+		expect(toggle).toHaveAttribute("aria-expanded", "true");
+		expect(document.getElementById("leaderboard-more-filters")).toHaveClass("grid");
 	});
 
 	it("should switch the period and clear custom dates", async () => {
 		const onChange = renderFilters({ range: "custom", from: "2026-01-01", to: "2026-02-01" });
 
-		await userEvent.click(screen.getByRole("button", { name: "common:period.last-12-months" }));
+		await userEvent.click(screen.getByRole("radio", { name: "common:period.last-12-months" }));
 		expect(onChange).toHaveBeenLastCalledWith({ range: "12m", from: undefined, to: undefined });
 
-		await userEvent.click(screen.getByRole("button", { name: "common:period.all-time" }));
+		await userEvent.click(screen.getByRole("radio", { name: "common:period.all-time" }));
 		expect(onChange).toHaveBeenLastCalledWith({ range: undefined, from: undefined, to: undefined });
 	});
 
 	it("should keep the custom dates when choosing custom again", async () => {
 		const onChange = renderFilters({ from: "2026-01-01", to: "2026-02-01" });
 
-		await userEvent.click(screen.getByRole("button", { name: "common:period.custom" }));
+		await userEvent.click(screen.getByRole("radio", { name: "common:period.custom" }));
 
 		expect(onChange).toHaveBeenCalledWith({ range: "custom", from: "2026-01-01", to: "2026-02-01" });
 	});

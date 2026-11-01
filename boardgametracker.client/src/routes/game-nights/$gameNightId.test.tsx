@@ -26,6 +26,8 @@ const mocks = vi.hoisted(() => ({
 	search: {} as { start?: boolean },
 }));
 
+vi.mock("./-hooks/useInviteLink", () => ({ useInviteLink: () => ({ link: "", copied: false, copy: vi.fn() }) }));
+
 vi.mock("@tanstack/react-router", () => ({
 	createFileRoute: () => (config: CapturedRoute) => {
 		mocks.captured.config = config;
@@ -282,7 +284,7 @@ describe("Game night detail page", () => {
 		const user = userEvent.setup();
 		renderPage();
 
-		await user.click(screen.getByRole("button", { name: "delete.button" }));
+		await user.click(screen.getByRole("button", { name: "common:delete.button" }));
 
 		expect(
 			await screen.findByText(
@@ -295,7 +297,7 @@ describe("Game night detail page", () => {
 		const user = userEvent.setup();
 		renderPage();
 
-		await user.click(screen.getByRole("button", { name: "delete.button" }));
+		await user.click(screen.getByRole("button", { name: "common:delete.button" }));
 		const buttons = await screen.findAllByRole("button", { name: "delete.button" });
 		await user.click(buttons.at(-1) as HTMLElement);
 

@@ -17,6 +17,7 @@ export const PriceRefreshButton = ({ onRefresh, isRefreshing }: Props) => {
 	return (
 		<BgtIconButton
 			intent="subtile"
+			className="pointer-coarse:size-11"
 			icon={
 				<Refresh
 					className={cx("size-4", shouldSpin && "animate-spin")}

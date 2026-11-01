@@ -36,18 +36,14 @@ vi.mock("@/components/BgtForm/BgtSelect", () => ({
 
 const renderFilters = () => {
 	const onFiltersChange = vi.fn();
-	const onMonthsChange = vi.fn();
 	render(
 		<ShameFilters
 			filters={DEFAULT_SHAME_FILTERS}
 			counts={{ all: 9, never: 5, played: 4 }}
-			months={6}
-			monthChoices={[6, 12, 24]}
 			onFiltersChange={onFiltersChange}
-			onMonthsChange={onMonthsChange}
 		/>,
 	);
-	return { onFiltersChange, onMonthsChange };
+	return { onFiltersChange };
 };
 
 describe("ShameFilters", () => {
@@ -66,17 +62,6 @@ describe("ShameFilters", () => {
 		await user.click(screen.getByRole("button", { name: "filters.never 5" }));
 
 		expect(onFiltersChange).toHaveBeenCalledWith({ ...DEFAULT_SHAME_FILTERS, show: "never" });
-	});
-
-	it("offers only the given month choices and reports the picked one as a number", async () => {
-		const user = userEvent.setup();
-		const { onMonthsChange } = renderFilters();
-		const select = screen.getByRole("combobox", { name: "filters.not-played-in" });
-
-		expect(Array.from((select as HTMLSelectElement).options).map((option) => option.value)).toEqual(["6", "12", "24"]);
-		await user.selectOptions(select, "12");
-
-		expect(onMonthsChange).toHaveBeenCalledWith(12);
 	});
 
 	it("changes the owned period and the sort", async () => {

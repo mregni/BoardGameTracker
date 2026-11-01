@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { GameNightRsvpState, type GameNightRsvps } from "@/models";
-import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { renderWithTheme, screen, userEvent, within } from "@/test/test-utils";
 import { RsvpResponseForm } from "./RsvpResponseForm";
 
 vi.mock("@/components/BgtForm", () => ({
@@ -51,8 +51,25 @@ describe("RsvpResponseForm", () => {
 			/>,
 		);
 
-		expect(screen.queryByRole("option", { name: "Host Hank" })).not.toBeInTheDocument();
-		expect(screen.getByRole("option", { name: "Guest Gina" })).toBeInTheDocument();
+		const names = screen.getByRole("group", { name: "who-are-you" });
+		expect(within(names).queryByRole("button", { name: /Host Hank/ })).not.toBeInTheDocument();
+		expect(within(names).getByRole("button", { name: /Guest Gina/ })).toBeInTheDocument();
+	});
+
+	it("falls back to a searchable name picker for a long guest list", () => {
+		const crowd = Array.from({ length: 9 }, (_, i) => rsvp(100 + i, 200 + i, `Guest ${i}`));
+		renderWithTheme(
+			<RsvpResponseForm
+				invitedPlayers={[invitedPlayers[0], ...crowd]}
+				hostId={10}
+				initialAnswer={null}
+				onSubmit={vi.fn()}
+				isSubmitting={false}
+			/>,
+		);
+
+		expect(screen.getByRole("combobox", { name: "who-are-you" })).toBeInTheDocument();
+		expect(screen.queryByRole("group", { name: "who-are-you" })).not.toBeInTheDocument();
 	});
 
 	it("answers with the picked name and response", async () => {
@@ -68,7 +85,7 @@ describe("RsvpResponseForm", () => {
 			/>,
 		);
 
-		await user.selectOptions(screen.getByRole("combobox", { name: "who-are-you" }), "20");
+		await user.click(screen.getByRole("button", { name: /Guest Gina/ }));
 		await user.click(screen.getByRole("button", { name: "maybe" }));
 		await user.click(screen.getByRole("button", { name: "send-answer" }));
 
@@ -87,7 +104,7 @@ describe("RsvpResponseForm", () => {
 			/>,
 		);
 
-		expect(screen.getByRole("combobox", { name: "who-are-you" })).toHaveValue("20");
+		expect(screen.getByRole("button", { name: /Guest Gina/ })).toHaveAttribute("aria-pressed", "true");
 		expect(screen.getByRole("button", { name: "cant-come" })).toHaveAttribute("aria-pressed", "true");
 		expect(screen.getByRole("button", { name: "send-answer" })).toBeEnabled();
 	});

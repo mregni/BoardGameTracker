@@ -89,7 +89,8 @@
   "delete": {
     "title": "{{title}} verwijderen",
     "description": "Weet je zeker dat je {{title}} met alle inhoud wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
-    "button": "Verwijderen"
+    "button": "Verwijderen",
+    "named": "{{name}} verwijderen"
   },
   "no-sessions": {
     "title": "Nog geen sessies geregistreerd",
@@ -131,7 +132,6 @@
   "tile": {
     "sessions_one": "sessie",
     "sessions_other": "sessies",
-    "wins": "gewonnen",
     "no-sessions": "Nog geen sessies"
   },
   "coop": {
@@ -146,5 +146,7 @@
     "last-12-months": "Laatste 12 maanden",
     "last-12-months-short": "12 mnd",
     "custom": "Aangepast"
-  }
+  },
+  "clear-search": "Zoekopdracht wissen",
+  "edit-named": "{{name}} bewerken"
 }

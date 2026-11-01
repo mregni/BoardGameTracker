@@ -1,13 +1,13 @@
 import { useCallback } from "react";
 
-interface UseGameActionsProps {
+interface UseLoanActionsProps {
 	deleteLoan: (loanId: number) => Promise<void>;
-	returnLoan: (loanId: number, returnDate: Date) => Promise<void>;
+	returnLoans: (loanIds: number[], returnDate: Date) => Promise<void>;
 	onDeleteModalClose: () => void;
 }
 
-export const useLoanActions = (props: UseGameActionsProps) => {
-	const { deleteLoan, onDeleteModalClose, returnLoan } = props;
+export const useLoanActions = (props: UseLoanActionsProps) => {
+	const { deleteLoan, onDeleteModalClose, returnLoans } = props;
 
 	const handleDelete = useCallback(
 		async (loanId: number) => {
@@ -18,10 +18,10 @@ export const useLoanActions = (props: UseGameActionsProps) => {
 	);
 
 	const handleReturnLoan = useCallback(
-		async (loanId: number, returnDate: Date) => {
-			await returnLoan(loanId, returnDate);
+		async (loanIds: number[], returnDate: Date) => {
+			await returnLoans(loanIds, returnDate);
 		},
-		[returnLoan],
+		[returnLoans],
 	);
 
 	return {

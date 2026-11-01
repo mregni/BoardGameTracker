@@ -13,7 +13,6 @@ export interface CompareResult {
 	totalSessionsTogether: number;
 	minutesPlayed: number;
 	preferredGame: PreferredGame | null;
-	longestSessionTogether: LongestSession | null;
 	firstGameTogether: FirstGameTogether | null;
 	closestGame: ClosestGame | null;
 	streak: CompareStreak | null;
@@ -30,11 +29,6 @@ export interface CompareRow<T> {
 export interface PreferredGame {
 	gameId: number | null;
 	sessionCount: number;
-}
-
-export interface LongestSession {
-	gameId: number;
-	minutes: number;
 }
 
 export interface ClosestGame {
