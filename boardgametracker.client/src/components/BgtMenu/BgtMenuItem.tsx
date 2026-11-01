@@ -32,7 +32,7 @@ export const BgtMenuItem = (props: Props) => {
 			</div>
 			{count !== undefined && (
 				<div
-					className="px-2 flex items-center justify-center text-xs tabular-nums text-white/60"
+					className="px-2 flex items-center justify-center text-xs tabular-nums text-white/75"
 					title={item.countLabel ? t(item.countLabel, { count }) : undefined}
 				>
 					{count}

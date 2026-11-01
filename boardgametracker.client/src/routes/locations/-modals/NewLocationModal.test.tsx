@@ -41,6 +41,11 @@ describe("NewLocationModal", () => {
 			expect(screen.getByRole("textbox")).toBeInTheDocument();
 		});
 
+		it("focuses the name field instead of the close button when opened", async () => {
+			renderWithTheme(<NewLocationModal {...defaultProps} />);
+			await waitFor(() => expect(screen.getByRole("textbox")).toHaveFocus());
+		});
+
 		it("should render cancel button", () => {
 			renderWithTheme(<NewLocationModal {...defaultProps} />);
 			expect(screen.getByRole("button", { name: "common:cancel" })).toBeInTheDocument();

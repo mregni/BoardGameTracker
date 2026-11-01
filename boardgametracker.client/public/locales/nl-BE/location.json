@@ -1,14 +1,15 @@
 {
   "empty": {
-    "title": "Nog geen locaties"
+    "title": "Nog geen locaties",
+    "description": "Locaties zijn de plekken waar je speelt: thuis, bij vrienden, het spellencafé. Kies er een wanneer je een sessie registreert."
   },
   "new": {
     "button": "Locatie toevoegen",
     "title": "Locatie toevoegen",
     "description": "Voer de naam van de locatie in om een nieuwe aan te maken.",
     "name": {
-      "placeholder": "Naam van de locatie",
-      "required": "Naam van de locatie is verplicht"
+      "required": "Naam van de locatie is verplicht",
+      "label": "Naam"
     },
     "save": "Toevoegen"
   },
@@ -25,17 +26,59 @@
     "delete-failed": "Locatie verwijderen mislukt"
   },
   "delete": {
-    "description": "Weet je zeker dat je locatie '{{name}}' wilt verwijderen?",
-    "extra-description": "De locatie is gekoppeld aan {{count}} spelsessies, die worden ontkoppeld."
+    "description": "Locatie '{{name}}' verwijderen?",
+    "description-with-sessions_one": "Locatie '{{name}}' verwijderen? De {{count}} sessie blijft bewaard, maar is niet langer aan een locatie gekoppeld.",
+    "description-with-sessions_other": "Locatie '{{name}}' verwijderen? De {{count}} sessies blijven bewaard, maar zijn niet langer aan een locatie gekoppeld."
   },
-  "count_one": "{{count}} locatie",
-  "count_other": "{{count}} locaties",
   "detail": {
-    "label": "Locatie",
     "back": "Terug naar locaties",
     "sessions": "Sessies",
     "games": "Gespeelde spellen",
     "players": "Spelers",
-    "play-time": "Speeltijd"
+    "play-time": "Speeltijd",
+    "last-played": "Laatst gespeeld {{when}}",
+    "never-played": "Hier nog geen sessies",
+    "most-played": "Meest gespeeld hier",
+    "top-winners": "Topwinnaars hier",
+    "recent-sessions": "Recente sessies",
+    "show-all": "Alle {{count}} sessies tonen",
+    "show-fewer": "Minder tonen",
+    "winner": "Winnaar:",
+    "no-winner": "Geen winnaar",
+    "session-count_one": "{{count}} sessie",
+    "session-count_other": "{{count}} sessies",
+    "win-count_one": "{{count}} overwinning",
+    "win-count_other": "{{count}} overwinningen",
+    "not-found": {
+      "title": "Locatie niet gevonden",
+      "description": "Ze is misschien verwijderd, of de link is verouderd."
+    },
+    "load-failed": {
+      "title": "Deze locatie kon niet geladen worden",
+      "description": "Controleer je verbinding en probeer het opnieuw."
+    },
+    "more-games_one": "+{{count}} ander spel",
+    "more-games_other": "+{{count}} andere spellen",
+    "more-players_one": "+{{count}} andere speler",
+    "more-players_other": "+{{count}} andere spelers",
+    "all-sessions": "Alle sessies ({{count}})",
+    "no-sessions-hint": "Kies deze locatie wanneer je een sessie registreert, dan verschijnt die hier."
+  },
+  "error": {
+    "title": "Locaties konden niet geladen worden",
+    "description": "Controleer je verbinding en probeer het opnieuw."
+  },
+  "filter": {
+    "no-matches": "Geen locaties gevonden voor “{{filter}}”",
+    "clear": "Filter wissen"
+  },
+  "tile": {
+    "last-played": "laatst gespeeld {{when}}"
+  },
+  "sort": {
+    "label": "Locaties sorteren",
+    "recent": "Recent gespeeld",
+    "most-played": "Meest gespeeld",
+    "name": "Naam"
   }
 }
