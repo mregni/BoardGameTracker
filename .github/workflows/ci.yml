@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 0
 
       - name: Git Semantic Version
-        uses: PaulHatch/semantic-version@502226b17e3e242e4befd0a45690fcbb27dd1373 # v6.0.3
+        uses: PaulHatch/semantic-version@79147b94804704a613626766998afe7b2bd0bb47 # v6.0.5
         id: versioning
         with:
           enable_prerelease_mode: true
@@ -215,7 +215,7 @@ jobs:
         if: success() || failure()
 
       - name: Code Coverage Report
-        uses: danielpalme/ReportGenerator-GitHub-Action@d3ebf1f760f7d8ab92cc44d9bcfee7ad73722a31 # v5.5.11
+        uses: danielpalme/ReportGenerator-GitHub-Action@861674232075b2c6bd1405a04c4bb9b150653e81 # v5.5.12
         with:
           reports: "TestResults/**/coverage.opencover.xml;boardgametracker.client/coverage/lcov.info"
           targetdir: "coveragereport"
