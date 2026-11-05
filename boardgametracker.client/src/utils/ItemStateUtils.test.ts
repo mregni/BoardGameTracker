@@ -28,6 +28,10 @@ describe("ItemStateUtils", () => {
 				expect(getItemStateTranslationKey(GameState.PreviouslyOwned, false)).toBe("game:state.previously-owned");
 			});
 
+			it("should return sold key for Sold state", () => {
+				expect(getItemStateTranslationKey(GameState.Sold, false)).toBe("game:state.sold");
+			});
+
 			it("should return for-trade key for ForTrade state", () => {
 				expect(getItemStateTranslationKey(GameState.ForTrade, false)).toBe("game:state.for-trade");
 			});
@@ -61,6 +65,10 @@ describe("ItemStateUtils", () => {
 				expect(getColorFromGameState(GameState.PreviouslyOwned, false)).toBe("purple");
 			});
 
+			it("should show Sold in the same colour as PreviouslyOwned", () => {
+				expect(getColorFromGameState(GameState.Sold, false)).toBe("purple");
+			});
+
 			it("should return blue for ForTrade state", () => {
 				expect(getColorFromGameState(GameState.ForTrade, false)).toBe("blue");
 			});
@@ -72,7 +80,13 @@ describe("ItemStateUtils", () => {
 
 		it("should return valid color types", () => {
 			const validColors = ["amber", "orange", "red", "purple", "blue", "green"];
-			const allStates = [GameState.Wanted, GameState.Owned, GameState.PreviouslyOwned, GameState.ForTrade];
+			const allStates = [
+				GameState.Wanted,
+				GameState.Owned,
+				GameState.PreviouslyOwned,
+				GameState.ForTrade,
+				GameState.Sold,
+			];
 
 			allStates.forEach((state) => {
 				expect(validColors).toContain(getColorFromGameState(state, false));

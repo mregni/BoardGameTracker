@@ -97,6 +97,36 @@ describe("GameForm", () => {
 		expect(screen.getByRole("spinbutton", { name: "bgg.placeholder" })).toBeInTheDocument();
 	});
 
+	it("only offers the sold price for a sold game", () => {
+		const { unmount } = renderWithProviders(
+			<GameForm
+				onClick={vi.fn()}
+				buttonText="Save"
+				disabled={false}
+				game={createGame({ state: GameState.Sold, soldPrice: 30 })}
+				title="Edit"
+				backTo="/"
+			/>,
+		);
+		expect(screen.getByLabelText("update.sold-price.label")).toHaveValue("30");
+		unmount();
+
+		for (const state of [GameState.PreviouslyOwned, GameState.ForTrade, GameState.Owned]) {
+			const { unmount: unmountOther } = renderWithProviders(
+				<GameForm
+					onClick={vi.fn()}
+					buttonText="Save"
+					disabled={false}
+					game={createGame({ state, soldPrice: 30 })}
+					title="Edit"
+					backTo="/"
+				/>,
+			);
+			expect(screen.queryByText("update.sold-price.label")).not.toBeInTheDocument();
+			unmountOther();
+		}
+	});
+
 	it("starts the Links section closed for a game without ids", () => {
 		renderForm(createGame({ bggId: null }));
 

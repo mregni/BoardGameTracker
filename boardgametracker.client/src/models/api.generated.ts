@@ -5851,7 +5851,7 @@ export interface components {
             fetchedAt: string | null;
         };
         /** @enum {string} */
-        GameState: "wanted" | "owned" | "previouslyOwned" | "forTrade";
+        GameState: "wanted" | "owned" | "previouslyOwned" | "forTrade" | "sold";
         GameStateChart: {
             type: components["schemas"]["GameState"];
             /** Format: int32 */

@@ -15,6 +15,7 @@ public class DataMigrationTests : IAsyncLifetime
 {
     private const string BeforeDataRepairs = "20260827220101_AddChangeDetectionWatchIdToGame";
     private const string BeforePublicUrlCleanup = "20261015230803_AddCoopGames";
+    private const string BeforeSoldState = "20261028123720_DropUnusedImages";
     private const string AddLaterGameColumns = "ALTER TABLE \"Games\" ADD COLUMN \"HasCoopMode\" boolean NOT NULL DEFAULT false, ADD COLUMN \"CoopByDefault\" boolean NOT NULL DEFAULT false";
     private const string DropLaterGameColumns = "ALTER TABLE \"Games\" DROP COLUMN \"HasCoopMode\", DROP COLUMN \"CoopByDefault\"";
 
@@ -132,6 +133,45 @@ public class DataMigrationTests : IAsyncLifetime
         {
             (await context.Config.Where(c => c.Key == "public_url").Select(c => c.Value).SingleAsync(TestContext.Current.CancellationToken))
                 .Should().Be(expected);
+        }
+    }
+
+    [Fact]
+    public async Task UpgradingPreviouslyOwnedGames_ShouldOnlyMoveTheOnesWithASoldPriceToSold_AndKeepThePrice()
+    {
+        int soldGame;
+        int keptGame;
+        int tradedGame;
+        await using (var context = CreateContext())
+        {
+            await context.GetService<IMigrator>().MigrateAsync(BeforeSoldState, TestContext.Current.CancellationToken);
+
+            var sold = new Game("Brass", true, GameState.PreviouslyOwned);
+            sold.UpdateSoldPrice(30m);
+            var kept = new Game("Ark Nova", true, GameState.PreviouslyOwned);
+            var traded = new Game("Root", true, GameState.ForTrade);
+            traded.UpdateSoldPrice(15m);
+            context.Games.AddRange(sold, kept, traded);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+            soldGame = sold.Id;
+            keptGame = kept.Id;
+            tradedGame = traded.Id;
+        }
+
+        await using (var context = CreateContext())
+        {
+            await context.Database.MigrateAsync(TestContext.Current.CancellationToken);
+        }
+
+        await using (var context = CreateContext())
+        {
+            var games = await context.Games.AsNoTracking().ToDictionaryAsync(g => g.Id, TestContext.Current.CancellationToken);
+
+            games[soldGame].State.Should().Be(GameState.Sold);
+            games[soldGame].SoldPrice!.Amount.Should().Be(30m);
+            games[keptGame].State.Should().Be(GameState.PreviouslyOwned);
+            games[tradedGame].State.Should().Be(GameState.ForTrade);
+            games[tradedGame].SoldPrice!.Amount.Should().Be(15m);
         }
     }
 

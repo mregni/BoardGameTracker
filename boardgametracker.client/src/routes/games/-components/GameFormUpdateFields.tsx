@@ -29,7 +29,7 @@ export const GameFormUpdateFields = withForm({
 				</form.Field>
 				<form.Subscribe selector={(state) => state.values.state}>
 					{(state) =>
-						state === GameState.PreviouslyOwned && (
+						state === GameState.Sold && (
 							<form.Field name="soldPrice" validators={zodValidator(CreateGameSchema, "soldPrice")}>
 								{(field: AnyFieldApi) => (
 									<BgtInputField
