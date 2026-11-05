@@ -594,7 +594,7 @@ export const expected = {
 	lastSessions: [...sessions].sort((a, b) => b.start.getTime() - a.start.getTime()).slice(0, 5),
 	topPlayers: standingsOf(sessions).slice(0, 3),
 	mostPlayedAllTime: playCounts(new Date(0)).slice(0, 4),
-	mostPlayedLast12Months: playCounts(subMonths(now, 12)).slice(0, 4),
+	mostPlayedThisMonth: playCounts(new Date(now.getFullYear(), now.getMonth(), 1)).slice(0, 4),
 	mostPlayedThisYear: playCounts(new Date(now.getFullYear(), 0, 1)).slice(0, 4),
 	ownedCount: OWNED_GAMES,
 	wantedCount: WANTED_GAMES,

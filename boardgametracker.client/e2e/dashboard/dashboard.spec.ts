@@ -100,8 +100,8 @@ test("shows the most played games per period", async ({ page }) => {
 	await card.getByRole("button", { name: "This year" }).click();
 	await expectRows(expected.mostPlayedThisYear);
 
-	await card.getByRole("button", { name: "Last 12 months" }).click();
-	await expectRows(expected.mostPlayedLast12Months);
+	await card.getByRole("button", { name: "This month" }).click();
+	await expectRows(expected.mostPlayedThisMonth);
 });
 
 test("sums the collection, what was paid for it and what was added last", async ({ page }) => {
