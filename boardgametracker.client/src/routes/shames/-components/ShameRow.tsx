@@ -13,7 +13,7 @@ import { formatRange } from "@/utils/rangeUtils";
 import { lastPlayedTone } from "../-utils/shameFilters";
 
 export const shameGridClasses =
-	"grid grid-cols-[2.75rem_minmax(0,1fr)_auto] gap-x-3 md:grid-cols-[2.75rem_minmax(0,1fr)_9rem_5rem_14rem]";
+	"grid grid-cols-[2.75rem_minmax(0,1fr)_auto] gap-x-3 md:grid-cols-[2.75rem_minmax(0,1fr)_9rem_5rem_14rem] xl:grid-cols-[2.75rem_minmax(0,1fr)_9rem_5rem_22rem]";
 
 export const pillVariants = cva(
 	"inline-block max-w-full truncate rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap",
@@ -137,7 +137,7 @@ export const ShameRow = ({
 					<span className="text-card-value">{format.price(shame.price, currency)}</span>
 				)}
 			</div>
-			<div className="flex min-w-0 justify-end gap-1.5 [grid-area:act]">
+			<div className="flex min-w-0 flex-wrap justify-end gap-1.5 [grid-area:act]">
 				{planned &&
 					shame.plannedFor &&
 					(canWrite ? (
@@ -145,7 +145,7 @@ export const ShameRow = ({
 							type="button"
 							className={cx(
 								pillVariants({ tone: "ok" }),
-								"inline-flex min-h-10 items-center gap-1.5 transition-colors hover:bg-ok/25 disabled:cursor-not-allowed disabled:opacity-50 md:min-h-8",
+								"inline-flex min-h-10 shrink-0 items-center gap-1.5 transition-colors hover:bg-ok/25 disabled:cursor-not-allowed disabled:opacity-50 md:min-h-8",
 							)}
 							disabled={unplanning}
 							aria-label={t("row.unplan-label", { title: shame.title })}
@@ -155,7 +155,7 @@ export const ShameRow = ({
 							<XIcon aria-hidden="true" className="size-3.5 shrink-0" />
 						</button>
 					) : (
-						<span className={pillVariants({ tone: "ok" })}>
+						<span className={cx(pillVariants({ tone: "ok" }), "shrink-0")}>
 							{t("row.planned", { date: toDisplay(shame.plannedFor, dateFormat, i18n.language) })}
 						</span>
 					))}
