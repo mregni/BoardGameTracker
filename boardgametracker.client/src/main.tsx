@@ -5,8 +5,9 @@ import ReactDOM from "react-dom/client";
 import { Toaster } from "sonner";
 import AppContainer from "./App.tsx";
 import { classConfig } from "./config/sonner.ts";
+import { reportReactError } from "./utils/reactErrorReporter.ts";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+ReactDOM.createRoot(document.getElementById("root")!, { onCaughtError: reportReactError }).render(
 	<React.StrictMode>
 		<Suspense>
 			<AppContainer />
