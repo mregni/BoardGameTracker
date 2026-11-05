@@ -25,6 +25,7 @@ const stateOrder: { state: GameState; tone: BgtProgressSegment["tone"] }[] = [
 	{ state: GameState.Owned, tone: "value" },
 	{ state: GameState.Wanted, tone: "primary" },
 	{ state: GameState.ForTrade, tone: "warn" },
+	{ state: GameState.Sold, tone: "muted" },
 	{ state: GameState.PreviouslyOwned, tone: "muted" },
 ];
 

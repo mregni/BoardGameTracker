@@ -329,6 +329,7 @@ public class GameFactoryTests
     [InlineData(GameState.Wanted)]
     [InlineData(GameState.ForTrade)]
     [InlineData(GameState.PreviouslyOwned)]
+    [InlineData(GameState.Sold)]
     public async Task CreateFromBggAsync_ShouldSupportAllGameStates(GameState state)
     {
         var item = CreateBasicItem();
