@@ -436,7 +436,18 @@ export const games = collection.map((game, index) => {
 	};
 });
 
-export const players = ["Anna", "Bram", "Cato", "Dries", "Elise", "Finn", "Greet", "Hanne"];
+export const avatars = [
+	{ name: "Kermit", avatar: "kermit.jpg" },
+	{ name: "Miss Piggy", avatar: "miss-piggy.jpg" },
+	{ name: "Fozzie", avatar: "fozzie.jpg" },
+	{ name: "Gonzo", avatar: "gonzo.png" },
+	{ name: "Rowlf", avatar: "rowlf.png" },
+	{ name: "Beaker", avatar: "beaker.png" },
+	{ name: "Scooter", avatar: "scooter.png" },
+	{ name: "Swedish Chef", avatar: "swedish-chef.png" },
+];
+
+export const players = avatars.map((player) => player.name);
 
 export const linkedPlayer = players[0];
 
@@ -533,14 +544,20 @@ export const gameNights = [
 		startDate: subDays(now, -3),
 		location: locations[0],
 		suggestedGames: [titles[14], titles[15], titles[16]],
-		rsvps: { Anna: "accepted", Bram: "accepted", Cato: "maybe", Dries: "declined", Elise: "pending" },
+		rsvps: {
+			[players[0]]: "accepted",
+			[players[1]]: "accepted",
+			[players[2]]: "maybe",
+			[players[3]]: "declined",
+			[players[4]]: "pending",
+		},
 	},
 	{
 		title: "Family afternoon",
 		startDate: subDays(now, -10),
 		location: locations[1],
 		suggestedGames: [titles[10]],
-		rsvps: { Anna: "accepted", Finn: "pending" },
+		rsvps: { [players[0]]: "accepted", [players[5]]: "pending" },
 	},
 ];
 

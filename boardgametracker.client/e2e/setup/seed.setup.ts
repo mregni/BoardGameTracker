@@ -1,18 +1,10 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { expect, type Page, test as setup } from "@playwright/test";
+import { expect, test as setup } from "@playwright/test";
 import { credentials } from "../support/fixtures";
-import { expansions, gameNights, games, linkedPlayer, locations, players, sessions } from "../support/seedData";
+import { avatars, expansions, gameNights, games, linkedPlayer, locations, sessions } from "../support/seedData";
 
-const renderAvatar = async (page: Page, text: string, index: number) => {
-	await page.setViewportSize({ width: 200, height: 200 });
-	await page.setContent(
-		`<body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:hsl(${index * 37} 55% 35%);color:white;font:bold 28px sans-serif;text-align:center">${text}</body>`,
-	);
-	return page.screenshot({ type: "png" });
-};
-
-setup("seed the database through the api", async ({ page, request }) => {
+setup("seed the database through the api", async ({ request }) => {
 	setup.setTimeout(120_000);
 
 	const login = await request.post("/api/auth/login", { data: credentials });
@@ -45,8 +37,9 @@ setup("seed the database through the api", async ({ page, request }) => {
 	}
 
 	const playerIds = new Map<string, number>();
-	for (const [index, name] of players.entries()) {
-		const image = await upload(`${name}.png`, "Profile", await renderAvatar(page, name, index));
+	const supportFolder = path.join(setup.info().project.testDir, "support");
+	for (const { name, avatar } of avatars) {
+		const image = await upload(avatar, "Profile", await readFile(path.join(supportFolder, "avatars", avatar)));
 		const player = await post("/api/player", { name, image });
 		playerIds.set(name, player.id);
 	}
@@ -54,9 +47,8 @@ setup("seed the database through the api", async ({ page, request }) => {
 	await send("put", `/api/admin/players/${playerIds.get(linkedPlayer)}/account`, { userId: user.id });
 
 	const gameIds = new Map<string, number>();
-	const coversFolder = path.join(setup.info().project.testDir, "support", "covers");
 	for (const { cover, ...game } of games) {
-		const image = await upload(cover, "Game", await readFile(path.join(coversFolder, cover)));
+		const image = await upload(cover, "Game", await readFile(path.join(supportFolder, "covers", cover)));
 		const created = await post("/api/game", { ...game, image });
 		gameIds.set(game.title, created.id);
 	}
