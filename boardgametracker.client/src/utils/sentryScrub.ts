@@ -20,11 +20,7 @@ const EVENT_FIELDS = [
 	"breadcrumbs",
 	"spans",
 	"message",
-	"urls",
 ] as const;
-
-const RRWEB_META = 4;
-const RRWEB_CUSTOM = 5;
 
 export const scrubUrl = (value: string): string =>
 	value
@@ -56,8 +52,3 @@ export const scrubEvent = <T extends Event>(event: T): T => {
 };
 
 export const scrubBreadcrumb = (breadcrumb: Breadcrumb): Breadcrumb => scrubValue(breadcrumb) as Breadcrumb;
-
-export const scrubRecordingEvent = <T>(event: T): T => {
-	const type = (event as { type?: unknown } | null)?.type;
-	return type === RRWEB_META || type === RRWEB_CUSTOM ? (scrubValue(event) as T) : event;
-};
