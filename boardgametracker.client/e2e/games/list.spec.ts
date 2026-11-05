@@ -1,18 +1,10 @@
 import { expect, expectVisibleImagesToLoad, test } from "../support/fixtures";
-import { gameLink, gameLinks, openGames, pick } from "../support/gamesPage";
-import {
-	expected,
-	games,
-	mostPlayedGame,
-	neverPlayedGame,
-	secondMostPlayedGame,
-	sessions,
-	wantedGame,
-} from "../support/seedData";
+import { expectGames, gameLink, gameLinks, inTitleOrder, openGames, pick } from "../support/gamesPage";
+import { expected, games, mostPlayedGame, neverPlayedGame, sessions, wantedGame } from "../support/seedData";
 
 const playsOf = (title: string) => sessions.filter((session) => session.game === title).length;
 
-const titlesInOrder = games.map((game) => game.title).sort((a, b) => a.localeCompare(b));
+const titlesInOrder = inTitleOrder(games.map((game) => game.title));
 
 test.describe("list", () => {
 	test.beforeEach(async ({ page }) => {
@@ -20,7 +12,7 @@ test.describe("list", () => {
 	});
 
 	test("shows every game sorted by title with its plays", async ({ page }) => {
-		await expect(gameLinks(page)).toContainText(titlesInOrder);
+		await expectGames(page, titlesInOrder);
 		await expect(gameLink(page, mostPlayedGame.title)).toContainText(`${playsOf(mostPlayedGame.title)} plays`);
 		await expect(gameLink(page, neverPlayedGame.title)).toContainText("Never played");
 		await expect(gameLink(page, wantedGame.title)).toContainText("Wanted");
@@ -34,26 +26,29 @@ test.describe("list", () => {
 		await expect(gameLinks(page)).toContainText(["Redwood"]);
 	});
 
-	for (const [state, count] of [
-		["Owned", expected.ownedCount],
-		["Wanted", expected.wantedCount],
-		["For trade", expected.forTradeCount],
-		["Previously owned", expected.previouslyOwnedCount],
-		["Sold", expected.soldCount],
+	for (const [label, state] of [
+		["Owned", "owned"],
+		["Wanted", "wanted"],
+		["For trade", "forTrade"],
+		["Previously owned", "previouslyOwned"],
+		["Sold", "sold"],
 	] as const) {
-		test(`filters by the state ${state}`, async ({ page }) => {
-			await pick(page, "State", state);
+		test(`filters by the state ${label}`, async ({ page }) => {
+			await pick(page, "State", label);
 
-			await expect(gameLinks(page)).toHaveCount(count);
+			await expectGames(page, inTitleOrder(games.filter((game) => game.state === state).map((game) => game.title)));
 		});
 	}
 
 	test("sorts by most played", async ({ page }) => {
 		await pick(page, "Sort by", "Most played");
 
-		await expect(gameLinks(page).first()).toContainText(mostPlayedGame.title);
-		await expect(gameLinks(page).nth(1)).toContainText(secondMostPlayedGame.title);
-		await expect(gameLinks(page).last()).toContainText("Never played");
+		await expectGames(
+			page,
+			[...games]
+				.sort((a, b) => playsOf(b.title) - playsOf(a.title) || a.title.localeCompare(b.title))
+				.map((game) => game.title),
+		);
 	});
 
 	test("shows the totals in the table view", async ({ page }) => {
@@ -108,4 +103,5 @@ test("spins the wheel and opens the picked game", async ({ page }) => {
 		.click({ timeout: 20_000 });
 
 	await expect(page).toHaveURL(/\/games\/\d+$/);
+	await expect(page.getByRole("main").getByText("Owned", { exact: true })).toBeVisible();
 });

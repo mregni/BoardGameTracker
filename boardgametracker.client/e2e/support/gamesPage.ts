@@ -3,6 +3,13 @@ import { expected } from "./seedData";
 
 export const gameLinks = (page: Page) => page.getByRole("main").getByRole("link");
 
+export const expectGames = async (page: Page, titles: string[]) => {
+	await expect(gameLinks(page)).toHaveCount(titles.length);
+	if (titles.length > 0) await expect(gameLinks(page)).toContainText(titles);
+};
+
+export const inTitleOrder = (titles: string[]) => [...titles].sort((a, b) => a.localeCompare(b));
+
 export const gameLink = (page: Page, title: string) => page.getByRole("link", { name: new RegExp(`^${title} `) });
 
 export const pick = async (page: Page, combobox: string, option: string) => {

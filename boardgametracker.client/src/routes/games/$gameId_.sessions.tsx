@@ -2,8 +2,10 @@ import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import AlertTriangle from "@/assets/icons/alert-triangle.svg?react";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtEmptyState } from "@/components/BgtLayout/BgtEmptyState";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -16,7 +18,7 @@ import type { Session } from "@/models";
 import { getGame, getGameSessions } from "@/services/queries/games";
 import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
-import { toDisplay, toDisplayTime } from "@/utils/dateUtils";
+import { minutesIntoDay, toDisplay, toDisplayTime } from "@/utils/dateUtils";
 import { gameIdParamSchema } from "@/utils/routeSchemas";
 import { useBack } from "../-hooks/useBack";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
@@ -38,7 +40,7 @@ export const Route = createFileRoute("/games/$gameId_/sessions")({
 
 function RouteComponent() {
 	const { gameId } = Route.useParams();
-	const { t } = useTranslation(["common", "sessions"]);
+	const { t } = useTranslation(["common", "sessions", "game"]);
 	const navigate = useNavigate();
 	const shortDuration = useShortDuration();
 	const { decimal } = useNumberFormat();
@@ -46,7 +48,7 @@ function RouteComponent() {
 	const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
 	const goBack = useBack(`/games/${gameId}`);
 
-	const { settings, game, sessions, deleteSession, players, isLoading } = useGameSessionsData({
+	const { settings, game, sessions, deleteSession, players, isLoading, error } = useGameSessionsData({
 		gameId,
 		onDeleteSuccess: () => {
 			setSessionToDelete(null);
@@ -55,26 +57,41 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageContent isLoading={isLoading} data={{ game, settings, players }}>
+			<BgtPageContent
+				isLoading={isLoading}
+				data={{ game, settings, players }}
+				error={error}
+				notFound={
+					<BgtEmptyState
+						icon={AlertTriangle}
+						title={t("game:notifications.not-found")}
+						description={t("game:load-error.not-found-description")}
+						action={{ label: t("game:load-error.back"), onClick: () => navigate({ to: "/games" }) }}
+					/>
+				}
+			>
 				{({ game, settings, players }) => {
 					const columns: DataTableProps<Session>["columns"] = [
 						{
-							accessorKey: "0",
+							id: "date",
+							accessorFn: (session) => new Date(session.start).getTime(),
 							cell: ({ row }) => toDisplay(row.original.start, settings.dateFormat, settings.uiLanguage),
 							header: t("date"),
 						},
 						{
-							accessorKey: "1",
+							id: "time",
+							accessorFn: (session) => minutesIntoDay(session.start),
 							cell: ({ row }) => toDisplayTime(row.original.start, settings.timeFormat, settings.uiLanguage),
 							header: t("time"),
 						},
 						{
-							accessorKey: "2",
+							accessorKey: "minutes",
 							cell: ({ row }) => shortDuration(row.original.minutes),
 							header: t("duration"),
 						},
 						{
-							accessorKey: "3",
+							id: "players",
+							enableSorting: false,
 							cell: ({ row }) => (
 								<div className="flex flex-wrap items-center gap-1.5">
 									{row.original.isCoop && <CoopResultPill won={row.original.teamWon === true} />}
@@ -87,14 +104,16 @@ function RouteComponent() {
 							header: t("players"),
 						},
 						{
-							accessorKey: "4",
+							id: "comment",
+							enableSorting: false,
 							cell: ({ row }) => <SessionCommentCell comment={row.original.comment} />,
 							header: t("comment"),
 						},
 						...(canWrite
 							? [
 									{
-										accessorKey: "200",
+										id: "actions",
+										enableSorting: false,
 										cell: ({ row }: { row: { original: Session } }) => (
 											<BgtEditDeleteButtons
 												onDelete={() => setSessionToDelete(row.original.id)}

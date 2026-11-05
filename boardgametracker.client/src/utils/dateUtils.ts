@@ -126,6 +126,11 @@ export const toDisplayDateTime = (
 	return format(dateObj, combinedFormat, { locale });
 };
 
+export const minutesIntoDay = (date: Date | string): number => {
+	const value = new Date(date);
+	return value.getHours() * 60 + value.getMinutes();
+};
+
 export const toDisplayTime = (
 	date: Date | string | undefined | null,
 	timeFormat: string,

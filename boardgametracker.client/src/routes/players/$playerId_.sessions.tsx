@@ -2,9 +2,11 @@ import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import AlertTriangle from "@/assets/icons/alert-triangle.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtEmptyState } from "@/components/BgtLayout/BgtEmptyState";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -17,7 +19,7 @@ import type { Session } from "@/models";
 import { getGames } from "@/services/queries/games";
 import { getPlayer, getPlayerSessions, getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
-import { toDisplay, toDisplayTime } from "@/utils/dateUtils";
+import { minutesIntoDay, toDisplay, toDisplayTime } from "@/utils/dateUtils";
 import { playerIdParamSchema } from "@/utils/routeSchemas";
 import { useBack } from "../-hooks/useBack";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
@@ -40,7 +42,7 @@ export const Route = createFileRoute("/players/$playerId_/sessions")({
 
 function RouteComponent() {
 	const { playerId } = Route.useParams();
-	const { t } = useTranslation(["common", "sessions"]);
+	const { t } = useTranslation(["common", "sessions", "player"]);
 	const navigate = useNavigate();
 	const shortDuration = useShortDuration();
 	const { decimal } = useNumberFormat();
@@ -48,7 +50,7 @@ function RouteComponent() {
 	const goBack = useBack(`/players/${playerId}`);
 	const { canWrite } = usePermissions();
 
-	const { sessions, deleteSession, settings, games, player, players, isLoading } = usePlayerSessionData({
+	const { sessions, deleteSession, settings, games, player, players, isLoading, error } = usePlayerSessionData({
 		playerId,
 		onDeleteSuccess: () => {
 			setSessionToDelete(null);
@@ -60,17 +62,20 @@ function RouteComponent() {
 		if (!settings) return [];
 		return [
 			{
-				accessorKey: "0",
+				id: "date",
+				accessorFn: (session) => new Date(session.start).getTime(),
 				cell: ({ row }) => toDisplay(row.original.start, settings.dateFormat, settings.uiLanguage),
 				header: t("date"),
 			},
 			{
-				accessorKey: "1",
+				id: "time",
+				accessorFn: (session) => minutesIntoDay(session.start),
 				cell: ({ row }) => toDisplayTime(row.original.start, settings.timeFormat, settings.uiLanguage),
 				header: t("time"),
 			},
 			{
-				accessorKey: "2",
+				id: "game",
+				accessorFn: (session) => gameMap.get(session.gameId)?.title ?? "",
 				cell: ({ row }) => {
 					const game = gameMap.get(row.original.gameId);
 					return (
@@ -89,12 +94,13 @@ function RouteComponent() {
 				header: t("game"),
 			},
 			{
-				accessorKey: "3",
+				accessorKey: "minutes",
 				cell: ({ row }) => shortDuration(row.original.minutes),
 				header: t("duration"),
 			},
 			{
-				accessorKey: "4",
+				id: "players",
+				enableSorting: false,
 				cell: ({ row }) => (
 					<div className="flex flex-wrap items-center gap-1.5">
 						{row.original.isCoop && <CoopResultPill won={row.original.teamWon === true} />}
@@ -107,14 +113,16 @@ function RouteComponent() {
 				header: t("players"),
 			},
 			{
-				accessorKey: "5",
+				id: "comment",
+				enableSorting: false,
 				cell: ({ row }) => <SessionCommentCell comment={row.original.comment} />,
 				header: t("comment"),
 			},
 			...(canWrite
 				? [
 						{
-							accessorKey: "200",
+							id: "actions",
+							enableSorting: false,
 							cell: ({ row }: { row: { original: Session } }) => (
 								<BgtEditDeleteButtons
 									onDelete={() => setSessionToDelete(row.original.id)}
@@ -130,7 +138,12 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageContent isLoading={isLoading} data={{ player, settings, games, players }}>
+			<BgtPageContent
+				isLoading={isLoading}
+				data={{ player, settings, games, players }}
+				error={error}
+				notFound={<BgtEmptyState icon={AlertTriangle} title={t("player:notifications.not-found")} />}
+			>
 				{({ player, settings, games, players }) => {
 					return (
 						<>

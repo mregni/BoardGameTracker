@@ -4,7 +4,7 @@ test.beforeEach(async ({ page }) => {
 	await page.setViewportSize({ width: 375, height: 812 });
 });
 
-for (const path of ["/", "/games", "/games?view=table", "/games/1", "/games/add", "/games/pick"]) {
+for (const path of ["/", "/games", "/games?view=table", "/games/1", "/games/1/sessions", "/games/add", "/games/pick"]) {
 	test(`${path} fits a phone without sideways scrolling`, async ({ page }) => {
 		await page.goto(path);
 		await expect(page.getByRole("main")).toBeVisible();
@@ -19,10 +19,19 @@ for (const path of ["/", "/games", "/games?view=table", "/games/1", "/games/add"
 	});
 }
 
-test("keeps logging a session on the dashboard and moves adding a game away", async ({ page }) => {
+test("offers logging a session but not adding a game on the phone dashboard", async ({ page }) => {
 	await page.goto("/");
 	const main = page.getByRole("main");
 
 	await expect(main.getByRole("link", { name: "Log session" })).toBeVisible();
 	await expect(main.getByRole("link", { name: "Add game" })).toBeHidden();
+});
+
+test("shows the sessions of a game as cards instead of a table", async ({ page }) => {
+	await page.goto("/games/1/sessions");
+	const main = page.getByRole("main");
+
+	await expect(main.getByRole("heading", { level: 1 })).toBeVisible();
+	await expect(main.getByRole("table")).toBeHidden();
+	await expect(main.getByRole("button", { name: "Edit" }).first()).toBeVisible();
 });

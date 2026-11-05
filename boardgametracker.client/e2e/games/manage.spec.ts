@@ -1,6 +1,6 @@
 import { expect, test } from "../support/fixtures";
 import { gameLink, openGames, pick } from "../support/gamesPage";
-import { expected, games } from "../support/seedData";
+import { coopGame, expected, games, sessions } from "../support/seedData";
 
 test("adds a game by hand, renames it and deletes it again", async ({ page }) => {
 	const title = "Hand made game";
@@ -61,13 +61,14 @@ test("adds an expansion by name and removes it", async ({ page }) => {
 
 	await expect(dialog.getByText(title)).toBeVisible();
 	await expect(dialog.getByText("Added manually")).toBeVisible();
+	await expect(dialog.getByRole("heading", { name: "Expansions (1)" })).toBeVisible();
 
 	await dialog.getByRole("button", { name: "Delete" }).click();
 
 	await expect(dialog.getByText("No expansions added to this game.")).toBeVisible();
 });
 
-test("uploads a manual and deletes it", async ({ page }) => {
+test("uploads, downloads and deletes a manual", async ({ page }) => {
 	const name = "rules.pdf";
 	await page.goto("/games/3");
 	await page.getByRole("button", { name: "Manuals (0)" }).click();
@@ -80,6 +81,10 @@ test("uploads a manual and deletes it", async ({ page }) => {
 	});
 
 	await expect(dialog.getByText(/rules/)).toBeVisible();
+
+	const download = page.waitForEvent("download");
+	await dialog.getByRole("button", { name: "Download" }).click();
+	expect((await download).suggestedFilename()).toContain("rules");
 
 	await dialog.getByRole("button", { name: "Delete" }).click();
 
@@ -106,7 +111,7 @@ test("changes the price inline in the table and updates the total", async ({ pag
 	await expect(page.getByText(total(expected.ownedValue))).toBeVisible();
 });
 
-test("edits every kind of field and marks a game as sold", async ({ page }) => {
+test("edits a game, marks it as sold and keeps the sold price", async ({ page }) => {
 	const title = "Game to sell";
 	await page.goto("/games/new");
 	await page.getByRole("textbox", { name: "Game title" }).fill(title);
@@ -126,8 +131,27 @@ test("edits every kind of field and marks a game as sold", async ({ page }) => {
 	await expect(main).toContainText("Rating7.5 / 10");
 	await expect(main).toContainText("Weight2.5 / 5");
 
+	await main.getByRole("button", { name: "Edit" }).click();
+	await expect(page.getByRole("textbox", { name: "Sold price" })).toHaveValue("15");
+	await page.goBack();
+
 	await main.getByRole("button", { name: "Delete" }).click();
 	await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
 	await expect(page).toHaveURL("/games");
 	await expect(gameLink(page, title)).toHaveCount(0);
+});
+
+test("deletes a session and updates the game", async ({ page }) => {
+	const played = sessions.filter((session) => session.game === coopGame.title).length;
+	const gameId = games.indexOf(coopGame) + 1;
+	await page.goto(`/games/${gameId}/sessions`);
+	const rows = page.getByRole("table").getByRole("rowgroup").nth(1).getByRole("row");
+	await expect(rows).toHaveCount(played);
+
+	await rows.first().getByRole("button", { name: "Delete" }).click();
+	await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
+
+	await expect(rows).toHaveCount(played - 1);
+	await page.goto(`/games/${gameId}`);
+	await expect(page.getByRole("region", { name: new RegExp(`^Played ${played - 1} times`) })).toBeVisible();
 });

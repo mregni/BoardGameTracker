@@ -44,6 +44,7 @@ export const usePlayerSessionData = ({ playerId, onDeleteSuccess }: UsePlayerSes
 	};
 
 	return {
+		error: playerQuery.error ?? settingsQuery.error,
 		player,
 		sessions,
 		games,
