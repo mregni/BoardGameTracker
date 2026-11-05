@@ -408,13 +408,16 @@ const MIXED_COOP_GAME = "City of the Great Machine";
 const UNSCORED_GAME = "Kittens in Space";
 const OWNED_GAMES = 20;
 const WANTED_GAMES = 4;
-const PREVIOUSLY_OWNED_GAMES = 2;
+const PREVIOUSLY_OWNED_GAMES = 1;
+const SOLD_GAMES = 1;
+const SOLD_PRICE = 60;
 const THIS_MONTH_SESSIONS = 3;
 
 const stateOf = (index: number): GameState => {
 	if (index < OWNED_GAMES) return "owned";
 	if (index < OWNED_GAMES + WANTED_GAMES) return "wanted";
 	if (index < OWNED_GAMES + WANTED_GAMES + PREVIOUSLY_OWNED_GAMES) return "previouslyOwned";
+	if (index < OWNED_GAMES + WANTED_GAMES + PREVIOUSLY_OWNED_GAMES + SOLD_GAMES) return "sold";
 	return "forTrade";
 };
 
@@ -429,6 +432,7 @@ export const games = collection.map((game, index) => {
 		...game,
 		state,
 		language: languageOf(index),
+		soldPrice: state === "sold" ? SOLD_PRICE : null,
 		hasScoring: game.title !== UNSCORED_GAME,
 		hasCoopMode: game.title === COOP_GAME || game.title === MIXED_COOP_GAME,
 		coopByDefault: game.title === COOP_GAME,
@@ -584,6 +588,7 @@ export const secondMostPlayedGame = games[1];
 export const neverPlayedGame = games[PLAYED_GAMES];
 export const wantedGame = games[OWNED_GAMES];
 export const previouslyOwnedGame = games[OWNED_GAMES + WANTED_GAMES];
+export const soldGame = games[OWNED_GAMES + WANTED_GAMES + PREVIOUSLY_OWNED_GAMES];
 export const forTradeGame = games[games.length - 1];
 export const coopGame = games.find((game) => game.title === COOP_GAME) ?? games[0];
 export const unscoredGame = games.find((game) => game.title === UNSCORED_GAME) ?? games[0];
@@ -616,7 +621,8 @@ export const expected = {
 	ownedCount: OWNED_GAMES,
 	wantedCount: WANTED_GAMES,
 	previouslyOwnedCount: PREVIOUSLY_OWNED_GAMES,
-	forTradeCount: games.length - OWNED_GAMES - WANTED_GAMES - PREVIOUSLY_OWNED_GAMES,
+	soldCount: SOLD_GAMES,
+	forTradeCount: games.length - OWNED_GAMES - WANTED_GAMES - PREVIOUSLY_OWNED_GAMES - SOLD_GAMES,
 	ownedValue: sum(ownedPrices),
 	shameCount: shameGames.length,
 	shameNeverPlayedCount: shameGames.filter((game) => !sessions.some((session) => session.game === game.title)).length,
