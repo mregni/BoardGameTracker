@@ -35,6 +35,8 @@ cd boardgametracker.client && pnpm typecheck && pnpm lint && pnpm test:run
 
 `dotnet test` runs two projects: `BoardGameTracker.Tests` (unit tests, no infrastructure) and `BoardGameTracker.IntegrationTests`, which starts a `pgvector/pgvector:pg16` container through Testcontainers and boots the real application against it — Docker must be running. Run `dotnet test BoardGameTracker.Tests` alone when you only need the fast suite.
 
+End-to-end tests live in `boardgametracker.client/e2e/`. `pnpm test:e2e` builds the client and starts the AppHost with `--e2e`: an empty database, its own ports (5543 and 6654), and no Ollama, RAG, email or BoardGameGeek. The tests sign in as `admin`/`admin` and seed their data through the API. Docker must be running; the first time, install the browser with `pnpm exec playwright install chromium`. Use `pnpm test:e2e:ui` to step through a run, or `pnpm test:e2e:headed` to watch the browser (set `SLOW_MO` to a number of milliseconds to slow it down).
+
 - NuGet packages are pinned and locked (`packages.lock.json`). After changing a `<PackageReference>` run `dotnet restore` (without `--locked-mode`) and commit the updated lock files.
 - The frontend keeps a generated copy of the API contract: `boardgametracker.client/openapi/swagger.json` (exported by the host with `pnpm export:openapi`, which runs `BoardGameTracker.Host --openapi <file>`) and `src/models/api.generated.ts` (`pnpm generate:api`). Run both after changing a controller, command or DTO and commit the result — CI fails when either file is stale, and `src/models/api.contract.test.ts` fails to typecheck when a hand-written model drifts from the schema.
 - Frontend code is formatted and linted by Biome with LF line endings; `pnpm lint:fix` fixes most findings.
