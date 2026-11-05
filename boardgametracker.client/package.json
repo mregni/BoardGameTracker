@@ -9,7 +9,7 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src/ e2e/",
-    "lint:fix": "biome check --write src/",
+    "lint:fix": "biome check --write src/ e2e/",
     "preview": "vite preview",
     "format": "biome format --write src/ e2e/",
     "format:check": "biome format src/ e2e/",

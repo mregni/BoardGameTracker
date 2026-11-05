@@ -109,7 +109,7 @@ export const sessions = playedGameIndexes.map((gameIndex, sessionIndex) => {
 		const edge = (players.length - playerIndex) * 4;
 		return { player: players[playerIndex], score: 40 + edge + (((sessionIndex + 1) * (playerIndex + 3) * 7) % 40) };
 	});
-	const winner = scores.reduce((best, score) => (score.score > best.score ? score : best));
+	const winner = scores.reduce((best, score) => (score.score > best.score ? score : best), scores[0]);
 	return {
 		game: titles[gameIndex],
 		start: startOf(sessionIndex),
@@ -142,7 +142,7 @@ const playCounts = (since: Date) => {
 	for (const session of sessions) {
 		if (session.start >= since) counts.set(session.game, (counts.get(session.game) ?? 0) + 1);
 	}
-	return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+	return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 };
 
 export const standingsOf = (subset: typeof sessions) =>
