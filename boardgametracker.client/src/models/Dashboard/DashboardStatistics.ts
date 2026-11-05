@@ -22,7 +22,7 @@ export interface DashboardStatistics {
 	collection: GameStateChart[];
 	mostPlayedGames: DashboardMostPlayedGame[];
 	mostPlayedGamesThisYear: DashboardMostPlayedGame[];
-	mostPlayedGamesLast12Months: DashboardMostPlayedGame[];
+	mostPlayedGamesThisMonth: DashboardMostPlayedGame[];
 	topPlayers: DashboardTopPlayer[];
 	topPlayersIncludeCoopWins: boolean;
 	recentAddedGames: RecentGame[];

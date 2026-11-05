@@ -118,7 +118,7 @@ function RouteComponent() {
 						<MostPlayedCard
 							allTime={statistics.mostPlayedGames}
 							thisYear={statistics.mostPlayedGamesThisYear}
-							last12Months={statistics.mostPlayedGamesLast12Months}
+							thisMonth={statistics.mostPlayedGamesThisMonth}
 						/>
 						<CollectionCard
 							collection={statistics.collection}

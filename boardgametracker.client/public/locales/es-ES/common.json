@@ -143,6 +143,7 @@
     "label": "Periodo",
     "all-time": "Siempre",
     "this-year": "Este año",
+    "this-month": "Este mes",
     "last-12-months": "Últimos 12 meses",
     "last-12-months-short": "12 meses",
     "custom": "Personalizado"
