@@ -1,4 +1,4 @@
-import { subDays, subMinutes, subMonths } from "date-fns";
+import { subDays, subMonths, subSeconds } from "date-fns";
 import type { components } from "../../src/models/api.generated";
 
 type GameState = components["schemas"]["GameState"];
@@ -131,20 +131,6 @@ const collection = [
 		weight: 2.8,
 		buyingPrice: 42,
 		description: "A strategic tile-laying area control game for 1-5 wizards.",
-	},
-	{
-		title: "Mythwind",
-		cover: "mythwind.png",
-		yearPublished: 2023,
-		minPlayers: 1,
-		maxPlayers: 4,
-		minPlayTime: 30,
-		maxPlayTime: 60,
-		minAge: 13,
-		rating: 7.5,
-		weight: 2.8,
-		buyingPrice: 81,
-		description: "Solo & cooperative 'cozy' board game set in a whimsical valley with magical sprites.",
 	},
 	{
 		title: "Moon",
@@ -287,6 +273,20 @@ const collection = [
 		description: "Build a devious dungeon and explore your rival's creation.",
 	},
 	{
+		title: "Mythwind",
+		cover: "mythwind.png",
+		yearPublished: 2023,
+		minPlayers: 1,
+		maxPlayers: 4,
+		minPlayTime: 30,
+		maxPlayTime: 60,
+		minAge: 13,
+		rating: 7.5,
+		weight: 2.8,
+		buyingPrice: 81,
+		description: "Solo & cooperative 'cozy' board game set in a whimsical valley with magical sprites.",
+	},
+	{
 		title: "Comet",
 		cover: "comet.png",
 		yearPublished: 2023,
@@ -402,7 +402,10 @@ const collection = [
 
 const titles = collection.map((game) => game.title);
 
-const PLAYED_GAMES = 15;
+const PLAYED_GAMES = 14;
+const COOP_GAME = "Mythwind";
+const MIXED_COOP_GAME = "City of the Great Machine";
+const UNSCORED_GAME = "Kittens in Space";
 const OWNED_GAMES = 20;
 const WANTED_GAMES = 4;
 const PREVIOUSLY_OWNED_GAMES = 2;
@@ -415,12 +418,20 @@ const stateOf = (index: number): GameState => {
 	return "forTrade";
 };
 
+const languageOf = (index: number) => {
+	if (index % 5 === 4) return null;
+	return index % 4 === 3 ? "nl" : "en";
+};
+
 export const games = collection.map((game, index) => {
 	const state = stateOf(index);
 	return {
 		...game,
 		state,
-		hasScoring: true,
+		language: languageOf(index),
+		hasScoring: game.title !== UNSCORED_GAME,
+		hasCoopMode: game.title === COOP_GAME || game.title === MIXED_COOP_GAME,
+		coopByDefault: game.title === COOP_GAME,
 		additionDate: subDays(now, 600 - index * 15).toISOString(),
 	};
 });
@@ -443,10 +454,21 @@ const playedGameIndexes = Array.from({ length: PLAYED_GAMES }, (_, round) =>
 
 const startOf = (sessionIndex: number) =>
 	sessionIndex < THIS_MONTH_SESSIONS
-		? subMinutes(now, 5 + sessionIndex * 10)
-		: subDays(now, 35 + (sessionIndex - THIS_MONTH_SESSIONS) * 5);
+		? subSeconds(now, 1 + sessionIndex)
+		: subDays(now, 37 + (sessionIndex - THIS_MONTH_SESSIONS) * 5);
 
-export const sessions = playedGameIndexes.map((gameIndex, sessionIndex) => {
+interface SeedSession {
+	game: string;
+	start: Date;
+	minutes: number;
+	location: string;
+	scores: { player: string; score: number | null }[];
+	winner: string | null;
+	isCoop: boolean;
+	teamWon: boolean | null;
+}
+
+const competitiveSessions = playedGameIndexes.map((gameIndex, sessionIndex): SeedSession => {
 	const seats = sessionIndex % 3 === 0 ? 4 : 3;
 	const scores = Array.from({ length: seats }, (_, seat) => {
 		const playerIndex = (sessionIndex + seat) % players.length;
@@ -461,8 +483,49 @@ export const sessions = playedGameIndexes.map((gameIndex, sessionIndex) => {
 		location: locations[sessionIndex % locations.length],
 		scores,
 		winner: winner.player,
+		isCoop: false,
+		teamWon: null,
 	};
 });
+
+const seatsWithoutScores = players.slice(0, 3).map((player) => ({ player, score: null }));
+
+const coopSession = (game: string, daysAgo: number, teamWon: boolean): SeedSession => ({
+	game,
+	start: subDays(now, daysAgo),
+	minutes: 60,
+	location: locations[0],
+	scores: seatsWithoutScores,
+	winner: null,
+	isCoop: true,
+	teamWon,
+});
+
+const coopSessions = [
+	coopSession(COOP_GAME, 36, true),
+	coopSession(COOP_GAME, 60, true),
+	coopSession(COOP_GAME, 90, false),
+	coopSession(COOP_GAME, 120, true),
+	coopSession(COOP_GAME, 150, false),
+	coopSession(MIXED_COOP_GAME, 200, true),
+	coopSession(MIXED_COOP_GAME, 230, false),
+	coopSession(MIXED_COOP_GAME, 260, true),
+];
+
+const unscoredSessions = [0, 1, 2].map(
+	(index): SeedSession => ({
+		game: UNSCORED_GAME,
+		start: subDays(now, 720 + index * 3),
+		minutes: 15,
+		location: locations[1],
+		scores: seatsWithoutScores,
+		winner: players[index],
+		isCoop: false,
+		teamWon: null,
+	}),
+);
+
+export const sessions = [...competitiveSessions, ...coopSessions, ...unscoredSessions];
 
 export const gameNights = [
 	{
@@ -493,7 +556,7 @@ export const standingsOf = (subset: typeof sessions) =>
 	players
 		.map((name) => {
 			const played = subset.filter((session) => session.scores.some((score) => score.player === name));
-			const wins = played.filter((session) => session.winner === name).length;
+			const wins = played.filter((session) => session.winner === name || session.teamWon === true).length;
 			return { name, sessions: played.length, wins, winRate: wins / played.length };
 		})
 		.filter((standing) => standing.sessions > 0)
@@ -503,6 +566,10 @@ export const mostPlayedGame = games[0];
 export const secondMostPlayedGame = games[1];
 export const neverPlayedGame = games[PLAYED_GAMES];
 export const wantedGame = games[OWNED_GAMES];
+export const previouslyOwnedGame = games[OWNED_GAMES + WANTED_GAMES];
+export const forTradeGame = games[games.length - 1];
+export const coopGame = games.find((game) => game.title === COOP_GAME) ?? games[0];
+export const unscoredGame = games.find((game) => game.title === UNSCORED_GAME) ?? games[0];
 
 const shameGames = games.filter(
 	(game) =>
@@ -524,7 +591,7 @@ export const expected = {
 	playersThisMonth: new Set(thisMonth.flatMap((session) => session.scores.map((score) => score.player))).size,
 	linkedPlayedThisMonth: playedThisMonth.length,
 	linkedWonThisMonth: playedThisMonth.filter((session) => session.winner === linkedPlayer).length,
-	lastSessions: sessions.slice(0, 5),
+	lastSessions: [...sessions].sort((a, b) => b.start.getTime() - a.start.getTime()).slice(0, 5),
 	topPlayers: standingsOf(sessions).slice(0, 3),
 	mostPlayedAllTime: playCounts(new Date(0)).slice(0, 4),
 	mostPlayedThisMonth: playCounts(new Date(now.getFullYear(), now.getMonth(), 1)).slice(0, 4),
@@ -535,6 +602,7 @@ export const expected = {
 	forTradeCount: games.length - OWNED_GAMES - WANTED_GAMES - PREVIOUSLY_OWNED_GAMES,
 	ownedValue: sum(ownedPrices),
 	shameCount: shameGames.length,
+	shameNeverPlayedCount: shameGames.filter((game) => !sessions.some((session) => session.game === game.title)).length,
 	shameValue: sum(shameGames.map((game) => game.buyingPrice ?? 0)),
 	recentlyAdded: titles.slice(-3).reverse(),
 };

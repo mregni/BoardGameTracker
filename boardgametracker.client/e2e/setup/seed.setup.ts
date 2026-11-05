@@ -72,11 +72,13 @@ setup("seed the database through the api", async ({ page, request }) => {
 			minutes: session.minutes,
 			locationId: locationIds.get(session.location),
 			expansionIds: [],
+			isCoop: session.isCoop,
+			teamWon: session.teamWon,
 			playerSessions: session.scores.map(({ player, score }) => ({
 				playerId: playerIds.get(player),
 				score,
 				firstPlay: false,
-				won: player === session.winner,
+				won: player === session.winner || session.teamWon === true,
 			})),
 		});
 	}

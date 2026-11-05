@@ -2,7 +2,23 @@ import { type BrowserContext, test as base, expect, type Page } from "@playwrigh
 
 export const credentials = { username: "admin", password: "admin" };
 
-export const test = base.extend<object, { signedInContext: BrowserContext }>({
+const REFRESH_REUSE_MS = 5 * 60_000;
+
+const shareRefreshes = async (context: BrowserContext) => {
+	let shared: { json: unknown; expires: number } | null = null;
+	await context.route("**/api/auth/refresh", async (route) => {
+		if (shared && Date.now() < shared.expires) {
+			await route.fulfill({ json: shared.json });
+			return;
+		}
+		const response = await route.fetch();
+		shared = response.ok() ? { json: await response.json(), expires: Date.now() + REFRESH_REUSE_MS } : null;
+		await route.fulfill({ response });
+	});
+};
+
+export const test = base.extend<{ allowedApiStatuses: number[] }, { signedInContext: BrowserContext }>({
+	allowedApiStatuses: [[401], { option: true }],
 	signedInContext: [
 		async ({ browser }, use, workerInfo) => {
 			const { baseURL, locale, timezoneId, viewport } = workerInfo.project.use;
@@ -14,12 +30,13 @@ export const test = base.extend<object, { signedInContext: BrowserContext }>({
 			await page.getByRole("button", { name: "Sign in" }).click();
 			await page.waitForURL((url) => url.pathname !== "/login");
 			await page.close();
+			await shareRefreshes(context);
 			await use(context);
 			await context.close();
 		},
 		{ scope: "worker" },
 	],
-	page: async ({ signedInContext }, use) => {
+	page: async ({ signedInContext, allowedApiStatuses }, use) => {
 		const page = await signedInContext.newPage();
 		const problems: string[] = [];
 		page.on("pageerror", (error) => {
@@ -31,7 +48,11 @@ export const test = base.extend<object, { signedInContext: BrowserContext }>({
 			}
 		});
 		page.on("response", (response) => {
-			if (response.status() >= 500) problems.push(`${response.status()} ${response.url()}`);
+			const status = response.status();
+			const isApiFailure = status >= 400 && new URL(response.url()).pathname.startsWith("/api/");
+			if (status >= 500 || (isApiFailure && !allowedApiStatuses.includes(status))) {
+				problems.push(`${status} ${response.url()}`);
+			}
 		});
 		await use(page);
 		await page.close();
