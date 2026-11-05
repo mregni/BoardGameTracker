@@ -47,7 +47,7 @@ test("explains the cards when no session was logged", async ({ page }) => {
 		topPlayers: [],
 		mostPlayedGames: [],
 		mostPlayedGamesThisYear: [],
-		mostPlayedGamesLast12Months: [],
+		mostPlayedGamesThisMonth: [],
 	}));
 
 	await expect(page.getByRole("region", { name: "Last sessions" })).toContainText("No sessions logged yet");
