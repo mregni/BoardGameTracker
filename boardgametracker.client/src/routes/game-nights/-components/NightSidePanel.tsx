@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import CheckIcon from "@/assets/icons/check.svg?react";
+import Play from "@/assets/icons/play.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { AvatarChip } from "@/components/GameNight/AvatarChip";
@@ -15,10 +16,12 @@ interface Props {
 	playingGameIds: number[];
 	canWrite: boolean;
 	onEditAttendees: () => void;
+	onStartGame?: (gameId: number) => void;
 }
 
 export const NightSidePanel = (props: Props) => {
-	const { gameNight, attendees, expected, playedGameIds, playingGameIds, canWrite, onEditAttendees } = props;
+	const { gameNight, attendees, expected, playedGameIds, playingGameIds, canWrite, onEditAttendees, onStartGame } =
+		props;
 	const { t } = useTranslation("game-nights");
 	const navigate = useNavigate();
 
@@ -76,6 +79,18 @@ export const NightSidePanel = (props: Props) => {
 										</span>
 									)}
 									{playing && <span className="text-gray-400">{t("planned.playing")}</span>}
+									{onStartGame && !played && !playing && (
+										<BgtButton
+											variant="text"
+											size="1"
+											className="-my-1 py-1 pr-0 pl-1"
+											aria-label={t("planned.start-game", { game: game.title })}
+											onClick={() => onStartGame(game.id)}
+										>
+											<Play className="size-3" aria-hidden="true" />
+											{t("play.start.save")}
+										</BgtButton>
+									)}
 								</AvatarChip>
 							);
 						})}
