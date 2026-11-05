@@ -1,13 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const isCi = Boolean(process.env.CI);
-
 export default defineConfig({
 	testDir: "./e2e",
 	workers: 1,
-	forbidOnly: isCi,
-	retries: isCi ? 1 : 0,
-	reporter: isCi ? "github" : "list",
+	reporter: "list",
 	use: {
 		...devices["Desktop Chrome"],
 		baseURL: "http://localhost:5543",

@@ -9,12 +9,16 @@ const pick = async (page: Page, combobox: string, option: string) => {
 	await page.getByRole("option", { name: option, exact: true }).click();
 };
 
+const openGames = async (page: Page) => {
+	await page.goto("/games");
+	await expect(page.getByText(`${expected.gameCount} games`)).toBeVisible();
+};
+
 const titlesInOrder = games.map((game) => game.title).sort((a, b) => a.localeCompare(b));
 
 test.describe("list", () => {
 	test.beforeEach(async ({ page }) => {
-		await page.goto("/games");
-		await expect(page.getByText(`${expected.gameCount} games`)).toBeVisible();
+		await openGames(page);
 	});
 
 	test("shows every game sorted by title with its plays", async ({ page }) => {
@@ -73,8 +77,7 @@ test.describe("filters", () => {
 	const countOf = (matches: (game: (typeof games)[number]) => boolean) => games.filter(matches).length;
 
 	test.beforeEach(async ({ page }) => {
-		await page.goto("/games");
-		await expect(page.getByText(`${expected.gameCount} games`)).toBeVisible();
+		await openGames(page);
 	});
 
 	for (const { combobox, option, count } of [
@@ -131,8 +134,7 @@ test.describe("filters", () => {
 
 test.describe("sorting", () => {
 	test.beforeEach(async ({ page }) => {
-		await page.goto("/games");
-		await expect(page.getByText(`${expected.gameCount} games`)).toBeVisible();
+		await openGames(page);
 	});
 
 	for (const [option, first] of [
