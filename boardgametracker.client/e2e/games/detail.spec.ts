@@ -9,6 +9,7 @@ import {
 	neverPlayedGame,
 	previouslyOwnedGame,
 	sessions,
+	soldGame,
 	standingsOf,
 	unscoredGame,
 	wantedGame,
@@ -192,6 +193,7 @@ test("shows no scoring results for a game without scores", async ({ page }) => {
 for (const [game, state] of [
 	[wantedGame, "Wanted"],
 	[previouslyOwnedGame, "Previously owned"],
+	[soldGame, "Sold"],
 	[forTradeGame, "For trade"],
 ] as const) {
 	test(`shows the state of a game that is ${state}`, async ({ page }) => {
@@ -203,6 +205,14 @@ for (const [game, state] of [
 		await expect(main.getByText(state, { exact: true })).toBeVisible();
 	});
 }
+
+test("keeps the sold price of a sold game in the edit form", async ({ page }) => {
+	await openGames(page);
+	await gameLink(page, soldGame.title).click();
+	await page.getByRole("main").getByRole("button", { name: "Edit" }).click();
+
+	await expect(page.getByRole("textbox", { name: "Sold price" })).toHaveValue(String(soldGame.soldPrice));
+});
 
 test.describe("a game that does not exist", () => {
 	test.use({ allowedApiStatuses: [401, 404] });

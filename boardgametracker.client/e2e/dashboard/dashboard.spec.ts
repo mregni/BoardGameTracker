@@ -106,8 +106,8 @@ test("shows the most played games per period", async ({ page }) => {
 
 test("sums the collection, what was paid for it and what was added last", async ({ page }) => {
 	const card = page.getByRole("region", { name: "Collection" });
-	const { gameCount, ownedCount, wantedCount, forTradeCount, previouslyOwnedCount, ownedValue } = expected;
-	const summary = `${gameCount} games: Owned ${ownedCount}, Wanted ${wantedCount}, For trade ${forTradeCount}, Previously owned ${previouslyOwnedCount}`;
+	const { gameCount, ownedCount, wantedCount, forTradeCount, previouslyOwnedCount, soldCount, ownedValue } = expected;
+	const summary = `${gameCount} games: Owned ${ownedCount}, Wanted ${wantedCount}, For trade ${forTradeCount}, Sold ${soldCount}, Previously owned ${previouslyOwnedCount}`;
 
 	await expect(card.getByRole("img", { name: summary })).toBeVisible();
 	await expect(card.getByText(`€${ownedValue.toLocaleString("en-US")}`)).toBeVisible();

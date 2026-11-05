@@ -39,6 +39,7 @@ test.describe("list", () => {
 		["Wanted", expected.wantedCount],
 		["For trade", expected.forTradeCount],
 		["Previously owned", expected.previouslyOwnedCount],
+		["Sold", expected.soldCount],
 	] as const) {
 		test(`filters by the state ${state}`, async ({ page }) => {
 			await pick(page, "State", state);
