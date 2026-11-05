@@ -147,6 +147,7 @@
     "label": "Game state",
     "owned": "Owned",
     "previously-owned": "Previously owned",
+    "sold": "Sold",
     "wanted": "Wanted",
     "on-loan": "On loan",
     "on-loan-to": "On loan to {{name}} · since {{date}}"

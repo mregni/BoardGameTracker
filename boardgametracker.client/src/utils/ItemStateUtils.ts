@@ -14,6 +14,8 @@ export const getItemStateTranslationKey = (value: GameState, isLoaned: boolean):
 			return "game:state.previously-owned";
 		case GameState.ForTrade:
 			return "game:state.for-trade";
+		case GameState.Sold:
+			return "game:state.sold";
 		default:
 			return "";
 	}
@@ -33,6 +35,7 @@ export const getColorFromGameState = (
 		case GameState.Owned:
 			return "green";
 		case GameState.PreviouslyOwned:
+		case GameState.Sold:
 			return "purple";
 		case GameState.ForTrade:
 			return "blue";

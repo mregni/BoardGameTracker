@@ -147,6 +147,7 @@
     "label": "Estado del juego",
     "owned": "En propiedad",
     "previously-owned": "Tenido anteriormente",
+    "sold": "Vendido",
     "wanted": "Deseado",
     "on-loan": "Prestado",
     "on-loan-to": "Prestado a {{name}} · desde {{date}}"

@@ -147,6 +147,7 @@
     "label": "Status van het spel",
     "owned": "In bezit",
     "previously-owned": "Vroeger in bezit",
+    "sold": "Verkocht",
     "wanted": "Gewenst",
     "on-loan": "Uitgeleend",
     "on-loan-to": "Uitgeleend aan {{name}} · sinds {{date}}"

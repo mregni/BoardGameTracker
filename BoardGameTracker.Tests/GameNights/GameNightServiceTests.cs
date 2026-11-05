@@ -1977,6 +1977,7 @@ public class GameNightServiceTests
     [InlineData(GameState.Wanted)]
     [InlineData(GameState.PreviouslyOwned)]
     [InlineData(GameState.ForTrade)]
+    [InlineData(GameState.Sold)]
     public async Task AddSuggestedGame_ShouldThrowValidation_WhenTheGameIsNotOwned(GameState state)
     {
         SetupSuggestionNight(GameNight.Create("Friday", "", SuggestionNow.AddDays(7), 1, 1));
