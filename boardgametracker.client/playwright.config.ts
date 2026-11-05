@@ -14,9 +14,10 @@ export default defineConfig({
 		launchOptions: { slowMo: Number(process.env.SLOW_MO) || 0 },
 	},
 	projects: [
-		{ name: "empty", testMatch: "empty.spec.ts" },
-		{ name: "seed", testMatch: "seed.setup.ts", dependencies: ["empty"] },
-		{ name: "pages", testMatch: ["dashboard.spec.ts", "games.spec.ts"], dependencies: ["seed"] },
+		{ name: "empty", testMatch: "setup/empty.spec.ts" },
+		{ name: "seed", testMatch: "setup/seed.setup.ts", dependencies: ["empty"] },
+		{ name: "pages", testIgnore: ["setup/**", "**/manage.spec.ts"], dependencies: ["seed"] },
+		{ name: "mutations", testMatch: "**/manage.spec.ts", dependencies: ["pages"] },
 	],
 	webServer: {
 		command: "pnpm build && dotnet run --project ../BoardGameTracker.AppHost --launch-profile http -- --e2e",

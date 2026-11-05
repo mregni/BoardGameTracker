@@ -1,5 +1,5 @@
-import { expect, expectVisibleImagesToLoad, test } from "./support/fixtures";
-import { expected, gameNights, linkedPlayer } from "./support/seedData";
+import { expect, expectVisibleImagesToLoad, test } from "../support/fixtures";
+import { expected, gameNights, linkedPlayer } from "../support/seedData";
 
 const duration = (minutes: number) => {
 	const hours = Math.floor(minutes / 60);
@@ -81,7 +81,6 @@ test("ranks the top players by wins", async ({ page }) => {
 		await expect(row).toContainText(`${Math.round(player.winRate * 100)}% won`);
 	}
 	await expect(card.getByRole("link", { name: "Leaderboard" })).toHaveAttribute("href", "/leaderboard");
-	await expect(card).toContainText("Ranked by wins, then win rate, then sessions.");
 });
 
 test("shows the most played games per period", async ({ page }) => {
@@ -126,7 +125,7 @@ test("nudges about the games gathering dust on the shelf", async ({ page }) => {
 
 	await expect(nudge).toHaveAttribute("href", "/shames");
 	await expect(nudge).toContainText(`${shameCount} never played`);
-	await expect(nudge).toContainText(`€${shameValue} paid`);
+	await expect(nudge).toContainText(`€${shameValue.toLocaleString("en-US")} paid`);
 });
 
 test("shows the uploaded images", async ({ page }) => {

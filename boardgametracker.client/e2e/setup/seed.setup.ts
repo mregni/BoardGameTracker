@@ -1,9 +1,11 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { expect, type Page, test as setup } from "@playwright/test";
-import { credentials } from "./support/fixtures";
-import { expansions, gameNights, games, linkedPlayer, locations, players, sessions } from "./support/seedData";
+import { credentials } from "../support/fixtures";
+import { expansions, gameNights, games, linkedPlayer, locations, players, sessions } from "../support/seedData";
 
-const renderImage = async (page: Page, text: string, index: number, width: number, height: number) => {
-	await page.setViewportSize({ width, height });
+const renderAvatar = async (page: Page, text: string, index: number) => {
+	await page.setViewportSize({ width: 200, height: 200 });
 	await page.setContent(
 		`<body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:hsl(${index * 37} 55% 35%);color:white;font:bold 28px sans-serif;text-align:center">${text}</body>`,
 	);
@@ -27,9 +29,10 @@ setup("seed the database through the api", async ({ page, request }) => {
 	const post = async (path: string, data: unknown): Promise<{ id: number }> => (await send("post", path, data)).json();
 
 	const upload = async (name: string, type: "Game" | "Profile", buffer: Buffer) => {
+		const mimeType = name.endsWith(".png") ? "image/png" : "image/jpeg";
 		const response = await request.post("/api/image", {
 			headers,
-			multipart: { file: { name: `${name}.png`, mimeType: "image/png", buffer }, type },
+			multipart: { file: { name, mimeType, buffer }, type },
 		});
 		expect(response.ok(), await response.text()).toBe(true);
 		return (await response.text()).replaceAll('"', "");
@@ -43,7 +46,7 @@ setup("seed the database through the api", async ({ page, request }) => {
 
 	const playerIds = new Map<string, number>();
 	for (const [index, name] of players.entries()) {
-		const image = await upload(name, "Profile", await renderImage(page, name, index, 200, 200));
+		const image = await upload(`${name}.png`, "Profile", await renderAvatar(page, name, index));
 		const player = await post("/api/player", { name, image });
 		playerIds.set(name, player.id);
 	}
@@ -51,8 +54,9 @@ setup("seed the database through the api", async ({ page, request }) => {
 	await send("put", `/api/admin/players/${playerIds.get(linkedPlayer)}/account`, { userId: user.id });
 
 	const gameIds = new Map<string, number>();
-	for (const [index, game] of games.entries()) {
-		const image = await upload(game.title, "Game", await renderImage(page, game.title, index, 300, 400));
+	const coversFolder = path.join(setup.info().project.testDir, "support", "covers");
+	for (const { cover, ...game } of games) {
+		const image = await upload(cover, "Game", await readFile(path.join(coversFolder, cover)));
 		const created = await post("/api/game", { ...game, image });
 		gameIds.set(game.title, created.id);
 	}
