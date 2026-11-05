@@ -5,5 +5,6 @@ public enum GameState
     Wanted,
     Owned,
     PreviouslyOwned,
-    ForTrade
+    ForTrade,
+    Sold
 }

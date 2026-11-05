@@ -61,5 +61,6 @@ describe("withStateChange", () => {
 	it("keeps an existing buying price and only prefills for owned", () => {
 		expect(withStateChange({ ...game, buyingPrice: 20 } as Game, GameState.Owned, price()).buyingPrice).toBe(20);
 		expect(withStateChange(game, GameState.Wanted, price()).buyingPrice).toBeNull();
+		expect(withStateChange(game, GameState.Sold, price()).buyingPrice).toBeNull();
 	});
 });

@@ -3,4 +3,5 @@ export enum GameState {
 	Owned = "owned",
 	PreviouslyOwned = "previouslyOwned",
 	ForTrade = "forTrade",
+	Sold = "sold",
 }

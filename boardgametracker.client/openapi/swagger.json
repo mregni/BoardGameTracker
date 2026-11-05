@@ -7907,7 +7907,8 @@
           "wanted",
           "owned",
           "previouslyOwned",
-          "forTrade"
+          "forTrade",
+          "sold"
         ],
         "type": "string"
       },

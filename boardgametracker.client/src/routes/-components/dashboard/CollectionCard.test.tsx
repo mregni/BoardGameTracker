@@ -10,6 +10,7 @@ const collection = [
 	{ type: GameState.Owned, gameCount: 41 },
 	{ type: GameState.Wanted, gameCount: 6 },
 	{ type: GameState.ForTrade, gameCount: 2 },
+	{ type: GameState.Sold, gameCount: 3 },
 ];
 
 const renderCard = (overrides: Partial<Parameters<typeof CollectionCard>[0]> = {}) =>
@@ -44,6 +45,7 @@ describe("CollectionCard", () => {
 		expect(screen.getByText("game:state.owned")).toBeInTheDocument();
 		expect(screen.getByText("game:state.wanted")).toBeInTheDocument();
 		expect(screen.getByText("game:state.for-trade")).toBeInTheDocument();
+		expect(screen.getByText("game:state.sold")).toBeInTheDocument();
 		expect(screen.queryByText("game:state.previously-owned")).not.toBeInTheDocument();
 	});
 
