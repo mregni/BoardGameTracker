@@ -20,6 +20,6 @@ The same logs are written to `./logs/app-<date>.log` in the mounted `logs` folde
 Set `STATISTICS_ENABLED=true` to send error reports to Sentry. It is off by default. When it is on:
 
 - the server sends unhandled exceptions and a 10% sample of performance traces;
-- the browser sends errors, a 20% sample of performance traces and scrubbed session replays (10% of sessions, and every session with an error).
+- the browser sends errors only.
 
 No IP address or server name is sent, and reports are scrubbed before they leave. The reports go to the maintainer's Sentry project and help fix errors. `SENTRY_DSN` redirects the server reports to your own project; browser reports always use the project built into the image.

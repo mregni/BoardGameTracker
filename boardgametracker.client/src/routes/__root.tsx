@@ -16,7 +16,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsBottomNavHidden } from "@/hooks/useHideBottomNav";
 import type { MenuItem } from "@/models";
 import { getSettings } from "@/services/queries/settings";
-import { initSentry } from "@/utils/sentry";
 import { restoreSession, startSessionSync } from "@/utils/tokenRefresh";
 import { BottomNav } from "./-components/BottomNav";
 import { PlayerLinkPrompt } from "./-components/PlayerLinkPrompt";
@@ -81,8 +80,9 @@ function RootComponent() {
 
 		queryClient
 			.query(getSettings())
-			.then((settings) => {
+			.then(async (settings) => {
 				if (settings.statistics) {
+					const { initSentry } = await import("@/utils/sentry");
 					initSentry();
 				}
 			})

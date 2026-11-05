@@ -1,7 +1,7 @@
 import type { ErrorEvent, Event } from "@sentry/react";
 import { describe, expect, it } from "vitest";
 
-import { FILTERED, scrubBreadcrumb, scrubEvent, scrubRecordingEvent, scrubUrl, scrubValue } from "./sentryScrub";
+import { FILTERED, scrubBreadcrumb, scrubEvent, scrubUrl, scrubValue } from "./sentryScrub";
 
 const LINK_ID = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
 
@@ -131,17 +131,6 @@ describe("sentryScrub", () => {
 			});
 			expect(result.spans?.[0].description).toBe("GET /api/gamenight/link/[Filtered]");
 		});
-
-		it("should scrub urls of replay events", () => {
-			const event = {
-				type: "replay_event",
-				urls: ["https://bgt.example.com/auth-callback?code=abc"],
-			} as unknown as ErrorEvent;
-
-			const result = scrubEvent(event) as unknown as { urls: string[] };
-
-			expect(result.urls).toEqual(["https://bgt.example.com/auth-callback?code=[Filtered]"]);
-		});
 	});
 
 	describe("scrubBreadcrumb", () => {
@@ -164,38 +153,6 @@ describe("sentryScrub", () => {
 		it("should leave harmless breadcrumbs unchanged", () => {
 			const breadcrumb = { category: "navigation", data: { from: "/games", to: "/games/4?tab=sessions" } };
 			expect(scrubBreadcrumb(breadcrumb)).toEqual(breadcrumb);
-		});
-	});
-
-	describe("scrubRecordingEvent", () => {
-		it("should scrub meta events", () => {
-			expect(
-				scrubRecordingEvent({
-					type: 4,
-					timestamp: 1,
-					data: { href: "https://bgt.example.com/auth-callback?code=abc" },
-				}),
-			).toEqual({ type: 4, timestamp: 1, data: { href: "https://bgt.example.com/auth-callback?code=[Filtered]" } });
-		});
-
-		it("should scrub custom events", () => {
-			expect(
-				scrubRecordingEvent({
-					type: 5,
-					timestamp: 1,
-					data: { tag: "performanceSpan", payload: { description: "https://bgt.example.com/rsvp?linkId=abc" } },
-				}),
-			).toEqual({
-				type: 5,
-				timestamp: 1,
-				data: { tag: "performanceSpan", payload: { description: "https://bgt.example.com/rsvp?linkId=[Filtered]" } },
-			});
-		});
-
-		it("should return other events as they are", () => {
-			const snapshot = { type: 2, timestamp: 1, data: { text: "?code=abc" } };
-			expect(scrubRecordingEvent(snapshot)).toBe(snapshot);
-			expect(scrubRecordingEvent(null)).toBeNull();
 		});
 	});
 });
