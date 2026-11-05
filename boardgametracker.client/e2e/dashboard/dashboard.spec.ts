@@ -1,12 +1,6 @@
 import { expect, expectVisibleImagesToLoad, test } from "../support/fixtures";
-import { expected, gameNights, linkedPlayer } from "../support/seedData";
-
-const duration = (minutes: number) => {
-	const hours = Math.floor(minutes / 60);
-	const rest = minutes % 60;
-	if (hours === 0) return `${minutes} min`;
-	return rest === 0 ? `${hours}h` : `${hours}h ${rest}m`;
-};
+import { duration } from "../support/format";
+import { expected, gameNights, linkedPlayer, games as seededGames, sessions } from "../support/seedData";
 
 test.beforeEach(async ({ page }) => {
 	await page.goto("/");
@@ -49,8 +43,9 @@ test("adds up the collection and sessions in the tiles", async ({ page }) => {
 	await expect(main.getByRole("link", { name: players })).toHaveAttribute("href", "/players");
 	await expect(main.getByText(String(expected.sessionCount), { exact: true })).toBeVisible();
 	await expect(main.getByText(`${expected.sessionsThisMonth} this month`, { exact: true })).toBeVisible();
-	await expect(main.getByText("120h", { exact: true })).toBeVisible();
-	await expect(main.getByText("avg 1h a session")).toBeVisible();
+	const totalMinutes = sessions.reduce((total, session) => total + session.minutes, 0);
+	await expect(main.getByText(duration(totalMinutes), { exact: true })).toBeVisible();
+	await expect(main.getByText(`avg ${duration(Math.round(totalMinutes / sessions.length))} a session`)).toBeVisible();
 });
 
 test("lists the last sessions newest first with their winner", async ({ page }) => {
@@ -62,8 +57,12 @@ test("lists the last sessions newest first with their winner", async ({ page }) 
 		await expect(row).toContainText(session.game);
 		await expect(row).toContainText(`${session.scores.length} players`);
 		await expect(row).toContainText(duration(session.minutes));
-		await expect(row).toContainText(session.winner);
-		await expect(row.getByRole("img", { name: "Won" })).toBeVisible();
+		if (session.isCoop) {
+			await expect(row).toContainText(session.teamWon ? "Co-op · won" : "Co-op · lost");
+		} else {
+			await expect(row).toContainText(session.winner ?? "");
+			await expect(row.getByRole("img", { name: "Won" })).toBeVisible();
+		}
 	}
 	await expect(rows.first().getByRole("link")).toHaveAttribute("href", "/games/1/sessions");
 });
@@ -120,14 +119,36 @@ test("sums the collection, what was paid for it and what was added last", async 
 });
 
 test("nudges about the games gathering dust on the shelf", async ({ page }) => {
-	const { shameCount, shameValue } = expected;
+	const { shameCount, shameNeverPlayedCount, shameValue } = expected;
 	const nudge = page.getByRole("link", { name: `${shameCount} games on the Shelf of Shame` });
 
 	await expect(nudge).toHaveAttribute("href", "/shames");
-	await expect(nudge).toContainText(`${shameCount} never played`);
+	await expect(nudge).toContainText(`${shameNeverPlayedCount} never played`);
 	await expect(nudge).toContainText(`€${shameValue.toLocaleString("en-US")} paid`);
 });
 
 test("shows the uploaded images", async ({ page }) => {
 	await expectVisibleImagesToLoad(page);
+});
+
+test("opens the details behind the cards", async ({ page }) => {
+	const [topGame] = expected.mostPlayedAllTime;
+	const topGameId = seededGames.findIndex((game) => game.title === topGame[0]) + 1;
+	const [firstPlayer] = expected.topPlayers;
+
+	await page.getByRole("region", { name: "Most played" }).getByRole("link", { name: topGame[0] }).click();
+	await expect(page).toHaveURL(`/games/${topGameId}`);
+
+	await page.goto("/");
+	await page.getByRole("region", { name: "Top players" }).getByRole("link", { name: firstPlayer.name }).click();
+	await expect(page).toHaveURL(/\/players\/\d+$/);
+	await expect(page.getByRole("heading", { name: firstPlayer.name, level: 1 })).toBeVisible();
+
+	await page.goto("/");
+	await page
+		.getByRole("region", { name: "Collection" })
+		.getByRole("link", { name: expected.recentlyAdded[0] })
+		.first()
+		.click();
+	await expect(page).toHaveURL(`/games/${seededGames.length}`);
 });

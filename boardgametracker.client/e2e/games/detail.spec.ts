@@ -1,11 +1,27 @@
 import { expect, expectVisibleImagesToLoad, test } from "../support/fixtures";
-import { gameLink } from "../support/gamesPage";
-import { expansions, mostPlayedGame, neverPlayedGame, sessions, standingsOf } from "../support/seedData";
+import { duration } from "../support/format";
+import { gameLink, openGames } from "../support/gamesPage";
+import {
+	coopGame,
+	expansions,
+	forTradeGame,
+	mostPlayedGame,
+	neverPlayedGame,
+	previouslyOwnedGame,
+	sessions,
+	standingsOf,
+	unscoredGame,
+	wantedGame,
+} from "../support/seedData";
 
 test.describe("detail of a played game", () => {
 	const played = sessions.filter((session) => session.game === mostPlayedGame.title);
 	const scores = played.flatMap((session) =>
-		session.scores.map((score) => ({ ...score, won: score.player === session.winner })),
+		session.scores.map((score) => ({
+			player: score.player,
+			score: score.score ?? 0,
+			won: score.player === session.winner,
+		})),
 	);
 	const values = scores.map((score) => score.score);
 	const winning = scores.filter((score) => score.won).map((score) => score.score);
@@ -29,10 +45,43 @@ test.describe("detail of a played game", () => {
 		await expect(main.getByRole("button", { name: `Expansions (${gameExpansions.length})` })).toBeVisible();
 	});
 
+	test("lists the expansions in their dialog", async ({ page }) => {
+		const titles = expansions.filter((expansion) => expansion.game === mostPlayedGame.title).map((x) => x.title);
+
+		await page.getByRole("button", { name: `Expansions (${titles.length})` }).click();
+		const dialog = page.getByRole("dialog");
+
+		for (const title of titles) {
+			await expect(dialog).toContainText(title);
+		}
+		await expect(dialog.getByText("Added manually")).toHaveCount(titles.length);
+		await dialog.getByRole("button", { name: "Close" }).first().click();
+		await expect(dialog).toBeHidden();
+	});
+
+	test("says when a game has no manuals", async ({ page }) => {
+		await page.getByRole("button", { name: "Manuals (0)" }).click();
+
+		await expect(page.getByRole("dialog")).toContainText("No manuals uploaded for this game.");
+	});
+
+	test("logs a session for this game", async ({ page }) => {
+		await page.getByRole("main").getByRole("button", { name: "Log session" }).click();
+
+		await expect(page).toHaveURL(/\/sessions\/new\/1/);
+	});
+
+	test("opens the edit form with the current values", async ({ page }) => {
+		await page.getByRole("main").getByRole("button", { name: "Edit" }).click();
+
+		await expect(page).toHaveURL("/games/1/update");
+		await expect(page.getByRole("textbox", { name: "Game title" })).toHaveValue(mostPlayedGame.title);
+	});
+
 	test("sums the plays in the statistics", async ({ page }) => {
-		const hours = played.reduce((total, session) => total + session.minutes, 0) / 60;
+		const total = duration(played.reduce((sum, session) => sum + session.minutes, 0));
 		const region = page.getByRole("region", {
-			name: new RegExp(`^Played ${played.length} times · ${hours}h in total`),
+			name: new RegExp(`^Played ${played.length} times · ${total} in total`),
 		});
 
 		await expect(region).toContainText("Price / play");
@@ -45,8 +94,8 @@ test.describe("detail of a played game", () => {
 
 		await expect(rows).toHaveCount(5);
 		for (const [index, session] of played.slice(0, 5).entries()) {
-			const best = Math.max(...session.scores.map((score) => score.score));
-			await expect(rows.nth(index)).toContainText(session.winner);
+			const best = Math.max(...session.scores.map((score) => score.score ?? 0));
+			await expect(rows.nth(index)).toContainText(session.winner ?? "");
 			await expect(rows.nth(index)).toContainText(`${session.scores.length} players`);
 			await expect(rows.nth(index)).toContainText(String(best));
 		}
@@ -115,4 +164,54 @@ test("shows no statistics for a game that was never played", async ({ page }) =>
 	await expect(main.getByRole("button", { name: "Log the first play" })).toBeVisible();
 	await expect(main.getByRole("heading", { name: "Recent sessions" })).toHaveCount(0);
 	await expect(main.getByRole("heading", { name: "Scoring results" })).toHaveCount(0);
+});
+
+test("shows the team results of a co-op game instead of scores", async ({ page }) => {
+	const played = sessions.filter((session) => session.game === coopGame.title);
+	const won = played.filter((session) => session.teamWon).length;
+
+	await openGames(page);
+	await gameLink(page, coopGame.title).click();
+	const main = page.getByRole("main");
+
+	await expect(main.getByText("Team win rate")).toBeVisible();
+	await expect(main.getByText(`${won} of ${played.length} co-op sessions`)).toBeVisible();
+	await expect(main.getByRole("heading", { name: "Scoring results" })).toHaveCount(0);
+});
+
+test("shows no scoring results for a game without scores", async ({ page }) => {
+	await openGames(page);
+	await gameLink(page, unscoredGame.title).click();
+	const main = page.getByRole("main");
+
+	await expect(main.getByRole("heading", { name: unscoredGame.title, level: 1 })).toBeVisible();
+	await expect(main.getByRole("heading", { name: "Recent sessions" })).toBeVisible();
+	await expect(main.getByRole("heading", { name: "Scoring results" })).toHaveCount(0);
+});
+
+for (const [game, state] of [
+	[wantedGame, "Wanted"],
+	[previouslyOwnedGame, "Previously owned"],
+	[forTradeGame, "For trade"],
+] as const) {
+	test(`shows the state of a game that is ${state}`, async ({ page }) => {
+		await openGames(page);
+		await gameLink(page, game.title).click();
+		const main = page.getByRole("main");
+
+		await expect(main.getByRole("heading", { name: game.title, level: 1 })).toBeVisible();
+		await expect(main.getByText(state, { exact: true })).toBeVisible();
+	});
+}
+
+test.describe("a game that does not exist", () => {
+	test.use({ allowedApiStatuses: [401, 404] });
+
+	test("explains it and leads back to the games", async ({ page }) => {
+		await page.goto("/games/9999");
+
+		await expect(page.getByText("Could not find game").first()).toBeVisible();
+		await page.getByRole("button", { name: "Back to games" }).click();
+		await expect(page).toHaveURL("/games");
+	});
 });

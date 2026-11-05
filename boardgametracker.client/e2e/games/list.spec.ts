@@ -6,8 +6,11 @@ import {
 	mostPlayedGame,
 	neverPlayedGame,
 	secondMostPlayedGame,
+	sessions,
 	wantedGame,
 } from "../support/seedData";
+
+const playsOf = (title: string) => sessions.filter((session) => session.game === title).length;
 
 const titlesInOrder = games.map((game) => game.title).sort((a, b) => a.localeCompare(b));
 
@@ -18,7 +21,7 @@ test.describe("list", () => {
 
 	test("shows every game sorted by title with its plays", async ({ page }) => {
 		await expect(gameLinks(page)).toContainText(titlesInOrder);
-		await expect(gameLink(page, mostPlayedGame.title)).toContainText("15 plays");
+		await expect(gameLink(page, mostPlayedGame.title)).toContainText(`${playsOf(mostPlayedGame.title)} plays`);
 		await expect(gameLink(page, neverPlayedGame.title)).toContainText("Never played");
 		await expect(gameLink(page, wantedGame.title)).toContainText("Wanted");
 		await expectVisibleImagesToLoad(page);
@@ -79,6 +82,15 @@ test("remembers the table view in the address", async ({ page }) => {
 
 	await expect(page.getByRole("table")).toBeVisible();
 	await expect(page.getByRole("button", { name: "Table" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("hands the filters to the wheel", async ({ page }) => {
+	await openGames(page);
+	await pick(page, "Players", "2 players");
+	await page.getByRole("button", { name: "Pick for us" }).click();
+
+	await expect(page).toHaveURL(/\/games\/pick.*players=2/);
+	await expect(page.getByRole("main")).toContainText("2 players");
 });
 
 test("spins the wheel and opens the picked game", async ({ page }) => {

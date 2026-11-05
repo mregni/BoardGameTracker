@@ -13,8 +13,19 @@ test.describe("filters", () => {
 	});
 
 	for (const { combobox, option, count } of [
-		{ combobox: "Players", option: "6 players", count: countOf((game) => game.maxPlayers >= 6) },
-		{ combobox: "Play time", option: "≤ 60 min", count: countOf((game) => game.maxPlayTime <= 60) },
+		...[1, 2, 3, 4, 5, 6, 7, 8].map((players) => ({
+			combobox: "Players",
+			option: players === 1 ? "1 player" : `${players} players`,
+			count: countOf((game) => game.minPlayers <= players && game.maxPlayers >= players),
+		})),
+		...[30, 60, 90, 120, 180].map((minutes) => ({
+			combobox: "Play time",
+			option: `≤ ${minutes} min`,
+			count: countOf((game) => game.maxPlayTime <= minutes),
+		})),
+		{ combobox: "Language", option: "English", count: countOf((game) => game.language === "en") },
+		{ combobox: "Language", option: "Dutch", count: countOf((game) => game.language === "nl") },
+		{ combobox: "Language", option: "Not set", count: countOf((game) => game.language === null) },
 		{ combobox: "Weight", option: "Light (< 2)", count: countOf((game) => game.weight < 2) },
 		{ combobox: "Weight", option: "Medium (2 - 3)", count: countOf((game) => game.weight >= 2 && game.weight <= 3) },
 		{ combobox: "Weight", option: "Heavy (> 3)", count: countOf((game) => game.weight > 3) },
