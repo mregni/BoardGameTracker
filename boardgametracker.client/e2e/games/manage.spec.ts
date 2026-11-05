@@ -114,7 +114,7 @@ test("edits every kind of field and marks a game as sold", async ({ page }) => {
 	await expect(page.getByRole("heading", { name: title, level: 1 })).toBeVisible();
 
 	await page.getByRole("main").getByRole("button", { name: "Edit" }).click();
-	await pick(page, "Game state", "Previously owned");
+	await pick(page, "Game state", "Sold");
 	await page.getByRole("textbox", { name: "Sold price" }).fill("15");
 	await page.getByRole("textbox", { name: "Rating (0–10)" }).fill("7.5");
 	await page.getByRole("textbox", { name: "Weight (0–5)" }).fill("2.5");
@@ -122,7 +122,7 @@ test("edits every kind of field and marks a game as sold", async ({ page }) => {
 
 	await expect(page).toHaveURL(/\/games\/\d+$/);
 	const main = page.getByRole("main");
-	await expect(main.getByText("Previously owned", { exact: true })).toBeVisible();
+	await expect(main.getByText("Sold", { exact: true })).toBeVisible();
 	await expect(main).toContainText("Rating7.5 / 10");
 	await expect(main).toContainText("Weight2.5 / 5");
 
