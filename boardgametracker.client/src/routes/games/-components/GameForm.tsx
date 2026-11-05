@@ -87,7 +87,12 @@ export const GameForm = (props: Props) => {
 						<div className="flex flex-col gap-4 w-full">
 							<div className="flex flex-row gap-3">
 								<div className="flex-none">
-									<BgtImageSelector image={poster} setImage={setPoster} defaultImage={game?.image} />
+									<BgtImageSelector
+										image={poster}
+										setImage={setPoster}
+										defaultImage={game?.image}
+										title={game?.title}
+									/>
 								</div>
 								<div className="grow">
 									<GameFormBasicFields form={form} disabled={disabled} />

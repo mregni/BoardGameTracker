@@ -82,6 +82,23 @@ describe("BgtImageSelector", () => {
 			expect(preview).toHaveAttribute("src", "https://example.com/image.jpg");
 		});
 
+		it("should show the fallback tile and keep the remove button when the image fails to load", () => {
+			renderWithTheme(
+				<BgtImageSelector
+					image={undefined}
+					setImage={mockSetImage}
+					defaultImage="/images/cover/missing.webp"
+					title="Bot Factory"
+				/>,
+			);
+
+			fireEvent.error(screen.getByAltText("Bot Factory"));
+
+			expect(screen.getByRole("img", { name: "Bot Factory" })).toHaveTextContent("B");
+			expect(screen.queryByAltText("Bot Factory")).not.toBeInTheDocument();
+			expect(screen.getByTestId("trash-icon")).toBeInTheDocument();
+		});
+
 		it("should not show upload area when default image exists", () => {
 			renderWithTheme(
 				<BgtImageSelector image={undefined} setImage={mockSetImage} defaultImage="https://example.com/image.jpg" />,
