@@ -11,25 +11,28 @@ import {
 import { useTranslation } from "react-i18next";
 import TrashIcon from "@/assets/icons/trash.svg?react";
 import { BgtIconButton } from "../BgtIconButton/BgtIconButton";
+import { BgtFallbackImage } from "../BgtImage/BgtFallbackImage";
 
 interface Props {
 	image: File | undefined | null;
 	setImage: Dispatch<SetStateAction<File | undefined | null>>;
 	defaultImage?: string | null;
+	title?: string;
 }
 
 interface ImagePreviewProps {
 	src: string;
+	title?: string;
 	onRemove: () => void;
 }
 
 const ImagePreview = (props: ImagePreviewProps) => {
-	const { src, onRemove } = props;
+	const { src, title, onRemove } = props;
 	const { t } = useTranslation("images");
 
 	return (
-		<div className="group relative">
-			<img alt={t("selected-image")} src={src} className="w-28 h-28 rounded-lg" />
+		<div className="group relative w-28 h-28 rounded-lg overflow-hidden">
+			<BgtFallbackImage title={title ?? t("selected-image")} image={src} />
 			<div className="absolute top-0 left-0 w-full h-full collapse group-hover:visible">
 				<div className="flex justify-center items-center w-full h-full">
 					<BgtIconButton
@@ -46,7 +49,7 @@ const ImagePreview = (props: ImagePreviewProps) => {
 };
 
 export const BgtImageSelector = (props: Props) => {
-	const { image, setImage, defaultImage } = props;
+	const { image, setImage, defaultImage, title } = props;
 	const { t } = useTranslation("images");
 	const [isDragging, setIsDragging] = useState(false);
 	const [hasDefaultImage, setHasDefaultImage] = useState(!!defaultImage);
@@ -107,9 +110,9 @@ export const BgtImageSelector = (props: Props) => {
 		<div className="flex justify-start w-full flex-col">
 			<div className="flex flex-row justify-start gap-3">
 				{hasDefaultImage && !image && defaultImage && (
-					<ImagePreview src={defaultImage} onRemove={handleRemoveDefaultImage} />
+					<ImagePreview src={defaultImage} title={title} onRemove={handleRemoveDefaultImage} />
 				)}
-				{imagePreviewUrl && <ImagePreview src={imagePreviewUrl} onRemove={handleRemoveNewImage} />}
+				{imagePreviewUrl && <ImagePreview src={imagePreviewUrl} title={title} onRemove={handleRemoveNewImage} />}
 				{!image && !hasDefaultImage && (
 					<div
 						className={cx(
