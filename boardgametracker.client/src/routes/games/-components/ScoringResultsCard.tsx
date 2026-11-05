@@ -32,35 +32,40 @@ export const ScoringResultsCard = (props: Props) => {
 	return (
 		<BgtCard title={t("titles.scoring-results")} icon={Target} description={t("charts.top-scoring-help")}>
 			<div className="flex flex-col gap-3">
-				{scoreRankChart.map((item) => (
-					<div key={item.key} className="space-y-1">
-						<div className="flex items-center justify-between text-sm">
-							<div className="flex flex-col gap-0.5">
-								<BgtText className="text-white/70 text-xs">{t(`charts.top-scoring.${item.key}`)}</BgtText>
-								<Link
-									to="/players/$playerId"
-									params={{ playerId: item.playerId }}
-									className="text-primary-text hover:underline underline-offset-4"
-								>
-									{playerById(item.playerId)?.name}
-								</Link>
+				{scoreRankChart.map((item) => {
+					const player = playerById(item.playerId);
+					return (
+						<div key={item.key} className="space-y-1">
+							<div className="flex items-center justify-between text-sm">
+								<div className="flex flex-col gap-0.5">
+									<BgtText className="text-white/70 text-xs">{t(`charts.top-scoring.${item.key}`)}</BgtText>
+									{player && (
+										<Link
+											to="/players/$playerId"
+											params={{ playerId: item.playerId }}
+											className="text-primary-text hover:underline underline-offset-4"
+										>
+											{player.name}
+										</Link>
+									)}
+								</div>
+								<BgtText size="5" weight="bold" className="tabular-nums">
+									{integer(item.score)}
+								</BgtText>
 							</div>
-							<BgtText size="5" weight="bold" className="tabular-nums">
-								{integer(item.score)}
-							</BgtText>
+							<BgtProgressBar
+								size="thin"
+								track="primary"
+								value={item.score}
+								max={maxScore}
+								color={SCORE_BAR_COLOR}
+								animateOnMount
+								aria-label={t(`charts.top-scoring.${item.key}`)}
+								aria-valuetext={integer(item.score)}
+							/>
 						</div>
-						<BgtProgressBar
-							size="thin"
-							track="primary"
-							value={item.score}
-							max={maxScore}
-							color={SCORE_BAR_COLOR}
-							animateOnMount
-							aria-label={t(`charts.top-scoring.${item.key}`)}
-							aria-valuetext={integer(item.score)}
-						/>
-					</div>
-				))}
+					);
+				})}
 			</div>
 		</BgtCard>
 	);

@@ -19,7 +19,7 @@ vi.mock("@/routes/-hooks/usePlayerById", () => ({
 
 const chart = [
 	{ key: "top-score", playerId: 1, score: 120 },
-	{ key: "average", playerId: 2, score: 90.456 },
+	{ key: "average", playerId: 0, score: 90.456 },
 	{ key: "lowest", playerId: 2, score: -12 },
 ];
 
@@ -57,8 +57,14 @@ describe("ScoringResultsCard", () => {
 		renderWithTheme(<ScoringResultsCard scoreRankChart={chart} />);
 
 		expect(screen.getByRole("link", { name: "Kathleen" })).toBeInTheDocument();
-		expect(screen.getAllByText("Mikhaël")).toHaveLength(2);
+		expect(screen.getByRole("link", { name: "Mikhaël" })).toBeInTheDocument();
 		expect(screen.getByText("90")).toBeInTheDocument();
+	});
+
+	it("links no player for the average", () => {
+		renderWithTheme(<ScoringResultsCard scoreRankChart={chart} />);
+
+		expect(screen.getAllByRole("link")).toHaveLength(2);
 	});
 
 	it("explains what highest losing and lowest winning mean", () => {
