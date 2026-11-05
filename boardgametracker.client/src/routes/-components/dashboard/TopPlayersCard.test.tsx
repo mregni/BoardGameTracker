@@ -13,13 +13,13 @@ const players = [
 
 describe("TopPlayersCard", () => {
 	it("links to the leaderboard", () => {
-		renderWithTheme(<TopPlayersCard players={players} includesCoopWins={false} />);
+		renderWithTheme(<TopPlayersCard players={players} />);
 
 		expect(screen.getByRole("link", { name: "top-players.leaderboard" })).toHaveAttribute("href", "/leaderboard");
 	});
 
 	it("ranks each player with wins and a link to the player", () => {
-		renderWithTheme(<TopPlayersCard players={players} includesCoopWins={false} />);
+		renderWithTheme(<TopPlayersCard players={players} />);
 
 		const rows = screen.getAllByRole("listitem");
 		expect(rows).toHaveLength(3);
@@ -30,7 +30,6 @@ describe("TopPlayersCard", () => {
 		expect(within(first).getByText("Mikhaël")).toBeInTheDocument();
 		expect(within(first).getByText("top-players.wins").parentElement).toHaveTextContent("54 top-players.wins");
 		expect(within(rows[2]).getByRole("link")).toHaveAttribute("href", "/players/3");
-		expect(screen.getByText("top-players.hint")).toBeInTheDocument();
 	});
 
 	it("shows the shared rank of players with identical stats", () => {
@@ -39,7 +38,7 @@ describe("TopPlayersCard", () => {
 			{ id: 2, rank: 2, name: "Anna", image: null, playCount: 26, winCount: 13 },
 			{ id: 3, rank: 2, name: "Bram", image: null, playCount: 26, winCount: 13 },
 		];
-		renderWithTheme(<TopPlayersCard players={tied} includesCoopWins={false} />);
+		renderWithTheme(<TopPlayersCard players={tied} />);
 
 		const rows = screen.getAllByRole("listitem");
 		expect(within(rows[1]).getByText("2")).toBeInTheDocument();
@@ -47,15 +46,8 @@ describe("TopPlayersCard", () => {
 		expect(within(rows[2]).queryByText("3")).not.toBeInTheDocument();
 	});
 
-	it("says co-op wins are included when there are co-op wins", () => {
-		renderWithTheme(<TopPlayersCard players={players} includesCoopWins />);
-
-		expect(screen.getByText("top-players.hint-coop")).toBeInTheDocument();
-		expect(screen.queryByText("top-players.hint")).not.toBeInTheDocument();
-	});
-
 	it("shows an empty state without players", () => {
-		renderWithTheme(<TopPlayersCard players={[]} includesCoopWins={false} />);
+		renderWithTheme(<TopPlayersCard players={[]} />);
 
 		expect(screen.getByText("top-players.empty")).toBeInTheDocument();
 		expect(screen.queryByRole("listitem")).not.toBeInTheDocument();

@@ -1,4 +1,8 @@
-var builder = DistributedApplication.CreateBuilder(args);
+var e2e = args.Contains("--e2e");
+var backendPort = e2e ? 6654 : 6554;
+var clientPort = e2e ? 5543 : 5443;
+
+var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions { Args = args, DisableDashboard = e2e });
 
 var dbUser = builder.AddParameter("db-user", "dev");
 var dbPassword = builder.AddParameter("db-password", "dev", secret: true);
@@ -14,24 +18,19 @@ var aiProvider = ai["Provider"] ?? "ollama";
 
 const string databaseName = "boardgametracker-dev";
 
-var postgres = builder.AddPostgres("postgres", dbUser, dbPassword, port: 5432)
-    .WithImage("pgvector/pgvector", "pg16")
-    .WithDataVolume("boardgametracker-pgdata")
-    .WithLifetime(ContainerLifetime.Persistent);
+var postgres = builder.AddPostgres("postgres", dbUser, dbPassword, port: e2e ? null : 5432)
+    .WithImage("pgvector/pgvector", "pg16");
+
+if (!e2e)
+{
+    postgres.WithDataVolume("boardgametracker-pgdata")
+        .WithLifetime(ContainerLifetime.Persistent);
+}
 
 var database = postgres.AddDatabase(databaseName);
 
-var ollama = builder.AddOllama("ollama", port: 11434)
-    .WithDataVolume("boardgametracker-ollama")
-    .WithLifetime(ContainerLifetime.Persistent);
-
-if (!string.Equals(builder.Configuration["Ollama:UseGpu"], "false", StringComparison.OrdinalIgnoreCase))
-{
-    ollama.WithGPUSupport();
-}
-
 var backend = builder.AddProject<Projects.BoardGameTracker_Host>("bgt-host")
-    .WithHttpEndpoint(port: 6554, isProxied: false)
+    .WithHttpEndpoint(port: backendPort, isProxied: false)
     .WithHttpHealthCheck("/api/health")
     .WithUrlForEndpoint("http", url =>
     {
@@ -53,7 +52,7 @@ var backend = builder.AddProject<Projects.BoardGameTracker_Host>("bgt-host")
 
         // Auth
         env["AUTH_ENABLED"] = "true";
-        env["PUBLIC_URL"] = "http://localhost:5443";
+        env["PUBLIC_URL"] = $"http://localhost:{clientPort}";
         env["JWT_SECRET"] = jwtSecret.Resource;
         env["DATA_PROTECTION_KEY"] = dataProtectionKey.Resource;
 
@@ -61,6 +60,16 @@ var backend = builder.AddProject<Projects.BoardGameTracker_Host>("bgt-host")
         env["STATISTICS_ENABLED"] = "false";
         env["LOGLEVEL"] = "info";
         env["TZ"] = "Europe/Brussels";
+
+        // The frontend runs as its own Aspire resource (below), so disable the
+        // SpaProxy hosting startup that would otherwise launch `pnpm dev` from the backend.
+        env["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "";
+
+        if (e2e)
+        {
+            env["RAG_ENABLED"] = "false";
+            return;
+        }
 
         // RAG / AI (see .env.example for the meaning of each value).
         env["RAG_ENABLED"] = "true";
@@ -79,27 +88,41 @@ var backend = builder.AddProject<Projects.BoardGameTracker_Host>("bgt-host")
         env["SMTP_USE_SSL"] = smtp["UseSsl"] ?? "true";
         env["SMTP_FROM_ADDRESS"] = smtp["FromAddress"] ?? "boardgametracker@example.com";
         env["SMTP_FROM_NAME"] = smtp["FromName"] ?? "BoardGameTracker";
-
-        // The frontend runs as its own Aspire resource (below), so disable the
-        // SpaProxy hosting startup that would otherwise launch `pnpm dev` from the backend.
-        env["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "";
     })
     .WaitFor(database);
 
-if (string.Equals(aiProvider, "ollama", StringComparison.OrdinalIgnoreCase))
+if (!e2e)
 {
-    backend.WaitFor(ollama);
+    var ollama = builder.AddOllama("ollama", port: 11434)
+        .WithDataVolume("boardgametracker-ollama")
+        .WithLifetime(ContainerLifetime.Persistent);
+
+    if (!string.Equals(builder.Configuration["Ollama:UseGpu"], "false", StringComparison.OrdinalIgnoreCase))
+    {
+        ollama.WithGPUSupport();
+    }
+
+    if (string.Equals(aiProvider, "ollama", StringComparison.OrdinalIgnoreCase))
+    {
+        backend.WaitFor(ollama);
+    }
 }
 
-builder.AddViteApp("bgt-client", "../boardgametracker.client")
+var client = builder.AddViteApp("bgt-client", "../boardgametracker.client")
     .WithPnpm()
     .WithEndpoint("http", endpoint =>
     {
-        endpoint.Port = 5443;
+        endpoint.Port = clientPort;
         endpoint.IsProxied = false;
     })
     .WithExternalHttpEndpoints()
+    .WithEnvironment("API_PROXY_TARGET", backend.GetEndpoint("http"))
     .WithUrlForEndpoint("http", url => url.DisplayText = "website")
     .WaitFor(backend);
+
+if (e2e)
+{
+    client.WithRunScript("preview");
+}
 
 await builder.Build().RunAsync();

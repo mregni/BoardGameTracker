@@ -70,8 +70,6 @@
     "wins_other": "winsten",
     "row_one": "{{name}}: {{wins}} keer gewonnen in {{total}} sessie",
     "row_other": "{{name}}: {{wins}} keer gewonnen in {{total}} sessies",
-    "hint": "Gerangschikt op overwinningen, dan winstpercentage, dan sessies.",
-    "hint-coop": "Gerangschikt op overwinningen (co-op inbegrepen), dan winstpercentage, dan sessies.",
     "empty": "Nog geen sessies gespeeld"
   },
   "most-played": {
