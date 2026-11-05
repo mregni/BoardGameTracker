@@ -33,7 +33,6 @@ public class DashboardServiceTests
     private static readonly DateTime MonthStartUtc = new(2026, 9, 30, 22, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime UtcNow = new(2026, 10, 16, 18, 30, 0, DateTimeKind.Utc);
     private static readonly DateTime YearStartUtc = new(2025, 12, 31, 22, 0, 0, DateTimeKind.Utc);
-    private static readonly DateTime TwelveMonthsAgoUtc = new(2025, 10, 16, 18, 30, 0, DateTimeKind.Utc);
 
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly Mock<IGameStatisticsRepository> _gameStatisticsRepositoryMock;
@@ -113,7 +112,7 @@ public class DashboardServiceTests
         _gameStatisticsRepositoryMock.Verify(x => x.GetGameStateCounts(), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGames(4), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGamesSince(4, YearStartUtc), Times.Once);
-        _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGamesSince(4, TwelveMonthsAgoUtc), Times.Once);
+        _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGamesSince(4, MonthStartUtc), Times.Once);
         _playerRepositoryMock.Verify(x => x.GetWinTotals(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<WonCoopSessionsSpec>(), default), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetRecentlyAddedGames(3), Times.Once);
@@ -332,7 +331,7 @@ public class DashboardServiceTests
     }
 
     [Fact]
-    public async Task GetStatistics_ShouldReturnMostPlayedGamesForAllTimeThisYearAndTheLast12Months()
+    public async Task GetStatistics_ShouldReturnMostPlayedGamesForAllTimeThisYearAndThisMonth()
     {
         _gameStatisticsRepositoryMock
             .Setup(x => x.GetMostPlayedGames(4))
@@ -341,7 +340,7 @@ public class DashboardServiceTests
             .Setup(x => x.GetMostPlayedGamesSince(4, YearStartUtc))
             .ReturnsAsync(new List<(int GameId, string Title, string? Image, int PlayCount)> { (2, "Ticket to Ride", "ttr.jpg", 3) });
         _gameStatisticsRepositoryMock
-            .Setup(x => x.GetMostPlayedGamesSince(4, TwelveMonthsAgoUtc))
+            .Setup(x => x.GetMostPlayedGamesSince(4, MonthStartUtc))
             .ReturnsAsync(new List<(int GameId, string Title, string? Image, int PlayCount)> { (1, "Catan", "catan.jpg", 5) });
 
         var result = await _sut.GetStatistics(null);
@@ -353,7 +352,7 @@ public class DashboardServiceTests
         result.MostPlayedGames[0].TotalSessions.Should().Be(20);
         result.MostPlayedGamesThisYear.Should().ContainSingle()
             .Which.Should().BeEquivalentTo(new MostPlayedGameDto { Id = 2, Title = "Ticket to Ride", Image = "ttr.jpg", TotalSessions = 3 });
-        result.MostPlayedGamesLast12Months.Should().ContainSingle()
+        result.MostPlayedGamesThisMonth.Should().ContainSingle()
             .Which.Should().BeEquivalentTo(new MostPlayedGameDto { Id = 1, Title = "Catan", Image = "catan.jpg", TotalSessions = 5 });
 
         VerifyGetStatisticsCalls();

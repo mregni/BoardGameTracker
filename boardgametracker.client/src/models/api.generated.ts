@@ -5563,7 +5563,7 @@ export interface components {
             collection: components["schemas"]["GameStateChart"][];
             mostPlayedGames: components["schemas"]["MostPlayedGameDto"][];
             mostPlayedGamesThisYear: components["schemas"]["MostPlayedGameDto"][];
-            mostPlayedGamesLast12Months: components["schemas"]["MostPlayedGameDto"][];
+            mostPlayedGamesThisMonth: components["schemas"]["MostPlayedGameDto"][];
             topPlayers: components["schemas"]["DashboardTopPlayerDto"][];
             topPlayersIncludeCoopWins: boolean;
             recentAddedGames: components["schemas"]["RecentGameDto"][];
