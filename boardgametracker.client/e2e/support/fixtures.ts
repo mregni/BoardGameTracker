@@ -1,6 +1,10 @@
-import { type BrowserContext, test as base, expect, type Page } from "@playwright/test";
+import { type Browser, type BrowserContext, test as base, expect, type Page, type TestInfo } from "@playwright/test";
+
+type TestInfoUse = TestInfo["project"]["use"];
 
 export const credentials = { username: "admin", password: "admin" };
+export const readerCredentials = { username: "reader", password: "reader-password", role: "Reader" };
+export const writerCredentials = { username: "writer", password: "writer-password", role: "User" };
 
 const REFRESH_REUSE_MS = 5 * 60_000;
 
@@ -17,25 +21,59 @@ const shareRefreshes = async (context: BrowserContext) => {
 	});
 };
 
-export const test = base.extend<{ allowedApiStatuses: number[] }, { signedInContext: BrowserContext }>({
+const signIn = async (browser: Browser, use: TestInfoUse, login: { username: string; password: string }) => {
+	const { baseURL, locale, timezoneId, viewport } = use;
+	const context = await browser.newContext({ baseURL, locale, timezoneId, viewport });
+	const page = await context.newPage();
+	await page.goto("/login");
+	await page.getByLabel("Username").fill(login.username);
+	await page.getByLabel("Password").fill(login.password);
+	await page.getByRole("button", { name: "Sign in" }).click();
+	await page.waitForURL((url) => url.pathname !== "/login");
+	await page.close();
+	await shareRefreshes(context);
+	return context;
+};
+
+export const test = base.extend<
+	{ allowedApiStatuses: number[]; readerPage: Page; writerPage: Page },
+	{ signedInContext: BrowserContext; readerContext: BrowserContext; writerContext: BrowserContext }
+>({
 	allowedApiStatuses: [[401], { option: true }],
 	signedInContext: [
 		async ({ browser }, use, workerInfo) => {
-			const { baseURL, locale, timezoneId, viewport } = workerInfo.project.use;
-			const context = await browser.newContext({ baseURL, locale, timezoneId, viewport });
-			const page = await context.newPage();
-			await page.goto("/login");
-			await page.getByLabel("Username").fill(credentials.username);
-			await page.getByLabel("Password").fill(credentials.password);
-			await page.getByRole("button", { name: "Sign in" }).click();
-			await page.waitForURL((url) => url.pathname !== "/login");
-			await page.close();
-			await shareRefreshes(context);
+			const context = await signIn(browser, workerInfo.project.use, credentials);
 			await use(context);
 			await context.close();
 		},
 		{ scope: "worker" },
 	],
+	readerContext: [
+		async ({ browser }, use, workerInfo) => {
+			const context = await signIn(browser, workerInfo.project.use, readerCredentials);
+			await use(context);
+			await context.close();
+		},
+		{ scope: "worker" },
+	],
+	writerContext: [
+		async ({ browser }, use, workerInfo) => {
+			const context = await signIn(browser, workerInfo.project.use, writerCredentials);
+			await use(context);
+			await context.close();
+		},
+		{ scope: "worker" },
+	],
+	readerPage: async ({ readerContext }, use) => {
+		const page = await readerContext.newPage();
+		await use(page);
+		await page.close();
+	},
+	writerPage: async ({ writerContext }, use) => {
+		const page = await writerContext.newPage();
+		await use(page);
+		await page.close();
+	},
 	page: async ({ signedInContext, allowedApiStatuses }, use) => {
 		const page = await signedInContext.newPage();
 		const problems: string[] = [];
