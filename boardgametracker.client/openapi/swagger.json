@@ -7051,7 +7051,7 @@
               "$ref": "#/components/schemas/MostPlayedGameDto"
             }
           },
-          "mostPlayedGamesLast12Months": {
+          "mostPlayedGamesThisMonth": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MostPlayedGameDto"

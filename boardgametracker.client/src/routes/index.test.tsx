@@ -61,7 +61,7 @@ const statistics: DashboardStatistics = {
 	collection: [{ type: GameState.Owned, gameCount: 41 }],
 	mostPlayedGames: [],
 	mostPlayedGamesThisYear: [],
-	mostPlayedGamesLast12Months: [],
+	mostPlayedGamesThisMonth: [],
 	topPlayers: [],
 	topPlayersIncludeCoopWins: false,
 	recentAddedGames: [],

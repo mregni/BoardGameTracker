@@ -8,20 +8,20 @@ import { BgtProgressBar } from "@/components/BgtProgressBar/BgtProgressBar";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { DashboardMostPlayedGame } from "@/models";
 
-type Period = "all" | "year" | "12m";
+type Period = "all" | "year" | "month";
 
-const PERIODS: Period[] = ["all", "year", "12m"];
+const PERIODS: Period[] = ["all", "year", "month"];
 
 const PERIOD_KEYS: Record<Period, string> = {
 	all: "common:period.all-time",
 	year: "common:period.this-year",
-	"12m": "common:period.last-12-months",
+	month: "common:period.this-month",
 };
 
 interface Props {
 	allTime: DashboardMostPlayedGame[];
 	thisYear: DashboardMostPlayedGame[];
-	last12Months: DashboardMostPlayedGame[];
+	thisMonth: DashboardMostPlayedGame[];
 }
 
 const periodButton = (active: boolean) =>
@@ -31,12 +31,12 @@ const periodButton = (active: boolean) =>
 	);
 
 export const MostPlayedCard = (props: Props) => {
-	const { allTime, thisYear, last12Months } = props;
+	const { allTime, thisYear, thisMonth } = props;
 	const { t } = useTranslation("dashboard");
 	const { integer } = useNumberFormat();
 	const [period, setPeriod] = useState<Period>("all");
 
-	const games = { all: allTime, year: thisYear, "12m": last12Months }[period];
+	const games = { all: allTime, year: thisYear, month: thisMonth }[period];
 	const top = games[0]?.totalSessions ?? 0;
 
 	return (

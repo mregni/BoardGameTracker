@@ -67,7 +67,6 @@ public class DashboardService : IDashboardService
         var localNow = _dateTimeProvider.Now;
         var monthStart = _dateTimeProvider.ConvertToUtc(new DateTime(localNow.Year, localNow.Month, 1, 0, 0, 0, DateTimeKind.Unspecified));
         var yearStart = _dateTimeProvider.ConvertToUtc(new DateTime(localNow.Year, 1, 1, 0, 0, 0, DateTimeKind.Unspecified));
-        var twelveMonthsAgo = _dateTimeProvider.UtcNow.AddMonths(-12);
 
         var totalGames = await _gameRepository.CountAsync(cancellationToken);
         var activePlayers = await _playerRepository.CountAsync(cancellationToken);
@@ -84,7 +83,7 @@ public class DashboardService : IDashboardService
         var gameStates = await _gameStatisticsRepository.GetGameStateCounts(cancellationToken);
         var mostPlayedGames = await _gameStatisticsRepository.GetMostPlayedGames(MostPlayedCount, cancellationToken);
         var mostPlayedThisYear = await _gameStatisticsRepository.GetMostPlayedGamesSince(MostPlayedCount, yearStart, cancellationToken);
-        var mostPlayedLast12Months = await _gameStatisticsRepository.GetMostPlayedGamesSince(MostPlayedCount, twelveMonthsAgo, cancellationToken);
+        var mostPlayedThisMonth = await _gameStatisticsRepository.GetMostPlayedGamesSince(MostPlayedCount, monthStart, cancellationToken);
         var winTotals = await _playerRepository.GetWinTotals(cancellationToken);
         var hasCoopWins = await _sessionRepository.AnyAsync(new WonCoopSessionsSpec(), cancellationToken);
         var recentlyAddedGames = await _gameRepository.GetRecentlyAddedGames(RecentlyAddedCount, cancellationToken);
@@ -114,7 +113,7 @@ public class DashboardService : IDashboardService
             Collection = gameStates,
             MostPlayedGames = mostPlayedGames.ToListDto(),
             MostPlayedGamesThisYear = mostPlayedThisYear.ToListDto(),
-            MostPlayedGamesLast12Months = mostPlayedLast12Months.ToListDto(),
+            MostPlayedGamesThisMonth = mostPlayedThisMonth.ToListDto(),
             TopPlayers = RankTopPlayers(winTotals),
             TopPlayersIncludeCoopWins = hasCoopWins,
             RecentAddedGames = recentlyAddedGames.ToRecentAddedGameListDto()
