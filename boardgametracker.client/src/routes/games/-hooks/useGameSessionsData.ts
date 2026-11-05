@@ -47,6 +47,7 @@ export const useGameSessionsData = ({ gameId, onDeleteSuccess }: UseGameSessions
 		settings,
 		sessions,
 		players,
+		error: gameQuery.error ?? settingsQuery.error,
 		deleteSession,
 	};
 };
