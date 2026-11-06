@@ -33,7 +33,7 @@ describe("translateApiError", () => {
 	});
 
 	it("returns plain messages untouched", () => {
-		expect(translateApiError("Invalid request.")).toBe("Invalid request.");
+		expect(translateApiError("'rules.txt' is not a PDF file.")).toBe("'rules.txt' is not a PDF file.");
 	});
 
 	it("translates the plain texts the server sends", () => {

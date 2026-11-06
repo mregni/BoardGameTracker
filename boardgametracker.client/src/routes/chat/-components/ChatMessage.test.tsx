@@ -4,6 +4,10 @@ import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import type { ChatExchange } from "../-hooks/useRagChat";
 import { ChatMessage } from "./ChatMessage";
 
+vi.mock("@/utils/i18n", () => ({
+	default: { t: (key: string) => key },
+}));
+
 const buildExchange = (overrides: Partial<ChatExchange> = {}): ChatExchange => ({
 	id: "exchange-1",
 	question: "How many cards do I draw?",

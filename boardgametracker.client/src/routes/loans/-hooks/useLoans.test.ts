@@ -151,8 +151,8 @@ describe("useLoans", () => {
 		const { result } = await renderUseLoans();
 
 		await act(() => result.current.deleteLoan(7));
-		await act(() => result.current.returnLoans([7], new Date()));
-		await act(() => result.current.updateLoan(loan));
+		await act(() => expect(result.current.returnLoans([7], new Date())).rejects.toThrow("boom"));
+		await act(() => expect(result.current.updateLoan(loan)).rejects.toThrow("boom"));
 
 		expect(errorToast.mock.calls).toEqual([
 			["loans:delete.failed"],

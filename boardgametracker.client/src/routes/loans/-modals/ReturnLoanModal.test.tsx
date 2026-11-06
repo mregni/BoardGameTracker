@@ -91,8 +91,10 @@ describe("ReturnLoanModal", () => {
 	});
 
 	it("stays open when returning fails", async () => {
-		const { close, onReturn } = renderModal();
-		onReturn.mockRejectedValue({ kind: "client", status: 400, message: "", url: "/api/loans/return" });
+		const onReturn = vi.fn(() =>
+			Promise.reject({ kind: "client", status: 400, message: "", url: "/api/loans/return" }),
+		);
+		const { close } = renderModal({ onReturn });
 
 		await userEvent.click(within(footer()).getByRole("button", { name: "return.confirm" }));
 
