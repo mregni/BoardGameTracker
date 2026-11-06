@@ -343,6 +343,41 @@ test.describe("when invites need a sign in", () => {
 	});
 });
 
+test.describe("a signed-in user linked to an invited player", () => {
+	const names = (page: Page) => page.getByRole("group", { name: "Who are you?" });
+
+	test("finds that player selected and can answer right away", async ({ page }) => {
+		const night = await newNight({ host: guest });
+		await openInvite(page, night.linkId);
+
+		await expect(names(page).getByRole("button", { name: linkedPlayer })).toHaveAttribute("aria-pressed", "true");
+
+		await page.getByRole("group", { name: "Can you make it?" }).getByRole("button", { name: "Maybe" }).click();
+		await page.getByRole("button", { name: "Send answer" }).click();
+
+		await expect(confirmation(page).getByRole("heading", { name: `You might come, ${linkedPlayer}` })).toBeVisible({
+			timeout: 15_000,
+		});
+		expect(await rsvpStateOf(api, night.id, linkedPlayer)).toBe("maybe");
+	});
+
+	test("leaves the choice open for a guest", async ({ guestPage: page }) => {
+		const night = await newNight({ host: guest });
+		await openInvite(page, night.linkId);
+
+		await expect(names(page).getByRole("button", { name: linkedPlayer })).toHaveAttribute("aria-pressed", "false");
+		await expect(names(page).getByRole("button", { pressed: true })).toHaveCount(0);
+	});
+
+	test("does not select the host", async ({ page }) => {
+		const night = await newNight();
+		await openInvite(page, night.linkId);
+
+		await expect(names(page).getByRole("button", { name: guest })).toHaveAttribute("aria-pressed", "false");
+		await expect(names(page).getByRole("button", { pressed: true })).toHaveCount(0);
+	});
+});
+
 test.describe("when game nights are switched off", () => {
 	test.use({ allowedApiStatuses: [401, 403, 404] });
 

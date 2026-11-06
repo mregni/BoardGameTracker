@@ -256,7 +256,9 @@ test.describe("a night in progress before any game", () => {
 test.describe("a player who said yes and is not there yet", () => {
 	const startWithout = async (page: Page, name: string) => {
 		await openStart(page);
-		await sheet(page).getByRole("button", { name: `Leave ${name} out` }).click();
+		await sheet(page)
+			.getByRole("button", { name: `Leave ${name} out` })
+			.click();
 		await chooseGame(page, planned);
 		await sheet(page).getByRole("button", { name: "Start", exact: true }).click();
 		await expect(runningCard(page, planned)).toBeVisible();

@@ -46,6 +46,7 @@ export interface NewNight {
 	title: string;
 	startDate: Date;
 	invited: string[];
+	host?: string;
 	notes?: string;
 	suggestedGameIds?: number[];
 }
@@ -58,7 +59,7 @@ export const createNight = async (api: Api, night: NewNight): Promise<GameNight>
 		title: night.title,
 		notes: night.notes ?? "",
 		startDate: night.startDate.toISOString(),
-		hostId: await playerIdOf(api, linkedPlayer),
+		hostId: await playerIdOf(api, night.host ?? linkedPlayer),
 		locationId: allLocations.find((location) => location.name === locations[0])?.id,
 		suggestedGameIds: night.suggestedGameIds ?? [],
 		invitedPlayerIds,

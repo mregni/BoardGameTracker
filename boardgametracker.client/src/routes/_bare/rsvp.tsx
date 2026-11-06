@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -11,6 +12,7 @@ import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { isNightPast } from "@/routes/game-nights/-utils/gameNightPlay";
+import { getProfile } from "@/services/queries/auth";
 import { toCalendarHref } from "@/utils/calendarFile";
 import { toDisplay, toDisplayTime, toDisplayWithWeekday } from "@/utils/dateUtils";
 import { effectivePublicUrl } from "@/utils/publicUrl";
@@ -40,6 +42,7 @@ function RsvpPage() {
 	const authStatus = useAuth((s) => s.authStatus);
 	const { gameNight, manuals, isLoading, answer, isEditing, submitRsvp, isSubmitting, changeResponse } =
 		useRsvpData(linkId);
+	const { data: profile } = useQuery({ ...getProfile(), enabled: isAuthenticated });
 	useDocumentTitle(gameNight?.title);
 
 	const requiresAuth = settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !isAuthenticated;
@@ -119,6 +122,7 @@ function RsvpPage() {
 									invitedPlayers={gameNight.invitedPlayers}
 									hostId={gameNight.hostId}
 									initialAnswer={answer}
+									ownPlayerId={profile?.playerId}
 									onSubmit={submitRsvp}
 									isSubmitting={isSubmitting}
 								/>

@@ -13,7 +13,7 @@ import {
 	sessionsOf,
 	statsOf,
 } from "../support/playerStats";
-import { expected, linkedPlayer, players, sessions, standingsOf } from "../support/seedData";
+import { expected, linkedPlayer, loans, players, sessions, standingsOf } from "../support/seedData";
 
 const noCoopPlayer = players[players.length - 1];
 
@@ -30,7 +30,12 @@ const figure = (page: Page, label: string) =>
 		.locator("xpath=..")
 		.getByRole("definition");
 
-const mostPlayed = (page: Page) => page.getByRole("main").getByRole("listitem").locator('a[href^="/games/"]');
+const mostPlayed = (page: Page) =>
+	page
+		.getByRole("heading", { name: "Most played games" })
+		.locator("xpath=ancestor::*[.//ul][1]")
+		.getByRole("listitem")
+		.locator('a[href^="/games/"]');
 const rivals = (page: Page) => page.getByRole("main").getByRole("listitem").locator('a[href^="/compare"]');
 const recent = (page: Page) => page.getByRole("main").locator('a[href^="/sessions/update/"]');
 const milestones = (page: Page) =>
@@ -174,6 +179,24 @@ for (const name of players) {
 		});
 	});
 }
+
+test("shows the games a player has on loan and links to them", async ({ page }) => {
+	for (const loan of loans.filter((candidate) => !candidate.returned)) {
+		await open(page, loan.player);
+		const card = page.getByRole("heading", { name: "Games on loan" }).locator("xpath=ancestor::*[.//ul][1]");
+
+		await expect(card.getByRole("link")).toHaveText([loan.game]);
+		await expect(card.getByRole("link")).toHaveAttribute("href", `/games/${gameId(loan.game)}`);
+	}
+});
+
+test("shows no loans card without a game on loan", async ({ page }) => {
+	const returned = loans.find((loan) => loan.returned);
+	await open(page, returned?.player ?? noCoopPlayer);
+
+	await expect(figure(page, "Sessions")).toBeVisible();
+	await expect(page.getByRole("heading", { name: "Games on loan" })).toHaveCount(0);
+});
 
 test("reveals and hides the locked achievements", async ({ page }) => {
 	const allMilestones = milestonesOf(statsOf(noCoopPlayer));

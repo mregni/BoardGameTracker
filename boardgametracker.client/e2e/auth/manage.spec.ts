@@ -156,7 +156,10 @@ test("stops accepting the access token after logging out", async ({ guestPage: p
 	expect((await page.request.get("/api/auth/profile", { headers })).status()).toBe(401);
 });
 
-test("keeps an access token through a refresh, then logs out only that device", async ({ guestPage: page, browser }) => {
+test("keeps an access token through a refresh, then logs out only that device", async ({
+	guestPage: page,
+	browser,
+}) => {
 	const user = await createUser("logout-device-user", "Reader");
 	const { baseURL } = test.info().project.use;
 	const otherDevice = await browser.newContext({ baseURL });
