@@ -1,7 +1,16 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 import { expect, test } from "../support/fixtures";
 import { duration, whole } from "../support/format";
-import { api, createNight, displayTime, gameId, openNight, playerId, removeCreatedData } from "../support/gameNights";
+import {
+	api,
+	createNight,
+	displayDateTime,
+	displayTime,
+	gameId,
+	openNight,
+	playerId,
+	removeCreatedData,
+} from "../support/gameNights";
 import {
 	coopGame,
 	expected,
@@ -919,6 +928,32 @@ test.describe("a night that ran out of time", () => {
 		await expect(playedRows(page)).toHaveCount(1);
 		await expect(main(page)).toContainText(`Night winner${linkedPlayer}`);
 		await expect(page.getByRole("button", { name: /^Play .* again$/ })).toHaveCount(0);
+	});
+});
+
+test.describe("logging a session", () => {
+	const startOfLoggedSession = async (page: Page, request: APIRequestContext, id: number) => {
+		await logSession(page, planned, { [linkedPlayer]: 3 });
+		const { sessions: logged } = await api(request, "get", `/api/gamenight/${id}`);
+		return new Date(logged[0].start);
+	};
+
+	test("starts on the date of a night that is over", async ({ page, request }) => {
+		const startDate = minutesAgo(3 * 24 * 60);
+		const id = await liveNight(request, startDate);
+		await openNight(page, title, id);
+
+		expect(displayDateTime(await startOfLoggedSession(page, request, id))).toBe(displayDateTime(startDate));
+	});
+
+	test("ends now on a live night", async ({ page, request }) => {
+		const id = await liveNight(request, minutesAgo(3 * 60));
+		await openNight(page, title, id);
+
+		const start = await startOfLoggedSession(page, request, id);
+
+		const minutes = games[3].maxPlayTime;
+		expect(Math.abs(start.getTime() - minutesAgo(minutes).getTime())).toBeLessThan(2 * 60_000);
 	});
 });
 
