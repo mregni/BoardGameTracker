@@ -7,10 +7,13 @@ using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -20,6 +23,8 @@ namespace BoardGameTracker.Tests.Auth;
 
 public class AuthControllerTests
 {
+    private const string ClientAddress = "203.0.113.7";
+
     private readonly Mock<IAuthService> _authServiceMock;
     private readonly Mock<IOidcService> _oidcServiceMock;
     private readonly Mock<IProfileImageTicketService> _imageTicketsMock;
@@ -33,7 +38,7 @@ public class AuthControllerTests
         _authServiceMock = new Mock<IAuthService>();
         _oidcServiceMock = new Mock<IOidcService>();
         _imageTicketsMock = new Mock<IProfileImageTicketService>();
-        _imageTicketsMock.Setup(x => x.Issue(It.IsAny<string>())).Returns("image-ticket");
+        _imageTicketsMock.Setup(x => x.Issue("user-id")).Returns("image-ticket");
         _imageTicketsMock.Setup(x => x.Lifetime).Returns(TimeSpan.FromDays(7));
         _loggerMock = new Mock<ILogger<AuthController>>();
         var sessionCookies = new AuthSessionCookies(_imageTicketsMock.Object, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }));
@@ -46,7 +51,18 @@ public class AuthControllerTests
         _oidcServiceMock.VerifyNoOtherCalls();
         _profileImagesMock.VerifyNoOtherCalls();
         _playerLinkPromptMock.VerifyNoOtherCalls();
+        _imageTicketsMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
     }
+
+    private void VerifyImageTicketIssued()
+    {
+        _imageTicketsMock.Verify(x => x.Issue("user-id"), Times.Once);
+        _imageTicketsMock.Verify(x => x.Lifetime, Times.Once);
+    }
+
+    private void VerifyLoginAttemptLogged() =>
+        _loggerMock.VerifyLog(LogLevel.Debug, "Login attempt received");
 
     private string SetCookie(string name) =>
         _controller.HttpContext.Response.Headers.SetCookie.Single(c => c!.StartsWith(name + "=", StringComparison.Ordinal))!;
@@ -104,16 +120,23 @@ public class AuthControllerTests
         accessToken, refreshToken, DateTime.UtcNow.AddHours(1),
         new UserInfo("user-id", "admin", "Admin", new List<string> { "Admin" }));
 
+    private static DefaultHttpContext ContextFromClient()
+    {
+        var context = new DefaultHttpContext();
+        context.Connection.RemoteIpAddress = System.Net.IPAddress.Parse(ClientAddress);
+        return context;
+    }
+
     #region Login
 
     [Fact]
     public async Task Login_ShouldReturnTheAccessToken_AndPutTheRefreshTokenInAnHttpOnlyCookie()
     {
-        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        _controller.ControllerContext = new ControllerContext { HttpContext = ContextFromClient() };
         var request = new LoginRequest("admin", "admin");
         var expectedResponse = Session("jwt-token", "refresh-token");
 
-        _authServiceMock.Setup(x => x.LoginAsync(request, It.IsAny<string>())).ReturnsAsync(expectedResponse);
+        _authServiceMock.Setup(x => x.LoginAsync(request, ClientAddress)).ReturnsAsync(expectedResponse);
 
         var result = await _controller.Login(request);
 
@@ -121,33 +144,37 @@ public class AuthControllerTests
         okResult.Value.Should().BeSameAs(expectedResponse);
         VerifyRefreshCookie("refresh-token");
         VerifyImageCookie(issued: true);
+        VerifyImageTicketIssued();
 
-        _authServiceMock.Verify(x => x.LoginAsync(request, It.IsAny<string>()), Times.Once);
+        _authServiceMock.Verify(x => x.LoginAsync(request, ClientAddress), Times.Once);
+        VerifyLoginAttemptLogged();
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Login_ShouldMarkTheRefreshCookieSecure_WhenTheRequestIsHttps()
     {
-        var context = new DefaultHttpContext();
+        var context = ContextFromClient();
         context.Request.Scheme = "https";
         _controller.ControllerContext = new ControllerContext { HttpContext = context };
         var request = new LoginRequest("admin", "admin");
-        _authServiceMock.Setup(x => x.LoginAsync(request, It.IsAny<string>())).ReturnsAsync(Session("jwt-token", "refresh-token"));
+        _authServiceMock.Setup(x => x.LoginAsync(request, ClientAddress)).ReturnsAsync(Session("jwt-token", "refresh-token"));
 
         await _controller.Login(request);
 
         VerifyRefreshCookie("refresh-token", secure: true);
-        _authServiceMock.Verify(x => x.LoginAsync(request, It.IsAny<string>()), Times.Once);
+        VerifyImageTicketIssued();
+        _authServiceMock.Verify(x => x.LoginAsync(request, ClientAddress), Times.Once);
+        VerifyLoginAttemptLogged();
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Login_ShouldPropagateException_WhenCredentialsAreInvalid()
     {
-        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        _controller.ControllerContext = new ControllerContext { HttpContext = ContextFromClient() };
         var request = new LoginRequest("unknown", "password");
-        _authServiceMock.Setup(x => x.LoginAsync(request, It.IsAny<string>()))
+        _authServiceMock.Setup(x => x.LoginAsync(request, ClientAddress))
             .ThrowsAsync(new UnauthorizedAccessException(Constants.Errors.InvalidCredentials));
 
         var act = () => _controller.Login(request);
@@ -156,7 +183,8 @@ public class AuthControllerTests
             .WithMessage(Constants.Errors.InvalidCredentials);
         _controller.HttpContext.Response.Headers.SetCookie.Should().BeEmpty();
 
-        _authServiceMock.Verify(x => x.LoginAsync(request, It.IsAny<string>()), Times.Once);
+        _authServiceMock.Verify(x => x.LoginAsync(request, ClientAddress), Times.Once);
+        VerifyLoginAttemptLogged();
         VerifyNoOtherCalls();
     }
 
@@ -177,6 +205,7 @@ public class AuthControllerTests
         okResult.Value.Should().BeSameAs(expectedResponse);
         VerifyRefreshCookie("new-refresh");
         VerifyImageCookie(issued: true);
+        VerifyImageTicketIssued();
 
         _authServiceMock.Verify(x => x.RefreshAsync("valid-token"), Times.Once);
         VerifyNoOtherCalls();
@@ -349,6 +378,7 @@ public class AuthControllerTests
         okResult.Value.Should().BeSameAs(expectedDto);
 
         _authServiceMock.Verify(x => x.RegisterAsync(request), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Admin admin-id registering new user newuser");
         VerifyNoOtherCalls();
     }
 
@@ -383,7 +413,8 @@ public class AuthControllerTests
     public async Task UploadProfileImage_ShouldStoreTheFileForTheCurrentUser()
     {
         SetupAuthenticatedUser("user-id");
-        var file = new Mock<Microsoft.AspNetCore.Http.IFormFile>().Object;
+        var fileMock = new Mock<Microsoft.AspNetCore.Http.IFormFile>();
+        var file = fileMock.Object;
         var expectedProfile = new ProfileResponse(
             "user-id", "testuser", null, null, ["User"], DateTime.UtcNow, null, null, "/images/profile/a.webp");
         _profileImagesMock.Setup(x => x.UploadAsync("user-id", file)).ReturnsAsync(expectedProfile);
@@ -392,6 +423,7 @@ public class AuthControllerTests
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(expectedProfile);
         _profileImagesMock.Verify(x => x.UploadAsync("user-id", file), Times.Once);
+        fileMock.VerifyNoOtherCalls();
         VerifyNoOtherCalls();
     }
 
@@ -476,6 +508,7 @@ public class AuthControllerTests
         okResult.Value.Should().BeSameAs(expectedResponse);
 
         _authServiceMock.Verify(x => x.ResetPasswordAsync("target-user-id"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Admin admin-id resetting password for user target-user-id");
         VerifyNoOtherCalls();
     }
 
@@ -571,11 +604,12 @@ public class AuthControllerTests
     public void CreateOwnPlayer_ShouldOnlyBeAllowedForRolesThatMayCreatePlayers()
     {
         var attribute = typeof(AuthController).GetMethod(nameof(AuthController.CreateOwnPlayer))!
-            .GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), false)
-            .Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>()
+            .GetCustomAttributes(typeof(AuthorizeAttribute), false)
+            .Cast<AuthorizeAttribute>()
             .Single();
 
         attribute.Roles.Should().Be(Constants.AuthRoles.UserOrAdmin);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -662,6 +696,7 @@ public class AuthControllerTests
         result.Should().BeOfType<NoContentResult>();
 
         _oidcServiceMock.Verify(x => x.UnlinkExternalLoginAsync("user-id", 4), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "User user-id unlinking external login 4");
         VerifyNoOtherCalls();
     }
 
@@ -679,8 +714,98 @@ public class AuthControllerTests
 
         var act = () => _controller.GetProfile();
 
-        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+        await act.Should().ThrowAsync<AuthenticationFailedException>().WithMessage(Constants.Errors.NotAuthenticated);
 
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Logout_ShouldIgnoreTheUserId_OfAnIdentityThatIsNotAuthenticated()
+    {
+        var context = ContextWithRefreshCookie("refresh-token");
+        context.User = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, "someone-else")]));
+        _controller.ControllerContext = new ControllerContext { HttpContext = context };
+
+        var result = await _controller.Logout();
+
+        result.Should().BeOfType<NoContentResult>();
+        _authServiceMock.Verify(x => x.LogoutAsync(null, "refresh-token"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void Controller_ShouldDemandASignedInUser_AndBeClosedWhileAuthIsDisabled()
+    {
+        var authorize = typeof(AuthController).GetCustomAttributes(typeof(AuthorizeAttribute), false).Cast<AuthorizeAttribute>().Single();
+        var filter = typeof(AuthController).GetCustomAttributes(typeof(ServiceFilterAttribute), false).Cast<ServiceFilterAttribute>().Single();
+
+        authorize.Roles.Should().BeNull();
+        filter.ServiceType.Should().Be<AuthDisabledFilter>();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void AnonymousActions_ShouldBeExactlyTheOnesThatWorkWithoutASession()
+    {
+        var anonymous = typeof(AuthController).GetMethods()
+            .Where(m => m.IsDefined(typeof(AllowAnonymousAttribute), false))
+            .Select(m => m.Name);
+
+        anonymous.Should().BeEquivalentTo(
+            nameof(AuthController.Login),
+            nameof(AuthController.Refresh),
+            nameof(AuthController.Logout),
+            nameof(AuthController.ForgotPassword),
+            nameof(AuthController.ResetPasswordWithToken),
+            nameof(AuthController.GetStatus));
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(nameof(AuthController.Register), Constants.AuthRoles.Admin)]
+    [InlineData(nameof(AuthController.ResetPassword), Constants.AuthRoles.Admin)]
+    [InlineData(nameof(AuthController.CreateOwnPlayer), Constants.AuthRoles.UserOrAdmin)]
+    public void RestrictedActions_ShouldDemandTheirRole(string action, string roles)
+    {
+        var attribute = typeof(AuthController).GetMethod(action)!.GetCustomAttributes(typeof(AuthorizeAttribute), false).Cast<AuthorizeAttribute>().Single();
+
+        attribute.Roles.Should().Be(roles);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void RoleRestrictedActions_ShouldBeExactlyTheKnownOnes()
+    {
+        var restricted = typeof(AuthController).GetMethods()
+            .Where(m => m.IsDefined(typeof(AuthorizeAttribute), false))
+            .Select(m => m.Name);
+
+        restricted.Should().BeEquivalentTo(
+            nameof(AuthController.Register),
+            nameof(AuthController.ResetPassword),
+            nameof(AuthController.CreateOwnPlayer));
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(nameof(AuthController.Refresh))]
+    [InlineData(nameof(AuthController.Logout))]
+    public void CookieOnlyActions_ShouldRequireTheSessionHeader(string action)
+    {
+        typeof(AuthController).GetMethod(action)!.IsDefined(typeof(RequireSessionHeaderAttribute), false).Should().BeTrue();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(nameof(AuthController.Login))]
+    [InlineData(nameof(AuthController.ChangePassword))]
+    [InlineData(nameof(AuthController.ForgotPassword))]
+    [InlineData(nameof(AuthController.ResetPasswordWithToken))]
+    public void PasswordActions_ShouldBeRateLimited(string action)
+    {
+        var attribute = typeof(AuthController).GetMethod(action)!.GetCustomAttributes(typeof(EnableRateLimitingAttribute), false).Cast<EnableRateLimitingAttribute>().Single();
+
+        attribute.PolicyName.Should().Be(RateLimitPolicies.Auth);
         VerifyNoOtherCalls();
     }
 
