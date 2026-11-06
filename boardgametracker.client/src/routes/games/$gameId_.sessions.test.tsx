@@ -1,10 +1,11 @@
 import type { FC } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Player, Session } from "@/models";
 import { renderWithProviders, screen, within } from "@/test/test-utils";
 
 const mocks = vi.hoisted(() => ({
 	captured: {} as { config: { component: FC } },
+	error: undefined as unknown,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -49,11 +50,12 @@ const sessions = [
 vi.mock("./-hooks/useGameSessionsData", () => ({
 	useGameSessionsData: () => ({
 		settings: { dateFormat: "dd-MM-yyyy", timeFormat: "HH:mm", uiLanguage: "en-US" },
-		game: { id: 1, title: "Wingspan", image: null },
+		game: mocks.error ? undefined : { id: 1, title: "Wingspan", image: null },
 		sessions,
 		players,
 		deleteSession: vi.fn(),
 		isLoading: false,
+		error: mocks.error,
 	}),
 }));
 
@@ -65,6 +67,18 @@ const renderPage = () => {
 };
 
 describe("Game sessions page", () => {
+	beforeEach(() => {
+		mocks.error = undefined;
+	});
+
+	it("says the game does not exist on a 404", () => {
+		mocks.error = { kind: "client", status: 404, message: "Not found" };
+		renderPage();
+
+		expect(screen.getByText("game:notifications.not-found")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "game:load-error.back" })).toBeInTheDocument();
+	});
+
 	it("titles the page after the game without a hyphen", () => {
 		renderPage();
 
