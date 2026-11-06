@@ -106,15 +106,16 @@ test("keeps a session when deleting is cancelled", async ({ page }) => {
 	await page.getByRole("dialog").getByRole("button", { name: "Cancel" }).click();
 
 	await expect(page.getByRole("dialog")).toBeHidden();
+	await page.reload();
 	await expect(rowsOf(page)).toHaveCount(played.length);
 });
 
 test("preselects the player when logging a session", async ({ page }) => {
-	test.fail(true, "BUG: Log session on the sessions page of a player does not preselect that player");
 	await openSessions(page, linkedPlayer);
 
 	await page.getByRole("main").getByRole("button", { name: "Log session" }).click();
 
+	test.fail(true, "BUG: Log session on the sessions page of a player does not preselect that player");
 	await expect(page).toHaveURL(`/sessions/new?player=${playerId(linkedPlayer)}`);
 });
 
@@ -158,10 +159,10 @@ test.describe("a player that does not exist", () => {
 	});
 
 	test("leads back to the players", async ({ page }) => {
-		test.fail(true, "BUG: the sessions page of a missing player has no way back, unlike the one of a missing game");
 		await page.goto("/players/9999/sessions");
 		await expect(page.getByText("Could not find player")).toBeVisible();
 
+		test.fail(true, "BUG: the sessions page of a missing player has no way back, unlike the one of a missing game");
 		await page.getByRole("button", { name: /^Back/ }).click({ timeout: 2_000 });
 
 		await expect(page).toHaveURL("/players");

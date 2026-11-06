@@ -15,6 +15,7 @@ import {
 	nextNight,
 	nightOf,
 	ownedLongerThan,
+	playedWithin,
 	priceOf,
 	readerRowText,
 	shelf,
@@ -315,11 +316,21 @@ test.describe("not played in", () => {
 		await expect(page.getByText(summaryOf(games))).toBeVisible();
 		const card = page.getByRole("region", { name: "Money on the shelf" });
 		await expect(card.getByRole("paragraph").first()).toHaveText(money(total));
-		await expect(card.getByRole("listitem")).toHaveText([
+		await expect(card.getByRole("listitem").first()).toHaveText(
 			`Never played${money(priceOf(games.filter(isNeverPlayed)))}`,
-			`Played recently${money(expected.ownedValue - total)}`,
-		]);
+		);
 		await expect(page.getByText(`${plannedCount(games)} games are coming off the shelf.`)).toBeVisible();
+	});
+
+	test("counts only played games as played recently", async ({ page }) => {
+		await open(page, "?months=12");
+		const card = page.getByRole("region", { name: "Money on the shelf" });
+		await expect(card.getByRole("listitem").first()).toBeVisible();
+
+		test.fail(true, "BUG: Played recently is the rest of the collection, so unplayed games count as played recently");
+		await expect(card.getByRole("listitem").last()).toHaveText(`Played recently${money(priceOf(playedWithin(12)))}`, {
+			timeout: 1_000,
+		});
 	});
 
 	test("goes back to the configured months", async ({ page }) => {

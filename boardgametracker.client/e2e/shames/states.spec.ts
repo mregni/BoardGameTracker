@@ -73,12 +73,27 @@ test("asks to add prices when no game has one", async ({ page }) => {
 	await expect(page.getByRole("region", { name: "Money on the shelf" })).toHaveCount(0);
 });
 
+test("does not ask for prices when only the shelf games lack one", async ({ page }) => {
+	await patchStatistics(page, () => ({ totalValue: null, neverPlayedValue: 0 }));
+	await patchShames(page, (rows) =>
+		withoutPrice(
+			rows,
+			shelf.map((game) => game.title),
+		),
+	);
+	await open(page);
+	await expect(shelfRows(page)).toHaveCount(shelf.length);
+
+	test.fail(true, "BUG: the shelf asks to add what you paid although the rest of the collection has prices");
+	await expect(page.getByRole("main")).not.toContainText("Add what you paid", { timeout: 1_000 });
+});
+
 test("does not ask a reader to add prices", async ({ readerPage }) => {
 	await patchStatistics(readerPage, () => ({ totalValue: null, collectionValue: 0, neverPlayedValue: 0 }));
 	await open(readerPage);
 
-	await expect(readerPage.getByRole("main")).not.toContainText("Add what you paid");
 	await expect(shelfRows(readerPage)).toHaveCount(shelf.length);
+	await expect(readerPage.getByRole("main")).not.toContainText("Add what you paid");
 });
 
 test("invites you to plan a night when none is coming", async ({ page }) => {
@@ -97,6 +112,7 @@ test("does not invite a reader to plan a night", async ({ readerPage }) => {
 	await patchStatistics(readerPage, () => ({ nextGameNight: null, plannedCount: 0 }));
 	await open(readerPage);
 
+	await expect(shelfRows(readerPage)).toHaveCount(shelf.length);
 	await expect(readerPage.getByRole("main")).not.toContainText("No game night coming up");
 });
 
@@ -189,6 +205,12 @@ test("leaves the shelf when it is switched off", async ({ page }) => {
 	await page.goto("/shames");
 
 	await expect(page).toHaveURL("/");
+	await expect(
+		page
+			.getByRole("navigation")
+			.getByRole("link", { name: /^Players/ })
+			.first(),
+	).toBeVisible();
 	await expect(page.getByRole("navigation").getByRole("link", { name: /Shelf of Shame/ })).toHaveCount(0);
 });
 

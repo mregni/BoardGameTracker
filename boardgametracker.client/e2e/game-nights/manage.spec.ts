@@ -1,8 +1,8 @@
 import type { Page } from "@playwright/test";
-import { addDays } from "date-fns";
+import { addDays, subMonths } from "date-fns";
 import { expect, test } from "../support/fixtures";
 import { displayDate } from "../support/format";
-import { createNight, openNight, playerId, relativeDay, removeCreatedNights } from "../support/gameNights";
+import { api, createNight, openNight, playerId, relativeDay, removeCreatedNights } from "../support/gameNights";
 import { pick } from "../support/gamesPage";
 import { gameNights, games, linkedPlayer, locations, players, wantedGame } from "../support/seedData";
 
@@ -339,4 +339,15 @@ test.describe("a night in the coming twelve hours", () => {
 			main.getByRole("region", { name: "Expected players" }).getByRole("button", { name: guest }),
 		).toBeVisible();
 	});
+});
+
+test("leaves a night out of the statistics of a period it is not in", async ({ page, request }) => {
+	const id = await createNight(request, { title: "Night long ago", startDate: subMonths(new Date(), 13) });
+	await api(request, "post", `/api/gamenight/${id}/end`, {});
+	await page.goto("/game-nights?view=stats");
+	await expect(page.getByRole("main")).toContainText(/Game nights2\D/);
+
+	await page.getByRole("button", { name: "Last 12 months" }).click();
+
+	await expect(page.getByRole("main")).toContainText(/Game nights1\D/);
 });

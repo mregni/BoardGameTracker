@@ -8,6 +8,8 @@ type SeedSession = (typeof sessions)[number];
 const LEVELS = ["green", "blue", "red", "gold"] as const;
 const FORM_LENGTH = 10;
 const NEMESIS_MIN_SESSIONS = 3;
+const WIN_RATE_MIN_SESSIONS = 5;
+const MARATHON_MINUTES = 240;
 
 export const playerId = (name: string) => players.indexOf(name) + 1;
 export const gameId = (title: string) => games.findIndex((game) => game.title === title) + 1;
@@ -63,6 +65,39 @@ const gameRecordsOf = (name: string) => {
 		.sort((a, b) => b.sessions - a.sessions);
 };
 
+const historiesOf = (name: string) => {
+	const posted = sessions.filter((session) => seated(session, name));
+	return posted.map((session, index) => ({
+		session,
+		history: posted.slice(0, index + 1).sort((a, b) => b.start.getTime() - a.start.getTime()),
+	}));
+};
+
+const bestWinRateOf = (name: string) =>
+	Math.max(
+		...historiesOf(name)
+			.filter(({ history }) => history.length >= WIN_RATE_MIN_SESSIONS)
+			.map(({ history }) => (history.filter((session) => won(session, name)).length / history.length) * 100),
+	);
+
+const longestStreakOf = (name: string) =>
+	Math.max(
+		...historiesOf(name).map(({ history }) => {
+			const firstLoss = history.findIndex((session) => !won(session, name));
+			return firstLoss === -1 ? history.length : firstLoss;
+		}),
+	);
+
+const improvedOnAGame = (name: string) =>
+	historiesOf(name).some(({ session, history }) => {
+		const [newest, middle, oldest] = history
+			.filter((played) => played.game === session.game)
+			.slice(0, 3)
+			.map((played) => played.scores.find((seat) => seat.player === name)?.score ?? null);
+		if (newest == null || middle == null || oldest == null) return false;
+		return newest > middle && middle > oldest;
+	});
+
 const playersMetBy = (name: string) =>
 	new Set(sessionsOf(name).flatMap((session) => session.scores.map((score) => score.player))).size - 1;
 
@@ -86,6 +121,9 @@ export const statsOf = (name: string) => {
 			.reverse()
 			.map((session) => (won(session, name) ? "W" : "L")),
 		metPlayers: playersMetBy(name),
+		bestWinRate: bestWinRateOf(name),
+		longestStreak: longestStreakOf(name),
+		soloSessions: played.filter((session) => session.scores.length === 1).length,
 	};
 };
 
@@ -122,6 +160,9 @@ const goalsOf = {
 	wins: [3, 10, 25, 50],
 	duration: [300, 600, 3000, 6000],
 	"social-player": [5, 10, 25, 50],
+	"win-percentage": [30, 50, 65, 80],
+	"solo-specialist": [5, 10, 25, 50],
+	"winning-streak": [5, 10, 15, 25],
 };
 
 export const milestonesOf = (stats: PlayerStats) => [
@@ -130,6 +171,9 @@ export const milestonesOf = (stats: PlayerStats) => [
 	milestoneOf("wins", stats.wins),
 	milestoneOf("duration", stats.minutes),
 	milestoneOf("social-player", stats.metPlayers),
+	milestoneOf("win-percentage", stats.bestWinRate),
+	milestoneOf("solo-specialist", stats.soloSessions),
+	milestoneOf("winning-streak", stats.longestStreak),
 ];
 
 const scoredSeats = (session: SeedSession) =>
@@ -156,10 +200,15 @@ export const featsOf = (name: string) => {
 		{ title: badges["close-win"].title, earned: close.some((session) => session.winner === name) },
 		{ title: badges["close-loss"].title, earned: close.some((session) => session.winner !== name) },
 		{ title: badges["first-try"].title, earned: firstPlays(name).some((session) => session && won(session, name)) },
+		{ title: badges["learning-curve"].title, earned: improvedOnAGame(name) },
+		{
+			title: badges["marathon-runner"].title,
+			earned: sessionsOf(name).some((session) => session.minutes >= MARATHON_MINUTES),
+		},
+		{ title: badges["monthly-goal"].title, earned: false },
+		{ title: badges["consistent-schedule"].title, earned: false },
 	];
 	return feats;
 };
 
 export const FEAT_DESCRIPTION = badges["close-win"].description;
-export const MILESTONE_TYPES = 8;
-export const FEAT_TYPES = 7;

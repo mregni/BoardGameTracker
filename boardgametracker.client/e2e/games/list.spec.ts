@@ -1,8 +1,10 @@
 import { expect, expectVisibleImagesToLoad, test } from "../support/fixtures";
 import { expectGames, gameLink, gameLinks, inTitleOrder, openGames, pick } from "../support/gamesPage";
-import { expected, games, mostPlayedGame, neverPlayedGame, sessions, wantedGame } from "../support/seedData";
+import { expected, games, loans, mostPlayedGame, neverPlayedGame, sessions, wantedGame } from "../support/seedData";
 
 const playsOf = (title: string) => sessions.filter((session) => session.game === title).length;
+
+const WHEEL_SIZE = 10;
 
 const titlesInOrder = inTitleOrder(games.map((game) => game.title));
 
@@ -86,7 +88,16 @@ test("hands the filters to the wheel", async ({ page }) => {
 	await page.getByRole("button", { name: "Pick for us" }).click();
 
 	await expect(page).toHaveURL(/\/games\/pick.*players=2/);
+	await expect(page).toHaveURL(/wheel=/);
 	await expect(page.getByRole("main")).toContainText("2 players");
+	const wheel: number[] = JSON.parse(new URL(page.url()).searchParams.get("wheel") ?? "[]");
+	const onLoan = loans.filter((loan) => !loan.returned).map((loan) => loan.game);
+	const fitting = games
+		.filter((game) => game.state === "owned" && game.minPlayers <= 2 && game.maxPlayers >= 2)
+		.filter((game) => !onLoan.includes(game.title))
+		.map((game) => game.title);
+	expect(wheel).toHaveLength(WHEEL_SIZE);
+	expect(fitting).toEqual(expect.arrayContaining(wheel.map((id) => games[id - 1].title)));
 });
 
 test("spins the wheel and opens the picked game", async ({ page }) => {

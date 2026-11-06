@@ -28,7 +28,7 @@ test("lists every session newest first with its scores and winner", async ({ pag
 		await expect(row.getByRole("cell").nth(2)).toHaveText(duration(session.minutes));
 		await expect(seats).toHaveCount(session.scores.length);
 		for (const { player, score } of session.scores) {
-			await expect(seats.filter({ hasText: player })).toContainText(String(score));
+			await expect(seats.filter({ hasText: player })).toHaveText(new RegExp(`^${player}${score}$`));
 		}
 		await expect(seats.filter({ has: page.getByRole("img", { name: "Won" }) })).toHaveText(
 			new RegExp(session.winner ?? ""),
@@ -88,6 +88,7 @@ test("offers no sorting on columns without an order", async ({ page }) => {
 	await openSessions(page, mostPlayedGame.title);
 
 	for (const column of ["Players", "Comment", "Actions"]) {
+		await expect(page.getByRole("columnheader", { name: column })).toBeVisible();
 		await expect(page.getByRole("columnheader", { name: column }).getByRole("button")).toHaveCount(0);
 	}
 });
@@ -119,6 +120,7 @@ test("keeps a session when deleting is cancelled", async ({ page }) => {
 	await page.getByRole("dialog").getByRole("button", { name: "Cancel" }).click();
 
 	await expect(page.getByRole("dialog")).toBeHidden();
+	await page.reload();
 	await expect(rowsOf(page)).toHaveCount(played.length);
 });
 

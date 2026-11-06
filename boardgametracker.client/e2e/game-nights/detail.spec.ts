@@ -16,7 +16,6 @@ import {
 	rsvpsOf,
 	scoreLine,
 	seasonOpener,
-	startOfNight,
 } from "../support/gameNights";
 import { gameNights, games, linkedPlayer, pastGameNight, players, sessions } from "../support/seedData";
 
@@ -29,13 +28,12 @@ test.describe("a planned night", () => {
 		await openNight(page, night.title, 1);
 	});
 
-	test("shows when, where and who hosts in the header", async ({ page, request }) => {
+	test("shows when, where and who hosts in the header", async ({ page }) => {
 		const header = page.getByRole("article");
-		const start = await startOfNight(request, 1);
 
 		await expect(header).toContainText(dateBox(night.startDate));
 		await expect(header).toContainText(
-			`Starts ${relativeDay(night.startDate)} · ${displayDate(night.startDate)} · ${displayTime(start)}`,
+			`Starts ${relativeDay(night.startDate)} · ${displayDate(night.startDate)} · ${displayTime(night.startDate)}`,
 		);
 		await expect(header).toContainText(night.location);
 		await expect(header).toContainText(`Host: ${linkedPlayer}`);
@@ -132,11 +130,10 @@ test.describe("a planned night", () => {
 			await page.getByRole("button", { name: "Manage RSVPs" }).click();
 		});
 
-		test("names the night and sums the answers", async ({ page, request }) => {
+		test("names the night and sums the answers", async ({ page }) => {
 			const dialog = page.getByRole("dialog", { name: "Manage RSVPs" });
-			const start = await startOfNight(request, 1);
 
-			await expect(dialog).toContainText(`${night.title} · ${displayDateTime(start)}`);
+			await expect(dialog).toContainText(`${night.title} · ${displayDateTime(night.startDate)}`);
 			await expect(dialog).toContainText(`${rsvps.length} invited`);
 			await expect(dialog.getByTestId("rsvp-summary")).toHaveText(rsvpSummary(night));
 		});
@@ -323,7 +320,7 @@ test.describe("a finished night", () => {
 			await expect(row).toContainText(`#${played.length - index}`);
 			await expect(row).toContainText(session.game);
 			await expect(row).toContainText(scoreLine(session));
-			await expect(row).toContainText(duration(session.minutes));
+			await expect(row).toContainText(new RegExp(`${duration(session.minutes)}$`));
 			await expect(row.getByRole("img", { name: "won", exact: true })).toHaveCount(1);
 			await expect(row.locator("span", { has: page.getByRole("img", { name: "won" }) }).last()).toContainText(
 				session.winner ?? "",
@@ -406,11 +403,17 @@ test.describe("a finished night as a reader", () => {
 });
 
 test("shows an error instead of a crash for an address that is no number", async ({ readerPage: page }) => {
-	test.fail(true, "BUG: /game-nights/abc throws in the route params and lands on the generic error page");
 	await page.goto("/game-nights/abc");
-	await expect(page.getByRole("main")).toBeVisible();
 
-	await expect(page.getByRole("main")).not.toContainText("Something went wrong", { timeout: 3_000 });
+	test.fail(true, "BUG: /game-nights/abc throws in the route params and lands on the generic error page");
+	await expect(page.getByRole("main").getByRole("button", { name: "Game nights" })).toBeVisible({ timeout: 3_000 });
+});
+
+test("ignores an unknown start value in the address", async ({ page }) => {
+	await page.goto("/game-nights/1?start=1");
+
+	test.fail(true, "BUG: /game-nights/1?start=1 fails the search schema and lands on the generic error page");
+	await expect(page.getByRole("heading", { name: night.title, level: 1 })).toBeVisible({ timeout: 3_000 });
 });
 
 test.describe("a night that does not exist", () => {
@@ -422,9 +425,9 @@ test.describe("a night that does not exist", () => {
 	};
 
 	test("explains it instead of loading forever", async ({ page }) => {
-		test.fail(true, "BUG: /game-nights/9999 stays on Loading data... forever, the detail page has no not-found state");
 		await openMissing(page);
 
+		test.fail(true, "BUG: /game-nights/9999 stays on Loading data... forever, the detail page has no not-found state");
 		await expect(page.getByRole("main").getByText("Loading data...")).toHaveCount(0, { timeout: 5_000 });
 	});
 

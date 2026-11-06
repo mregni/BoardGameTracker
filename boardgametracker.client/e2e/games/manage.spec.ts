@@ -1,7 +1,25 @@
+import { addDays } from "date-fns";
 import { apiFor } from "../support/api";
 import { expect, test } from "../support/fixtures";
-import { gameLink, openGames, pick } from "../support/gamesPage";
-import { coopGame, expected, games, sessions } from "../support/seedData";
+import { removeCreatedData } from "../support/gameNights";
+import { openGames, pick } from "../support/gamesPage";
+import {
+	coopGame,
+	expected,
+	games,
+	linkedPlayer,
+	loans,
+	locations,
+	mostPlayedGame,
+	players,
+	sessions,
+} from "../support/seedData";
+
+const activeLoan = loans.find((loan) => !loan.returned) ?? loans[0];
+
+test.afterEach(async ({ request }) => {
+	await removeCreatedData(request);
+});
 
 test("adds a game by hand, renames it and deletes it again", async ({ page }) => {
 	const title = "Hand made game";
@@ -135,12 +153,6 @@ test("edits a game, marks it as sold and keeps the sold price", async ({ page })
 
 	await main.getByRole("button", { name: "Edit" }).click();
 	await expect(page.getByRole("textbox", { name: "Sold price" })).toHaveValue("15");
-	await page.goBack();
-
-	await main.getByRole("button", { name: "Delete" }).click();
-	await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
-	await expect(page).toHaveURL("/games");
-	await expect(gameLink(page, title)).toHaveCount(0);
 });
 
 test("deletes a session and updates the game", async ({ page }) => {
@@ -167,4 +179,54 @@ test("deletes a session and updates the game", async ({ page }) => {
 	await expect(rows).toHaveCount(played);
 	await page.goto(`/games/${gameId}`);
 	await expect(page.getByRole("region", { name: new RegExp(`^Played ${played} times`) })).toBeVisible();
+});
+
+test("takes the sessions, loans and plans of a deleted game along", async ({ page }) => {
+	const title = "Game to lose";
+	const name = "Sweetums";
+	const nightTitle = "Night with a lost game";
+	const { post } = await apiFor(page);
+	const { cover: _, ...details } = mostPlayedGame;
+	const game = await post("/api/game", { ...details, title, image: null });
+	const player = await post("/api/player", { name, image: null });
+	await post("/api/session", {
+		gameId: game.id,
+		start: new Date().toISOString(),
+		minutes: 10,
+		expansionIds: [],
+		isCoop: false,
+		teamWon: null,
+		playerSessions: [{ playerId: player.id, score: 1, firstPlay: true, won: true }],
+	});
+	await post("/api/loans", {
+		gameId: game.id,
+		playerId: player.id,
+		loanDate: new Date().toISOString(),
+		dueDate: null,
+	});
+	const night = await post("/api/gamenight", {
+		title: nightTitle,
+		notes: "",
+		startDate: addDays(new Date(), 30).toISOString(),
+		hostId: players.indexOf(linkedPlayer) + 1,
+		locationId: locations.length,
+		suggestedGameIds: [game.id],
+		invitedPlayerIds: [],
+	});
+	await page.goto(`/games/${game.id}`);
+	await expect(page.getByRole("heading", { name: title, level: 1 })).toBeVisible();
+
+	await page.getByRole("main").getByRole("button", { name: "Delete" }).click();
+	await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
+	await expect(page).toHaveURL("/games");
+
+	await page.goto(`/players/${player.id}/sessions`);
+	await expect(page.getByRole("table")).toContainText("No data yet");
+
+	await page.goto("/loans");
+	await expect(page.getByRole("main")).toContainText(activeLoan.game);
+	await expect(page.getByRole("main")).not.toContainText(title);
+
+	await page.goto(`/game-nights/${night.id}`);
+	await expect(page.getByRole("region", { name: "Planned games" })).toContainText("No games planned yet");
 });

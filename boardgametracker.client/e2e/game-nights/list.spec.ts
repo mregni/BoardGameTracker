@@ -3,7 +3,6 @@ import { format } from "date-fns";
 import { expect, test } from "../support/fixtures";
 import { displayDate, duration } from "../support/format";
 import {
-	api,
 	dateBox,
 	displayDateTime,
 	displayTime,
@@ -14,7 +13,6 @@ import {
 	rsvpSummary,
 	rsvpsOf,
 	seasonOpener,
-	startOfNight,
 } from "../support/gameNights";
 import { gameNights, linkedPlayer, pastGameNight } from "../support/seedData";
 
@@ -60,14 +58,13 @@ test("lists the upcoming nights soonest first under their own heading", async ({
 });
 
 for (const [index, night] of gameNights.entries()) {
-	test(`shows the card of ${night.title}`, async ({ page, request }) => {
-		const start = await startOfNight(request, index + 1);
+	test(`shows the card of ${night.title}`, async ({ page }) => {
 		await openList(page);
 		const card = cards(page).nth(index);
 		const rsvps = rsvpsOf(night);
 
 		await expect(card).toContainText(dateBox(night.startDate));
-		await expect(card).toContainText(`${relativeDay(night.startDate)} · ${displayTime(start)}`);
+		await expect(card).toContainText(`${relativeDay(night.startDate)} · ${displayTime(night.startDate)}`);
 		await expect(card.getByRole("link", { name: night.title })).toHaveAttribute("href", `/game-nights/${index + 1}`);
 		await expect(card).toContainText(night.location);
 		await expect(card).toContainText(`Host: ${linkedPlayer}`);
@@ -161,13 +158,14 @@ test("opens a night from its card", async ({ page }) => {
 	await expect(page.getByRole("heading", { name: secondNight.title, level: 1 })).toBeVisible();
 });
 
-test("opens Manage RSVPs for the night of the card", async ({ page, request }) => {
-	const start = await startOfNight(request, 2);
+test("opens Manage RSVPs for the night of the card", async ({ page }) => {
 	await openList(page);
 
 	await cards(page).nth(1).getByRole("button", { name: "Manage RSVPs" }).click();
 
-	await expect(page.getByRole("dialog")).toContainText(`${secondNight.title} · ${displayDateTime(start)}`);
+	await expect(page.getByRole("dialog")).toContainText(
+		`${secondNight.title} · ${displayDateTime(secondNight.startDate)}`,
+	);
 	await expect(page.getByRole("dialog").getByTestId("rsvp-summary")).toHaveText(rsvpSummary(secondNight));
 });
 
@@ -201,8 +199,6 @@ test("names the night in the delete dialog and keeps it on cancel", async ({ pag
 });
 
 test.describe("past nights", () => {
-	test.use({ allowedApiStatuses: [401, 404] });
-
 	test("groups them by month and summarises the night", async ({ page }) => {
 		await openList(page);
 		const past = page.getByRole("region", { name: "Past" });
@@ -224,28 +220,32 @@ test.describe("past nights", () => {
 		await expect(link).toContainText(`${winners.length > 1 ? "Shared most wins" : "Most wins"}: ${winners.join(", ")}`);
 	});
 
-	test("shows the first ten and folds out the older ones", async ({ page }) => {
-		const count = 12;
-		await mockNights(page, (nights) => {
-			const past = nights.find(isPast) ?? {};
-			return Array.from({ length: count }, (_, index) => ({
-				...past,
-				id: 100 + index,
-				title: `Old night ${index}`,
-				startDate: new Date(Date.now() - (index + 2) * 86_400_000).toISOString(),
-			}));
+	test.describe("beyond the first ten", () => {
+		test.use({ allowedApiStatuses: [401, 404] });
+
+		test("shows the first ten and folds out the older ones", async ({ page }) => {
+			const count = 12;
+			await mockNights(page, (nights) => {
+				const past = nights.find(isPast) ?? {};
+				return Array.from({ length: count }, (_, index) => ({
+					...past,
+					id: 100 + index,
+					title: `Old night ${index}`,
+					startDate: new Date(Date.now() - (index + 2) * 86_400_000).toISOString(),
+				}));
+			});
+			await page.goto("/game-nights");
+			const past = page.getByRole("region", { name: "Past" });
+
+			await expect(past.getByRole("link")).toHaveCount(10);
+			await expect(past.getByRole("link").first()).toContainText("Old night 0");
+
+			await past.getByRole("button", { name: "Show 2 older nights" }).click();
+			await expect(past.getByRole("link")).toHaveCount(count);
+
+			await past.getByRole("button", { name: "Show fewer nights" }).click();
+			await expect(past.getByRole("link")).toHaveCount(10);
 		});
-		await page.goto("/game-nights");
-		const past = page.getByRole("region", { name: "Past" });
-
-		await expect(past.getByRole("link")).toHaveCount(10);
-		await expect(past.getByRole("link").first()).toContainText("Old night 0");
-
-		await past.getByRole("button", { name: "Show 2 older nights" }).click();
-		await expect(past.getByRole("link")).toHaveCount(count);
-
-		await past.getByRole("button", { name: "Show fewer nights" }).click();
-		await expect(past.getByRole("link")).toHaveCount(10);
 	});
 
 	test("says when nothing was logged for a night", async ({ page }) => {
@@ -330,6 +330,12 @@ test.describe("empty and error states", () => {
 		await page.goto("/game-nights");
 
 		await expect(page).toHaveURL("/");
+		await expect(
+			page
+				.getByRole("navigation")
+				.getByRole("link", { name: /^Players/ })
+				.first(),
+		).toBeVisible();
 		await expect(page.getByRole("link", { name: /^Game nights/ })).toHaveCount(0);
 	});
 });
@@ -460,12 +466,9 @@ test.describe("statistics", () => {
 	});
 
 	test("sums the nights in the tiles", async ({ page }) => {
-		await expect(stats(page)).toContainText("Game nights1");
-		await expect(stats(page)).toContainText(`Games played${played.length}`);
-		await expect(stats(page)).toContainText(`${played.length} per night`);
-		await expect(stats(page)).toContainText(`Time in games${duration(minutes)}`);
-		await expect(stats(page)).toContainText(`${duration(minutes)} per night`);
-		await expect(stats(page)).toContainText(`Average table${attendees.length}players per night`);
+		await expect(stats(page)).toContainText(
+			`Game nights1Games played${played.length}${played.length} per nightTime in games${duration(minutes)}${duration(minutes)} per nightAverage table${attendees.length}players per night`,
+		);
 	});
 
 	test("ranks the night winners", async ({ page }) => {
@@ -541,12 +544,8 @@ test.describe("statistics", () => {
 		await expect(dot).toBeVisible();
 	});
 
-	test("shows the records of the season", async ({ page, request }) => {
+	test("shows the records of the season", async ({ page }) => {
 		const card = page.getByRole("region", { name: "Records" });
-		const { sessions: logged } = await api(request, "get", `/api/gamenight/${pastNightId}`);
-		const lastEnd = Math.max(
-			...logged.map((x: { start: string; minutes: number }) => new Date(x.start).getTime() + x.minutes * 60_000),
-		);
 		const ends = played.map((x) => x.start.getTime() + x.minutes * 60_000);
 		const starts = played.map((x) => x.start.getTime());
 		const span = Math.round((Math.max(...ends) - Math.min(...starts)) / 60_000);
@@ -557,7 +556,7 @@ test.describe("statistics", () => {
 		await expect(card).toContainText(`first game start to last game end · ${night}`);
 		await expect(card).toContainText(`Most games in one night${played.length}${night}`);
 		await expect(card).toContainText(`Biggest table${attendees.length}${night}`);
-		await expect(card).toContainText(`Latest finish${displayTime(new Date(lastEnd))}`);
+		await expect(card).toContainText(`Latest finish${displayTime(new Date(Math.max(...ends)))}`);
 		await expect(card).toContainText(`${pastGameNight.title} · ${last.game}, ${duration(last.minutes)}`);
 	});
 
@@ -569,7 +568,7 @@ test.describe("statistics", () => {
 		await expect(page.getByRole("button", { name: "Last 12 months" })).toHaveAttribute("aria-pressed", "true");
 		await expect(page).toHaveURL(/period=/);
 		expect(new URL(page.url()).searchParams.get("period")).toBe(new URL(response.url()).searchParams.get("period"));
-		await expect(stats(page)).toContainText(`Games played${played.length}`);
+		await expect(stats(page)).toContainText(`Games played${played.length}${played.length} per night`);
 	});
 
 	test("opens straight on the statistics after a reload", async ({ page }) => {
@@ -627,4 +626,11 @@ test.describe("statistics in other states", () => {
 			"Nobody was marked at the table yet.",
 		);
 	});
+});
+
+test("ignores an unknown view in the address", async ({ page }) => {
+	await page.goto("/game-nights?view=bogus");
+
+	test.fail(true, "BUG: /game-nights?view=bogus fails the search schema and lands on the generic error page");
+	await expect(cards(page)).toHaveCount(gameNights.length, { timeout: 3_000 });
 });

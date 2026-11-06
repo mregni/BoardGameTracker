@@ -5,7 +5,7 @@ export const test = base.extend<{ guestPage: Page }>({
 	guestPage: async ({ browser, allowedApiStatuses }, use, testInfo) => {
 		const { baseURL, locale, timezoneId, viewport } = testInfo.project.use;
 		const context = await browser.newContext({ baseURL, locale, timezoneId, viewport });
-		await useWatchedPage(context, allowedApiStatuses, use);
+		await useWatchedPage(context, allowedApiStatuses, use, [401]);
 		await context.close();
 	},
 });

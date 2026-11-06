@@ -1,7 +1,7 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 import { expect, test } from "../support/fixtures";
-import { duration } from "../support/format";
-import { api, createNight, displayTime, gameId, openNight, playerId, removeCreatedNights } from "../support/gameNights";
+import { duration, whole } from "../support/format";
+import { api, createNight, displayTime, gameId, openNight, playerId, removeCreatedData } from "../support/gameNights";
 import {
 	coopGame,
 	expected,
@@ -24,7 +24,7 @@ const mixedCoop = "City of the Great Machine";
 const toolTip = "Finish or discard the running games first";
 
 test.afterEach(async ({ request }) => {
-	await removeCreatedNights(request);
+	await removeCreatedData(request);
 });
 
 const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60_000);
@@ -97,15 +97,15 @@ const logSession = async (page: Page, game: string, scores: Record<string, numbe
 
 test.describe("a night in progress before any game", () => {
 	test("gets its own section on the list with a start button", async ({ page, request }) => {
-		const id = await liveNight(request);
+		const startDate = minutesAgo(5);
+		const id = await liveNight(request, startDate);
 		await page.goto("/game-nights");
 		const live = page.getByRole("region", { name: "Playing now" });
 		const card = live.getByTestId("game-night-card");
 
 		await expect(card).toHaveCount(1);
 		await expect(card.getByRole("link", { name: title })).toHaveAttribute("href", `/game-nights/${id}`);
-		const { gameNight } = await api(request, "get", `/api/gamenight/${id}`);
-		await expect(card).toContainText(`Playing since ${displayTime(new Date(gameNight.startDate))}`);
+		await expect(card).toContainText(`Playing since ${displayTime(startDate)}`);
 		await expect(card).toContainText("3 of 4 coming");
 		await expect(card.getByRole("button", { name: "Manage RSVPs" })).toHaveCount(0);
 		await expect(card.getByRole("button", { name: "Copy invite link" })).toHaveCount(0);
@@ -138,7 +138,7 @@ test.describe("a night in progress before any game", () => {
 		await expect(card).toContainText("Tonight · playing now");
 		await expect(card.getByRole("heading", { name: title })).toBeVisible();
 		await expect(card).toContainText(`${cafe} · host ${linkedPlayer}`);
-		await expect(card).toContainText("3 coming");
+		await expect(card).toContainText(whole("3 coming"));
 		await expect(card).toContainText("1 no answer");
 		await expect(card.getByRole("link", { name: planned })).toHaveAttribute("href", `/games/${gameId(planned)}`);
 		await expect(card.getByRole("link", { name: "Open night" })).toHaveAttribute("href", `/game-nights/${id}`);
@@ -208,10 +208,15 @@ test.describe("a night in progress before any game", () => {
 		const dialog = page.getByRole("dialog", { name: "Who's here?" });
 		await dialog.getByRole("button", { name: new RegExp(`^${absent} `) }).click();
 		await dialog.getByRole("button", { name: "Cancel" }).click();
+		await expect(dialog).toBeHidden();
+		await page.reload();
 
 		await expect(
-			page.getByRole("region", { name: "Expected players" }).getByRole("button", { name: absent }),
-		).toHaveCount(0);
+			page
+				.getByRole("region", { name: "Expected players" })
+				.getByRole("button")
+				.filter({ has: page.getByRole("img") }),
+		).toHaveText([linkedPlayer, guest, third]);
 	});
 });
 
@@ -368,6 +373,7 @@ test.describe("a running game", () => {
 		expect((await api(request, "get", `/api/gamenight/${id}`)).sessions).toEqual([]);
 
 		await page.goto("/game-nights");
+		await expect(page.getByRole("region", { name: "Playing now" })).toContainText(title);
 		await expect(page.getByRole("region", { name: "Playing now" })).not.toContainText("on the table");
 	});
 
@@ -449,7 +455,7 @@ test.describe("a running game", () => {
 		await expect(row).toContainText(duration(minutes));
 		await expect(row.getByRole("img", { name: "won", exact: true })).toHaveCount(1);
 
-		await expect(main(page)).toContainText("Games played1");
+		await expect(main(page)).toContainText(/Games played1\D/);
 		await expect(main(page)).toContainText(`Time in games${duration(minutes)}`);
 		await expect(main(page)).toContainText(`Leading tonight${guest}`);
 		await expect(main(page)).toContainText("1 of 1 games won");
@@ -676,7 +682,7 @@ test.describe("logging a session directly", () => {
 		await expect(playedRows(page).nth(0)).toContainText(duration(game.maxPlayTime));
 		await expect(playedRows(page).nth(1)).toContainText(`#1`);
 		await expect(playedRows(page).nth(1)).toContainText(planned);
-		await expect(main(page)).toContainText("Games played2");
+		await expect(main(page)).toContainText(/Games played2\D/);
 		await expect(main(page)).toContainText(`Leading tonight${linkedPlayer}, ${guest}`);
 		await expect(main(page)).toContainText("1 of 2 games won");
 
@@ -779,7 +785,7 @@ test.describe("ending and reopening", () => {
 		await expect(page.getByRole("region", { name: "Next game night" })).toContainText(firstNight.title);
 
 		await page.goto("/game-nights?view=stats");
-		await expect(page.getByRole("main")).toContainText("Game nights2");
+		await expect(page.getByRole("main")).toContainText(/Game nights2\D/);
 
 		await openNight(page, title, id);
 		await main(page).getByRole("button", { name: "Reopen night" }).click();
@@ -794,7 +800,6 @@ test.describe("ending and reopening", () => {
 	});
 
 	test("does not tell you to start a game on an ended night", async ({ page, request }) => {
-		test.fail(true, "BUG: an ended night without sessions still says: Tap “Start a game” when a game begins");
 		await openLive(page, request);
 
 		await main(page).getByRole("button", { name: "End night" }).click();
@@ -802,9 +807,11 @@ test.describe("ending and reopening", () => {
 
 		await expect(page.getByText("Game night ended")).toBeVisible();
 		await expect(main(page).getByRole("button", { name: "Start a game" })).toHaveCount(0);
-		await expect(page.getByRole("region", { name: "Played", exact: true })).not.toContainText("Start a game", {
-			timeout: 3_000,
-		});
+		test.fail(true, "BUG: an ended night without sessions still says: Tap “Start a game” when a game begins");
+		await expect(page.getByRole("region", { name: "Played", exact: true })).not.toContainText(
+			/Start a game|Log session/,
+			{ timeout: 3_000 },
+		);
 	});
 
 	test("lists an empty ended night as nothing logged", async ({ page, request }) => {
@@ -909,9 +916,43 @@ test.describe("deleting a night in use", () => {
 		await expect(page).toHaveURL("/game-nights");
 
 		const kept = await api(request, "get", `/api/session/${session.id}`);
-		expect(kept.gameNightId).toBeNull();
 		await api(request, "delete", `/api/session/${session.id}`);
+		expect(kept.gameNightId).toBeNull();
 	});
+});
+
+test("takes a deleted player out of the night and the running game", async ({ page, request }) => {
+	const name = "Sweetums";
+	const { id: playerToDelete } = await api(request, "post", "/api/player", { name, image: null });
+	const { id } = await api(request, "post", "/api/gamenight", {
+		title,
+		notes: "",
+		startDate: minutesAgo(5).toISOString(),
+		hostId: playerId(linkedPlayer),
+		locationId: 2,
+		suggestedGameIds: [],
+		invitedPlayerIds: [playerToDelete, playerId(guest)],
+	});
+	const { gameNight } = await api(request, "get", `/api/gamenight/${id}`);
+	for (const rsvp of gameNight.invitedPlayers as { id: number; playerId: number }[]) {
+		await api(request, "put", "/api/gamenight/rsvp", {
+			id: rsvp.id,
+			gameNightId: id,
+			playerId: rsvp.playerId,
+			state: "accepted",
+		});
+	}
+	await openNight(page, title, id);
+	await startGame(page, planned);
+	await expect(runningCard(page, planned)).toContainText(name);
+
+	await api(request, "delete", `/api/player/${playerToDelete}`);
+	await page.reload();
+
+	await expect(runningCard(page, planned)).toContainText(`${linkedPlayer}, ${guest}`);
+	await expect(runningCard(page, planned)).not.toContainText(name);
+	await expect(page.getByRole("region", { name: "At the table" })).toContainText(guest);
+	await expect(page.getByRole("region", { name: "At the table" })).not.toContainText(name);
 });
 
 test.describe("other roles", () => {
@@ -945,6 +986,7 @@ test.describe("other roles", () => {
 
 		await readerPage.goto(`/game-nights/${id}?start=true`);
 		await expect(runningCard(readerPage, planned)).toBeVisible();
+		await expect(readerPage).toHaveURL(`/game-nights/${id}`);
 		await expect(readerPage.getByRole("dialog")).toHaveCount(0);
 	});
 

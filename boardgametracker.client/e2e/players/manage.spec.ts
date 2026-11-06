@@ -1,12 +1,17 @@
 import path from "node:path";
 import type { Page } from "@playwright/test";
 import { apiFor } from "../support/api";
-import { expect, test } from "../support/fixtures";
+import { credentials, expect, test } from "../support/fixtures";
+import { api, removeCreatedData } from "../support/gameNights";
 import { playerId } from "../support/playerStats";
 import { expected, games, linkedPlayer, loans, mostPlayedGame, players } from "../support/seedData";
 import { expectingFailures } from "../support/settings";
 
 const count = (total: number) => `${total} players`;
+
+test.afterEach(async ({ request }) => {
+	await removeCreatedData(request);
+});
 
 const addPlayer = async (page: Page, name: string, email = "") => {
 	await page.goto("/players/new");
@@ -101,8 +106,6 @@ test("shows a player without sessions as an invitation", async ({ page, readerPa
 	await page.goto(`/players/${id}`);
 	await main.getByRole("button", { name: "Log a session" }).click();
 	await expect(page).toHaveURL(`/sessions/new?player=${id}`);
-
-	await deletePlayer(page, id);
 });
 
 test("stores an uploaded picture and removes it again", async ({ page }) => {
@@ -119,7 +122,6 @@ test("stores an uploaded picture and removes it again", async ({ page }) => {
 	await expect
 		.poll(() => portrait.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0))
 		.toBe(true);
-	const id = Number(new URL(page.url()).pathname.split("/").pop());
 
 	const dialog = await openEdit(page);
 	await dialog.getByRole("img", { name }).hover({ force: true });
@@ -128,15 +130,13 @@ test("stores an uploaded picture and removes it again", async ({ page }) => {
 
 	await expect(dialog).toBeHidden();
 	await expect(page.getByRole("main").getByRole("complementary")).toHaveCount(0);
-
-	await deletePlayer(page, id);
 });
 
 test("edits the name and email of a player", async ({ page }) => {
 	const name = "Bunsen";
 	const renamed = "Dr. Bunsen";
 	const email = "bunsen@example.test";
-	const id = await addPlayer(page, name);
+	await addPlayer(page, name);
 
 	let dialog = await openEdit(page);
 	await expect(dialog.getByRole("textbox", { name: "Name" })).toHaveValue(name);
@@ -157,13 +157,11 @@ test("edits the name and email of a player", async ({ page }) => {
 
 	await page.goto("/players");
 	await expect(page.getByRole("region", { name: "Not played yet" }).getByRole("link", { name: renamed })).toBeVisible();
-
-	await deletePlayer(page, id);
 });
 
 test("keeps a player when editing is cancelled", async ({ page }) => {
 	const name = "Rizzo";
-	const id = await addPlayer(page, name);
+	await addPlayer(page, name);
 
 	const dialog = await openEdit(page);
 	await dialog.getByRole("textbox", { name: "Name" }).fill("Something else");
@@ -175,8 +173,6 @@ test("keeps a player when editing is cancelled", async ({ page }) => {
 	const reopened = await openEdit(page);
 	await expect(reopened.getByRole("textbox", { name: "Name" })).toHaveValue(name);
 	await reopened.getByRole("button", { name: "Cancel" }).click();
-
-	await deletePlayer(page, id);
 });
 
 test("refuses a player without a name or with a wrong email", async ({ page }) => {
@@ -202,7 +198,7 @@ test("refuses a player without a name or with a wrong email", async ({ page }) =
 
 test("refuses an edit without a name or with a wrong email", async ({ page }) => {
 	const name = "Crazy Harry";
-	const id = await addPlayer(page, name);
+	await addPlayer(page, name);
 	const dialog = await openEdit(page);
 
 	await dialog.getByRole("textbox", { name: "Name" }).fill("");
@@ -213,9 +209,6 @@ test("refuses an edit without a name or with a wrong email", async ({ page }) =>
 	await dialog.getByRole("textbox", { name: "Email" }).fill("no-email");
 	await dialog.getByRole("button", { name: "Save" }).click();
 	await expect(dialog.getByText("Enter a valid email address")).toBeVisible();
-
-	await dialog.getByRole("button", { name: "Cancel" }).click();
-	await deletePlayer(page, id);
 });
 
 test("leaves the new player page without saving", async ({ page }) => {
@@ -253,15 +246,13 @@ test.describe("refused by the server", () => {
 	});
 
 	expectingFailures("refuses renaming to a name that is taken", async ({ page }) => {
-		const id = await addPlayer(page, "Lew Zealand");
+		await addPlayer(page, "Lew Zealand");
 		const dialog = await openEdit(page);
 
 		await dialog.getByRole("textbox", { name: "Name" }).fill(linkedPlayer);
 		await dialog.getByRole("button", { name: "Save" }).click();
 
 		await expect(page.getByText("A player with this name already exists")).toBeVisible();
-		await dialog.getByRole("button", { name: "Cancel" }).click();
-		await deletePlayer(page, id);
 	});
 
 	test("keeps the host of a game night", async ({ page }) => {
@@ -326,6 +317,7 @@ test("deletes a player with a loan", async ({ page }) => {
 
 	await expect(page.getByText("Player deleted")).toBeVisible();
 	await page.goto("/loans");
+	await expect(page.getByRole("main")).toContainText(loans[0].game);
 	await expect(page.getByRole("main")).not.toContainText(name);
 });
 
@@ -349,15 +341,14 @@ test("deletes a session and updates the player", async ({ page }) => {
 		page
 			.getByRole("term")
 			.filter({ hasText: /^Sessions$/ })
-			.locator("xpath=.."),
-	).toContainText("1");
+			.locator("xpath=..")
+			.getByRole("definition"),
+	).toHaveText("1");
 	await expect(page.getByRole("link", { name: mostPlayedGame.title }).first()).toBeVisible();
-
-	await deletePlayer(page, id);
 });
 
 test("links an account to a player and removes the link", async ({ page }) => {
-	const id = await addPlayer(page, "Beauregard");
+	await addPlayer(page, "Beauregard");
 	const account = () => page.getByRole("combobox", { name: "Linked account" });
 
 	let dialog = await openEdit(page);
@@ -385,8 +376,31 @@ test("links an account to a player and removes the link", async ({ page }) => {
 	await openEdit(page);
 	await expect(account()).toHaveText(/Not linked/);
 	await page.getByRole("dialog").getByRole("button", { name: "Cancel" }).click();
+});
 
-	await deletePlayer(page, id);
+test.describe("moving an account link", () => {
+	test.afterEach(async ({ request }) => {
+		const users: { id: string; username: string }[] = await api(request, "get", "/api/admin/users");
+		const admin = users.find((user) => user.username === credentials.username);
+		await api(request, "put", `/api/admin/players/${playerId(linkedPlayer)}/account`, { userId: admin?.id });
+	});
+
+	test("takes the account away from the player who had it", async ({ page }) => {
+		const name = "Sweetums";
+		await addPlayer(page, name);
+		const dialog = await openEdit(page);
+
+		await pickAccount(page, "admin (Administrator)");
+		await dialog.getByRole("button", { name: "Save" }).click();
+		await expect(dialog).toBeHidden();
+
+		await page.goto("/");
+		await expect(page.getByRole("heading", { name: `Welcome back, ${name}`, level: 1 })).toBeVisible();
+
+		await page.goto(`/players/${playerId(linkedPlayer)}`);
+		await openEdit(page);
+		await expect(page.getByRole("combobox", { name: "Linked account" })).toHaveText(/Not linked/);
+	});
 });
 
 test("shows a user the linked account without a choice", async ({ writerPage }) => {

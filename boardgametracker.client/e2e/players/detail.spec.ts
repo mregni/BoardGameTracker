@@ -3,10 +3,8 @@ import { expect, expectVisibleImagesToLoad, test } from "../support/fixtures";
 import { displayDate, duration } from "../support/format";
 import {
 	FEAT_DESCRIPTION,
-	FEAT_TYPES,
 	featsOf,
 	gameId,
-	MILESTONE_TYPES,
 	milestonesOf,
 	percent,
 	playerId,
@@ -148,22 +146,23 @@ for (const name of players) {
 		});
 
 		test("shows the earned milestones with the next goal", async ({ page }) => {
-			for (const milestone of milestonesOf(stats).filter((x) => x.earned > 0)) {
+			const earned = milestonesOf(stats).filter((x) => x.earned > 0);
+
+			await expect(milestones(page)).toHaveCount(earned.length);
+			for (const milestone of earned) {
 				const tile = milestones(page).filter({ hasText: milestone.title });
 
 				await expect(tile).toContainText(milestone.goal);
 				await expect(tile).toContainText(`${milestone.earned} of 4 levels`);
 			}
-			for (const milestone of milestonesOf(stats).filter((x) => x.earned === 0)) {
-				await expect(milestones(page).filter({ hasText: milestone.title })).toHaveCount(0);
-			}
 		});
 
 		test("shows the earned feats and hides the others", async ({ page }) => {
-			for (const feat of featsOf(name)) {
-				await expect(feats(page).getByRole("button", { name: feat.title, exact: true })).toHaveCount(
-					feat.earned ? 1 : 0,
-				);
+			const earned = featsOf(name).filter((feat) => feat.earned);
+
+			await expect(feats(page)).toHaveCount(earned.length);
+			for (const feat of earned) {
+				await expect(feats(page).getByRole("button", { name: feat.title, exact: true })).toBeVisible();
 			}
 		});
 
@@ -177,18 +176,20 @@ for (const name of players) {
 }
 
 test("reveals and hides the locked achievements", async ({ page }) => {
+	const allMilestones = milestonesOf(statsOf(noCoopPlayer));
+	const allFeats = featsOf(noCoopPlayer);
+	const earnedFeats = allFeats.filter((feat) => feat.earned).length;
+	const earned = allMilestones.filter((milestone) => milestone.earned > 0).length + earnedFeats;
+	const locked = allMilestones.length + allFeats.length - earned;
 	await open(page, noCoopPlayer);
-	const earnedFeats = await feats(page).count();
-	const earned = (await milestones(page).count()) + earnedFeats;
-	const locked = MILESTONE_TYPES + FEAT_TYPES - earned;
 	const show = page.getByRole("button", { name: `Show ${locked} locked` });
 
 	await show.click();
 
-	await expect(milestones(page)).toHaveCount(MILESTONE_TYPES);
-	await expect(feats(page)).toHaveCount(FEAT_TYPES);
+	await expect(milestones(page)).toHaveCount(allMilestones.length);
+	await expect(feats(page)).toHaveCount(allFeats.length);
 	await expect(milestones(page).filter({ hasText: "Next: Play 5 solo sessions." })).toContainText("0 of 4 levels");
-	await expect(feats(page).getByRole("img", { name: /, Not earned yet$/ })).toHaveCount(FEAT_TYPES - earnedFeats);
+	await expect(feats(page).getByRole("img", { name: /, Not earned yet$/ })).toHaveCount(allFeats.length - earnedFeats);
 
 	await page.getByRole("button", { name: "Hide locked" }).click();
 
@@ -290,9 +291,16 @@ test.describe("a player that does not exist", () => {
 });
 
 test("treats a malformed player address as not found", async ({ page }) => {
-	test.fail(true, "BUG: /players/abc throws in the router and shows the generic error page");
 	await page.goto("/players/abc");
 
+	test.fail(true, "BUG: /players/abc throws in the router and shows the generic error page");
+	await expect(page.getByRole("heading", { name: "Player not found", level: 1 })).toBeVisible({ timeout: 2_000 });
+});
+
+test("treats an id with letters behind it as not found", async ({ page }) => {
+	await page.goto(`/players/${playerId(linkedPlayer)}abc`);
+
+	test.fail(true, "BUG: /players/1abc opens player 1 because the id is read with parseInt");
 	await expect(page.getByRole("heading", { name: "Player not found", level: 1 })).toBeVisible({ timeout: 2_000 });
 });
 

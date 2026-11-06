@@ -131,18 +131,18 @@ test("says when no player matches and offers to clear the filter", async ({ page
 });
 
 test("ignores an unknown sort in the address", async ({ page }) => {
-	test.fail(true, "BUG: /players?sort=wins crashes the page because the raw value survives validateSearch");
 	await page.goto("/players?sort=wins");
 
+	test.fail(true, "BUG: /players?sort=wins crashes the page because the raw value survives validateSearch");
 	await expect(page.getByRole("button", { name: "Recent" })).toHaveAttribute("aria-pressed", "true", {
 		timeout: 2_000,
 	});
 });
 
 test("treats a number in the address as a filter", async ({ page }) => {
-	test.fail(true, "BUG: /players?q=3 crashes the page because the router parses the value to a number");
 	await page.goto("/players?q=3");
 
+	test.fail(true, "BUG: /players?q=3 crashes the page because the router parses the value to a number");
 	await expect(page.getByText(`No players match “3”`)).toBeVisible({ timeout: 2_000 });
 });
 

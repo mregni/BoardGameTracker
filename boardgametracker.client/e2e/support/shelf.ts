@@ -20,6 +20,11 @@ export const shelfOf = (months: number) => {
 
 export const shelf = shelfOf(6);
 
+export const playedWithin = (months: number) => {
+	const cutoff = subMonths(new Date(), months);
+	return games.filter((game) => game.state === "owned" && lastPlayOf(game) >= cutoff);
+};
+
 export const isNeverPlayed = (game: SeedGame) => !lastPlayOf(game);
 
 export const nightOf = (game: SeedGame) => gameNights.find((night) => night.suggestedGames.includes(game.title));

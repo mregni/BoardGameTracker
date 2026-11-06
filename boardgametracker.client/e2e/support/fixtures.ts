@@ -53,6 +53,7 @@ export const useWatchedPage = async (
 	context: BrowserContext,
 	allowedApiStatuses: number[],
 	use: (page: Page) => Promise<void>,
+	allowedImageStatuses: number[] = [],
 ) => {
 	const page = await context.newPage();
 	const problems: string[] = [];
@@ -66,8 +67,10 @@ export const useWatchedPage = async (
 	});
 	page.on("response", (response) => {
 		const status = response.status();
-		const isApi = new URL(response.url()).pathname.startsWith("/api/");
-		if (status >= (isApi ? 400 : 500) && !allowedApiStatuses.includes(status)) {
+		const { pathname } = new URL(response.url());
+		const isBrokenImage = status >= 400 && pathname.startsWith("/images/") && !allowedImageStatuses.includes(status);
+		const isFailure = status >= (pathname.startsWith("/api/") ? 400 : 500) && !allowedApiStatuses.includes(status);
+		if (isBrokenImage || isFailure) {
 			problems.push(`${status} ${response.url()}`);
 		}
 	});

@@ -2,7 +2,7 @@ import type { APIRequestContext, Page } from "@playwright/test";
 import { differenceInCalendarDays } from "date-fns";
 import { credentials, expect, paceLogin } from "./fixtures";
 import { displayDate } from "./format";
-import { gameNights, games, linkedPlayer, locations, pastGameNight, players, sessions } from "./seedData";
+import { gameNights, games, linkedPlayer, locations, pastGameNight, players, seedTime, sessions } from "./seedData";
 
 type RsvpState = "accepted" | "maybe" | "pending" | "declined";
 
@@ -101,9 +101,6 @@ export const openNight = async (page: Page, title: string, id: number) => {
 	await expect(page.getByRole("heading", { name: title, level: 1 })).toBeVisible();
 };
 
-export const startOfNight = async (request: APIRequestContext, id: number) =>
-	new Date((await api(request, "get", `/api/gamenight/${id}`)).gameNight.startDate);
-
 export const scoreLine = (session: (typeof sessions)[number]) =>
 	[...session.scores]
 		.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
@@ -126,9 +123,15 @@ export const api = async (
 	path: string,
 	data?: unknown,
 ) => {
-	const response = await request[method](path, { data, headers: await authorization(request) });
-	expect(response.ok(), `${method} ${path}: ${await response.text()}`).toBe(true);
-	return response.status() === 204 ? null : response.json();
+	const send = async () => request[method](path, { data, headers: await authorization(request) });
+	let response = await send();
+	if (response.status() === 401) {
+		token = null;
+		response = await send();
+	}
+	const body = await response.text();
+	expect(response.ok(), `${method} ${path}: ${body}`).toBe(true);
+	return body ? JSON.parse(body) : null;
 };
 
 interface NightOptions {
@@ -170,5 +173,30 @@ export const removeCreatedNights = async (request: APIRequestContext) => {
 			await api(request, "delete", `/api/session/${session.id}`);
 		}
 		await api(request, "delete", `/api/gamenight/${night.id}`);
+	}
+};
+
+export const removeCreatedData = async (request: APIRequestContext) => {
+	await removeCreatedNights(request);
+	for (const [index, night] of gameNights.entries()) {
+		const { gameNight } = await api(request, "get", `/api/gamenight/${index + 1}`);
+		for (const game of gameNight.suggestedGames as { id: number; title: string }[]) {
+			if (night.suggestedGames.includes(game.title)) continue;
+			await api(request, "delete", `/api/gamenight/${index + 1}/suggestions/${game.id}`);
+		}
+	}
+	const allPlayers: { id: number; name: string }[] = await api(request, "get", "/api/player");
+	for (const player of allPlayers.filter((x) => !players.includes(x.name))) {
+		await api(request, "delete", `/api/player/${player.id}`);
+	}
+	const allGames: { id: number; title: string; lastPlayed: string | null }[] = await api(request, "get", "/api/game");
+	for (const game of allGames.filter((x) => gameId(x.title) === 0)) {
+		await api(request, "delete", `/api/game/${game.id}`);
+	}
+	for (const game of allGames.filter((x) => x.lastPlayed && new Date(x.lastPlayed) > seedTime)) {
+		const played: { id: number; start: string }[] = await api(request, "get", `/api/game/${game.id}/sessions`);
+		for (const session of played.filter((x) => new Date(x.start) > seedTime)) {
+			await api(request, "delete", `/api/session/${session.id}`);
+		}
 	}
 };

@@ -2,6 +2,7 @@ import type { Page } from "@playwright/test";
 import { apiFor } from "../support/api";
 import { expect, test } from "../support/fixtures";
 import { displayDate } from "../support/format";
+import { removeCreatedData } from "../support/gameNights";
 import { gameId, playerId } from "../support/playerStats";
 import { linkedPlayer } from "../support/seedData";
 import { adminRowText, inUnplayedOrder, nextNight, nightOf, shelf, shelfRow, shelfRows } from "../support/shelf";
@@ -10,6 +11,10 @@ const unplanned = inUnplayedOrder(shelf).filter((game) => !nightOf(game));
 const [game] = unplanned;
 const planned = shelf.filter(nightOf).length;
 const plannedDate = displayDate(nextNight.startDate);
+
+test.afterEach(async ({ request }) => {
+	await removeCreatedData(request);
+});
 
 const open = async (page: Page) => {
 	await page.goto("/shames");
