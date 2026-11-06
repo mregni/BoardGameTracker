@@ -23,6 +23,19 @@ describe("BgtDialogFooter", () => {
 		}
 	});
 
+	it("leaves no unhandled rejection when the server refuses the action", async () => {
+		const refused = { kind: "client", status: 400, message: "error.test.unknown", url: "/users/1" };
+		const unhandled = vi.fn();
+		process.on("unhandledRejection", unhandled);
+		renderWithTheme(<BgtDialogFooter confirmLabel="Delete" onConfirm={() => Promise.reject(refused)} />);
+
+		await userEvent.setup().click(screen.getByRole("button", { name: "Delete" }));
+		await new Promise((resolve) => setTimeout(resolve));
+		process.off("unhandledRejection", unhandled);
+
+		expect(unhandled).not.toHaveBeenCalled();
+	});
+
 	it("uses the cancel variant for cancel and primary for the action", () => {
 		renderWithTheme(<BgtDialogFooter onCancel={vi.fn()} confirmLabel="Save" />);
 
