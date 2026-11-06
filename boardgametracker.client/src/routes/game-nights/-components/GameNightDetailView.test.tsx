@@ -150,6 +150,16 @@ describe("GameNightDetailView", () => {
 		expect(props.onStart).toHaveBeenNthCalledWith(2, 7, [2]);
 	});
 
+	it("starts a planned game that was not played yet with the attendees who are free", async () => {
+		const user = userEvent.setup();
+		const props = renderView(buildDetail(tonight(), played()));
+
+		const planned = screen.getByRole("region", { name: "planned.title" });
+		await user.click(within(planned).getByRole("button", { name: "planned.start-game" }));
+
+		expect(props.onStart).toHaveBeenCalledWith(9, [2]);
+	});
+
 	it("starts with everyone who is coming when nothing runs yet", async () => {
 		const user = userEvent.setup();
 		const props = renderView(buildDetail(tonight(), [], false));
@@ -222,6 +232,7 @@ describe("GameNightDetailView", () => {
 		const planned = screen.getByRole("region", { name: "planned.title" });
 		expect(within(planned).getByText("planned.playing")).toBeInTheDocument();
 		expect(within(planned).queryByText("planned.played")).not.toBeInTheDocument();
+		expect(within(planned).getAllByRole("button", { name: "planned.start-game" })).toHaveLength(1);
 	});
 
 	it("shows the night winner and only keeps logging once the night is over by time", () => {
@@ -231,6 +242,7 @@ describe("GameNightDetailView", () => {
 		expect(screen.getByText("played.after")).toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "play.again-game" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "play.start.button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "planned.start-game" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "end.button" })).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "play.log.button" })).toBeInTheDocument();
 	});
@@ -253,6 +265,7 @@ describe("GameNightDetailView", () => {
 		renderView(buildDetail(tonight(), played()), false);
 
 		expect(screen.queryByRole("button", { name: "play.start.button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "planned.start-game" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "play.finish.button" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "table.edit" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("link")).not.toBeInTheDocument();
