@@ -67,7 +67,7 @@ export const GameNightDetailView = (props: Props) => {
 		.map((id) => players.find((player) => player.id === id))
 		.filter((player): player is Player => player !== undefined);
 	const playAgain = latestPlays(sessions);
-	const startWithAttendees = () => onStart(null, freePlayerIds(table.playerIds, runningGames));
+	const startWithAttendees = (gameId: number | null) => onStart(gameId, freePlayerIds(table.playerIds, runningGames));
 	const emptyPlayedText = () => {
 		if (isOver) return canWrite && isOverByTime ? t("played.empty-after") : t("played.empty-ended");
 		return canWrite ? t("played.empty") : t("played.empty-reader");
@@ -86,7 +86,7 @@ export const GameNightDetailView = (props: Props) => {
 				onDelete={onDelete}
 				onEnd={onEnd}
 				onReopen={onReopen}
-				onStart={startWithAttendees}
+				onStart={() => startWithAttendees(null)}
 				onLog={onLog}
 			/>
 
@@ -154,6 +154,7 @@ export const GameNightDetailView = (props: Props) => {
 						playingGameIds={runningGames.map((x) => x.gameId)}
 						canWrite={canWrite}
 						onEditAttendees={onEditAttendees}
+						onStartGame={canPlay && !isOver ? startWithAttendees : undefined}
 					/>
 				</div>
 			)}
