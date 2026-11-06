@@ -259,7 +259,7 @@ test("leads to the actions of a player", async ({ page }) => {
 test("preselects the player when logging a session", async ({ page }) => {
 	await open(page, linkedPlayer);
 
-	await page.getByRole("link", { name: "Log session" }).click();
+	await page.getByRole("main").getByRole("link", { name: "Log session" }).click();
 
 	await expect(page).toHaveURL(`/sessions/new?player=${playerId(linkedPlayer)}`);
 	await expect(page.getByRole("main").getByText(linkedPlayer, { exact: true })).toBeVisible();
