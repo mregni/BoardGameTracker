@@ -97,13 +97,13 @@ test("shows a player without sessions as an invitation", async ({ page, readerPa
 
 	await readerPage.goto(`/players/${id}`);
 	await expect(readerPage.getByRole("heading", { name: `No games logged with ${name} yet` })).toBeVisible();
-	await expect(readerPage.getByRole("main").getByRole("button", { name: "Log a session" })).toHaveCount(0);
+	await expect(readerPage.getByRole("main").getByRole("button", { name: "Log session" })).toHaveCount(0);
 
 	await page.goto(`/players/${id}/sessions`);
 	await expect(page.getByRole("table")).toContainText("No data yet");
 
 	await page.goto(`/players/${id}`);
-	await main.getByRole("button", { name: "Log a session" }).click();
+	await main.getByRole("button", { name: "Log session" }).click();
 	await expect(page).toHaveURL(`/sessions/new?player=${id}`);
 });
 
