@@ -30,7 +30,6 @@ type DialogCase = {
 	title: string;
 	footer: string[];
 	longerThanPhone?: boolean;
-	bug?: string;
 };
 
 const cases: DialogCase[] = [
@@ -172,7 +171,7 @@ const openDialog = async (page: Page, { path, opener, title }: DialogCase) => {
 };
 
 for (const dialogCase of cases) {
-	const { name, title, footer, bug } = dialogCase;
+	const { name, title, footer } = dialogCase;
 
 	test(`${name} fits a phone without sideways scrolling`, async ({ page }) => {
 		await page.setViewportSize(phone);
