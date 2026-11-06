@@ -5,10 +5,12 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -30,7 +32,7 @@ public class OidcProviderServiceTests : IDisposable
         _context = new MainDbContext(options);
 
         _loggerMock = new Mock<ILogger<OidcProviderService>>();
-        _secretProtector = new SecretProtector(new EphemeralDataProtectionProvider(), Mock.Of<ILogger<SecretProtector>>());
+        _secretProtector = new SecretProtector(new EphemeralDataProtectionProvider(), NullLogger<SecretProtector>.Instance);
         _service = new OidcProviderService(_context, _configurationsMock.Object, _secretProtector, _loggerMock.Object);
     }
 
@@ -38,6 +40,12 @@ public class OidcProviderServiceTests : IDisposable
     {
         _context.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _configurationsMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
     }
 
     #region GetAllAsync
@@ -48,6 +56,7 @@ public class OidcProviderServiceTests : IDisposable
         var result = await _service.GetAllAsync();
 
         result.Should().BeEmpty();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -62,6 +71,7 @@ public class OidcProviderServiceTests : IDisposable
         result.Should().HaveCount(2);
         result.Should().Contain(p => p.DisplayName == "Google");
         result.Should().Contain(p => p.DisplayName == "GitHub");
+        VerifyNoOtherCalls();
     }
 
     #endregion
@@ -77,8 +87,8 @@ public class OidcProviderServiceTests : IDisposable
 
         var result = await _service.GetByIdAsync(provider.Id);
 
-        result.Should().NotBeNull();
-        result.DisplayName.Should().Be("Google");
+        result.Should().BeSameAs(provider);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -88,6 +98,7 @@ public class OidcProviderServiceTests : IDisposable
 
         await act.Should().ThrowAsync<EntityNotFoundException>()
             .WithMessage("*OidcProvider*999*");
+        VerifyNoOtherCalls();
     }
 
     #endregion
@@ -119,6 +130,7 @@ public class OidcProviderServiceTests : IDisposable
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InsecureAuthority);
         (await _context.OidcProviders.CountAsync()).Should().Be(0);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -142,7 +154,6 @@ public class OidcProviderServiceTests : IDisposable
             iconUrl: null,
             buttonColor: null);
 
-        result.Should().NotBeNull();
         result.DisplayName.Should().Be("Google");
         result.Authority.Should().Be("https://accounts.google.com");
         result.ClientId.Should().Be("client-id");
@@ -151,8 +162,10 @@ public class OidcProviderServiceTests : IDisposable
         result.Scopes.Should().Be("openid profile email");
         result.AutoProvisionUsers.Should().BeTrue();
 
-        var stored = await _context.OidcProviders.FindAsync([result.Id], TestContext.Current.CancellationToken);
-        stored.Should().NotBeNull();
+        (await _context.OidcProviders.SingleAsync(TestContext.Current.CancellationToken)).Should().BeSameAs(result);
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google created");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -162,7 +175,8 @@ public class OidcProviderServiceTests : IDisposable
             null, "openid profile email", true, null, null, null, null, null, null, null, null, null, null);
 
         _configurationsMock.Verify(x => x.Invalidate("https://sso.example.com/application/o/bgt/"), Times.Once);
-        _configurationsMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Authentik created");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -191,6 +205,7 @@ public class OidcProviderServiceTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcProviderExists);
         (await _context.OidcProviders.CountAsync(TestContext.Current.CancellationToken)).Should().Be(1);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -223,6 +238,9 @@ public class OidcProviderServiceTests : IDisposable
         result.IconUrl.Should().Be("https://example.com/icon.png");
         result.ButtonColor.Should().Be("#ff0000");
         result.AutoProvisionUsers.Should().BeFalse();
+        _configurationsMock.Verify(x => x.Invalidate("https://idp.example.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Custom OIDC created");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -258,6 +276,9 @@ public class OidcProviderServiceTests : IDisposable
         result.PictureClaimType.Should().Be("picture");
         result.IconUrl.Should().BeNull();
         result.ButtonColor.Should().BeNull();
+        _configurationsMock.Verify(x => x.Invalidate("https://idp.example.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Minimal created");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -272,6 +293,9 @@ public class OidcProviderServiceTests : IDisposable
         result.RolesClaimType.Should().Be("roles");
         result.AdminGroupValue.Should().Be("bgt-admins");
         result.PictureClaimType.Should().Be("picture");
+        _configurationsMock.Verify(x => x.Invalidate("https://idp.example.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Minimal created");
+        VerifyNoOtherCalls();
     }
 
     #endregion
@@ -305,7 +329,6 @@ public class OidcProviderServiceTests : IDisposable
             iconUrl: null,
             buttonColor: null);
 
-        result.Should().NotBeNull();
         result.DisplayName.Should().Be("Google Updated");
         result.Authority.Should().Be("https://accounts.google.com/v2");
         result.ClientId.Should().Be("new-client-id");
@@ -316,9 +339,13 @@ public class OidcProviderServiceTests : IDisposable
         result.AutoProvisionUsers.Should().BeFalse();
 
         var stored = await _context.OidcProviders.FindAsync([provider.Id], TestContext.Current.CancellationToken);
-        stored.Should().NotBeNull();
         stored!.DisplayName.Should().Be("Google Updated");
         stored.ClientId.Should().Be("new-client-id");
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com/v2"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC provider Google now points at a different authority; 0 linked accounts must link it again");
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google Updated updated");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -332,6 +359,9 @@ public class OidcProviderServiceTests : IDisposable
         var result = await UpdateSecretAsync(provider.Id, null);
 
         _secretProtector.Unprotect(result.ClientSecret!).Should().Be("stored-secret");
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Exactly(4));
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google updated", Times.Exactly(2));
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -345,6 +375,9 @@ public class OidcProviderServiceTests : IDisposable
         var result = await UpdateSecretAsync(provider.Id, string.Empty);
 
         result.ClientSecret.Should().BeEmpty();
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Exactly(4));
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google updated", Times.Exactly(2));
+        VerifyNoOtherCalls();
     }
 
     private Task<OidcProvider> UpdateSecretAsync(int id, string? clientSecret) => _service.UpdateAsync(
@@ -392,6 +425,7 @@ public class OidcProviderServiceTests : IDisposable
 
         await act.Should().ThrowAsync<EntityNotFoundException>()
             .WithMessage("*OidcProvider*999*");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -422,6 +456,8 @@ public class OidcProviderServiceTests : IDisposable
             buttonColor: null);
 
         _configurationsMock.Verify(x => x.Invalidate("https://github.com"), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider GitHub Updated updated");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -459,6 +495,9 @@ public class OidcProviderServiceTests : IDisposable
         result.DisplayNameClaimType.Should().Be("name");
         result.IconUrl.Should().Be("https://example.com/icon.png");
         result.ButtonColor.Should().Be("#0000ff");
+        _configurationsMock.Verify(x => x.Invalidate("https://idp.example.com"), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Custom updated");
+        VerifyNoOtherCalls();
     }
 
     #endregion
@@ -476,6 +515,9 @@ public class OidcProviderServiceTests : IDisposable
 
         var stored = await _context.OidcProviders.FindAsync([provider.Id], TestContext.Current.CancellationToken);
         stored.Should().BeNull();
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google deleted with 0 associated external logins removed");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -485,6 +527,7 @@ public class OidcProviderServiceTests : IDisposable
 
         await act.Should().ThrowAsync<EntityNotFoundException>()
             .WithMessage("*OidcProvider*999*");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -501,6 +544,9 @@ public class OidcProviderServiceTests : IDisposable
         remaining.Should().HaveCount(1);
         remaining.Should().Contain(p => p.DisplayName == "GitHub");
         remaining.Should().NotContain(p => p.DisplayName == "Google");
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google deleted with 0 associated external logins removed");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -517,6 +563,9 @@ public class OidcProviderServiceTests : IDisposable
 
         var remainingLogins = await _context.ExternalLogins.ToListAsync(TestContext.Current.CancellationToken);
         remainingLogins.Should().ContainSingle(x => x.Provider == "other");
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google deleted with 2 associated external logins removed");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -532,6 +581,11 @@ public class OidcProviderServiceTests : IDisposable
 
         var remainingLogins = await _context.ExternalLogins.ToListAsync(TestContext.Current.CancellationToken);
         remainingLogins.Should().ContainSingle(x => x.Provider == "other");
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _configurationsMock.Verify(x => x.Invalidate("https://sso.example.com/realms/games"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC provider Google now points at a different authority; 1 linked accounts must link it again");
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google updated");
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -548,6 +602,14 @@ public class OidcProviderServiceTests : IDisposable
         await UpdateAuthorityAsync(provider.Id, authority);
 
         (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(1);
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Exactly(authority == "https://accounts.google.com" ? 2 : 1));
+        if (authority != "https://accounts.google.com")
+        {
+            _configurationsMock.Verify(x => x.Invalidate(authority), Times.Once);
+        }
+        
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google updated");
+        VerifyNoOtherCalls();
     }
 
     private Task<OidcProvider> UpdateAuthorityAsync(int id, string authority) => _service.UpdateAsync(
@@ -580,6 +642,8 @@ public class OidcProviderServiceTests : IDisposable
         await _service.DeleteAsync(provider.Id);
 
         _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google deleted with 0 associated external logins removed");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -599,6 +663,9 @@ public class OidcProviderServiceTests : IDisposable
         var logins = await _context.ExternalLogins.OrderBy(x => x.UserId).ToListAsync(TestContext.Current.CancellationToken);
         logins.Select(x => x.Provider).Should().Equal("Company login", "google", "other");
         logins[0].Issuer.Should().Be("https://accounts.google.com");
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Company login updated");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -613,6 +680,9 @@ public class OidcProviderServiceTests : IDisposable
         await _service.DeleteAsync(provider.Id);
 
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).UserId.Should().Be("user-2");
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google deleted with 1 associated external logins removed");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -629,6 +699,9 @@ public class OidcProviderServiceTests : IDisposable
         (await _context.OidcSessions.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
         _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
         _configurationsMock.Verify(x => x.Invalidate("https://sso.example.com/realms/games"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC provider Google now points at a different authority; 0 linked accounts must link it again");
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google updated");
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -640,6 +713,9 @@ public class OidcProviderServiceTests : IDisposable
             null, null, null, null, null, null, null, null, null, null, defaultRole);
 
         result.DefaultRole.Should().Be(expected);
+        _configurationsMock.Verify(x => x.Invalidate("https://sso.example.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Keycloak created");
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -652,6 +728,9 @@ public class OidcProviderServiceTests : IDisposable
 
         result.Enabled.Should().Be(enabled);
         (await _context.OidcProviders.SingleAsync(TestContext.Current.CancellationToken)).Enabled.Should().Be(enabled);
+        _configurationsMock.Verify(x => x.Invalidate("https://sso.example.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Keycloak created");
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -663,6 +742,7 @@ public class OidcProviderServiceTests : IDisposable
             null, null, null, null, null, null, null, null, null, null, defaultRole);
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidRole);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -678,6 +758,110 @@ public class OidcProviderServiceTests : IDisposable
             null, null, null, null, null, null, null, null, null, null);
 
         unchanged.DefaultRole.Should().Be("Reader");
+        _configurationsMock.Verify(x => x.Invalidate("https://sso.example.com"), Times.Exactly(4));
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Keycloak updated", Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldRejectAnInsecureAuthority_WithoutTouchingTheProvider()
+    {
+        var provider = new OidcProvider("Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var act = () => UpdateAuthorityAsync(provider.Id, "http://accounts.example.com");
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InsecureAuthority);
+        provider.Authority.Should().Be("https://accounts.google.com");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldRejectADefaultRoleOtherThanUserOrReader()
+    {
+        var provider = new OidcProvider("Keycloak", "https://sso.example.com", "bgt");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var act = () => _service.UpdateAsync(provider.Id, "Keycloak", "https://sso.example.com", "bgt", null, true, "openid", true,
+            null, null, null, null, null, null, null, null, null, null, "Admin");
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidRole);
+        provider.DefaultRole.Should().Be("User");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldStoreThePictureClaim()
+    {
+        var provider = new OidcProvider("Keycloak", "https://sso.example.com", "bgt");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await _service.UpdateAsync(provider.Id, "Keycloak", "https://sso.example.com", "bgt", null, true, "openid", true,
+            null, null, null, null, null, null, null, null, null, null, pictureClaimType: "avatar");
+
+        result.PictureClaimType.Should().Be("avatar");
+        _configurationsMock.Verify(x => x.Invalidate("https://sso.example.com"), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Keycloak updated");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldKeepTheSessionsOfOtherProviders_WhenTheAuthorityPointsElsewhere()
+    {
+        var provider = new OidcProvider("Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _context.OidcSessions.Add(new OidcSession("mine", "user-1", provider.Id, "token", DateTime.UtcNow.AddDays(1)));
+        _context.OidcSessions.Add(new OidcSession("other", "user-2", provider.Id + 1, "token", DateTime.UtcNow.AddDays(1)));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await UpdateAuthorityAsync(provider.Id, "https://sso.example.com/realms/games");
+
+        (await _context.OidcSessions.SingleAsync(TestContext.Current.CancellationToken)).KeyHash.Should().Be("other");
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _configurationsMock.Verify(x => x.Invalidate("https://sso.example.com/realms/games"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC provider Google now points at a different authority; 0 linked accounts must link it again");
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google updated");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldKeepTheSessions_WhenTheAuthorityIsUnchanged()
+    {
+        var provider = new OidcProvider("Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _context.OidcSessions.Add(new OidcSession("mine", "user-1", provider.Id, "token", DateTime.UtcNow.AddDays(1)));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await UpdateAuthorityAsync(provider.Id, "https://accounts.google.com/");
+
+        (await _context.OidcSessions.CountAsync(TestContext.Current.CancellationToken)).Should().Be(1);
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com/"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google updated");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ShouldRemoveTheSessionsOfTheProviderOnly()
+    {
+        var provider = new OidcProvider("Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _context.OidcSessions.Add(new OidcSession("mine", "user-1", provider.Id, "token", DateTime.UtcNow.AddDays(1)));
+        _context.OidcSessions.Add(new OidcSession("other", "user-2", provider.Id + 1, "token", DateTime.UtcNow.AddDays(1)));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _service.DeleteAsync(provider.Id);
+
+        (await _context.OidcSessions.SingleAsync(TestContext.Current.CancellationToken)).KeyHash.Should().Be("other");
+        _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Google deleted with 0 associated external logins removed");
+        VerifyNoOtherCalls();
     }
 
     #endregion
