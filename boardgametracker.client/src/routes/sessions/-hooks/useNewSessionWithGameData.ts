@@ -39,6 +39,8 @@ export const useNewSessionWithGameData = ({ gameId, onSuccess }: Props) => {
 	return {
 		game,
 		isLoading: gameQuery.isLoading,
+		error: gameQuery.error,
+		retry: () => void gameQuery.refetch(),
 		isPending: saveSessionMutation.isPending,
 		saveSession: saveSessionMutation.mutateAsync,
 	};
