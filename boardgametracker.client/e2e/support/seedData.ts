@@ -3,7 +3,8 @@ import type { components } from "../../src/models/api.generated";
 
 type GameState = components["schemas"]["GameState"];
 
-const now = new Date();
+export const seedTime = new Date(process.env.E2E_SEED_TIME ?? Date.now());
+const now = seedTime;
 
 const collection = [
 	{
@@ -403,6 +404,7 @@ const collection = [
 const titles = collection.map((game) => game.title);
 
 const PLAYED_GAMES = 14;
+const PAST_GAME_NIGHT = "Season opener";
 const COOP_GAME = "Mythwind";
 const MIXED_COOP_GAME = "City of the Great Machine";
 const UNSCORED_GAME = "Kittens in Space";
@@ -479,6 +481,7 @@ interface SeedSession {
 	location: string;
 	scores: { player: string; score: number | null }[];
 	winner: string | null;
+	gameNight?: string;
 	isCoop: boolean;
 	teamWon: boolean | null;
 }
@@ -498,6 +501,7 @@ const competitiveSessions = playedGameIndexes.map((gameIndex, sessionIndex): See
 		location: locations[sessionIndex % locations.length],
 		scores,
 		winner: winner.player,
+		gameNight: sessionIndex === 3 || sessionIndex === 4 ? PAST_GAME_NIGHT : undefined,
 		isCoop: false,
 		teamWon: null,
 	};
@@ -541,6 +545,20 @@ const unscoredSessions = [0, 1, 2].map(
 );
 
 export const sessions = [...competitiveSessions, ...coopSessions, ...unscoredSessions];
+
+export const pastGameNight = {
+	title: PAST_GAME_NIGHT,
+	startDate: subDays(now, 42),
+	location: locations[2],
+	suggestedGames: [titles[0]],
+	attendees: players.slice(0, 4),
+};
+
+export const loans = [
+	{ game: "Redwood", player: players[1], loanDate: subDays(now, 20), dueDate: subDays(now, -10), returned: false },
+	{ game: "Moon", player: players[3], loanDate: subDays(now, 45), dueDate: subDays(now, 5), returned: false },
+	{ game: "Botany", player: players[2], loanDate: subDays(now, 60), dueDate: null, returned: true },
+];
 
 export const gameNights = [
 	{

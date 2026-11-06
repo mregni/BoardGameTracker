@@ -1,6 +1,6 @@
 var e2e = args.Contains("--e2e");
-var backendPort = e2e ? 6654 : 6554;
-var clientPort = e2e ? 5543 : 5443;
+var backendPort = e2e ? PortFrom("E2E_BACKEND_PORT", 6654) : 6554;
+var clientPort = e2e ? PortFrom("E2E_CLIENT_PORT", 5543) : 5443;
 
 var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions { Args = args, DisableDashboard = e2e });
 
@@ -126,3 +126,6 @@ if (e2e)
 }
 
 await builder.Build().RunAsync();
+
+static int PortFrom(string name, int fallback) =>
+    int.TryParse(Environment.GetEnvironmentVariable(name), out var port) ? port : fallback;

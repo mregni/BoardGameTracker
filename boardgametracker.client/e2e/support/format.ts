@@ -5,6 +5,8 @@ export const duration = (minutes: number) => {
 	return rest === 0 ? `${hours}h` : `${hours}h ${rest}m`;
 };
 
+export const whole = (text: string) => new RegExp(`(?<!\\d)${text}(?! \\d+m)`);
+
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
 	timeZone: "Europe/Brussels",
 	day: "2-digit",
