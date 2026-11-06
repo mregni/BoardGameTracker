@@ -25,6 +25,7 @@ public class ConfigRepositoryTests : IDisposable
     private static readonly string[] Keys = [StringKey, IntKey, BoolKey];
 
     private readonly MainDbContext _context;
+    private readonly Mock<ILogger<ConfigRepository>> _loggerMock = new();
     private readonly ConfigRepository _repository;
     private readonly Dictionary<string, string?> _originalEnvironmentVariables = new();
 
@@ -34,7 +35,7 @@ public class ConfigRepositoryTests : IDisposable
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         _context = new MainDbContext(options);
-        _repository = new ConfigRepository(_context, Mock.Of<ILogger<ConfigRepository>>());
+        _repository = new ConfigRepository(_context, _loggerMock.Object);
 
         foreach (var key in Keys)
         {
@@ -54,6 +55,11 @@ public class ConfigRepositoryTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+    private void VerifyNoOtherCalls()
+    {
+        _loggerMock.VerifyNoOtherCalls();
+    }
+
     private async Task SeedAsync(params (string Key, string Value)[] entries)
     {
         foreach (var entry in entries)
@@ -71,6 +77,7 @@ public class ConfigRepositoryTests : IDisposable
         var result = await _repository.GetConfigValueAsync<string>(StringKey);
 
         result.Should().Be("from-db");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -82,6 +89,7 @@ public class ConfigRepositoryTests : IDisposable
         var result = await _repository.GetConfigValueAsync<string>(StringKey);
 
         result.Should().Be("from-env");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -92,6 +100,7 @@ public class ConfigRepositoryTests : IDisposable
         var result = await _repository.GetConfigValueAsync<int>(IntKey);
 
         result.Should().Be(42);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -105,6 +114,7 @@ public class ConfigRepositoryTests : IDisposable
         var result = await _repository.GetConfigValueAsync<string>(StringKey);
 
         result.Should().Be("from-db");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -116,6 +126,8 @@ public class ConfigRepositoryTests : IDisposable
         var result = await _repository.GetConfigValueAsync<int>(IntKey);
 
         result.Should().Be(42);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Environment variable CONFIG_REPOSITORY_INT_KEY has a value that cannot be read as Int32; using the stored setting instead");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -125,6 +137,7 @@ public class ConfigRepositoryTests : IDisposable
 
         var exception = await act.Should().ThrowAsync<ConfigMissingException>();
         exception.Which.ConfigKey.Should().Be(StringKey);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -136,6 +149,7 @@ public class ConfigRepositoryTests : IDisposable
 
         var exception = await act.Should().ThrowAsync<ConfigMissingException>();
         exception.Which.ConfigKey.Should().Be(BoolKey);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -146,6 +160,7 @@ public class ConfigRepositoryTests : IDisposable
         var result = await _repository.GetConfigValueAsync<string>(StringKey.ToUpperInvariant());
 
         result.Should().Be("from-db");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -156,6 +171,7 @@ public class ConfigRepositoryTests : IDisposable
         var result = await _repository.GetConfigValueAsync<bool>(BoolKey);
 
         result.Should().BeTrue();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -168,6 +184,7 @@ public class ConfigRepositoryTests : IDisposable
         result.Should().HaveCount(2);
         result[StringKey].Should().Be("a");
         result[IntKey].Should().Be("1");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -176,6 +193,7 @@ public class ConfigRepositoryTests : IDisposable
         var result = await _repository.GetAllConfigsAsync();
 
         result.Should().BeEmpty();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -187,6 +205,7 @@ public class ConfigRepositoryTests : IDisposable
 
         result.Should().HaveCount(2);
         result.Keys.Should().BeEquivalentTo(["ai_provider", "ai_base_url"]);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -197,6 +216,7 @@ public class ConfigRepositoryTests : IDisposable
         var result = await _repository.GetConfigsByPrefixAsync("ai_");
 
         result.Should().BeEmpty();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -209,6 +229,7 @@ public class ConfigRepositoryTests : IDisposable
         var stored = await _context.Config.ToListAsync();
         stored.Should().HaveCount(2);
         stored.Select(c => c.Key).Should().BeEquivalentTo([StringKey, IntKey]);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -223,6 +244,7 @@ public class ConfigRepositoryTests : IDisposable
         stored.Should().HaveCount(2);
         stored[StringKey].Should().Be("existing");
         stored[IntKey].Should().Be("1");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -235,6 +257,7 @@ public class ConfigRepositoryTests : IDisposable
         var stored = await _context.Config.ToListAsync();
         stored.Should().ContainSingle();
         stored[0].Value.Should().Be("existing");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -247,6 +270,7 @@ public class ConfigRepositoryTests : IDisposable
         var stored = await _context.Config.ToListAsync();
         stored.Should().ContainSingle();
         stored[0].Value.Should().Be("existing");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -255,5 +279,72 @@ public class ConfigRepositoryTests : IDisposable
         await _repository.SeedConfigAsync([]);
 
         (await _context.Config.CountAsync()).Should().Be(0);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetConfigValueOrDefaultAsync_ShouldReturnTheStoredValue_WhenItExists()
+    {
+        await SeedAsync((IntKey, "42"));
+
+        var result = await _repository.GetConfigValueOrDefaultAsync(IntKey, 7);
+
+        result.Should().Be(42);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetConfigValueOrDefaultAsync_ShouldReturnTheFallback_WhenTheKeyIsMissing()
+    {
+        var result = await _repository.GetConfigValueOrDefaultAsync(IntKey, 7);
+
+        result.Should().Be(7);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetConfigValueOrDefaultAsync_ShouldReturnTheFallback_WhenTheStoredValueCannotBeConverted()
+    {
+        await SeedAsync((IntKey, "not-a-number"));
+
+        var result = await _repository.GetConfigValueOrDefaultAsync(IntKey, 7);
+
+        result.Should().Be(7);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetConfigValueOrDefaultAsync_ShouldPreferTheEnvironmentValue()
+    {
+        await SeedAsync((IntKey, "42"));
+        Environment.SetEnvironmentVariable(IntKey.ToUpperInvariant(), "9");
+
+        var result = await _repository.GetConfigValueOrDefaultAsync(IntKey, 7);
+
+        result.Should().Be(9);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task SeedConfigAsync_ShouldOnlyAddTheMissingDefaults()
+    {
+        await SeedAsync((StringKey, "existing"));
+
+        await _repository.SeedConfigAsync([new ConfigDefault(StringKey, "default"), new ConfigDefault(IntKey, "5")]);
+
+        var stored = await _context.Config.AsNoTracking().ToDictionaryAsync(x => x.Key, x => x.Value);
+        stored.Should().BeEquivalentTo(new Dictionary<string, string> { [StringKey] = "existing", [IntKey] = "5" });
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task SeedConfigAsync_ShouldStoreAKeyThatCanBeReadBack_WhenTheDefaultKeyIsUpperCase()
+    {
+        await _repository.SeedConfigAsync([new ConfigDefault(StringKey.ToUpperInvariant(), "default")]);
+
+        var result = await _repository.GetConfigValueAsync<string>(StringKey);
+
+        result.Should().Be("default");
+        VerifyNoOtherCalls();
     }
 }
