@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 	canWrite: true,
 	loans: [] as Loan[],
 	isLoading: false,
+	error: null as Error | null,
 	deleteLoan: vi.fn(() => Promise.resolve()),
 	returnLoans: vi.fn(() => Promise.resolve()),
 	updateLoan: vi.fn(() => Promise.resolve()),
@@ -44,6 +45,8 @@ vi.mock("@/routes/loans/-hooks/useLoans", () => ({
 		loans: mocks.loans,
 		settings: { dateFormat: "dd-MM-yyyy" },
 		isLoading: mocks.isLoading,
+		error: mocks.error,
+		retry: vi.fn(),
 		deleteLoan: mocks.deleteLoan,
 		returnLoans: mocks.returnLoans,
 		updateLoan: mocks.updateLoan,
@@ -188,6 +191,7 @@ describe("loans page", () => {
 		vi.setSystemTime(new Date(2026, 9, 11, 12, 0));
 		mocks.canWrite = true;
 		mocks.isLoading = false;
+		mocks.error = null;
 		mocks.loans = [open, returned, dueSoon, overdue];
 	});
 
@@ -201,6 +205,15 @@ describe("loans page", () => {
 		mocks.captured.config.loader({ context: { queryClient: { query } } });
 
 		expect(query).toHaveBeenCalledWith({ queryKey: ["loans"] });
+	});
+
+	it("shows the load error instead of the empty page when loading fails", () => {
+		mocks.error = new Error("failed");
+		mocks.loans = [];
+		renderPage();
+
+		expect(screen.queryByText("empty.title")).not.toBeInTheDocument();
+		expect(screen.getByText("load-failed")).toBeInTheDocument();
 	});
 
 	it("shows the loan statistics", () => {

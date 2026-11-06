@@ -68,6 +68,8 @@ export const useLoans = () => {
 
 	return {
 		isLoading,
+		error: loansQuery.error,
+		retry: () => loansQuery.refetch(),
 		loans,
 		settings,
 		deleteLoan,

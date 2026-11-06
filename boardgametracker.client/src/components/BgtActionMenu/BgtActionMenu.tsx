@@ -1,5 +1,5 @@
 import { cx } from "class-variance-authority";
-import { Fragment, type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
+import { Fragment, type KeyboardEvent, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Dots from "@/assets/icons/dots-horizontal.svg?react";
 
 export interface BgtActionMenuItem {
@@ -15,12 +15,26 @@ interface Props {
 
 export const BgtActionMenu = ({ label, items }: Props) => {
 	const [focusIndex, setFocusIndex] = useState<number | null>(null);
+	const [opensUp, setOpensUp] = useState(false);
 	const open = focusIndex !== null;
 	const rootRef = useRef<HTMLDivElement>(null);
 	const triggerRef = useRef<HTMLButtonElement>(null);
+	const menuRef = useRef<HTMLDivElement>(null);
 	const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 	const menuId = useId();
 	const firstDestructive = items.findIndex((item) => item.destructive);
+
+	useLayoutEffect(() => {
+		const menu = menuRef.current;
+		if (!open || !menu) {
+			setOpensUp(false);
+			return;
+		}
+		const { bottom, height } = menu.getBoundingClientRect();
+		const reservedBelow = Number.parseFloat(getComputedStyle(menu).scrollMarginBottom) || 0;
+		const hasRoomAbove = (rootRef.current?.getBoundingClientRect().top ?? 0) > height;
+		setOpensUp(bottom > window.innerHeight - reservedBelow && hasRoomAbove);
+	}, [open]);
 
 	useEffect(() => {
 		if (focusIndex !== null) itemRefs.current[focusIndex]?.focus();
@@ -93,11 +107,15 @@ export const BgtActionMenu = ({ label, items }: Props) => {
 			</button>
 			{open && (
 				<div
+					ref={menuRef}
 					id={menuId}
 					role="menu"
 					aria-label={label}
 					onKeyDown={handleMenuKey}
-					className="absolute right-0 z-30 mt-1 min-w-44 overflow-hidden rounded-lg border border-white/10 bg-background py-1 shadow-2xl"
+					className={cx(
+						"absolute right-0 z-30 min-w-44 scroll-mb-(--bottom-nav-h) overflow-hidden rounded-lg border border-white/10 bg-background py-1 shadow-2xl",
+						opensUp ? "bottom-full mb-1" : "mt-1",
+					)}
 				>
 					{items.map((item, index) => (
 						<Fragment key={item.label}>

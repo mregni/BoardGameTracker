@@ -45,7 +45,7 @@ export const Route = createFileRoute("/loans/")({
 function RouteComponent() {
 	const { t } = useTranslation(["loans", "common"]);
 	const { canWrite } = usePermissions();
-	const { loans, settings, deleteLoan, returnLoans, updateLoan, isLoading } = useLoans();
+	const { loans, settings, deleteLoan, returnLoans, updateLoan, isLoading, error, retry } = useLoans();
 	const { gameById } = useGameById();
 	const { playerById } = usePlayerById();
 	const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
@@ -142,7 +142,7 @@ function RouteComponent() {
 				})
 			: t("return.title", { game: returnTargets[0] ? gameTitle(returnTargets[0]) : "" });
 
-	if (!isLoading && loans.length === 0) {
+	if (!isLoading && !error && loans.length === 0) {
 		return (
 			<BgtEmptyPage
 				header={t("common:loans")}
@@ -174,7 +174,12 @@ function RouteComponent() {
 						: []
 				}
 			/>
-			<BgtPageContent isLoading={isLoading} data={{ loans, settings }}>
+			<BgtPageContent
+				isLoading={isLoading}
+				data={{ loans: error ? undefined : loans, settings }}
+				error={error}
+				onRetry={retry}
+			>
 				{({ settings }) => (
 					<>
 						<div className="hidden grid-cols-3 gap-3 sm:grid xl:gap-6">

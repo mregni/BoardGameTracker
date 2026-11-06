@@ -124,6 +124,16 @@ test("keeps a session when deleting is cancelled", async ({ page }) => {
 	await expect(rowsOf(page)).toHaveCount(played.length);
 });
 
+test.describe("a session that does not exist", () => {
+	test.use({ allowedApiStatuses: [401, 404] });
+
+	test("explains it instead of loading forever", async ({ page }) => {
+		await page.goto("/sessions/update/999999");
+
+		await expect(page.getByRole("main").getByRole("heading", { name: "Couldn't load this page" })).toBeVisible();
+	});
+});
+
 test.describe("a game that does not exist", () => {
 	test.use({ allowedApiStatuses: [401, 404] });
 

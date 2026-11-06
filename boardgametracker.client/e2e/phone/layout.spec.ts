@@ -282,10 +282,6 @@ for (const { path, heading, allowed404, content } of pages) {
 
 			await expect(page.getByRole("heading", { name: heading, level: 1, exact: true })).toBeVisible();
 			await expectContentClearsBars(page);
-			test.fixme(
-				path === `/players/${kermit}`,
-				"BUG: in about a third of the loads the Head-to-head and Most played cards make the player page 4px too wide",
-			);
 			await expectNoSidewaysScroll(page);
 		});
 

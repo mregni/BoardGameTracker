@@ -14,9 +14,11 @@ import { useUpdateSessionData } from "./-hooks/useUpdateSessionData";
 export const Route = createFileRoute("/sessions/update_/$sessionId")({
 	component: RouteComponent,
 	params: sessionIdParamSchema,
-	loader: async ({ params, context: { queryClient } }) => {
-		const data = await queryClient.query(getSession(params.sessionId));
-		queryClient.query(getGame(data.gameId)).catch(noop);
+	loader: ({ params, context: { queryClient } }) => {
+		queryClient
+			.query(getSession(params.sessionId))
+			.then((data) => queryClient.query(getGame(data.gameId)))
+			.catch(noop);
 	},
 });
 
@@ -29,7 +31,7 @@ function RouteComponent() {
 	const backTo = useBackTo();
 	const { canWrite } = usePermissions();
 
-	const { game, session, updateSession, isPending, isLoading } = useUpdateSessionData({
+	const { game, session, updateSession, isPending, isLoading, error } = useUpdateSessionData({
 		sessionId,
 	});
 
@@ -44,7 +46,7 @@ function RouteComponent() {
 	};
 
 	return (
-		<BgtDataGuard isLoading={isLoading} data={{ game, session }}>
+		<BgtDataGuard isLoading={isLoading} data={{ game, session }} error={error}>
 			{({ game, session }) => (
 				<SessionForm
 					game={game}
