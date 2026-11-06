@@ -1,5 +1,5 @@
 import type { APIRequestContext, Browser, Locator, Page, TestInfo } from "@playwright/test";
-import { expect } from "./fixtures";
+import { expect, paceLogin } from "./fixtures";
 import { games, locations, players } from "./seedData";
 
 export const phone = { width: 375, height: 812 };
@@ -121,6 +121,7 @@ export const signInOnTouchPhone = async (
 	await page.goto("/login");
 	await page.getByLabel("Username").fill(login.username);
 	await page.getByLabel("Password").fill(login.password);
+	await paceLogin();
 	await page.getByRole("button", { name: "Sign in" }).tap();
 	await page.waitForURL((url) => url.pathname !== "/login");
 	await page.close();

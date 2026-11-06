@@ -92,7 +92,6 @@ test("an achievement explains itself after a tap and closes after the next tap",
 });
 
 test("the image chosen for a new game can be removed by touch", async () => {
-	test.fail(true, "BUG: the remove image button only appears on hover, so a touch screen cannot remove the image");
 	await page.goto("/games/new");
 	await settled(page);
 
@@ -102,6 +101,7 @@ test("the image chosen for a new game can be removed by touch", async () => {
 		buffer: Buffer.from(pixel, "base64"),
 	});
 
+	test.fail(true, "BUG: the remove image button only appears on hover, so a touch screen cannot remove the image");
 	await page.getByRole("button", { name: "Remove image" }).tap({ timeout: 2000 });
 	await expect(page.getByRole("button", { name: "Remove image" })).toHaveCount(0);
 });

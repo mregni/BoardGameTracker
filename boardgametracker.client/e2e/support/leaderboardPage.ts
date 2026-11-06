@@ -1,6 +1,20 @@
 import { expect, type Page } from "@playwright/test";
+import { subDays } from "date-fns";
 import { games } from "./seedData";
-import { literal, percent, playerId, type RankBy, type Standing, short } from "./standings";
+import { between, brusselsDay, literal, percent, playerId, type RankBy, type Standing, short } from "./standings";
+
+const pinnedYearStart = brusselsDay(subDays(new Date(), 100));
+
+export const pinnedYear = between(pinnedYearStart);
+
+export const pinYearStart = (page: Page) =>
+	page.route("**/api/leaderboard?*", async (route) => {
+		const url = new URL(route.request().url());
+		if (url.searchParams.get("from") === `${brusselsDay(new Date()).slice(0, 4)}-01-01`) {
+			url.searchParams.set("from", pinnedYearStart);
+		}
+		await route.continue({ url: url.href });
+	});
 
 type Ranked = Standing["ranked"][number];
 type Entry = Standing["unranked"][number];

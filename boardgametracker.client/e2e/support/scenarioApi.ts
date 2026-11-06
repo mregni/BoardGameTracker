@@ -1,5 +1,5 @@
 import { expect, request as playwrightRequest } from "@playwright/test";
-import { credentials } from "./fixtures";
+import { credentials, paceLogin } from "./fixtures";
 
 const SEEDED_LOCATION = 1;
 
@@ -11,6 +11,7 @@ interface Seat {
 
 export const signedInApi = async (baseURL?: string) => {
 	const request = await playwrightRequest.newContext({ baseURL });
+	await paceLogin();
 	const login = await request.post("/api/auth/login", { data: credentials });
 	expect(login.ok()).toBe(true);
 	const { accessToken } = await login.json();

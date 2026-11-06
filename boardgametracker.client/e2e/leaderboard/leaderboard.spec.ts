@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test";
 import { addDays, startOfYear, subDays } from "date-fns";
 import { expect, test } from "../support/fixtures";
 import { pick } from "../support/gamesPage";
-import { expectFilters, expectLeaderboard, gameTitles } from "../support/leaderboardPage";
+import { expectFilters, expectLeaderboard, gameTitles, pinnedYear, pinYearStart } from "../support/leaderboardPage";
 import { coopGame, games, linkedPlayer, neverPlayedGame, sessions } from "../support/seedData";
 import { between, brusselsDay, gameId, leaderboard, playerId } from "../support/standings";
 
@@ -60,11 +60,12 @@ test("puts the winner in the middle of the podium", async ({ page }) => {
 });
 
 test("changes the period with the radio buttons and clears it again", async ({ page }) => {
+	await pinYearStart(page);
 	await page.goto("/leaderboard");
 
 	await choosePeriod(page, "This year");
 	await expect(page).toHaveURL("/leaderboard?range=year");
-	await expectLeaderboard(page, leaderboard(between(brusselsDay(startOfYear(new Date()))), 5, "wins"));
+	await expectLeaderboard(page, leaderboard(pinnedYear, 5, "wins"));
 
 	await choosePeriod(page, "Last 12 months");
 	await expect(page).toHaveURL("/leaderboard?range=12m");
@@ -187,9 +188,9 @@ test("types a custom period into the date fields", async ({ page }) => {
 });
 
 test("rounds a win rate only once", async ({ page }) => {
-	test.fail(true, "BUG: the leaderboard rounds twice, so 33 wins of 52 sessions (63.46%) show as 64% instead of 63%");
 	await page.goto(`/leaderboard?range=custom&from=${loneFrom}`);
 
+	test.fail(true, "BUG: the leaderboard rounds twice, so 33 wins of 52 sessions (63.46%) show as 64% instead of 63%");
 	await expectLeaderboard(page, leaderboard(between(loneFrom), 5, "wins"));
 });
 
@@ -302,11 +303,11 @@ test("explains the page before anyone played", async ({ page }) => {
 });
 
 test("explains when the leaderboard cannot be loaded", async ({ page }) => {
-	test.fail(true, "BUG: /leaderboard keeps spinning forever when the leaderboard request fails");
 	await page.route(LEADERBOARD_ROUTE, (route) => route.abort());
 
 	await page.goto("/leaderboard");
 
+	test.fail(true, "BUG: /leaderboard keeps spinning forever when the leaderboard request fails");
 	await expect(page.getByText("Couldn't load this page")).toBeVisible({ timeout: 3000 });
 });
 

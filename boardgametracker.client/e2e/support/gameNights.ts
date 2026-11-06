@@ -1,6 +1,6 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 import { differenceInCalendarDays } from "date-fns";
-import { credentials, expect } from "./fixtures";
+import { credentials, expect, paceLogin } from "./fixtures";
 import { displayDate } from "./format";
 import { gameNights, games, linkedPlayer, locations, pastGameNight, players, sessions } from "./seedData";
 
@@ -113,8 +113,8 @@ export const scoreLine = (session: (typeof sessions)[number]) =>
 let token: Promise<string> | null = null;
 
 const authorization = async (request: APIRequestContext) => {
-	token ??= request
-		.post("/api/auth/login", { data: credentials })
+	token ??= paceLogin()
+		.then(() => request.post("/api/auth/login", { data: credentials }))
 		.then((response) => response.json())
 		.then((body) => body.accessToken as string);
 	return { Authorization: `Bearer ${await token}` };

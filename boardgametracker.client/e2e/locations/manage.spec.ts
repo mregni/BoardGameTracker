@@ -5,11 +5,13 @@ import { expect, test } from "../support/fixtures";
 import { displayDate, duration } from "../support/format";
 import { sidebarLink, toast } from "../support/loansPage";
 import { gameNights, games, locations, players } from "../support/seedData";
+import { expectingFailures } from "../support/settings";
 
 const [, cafe] = locations;
 const night = gameNights.find((gameNight) => gameNight.location === cafe) ?? gameNights[0];
 const cafeId = locations.indexOf(cafe) + 1;
 const game = games[0];
+const hallNight = "Night in the hall";
 const nameBox = (page: Page) => page.getByRole("dialog").getByRole("textbox", { name: "Name" });
 const tile = (page: Page, name: string) => page.getByRole("main").getByRole("link").filter({ hasText: name });
 
@@ -38,6 +40,16 @@ const sessionAt = (locationId: number, minutes: number) => ({
 });
 
 test.use({ allowedApiStatuses: [401, 400] });
+
+test.afterEach(async ({ request }) => {
+	const api = await adminApi(request);
+	const nights: { id: number; title: string }[] = await api.get("/api/gamenight");
+	for (const { id } of nights.filter(({ title }) => title === hallNight)) await api.remove(`/api/gamenight/${id}`);
+	const all: { id: number }[] = await api.get("/api/location");
+	for (const { id } of all.filter((location) => location.id > locations.length)) {
+		await api.remove(`/api/location/${id}`);
+	}
+});
 
 test("adds a location, renames it and deletes it again", async ({ page }) => {
 	const name = "Sunroom";
@@ -87,47 +99,51 @@ test.describe("a name that is already used", () => {
 		await expect(toast(page, "A location with this name already exists")).toBeVisible();
 	};
 
-	test("is refused for a new location", async ({ writerPage }) => {
-		await tryToAdd(writerPage);
+	expectingFailures("is refused for a new location", async ({ page }) => {
+		await tryToAdd(page);
 
-		await expect(writerPage.getByRole("dialog")).toBeVisible();
+		await expect(page.getByRole("dialog")).toBeVisible();
 
-		await writerPage.getByRole("dialog").getByRole("button", { name: "Cancel" }).click();
-		await expect(writerPage.getByRole("main").getByRole("link")).toHaveCount(locations.length);
+		await page.getByRole("dialog").getByRole("button", { name: "Cancel" }).click();
+		await expect(page.getByRole("main").getByRole("link")).toHaveCount(locations.length);
 	});
 
-	test("is refused when renaming", async ({ writerPage }) => {
-		await writerPage.goto(`/locations/${cafeId}`);
-		await writerPage.getByRole("button", { name: `Edit ${cafe}` }).click();
-		const dialog = writerPage.getByRole("dialog");
+	expectingFailures("is refused when renaming", async ({ page }) => {
+		await page.goto(`/locations/${cafeId}`);
+		await page.getByRole("button", { name: `Edit ${cafe}` }).click();
+		const dialog = page.getByRole("dialog");
 
-		await nameBox(writerPage).fill("");
+		await nameBox(page).fill("");
 		await expect(dialog.getByText("Location name is required")).toBeVisible();
 
-		await nameBox(writerPage).fill(locations[2]);
+		await nameBox(page).fill(locations[2]);
 		await dialog.getByRole("button", { name: "Save" }).click();
 
-		await expect(toast(writerPage, "A location with this name already exists")).toBeVisible();
+		await expect(toast(page, "A location with this name already exists")).toBeVisible();
 		await dialog.getByRole("button", { name: "Cancel" }).click();
-		await expect(writerPage.getByRole("heading", { name: cafe, level: 1 })).toBeVisible();
+		await expect(page.getByRole("heading", { name: cafe, level: 1 })).toBeVisible();
 	});
 
 	test("gives no unhandled error in the page", async ({ page }) => {
-		test.fail(true, "BUG: a refused name rejects mutateAsync inside form submit: unhandled promise rejection");
 		await tryToAdd(page);
+		test.fail(true, "BUG: a refused name rejects mutateAsync inside form submit: unhandled promise rejection");
 	});
 });
 
 test("shows a new name at the game nights and sessions of the location", async ({ page, request }) => {
 	const renamed = "Corner cafe";
 	const api = await adminApi(request);
-	await page.goto(`/locations/${cafeId}`);
-	await page.getByRole("button", { name: `Edit ${cafe}` }).click();
-	await nameBox(page).fill(renamed);
-	await page.getByRole("dialog").getByRole("button", { name: "Save" }).click();
-	await expect(page.getByRole("heading", { name: renamed, level: 1 })).toBeVisible();
 
 	try {
+		await page.goto(`/locations/${cafeId}`);
+		await page.getByRole("button", { name: `Edit ${cafe}` }).click();
+		await nameBox(page).fill(renamed);
+		await page.getByRole("dialog").getByRole("button", { name: "Save" }).click();
+		await expect(page.getByRole("heading", { name: renamed, level: 1 })).toBeVisible();
+
+		await page.locator('a[href^="/sessions/update"]').first().click();
+		await expect(page.getByRole("combobox", { name: "Location" })).toHaveText(renamed);
+
 		await page.goto("/game-nights");
 		await expect(page.getByRole("main").getByText(renamed)).toHaveCount(1);
 		await expect(page.getByRole("main").getByText(cafe, { exact: true })).toHaveCount(0);
@@ -182,7 +198,7 @@ test("refuses to delete a location with a game night until the night is gone", a
 	const api = await adminApi(request);
 	const location = await api.post("/api/location", { name });
 	const gameNight = await api.post("/api/gamenight", {
-		title: "Night in the hall",
+		title: hallNight,
 		notes: "",
 		startDate: addDays(new Date(), 30).toISOString(),
 		hostId: 1,

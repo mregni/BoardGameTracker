@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Page } from "@playwright/test";
-import { credentials, expect, readerCredentials, test, writerCredentials } from "../support/fixtures";
+import { credentials, expect, paceLogin, readerCredentials, test, writerCredentials } from "../support/fixtures";
 import { avatars, linkedPlayer, players } from "../support/seedData";
 import {
 	api,
@@ -16,6 +16,7 @@ import {
 } from "../support/settings";
 
 test.use({ allowedApiStatuses: [400, 401, 404] });
+test.describe.configure({ timeout: 60_000 });
 
 const field = (page: Page, name: string) => page.getByRole("textbox", { name, exact: true });
 const saveProfile = (page: Page) => page.getByRole("button", { name: "Save profile" }).click();
@@ -88,7 +89,6 @@ expectingFailures("asks for the current password before changing the email", asy
 });
 
 test("clears the email", async ({ page, writerPage }) => {
-	test.fail(true, "BUG: clearing the email shows Profile saved but the old email stays");
 	await openSection(writerPage, "account");
 	const original = await field(writerPage, "Email").inputValue();
 	expect(original).not.toBe("");
@@ -99,6 +99,7 @@ test("clears the email", async ({ page, writerPage }) => {
 		await expect(writerPage.getByText("Profile saved")).toBeVisible();
 
 		await openSection(writerPage, "account");
+		test.fail(true, "BUG: clearing the email shows Profile saved but the old email stays");
 		await expect(field(writerPage, "Email")).toHaveValue("");
 	} finally {
 		await setEmail(page, writerCredentials.username, writerCredentials.role, original);
@@ -197,7 +198,7 @@ test("validates the password dialog and closes on cancel", async ({ page }) => {
 	await expect(dialog.getByText("Required", { exact: false })).toHaveCount(2);
 
 	await field(page, "New password").fill("abc");
-	await expect(dialog.getByText("Password must be at least 4 characters")).toBeVisible();
+	await expect(dialog.getByText(/^Password must be at least/)).toBeVisible();
 
 	await field(page, "New password").fill("long-enough");
 	await field(page, "Confirm new password").fill("different");
@@ -217,6 +218,7 @@ test("says so when the current password is wrong", async ({ page }) => {
 	await field(page, "Current password").fill("wrong-password");
 	await field(page, "New password").fill("another-password");
 	await field(page, "Confirm new password").fill("another-password");
+	await paceLogin();
 	await dialog.getByRole("button", { name: "Change password" }).click();
 
 	await expect(dialog.getByText("Incorrect password.")).toBeVisible();
@@ -224,12 +226,12 @@ test("says so when the current password is wrong", async ({ page }) => {
 });
 
 test("tells the password rule of the server", async ({ page }) => {
-	test.fail(true, "BUG: the dialog accepts and advertises 4 characters while the server wants 8");
 	await openSection(page, "account");
 	const dialog = await openPasswordDialog(page);
 
 	await field(page, "New password").fill("short");
 
+	test.fail(true, "BUG: the dialog accepts and advertises 4 characters while the server wants 8");
 	await expect(dialog.getByText("Password must be at least 8 characters")).toBeVisible();
 });
 
@@ -249,6 +251,7 @@ test("changes the password, signs out old sessions and accepts only the new one"
 		await field(own, "Current password").fill(oldPassword);
 		await field(own, "New password").fill(newPassword);
 		await field(own, "Confirm new password").fill(newPassword);
+		await paceLogin();
 		await dialog.getByRole("button", { name: "Change password" }).click();
 
 		await expect(own.getByText("Password changed")).toBeVisible();

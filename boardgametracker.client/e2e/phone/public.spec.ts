@@ -1,5 +1,5 @@
 import type { Browser, TestInfo } from "@playwright/test";
-import { expect, readerCredentials, test } from "../support/fixtures";
+import { expect, paceLogin, readerCredentials, test } from "../support/fixtures";
 import { apiFor, expectInsideScreen, expectNoSidewaysScroll, phone, smallPhone } from "../support/phone";
 import { gameNights } from "../support/seedData";
 
@@ -37,6 +37,7 @@ test("a signed out phone goes to the login page and back after signing in", asyn
 
 	await page.getByLabel("Username").fill(readerCredentials.username);
 	await page.getByLabel("Password").fill(readerCredentials.password);
+	await paceLogin();
 	await page.keyboard.press("Enter");
 
 	await expect(page).toHaveURL("/loans");
@@ -49,6 +50,7 @@ test("logging out from the More menu closes the protected pages", async ({ brows
 	await page.goto("/login");
 	await page.getByLabel("Username").fill(readerCredentials.username);
 	await page.getByLabel("Password").fill(readerCredentials.password);
+	await paceLogin();
 	await page.getByRole("button", { name: "Sign in" }).click();
 	await expect(page.getByRole("navigation")).toBeVisible();
 
@@ -86,7 +88,7 @@ test("the RSVP page explains an unknown link on a phone", async ({ browser }, in
 
 	await page.goto("/rsvp?linkId=00000000-0000-0000-0000-000000000000");
 
-	await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+	await expect(page.getByRole("heading", { name: "This invite link doesn't work", level: 1 })).toBeVisible();
 	await expectNoSidewaysScroll(page);
 	await context.close();
 });

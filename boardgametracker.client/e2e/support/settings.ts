@@ -1,6 +1,6 @@
 import { type Browser, expect, type Page } from "@playwright/test";
 import type { Settings } from "../../src/models";
-import { test } from "./fixtures";
+import { paceLogin, test } from "./fixtures";
 
 export type SettingsTab =
 	| "general"
@@ -73,6 +73,7 @@ export const submitLogin = async (page: Page, username: string, password: string
 	await page.goto("/login");
 	await page.getByLabel("Username").fill(username);
 	await page.getByLabel("Password").fill(password);
+	await paceLogin();
 	await page.getByRole("button", { name: "Sign in" }).click();
 };
 

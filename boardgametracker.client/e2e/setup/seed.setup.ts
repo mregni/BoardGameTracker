@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { expect, test as setup } from "@playwright/test";
-import { credentials, readerCredentials, writerCredentials } from "../support/fixtures";
+import { credentials, paceLogin, readerCredentials, writerCredentials } from "../support/fixtures";
 import {
 	avatars,
 	expansions,
@@ -11,12 +11,14 @@ import {
 	loans,
 	locations,
 	pastGameNight,
+	seedTime,
 	sessions,
 } from "../support/seedData";
 
 setup("seed the database through the api", async ({ request }) => {
 	setup.setTimeout(120_000);
 
+	await paceLogin();
 	const login = await request.post("/api/auth/login", { data: credentials });
 	expect(login.ok()).toBe(true);
 	const { accessToken, user } = await login.json();
@@ -122,7 +124,7 @@ setup("seed the database through the api", async ({ request }) => {
 			loanDate: loan.loanDate.toISOString(),
 			dueDate: loan.dueDate?.toISOString() ?? null,
 		});
-		if (loan.returned) await send("put", "/api/loans/return", { id: created.id, returnDate: new Date().toISOString() });
+		if (loan.returned) await send("put", "/api/loans/return", { id: created.id, returnDate: seedTime.toISOString() });
 	}
 
 	for (const user of [readerCredentials, writerCredentials]) {

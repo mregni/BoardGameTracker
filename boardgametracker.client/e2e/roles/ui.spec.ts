@@ -2,6 +2,7 @@ import type { Locator, Page } from "@playwright/test";
 import { credentials } from "../support/fixtures";
 import { gameNights, games, locations, players } from "../support/seedData";
 import { expect, test } from "../support/session";
+import { mockSettings } from "../support/settings";
 
 type Control = (main: Locator) => Locator;
 
@@ -81,7 +82,7 @@ const surfaces: { path: string; ready: Control; controls: Control[] }[] = [
 	},
 	{
 		path: "/loans",
-		ready: (main) => main.getByRole("heading", { name: "Loans", level: 1 }),
+		ready: (main) => main.getByRole("button", { name: "Show history" }),
 		controls: [
 			button("Lend a game"),
 			button("Actions for Moon"),
@@ -134,7 +135,6 @@ const readerRedirects = [
 	["/games/add", "/"],
 	["/games/new", "/"],
 	["/games/bgg", "/"],
-	["/games/import/start", "/games"],
 	["/games/1/update", "/"],
 	["/players/new", "/"],
 	["/sessions/new", "/"],
@@ -149,6 +149,31 @@ for (const [path, target] of readerRedirects) {
 		await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
 	});
 }
+
+test("a reader is sent away from the BoardGameGeek import even with an API key", async ({ readerPage: page }) => {
+	await mockSettings(page, { bggStatus: { isConfigured: true, source: "database", isReadOnly: false } });
+
+	await page.goto("/games/import/start");
+
+	await expect(page).toHaveURL("/");
+});
+
+test("a reader is sent away from the rules chat", async ({ readerPage: page }) => {
+	await mockSettings(page, { ragEnabled: true });
+
+	await page.goto("/chat");
+
+	await expect(page).toHaveURL("/");
+});
+
+test("a user may open the rules chat", async ({ writerPage: page }) => {
+	await mockSettings(page, { ragEnabled: true });
+
+	await page.goto("/chat");
+
+	await expect(page).toHaveURL("/chat");
+	await expect(page.getByRole("complementary").getByRole("link", { name: "Rules chat" })).toBeVisible();
+});
 
 const writePages: { path: string; ready: Control }[] = [
 	{ path: "/games/add", ready: (main) => main.getByRole("heading", { name: "Add game", level: 1 }) },
@@ -179,16 +204,16 @@ test("a user cannot reach the BoardGameGeek pages without an API key", async ({ 
 });
 
 test("a reader is sent home from a session editor link", async ({ readerPage: page }) => {
-	test.fail(true, "BUG: the session editor loader runs before the session is restored and crashes on a direct link");
 	await page.goto("/sessions/update/1");
 
+	test.fail(true, "BUG: the session editor loader runs before the session is restored and crashes on a direct link");
 	await expect(page).toHaveURL("/", { timeout: 3_000 });
 });
 
 test("a user can open a session editor from a direct link", async ({ writerPage: page }) => {
-	test.fail(true, "BUG: the session editor loader runs before the session is restored and crashes on a direct link");
 	await page.goto("/sessions/update/1");
 
+	test.fail(true, "BUG: the session editor loader runs before the session is restored and crashes on a direct link");
 	await expect(page.getByRole("main").getByRole("button", { name: "Try again" })).toHaveCount(0, { timeout: 3_000 });
 	await expect(page.getByRole("combobox", { name: "Game" })).toContainText(firstGame.title, { timeout: 3_000 });
 });
@@ -247,44 +272,48 @@ test("a reader sees past loans without actions", async ({ readerPage: page }) =>
 	await expect(page.getByRole("button", { name: /^Actions for/ })).toHaveCount(0);
 });
 
-for (const [role, fixture] of [
-	["a reader", "readerPage"],
-	["a user", "writerPage"],
-] as const) {
-	test(`${role} only has the account settings`, async ({ readerPage, writerPage }) => {
-		const page = fixture === "readerPage" ? readerPage : writerPage;
-		await page.goto("/settings");
-		const main = page.getByRole("main");
+test.describe("settings of each role", () => {
+	test.use({ allowedApiStatuses: [401, 404] });
 
-		await expect(main.getByRole("heading", { name: "My account" })).toBeVisible();
-		await expect(main.getByRole("navigation").getByRole("button")).toHaveText(["AccountProfile & password"]);
-		await expect(main.getByRole("heading", { name: "Users" })).toHaveCount(0);
-	});
+	for (const [role, fixture] of [
+		["a reader", "readerPage"],
+		["a user", "writerPage"],
+	] as const) {
+		test(`${role} only has the account settings`, async ({ readerPage, writerPage }) => {
+			const page = fixture === "readerPage" ? readerPage : writerPage;
+			await page.goto("/settings");
+			const main = page.getByRole("main");
 
-	test(`${role} without a player is not asked to link one`, async ({ readerPage, writerPage }) => {
-		const page = fixture === "readerPage" ? readerPage : writerPage;
-		await page.goto("/");
+			await expect(main.getByRole("heading", { name: "My account" })).toBeVisible();
+			await expect(main.getByRole("navigation").getByRole("button")).toHaveText(["AccountProfile & password"]);
+			await expect(main.getByRole("heading", { name: "Users" })).toHaveCount(0);
+		});
 
-		await expect(page.getByRole("region", { name: "Top players" })).toBeVisible();
-		await expect(page.getByRole("dialog")).toHaveCount(0);
-	});
+		test(`${role} without a player is not asked to link one`, async ({ readerPage, writerPage }) => {
+			const page = fixture === "readerPage" ? readerPage : writerPage;
+			await page.goto("/");
 
-	test(`${role} cannot open an admin settings tab through the address`, async ({ readerPage, writerPage }) => {
-		const page = fixture === "readerPage" ? readerPage : writerPage;
-		await page.goto("/settings?tab=general");
+			await expect(page.getByRole("region", { name: "Top players" })).toBeVisible();
+			await expect(page.getByRole("dialog")).toHaveCount(0);
+		});
 
-		await expect(page.getByRole("heading", { name: "My account" })).toBeVisible();
-		await expect(page.getByRole("button", { name: "Save settings" })).toHaveCount(0);
-	});
+		test(`${role} cannot open an admin settings tab through the address`, async ({ readerPage, writerPage }) => {
+			const page = fixture === "readerPage" ? readerPage : writerPage;
+			await page.goto("/settings?tab=general");
 
-	test(`${role} has no shortcut to the shelf of shame settings`, async ({ readerPage, writerPage }) => {
-		const page = fixture === "readerPage" ? readerPage : writerPage;
-		await page.goto("/shames");
+			await expect(page.getByRole("heading", { name: "My account" })).toBeVisible();
+			await expect(page.getByRole("button", { name: "Save settings" })).toHaveCount(0);
+		});
 
-		await expect(page.getByRole("button", { name: "Sort by price paid" })).toBeVisible();
-		await expect(page.getByRole("main").getByRole("link", { name: "Change in settings" })).toHaveCount(0);
-	});
-}
+		test(`${role} has no shortcut to the shelf of shame settings`, async ({ readerPage, writerPage }) => {
+			const page = fixture === "readerPage" ? readerPage : writerPage;
+			await page.goto("/shames");
+
+			await expect(page.getByRole("button", { name: "Sort by price paid" })).toBeVisible();
+			await expect(page.getByRole("main").getByRole("link", { name: "Change in settings" })).toHaveCount(0);
+		});
+	}
+});
 
 test.describe("as an admin", () => {
 	test.use({ allowedApiStatuses: [401, 404] });

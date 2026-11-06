@@ -3,7 +3,8 @@ import type { components } from "../../src/models/api.generated";
 
 type GameState = components["schemas"]["GameState"];
 
-const now = new Date();
+export const seedTime = new Date(process.env.E2E_SEED_TIME ?? Date.now());
+const now = seedTime;
 
 const collection = [
 	{

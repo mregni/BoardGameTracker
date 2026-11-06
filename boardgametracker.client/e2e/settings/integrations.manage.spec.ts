@@ -1,7 +1,9 @@
-import type { Page } from "@playwright/test";
+import type { Browser, Page } from "@playwright/test";
 import type { Settings } from "../../src/models";
 import { expect, test } from "../support/fixtures";
-import { api, expectingFailures, openSection, readSettings, writeSettings } from "../support/settings";
+import { api, expectingFailures, openContext, openSection, readSettings, writeSettings } from "../support/settings";
+
+test.use({ allowedApiStatuses: [401, 404] });
 
 const localUrl = "http://localhost:9";
 
@@ -13,6 +15,13 @@ const trackSaves = (page: Page) => {
 		}
 	});
 	return saves;
+};
+
+const visitorSettings = async (browser: Browser, baseURL: string | undefined): Promise<Settings> => {
+	const context = await openContext(browser, baseURL);
+	const settings = await (await context.request.get("/api/settings")).json();
+	await context.close();
+	return settings;
 };
 
 let original: Settings;
@@ -62,7 +71,7 @@ test("saves a key without showing it and removes it again, with the bgg check mo
 	await expect(page.getByRole("button", { name: "Remove API key" })).toHaveCount(0);
 });
 
-test("keeps a saved key when the field stays empty", async ({ page }) => {
+test("keeps a saved key when the field stays empty", async ({ page, browser, baseURL }) => {
 	await page.route("**/api/settings/integrations/status", (route) => route.fulfill({ json: [] }));
 	await writeSettings(page, { ...original, bggApiKey: "secret-bgg-key" });
 	await openSection(page, "integrations");
@@ -71,6 +80,7 @@ test("keeps a saved key when the field stays empty", async ({ page }) => {
 
 	await expect(page.getByText("Settings saved")).toBeVisible();
 	expect((await readSettings(page)).bggStatus.isConfigured).toBe(true);
+	expect((await visitorSettings(browser, baseURL)).bggApiKey).toBe("");
 });
 
 test("refuses a changedetection address that is not http(s)", async ({ page }) => {
@@ -97,6 +107,8 @@ expectingFailures("refuses plain http for a changedetection address on another m
 test("reports a changedetection service that does not answer, and hides the address from others", async ({
 	page,
 	readerPage,
+	browser,
+	baseURL,
 }) => {
 	await openSection(page, "integrations");
 	await page.getByRole("textbox", { name: "Base URL" }).fill(localUrl);
@@ -121,4 +133,8 @@ test("reports a changedetection service that does not answer, and hides the addr
 	const settings = await (await (await api(readerPage)).get("/api/settings")).json();
 	expect(settings.changeDetectionBaseUrl).toBe("");
 	expect(settings.changeDetectionApiKey).toBe("");
+
+	const visitor = await visitorSettings(browser, baseURL);
+	expect(visitor.changeDetectionBaseUrl).toBe("");
+	expect(visitor.changeDetectionApiKey).toBe("");
 });

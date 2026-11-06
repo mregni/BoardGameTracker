@@ -177,20 +177,20 @@ for (const dialogCase of cases) {
 	const { name, title, footer, bug } = dialogCase;
 
 	test(`${name} fits a phone without sideways scrolling`, async ({ page }) => {
-		test.fail(name === "edit player", bug);
 		await page.setViewportSize(phone);
 		const dialog = await openDialog(page, dialogCase);
 
 		await expect(dialog.getByRole("heading", { name: title })).toBeVisible();
+		test.fail(name === "edit player", bug);
 		await expectDialogFits(dialog);
 	});
 
 	test(`${name} shows its footer on a phone`, async ({ page }) => {
-		test.fail(dialogCase.longerThanPhone === true, bug);
 		await page.setViewportSize(phone);
 		const dialog = await openDialog(page, dialogCase);
 
 		await expect(footerOf(dialog).getByRole("button")).toHaveText(footer);
+		test.fail(dialogCase.longerThanPhone === true, bug);
 		await expectFooterInView(page, dialog);
 	});
 
@@ -283,10 +283,6 @@ test("the actions of the first user open a dialog that fits", async ({ page }) =
 });
 
 test("every action of the last user can be reached", async ({ page }) => {
-	test.fail(
-		true,
-		"BUG: the actions menu of the last row opens downward behind the bottom bar and Delete cannot be reached",
-	);
 	await page.setViewportSize(phone);
 	await page.goto("/settings?tab=account");
 	await settled(page);
@@ -296,16 +292,20 @@ test("every action of the last user can be reached", async ({ page }) => {
 		.last()
 		.click();
 
+	test.fail(
+		true,
+		"BUG: the actions menu of the last row opens downward behind the bottom bar and Delete cannot be reached",
+	);
 	await page.getByRole("menuitem").last().click({ trial: true, timeout: 3000 });
 });
 
 test("the delete session dialog names what it deletes once", async ({ page }) => {
-	test.fail(true, "BUG: the delete session dialog is titled Delete Delete session");
 	await page.setViewportSize(phone);
 	await page.goto(`/games/${firstGame}/sessions`);
 	await settled(page);
 
 	await page.getByRole("main").getByRole("button", { name: "Delete" }).first().click();
 
+	test.fail(true, "BUG: the delete session dialog is titled Delete Delete session");
 	await expect(page.getByRole("dialog").getByRole("heading")).toHaveText("Delete session", { timeout: 1000 });
 });

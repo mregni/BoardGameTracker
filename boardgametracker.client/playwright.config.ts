@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+process.env.E2E_SEED_TIME ??= new Date().toISOString();
+
 const baseURL = `http://localhost:${process.env.E2E_CLIENT_PORT ?? 5543}`;
 
 export default defineConfig({

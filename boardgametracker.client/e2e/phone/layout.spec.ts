@@ -281,8 +281,12 @@ for (const { path, heading, allowed404, content } of pages) {
 			await settled(page);
 
 			await expect(page.getByRole("heading", { name: heading, level: 1, exact: true })).toBeVisible();
-			if (path !== `/players/${kermit}`) await expectNoSidewaysScroll(page);
 			await expectContentClearsBars(page);
+			test.fixme(
+				path === `/players/${kermit}`,
+				"BUG: in about a third of the loads the Head-to-head and Most played cards make the player page 4px too wide",
+			);
+			await expectNoSidewaysScroll(page);
 		});
 
 		test(`tablet ${path} fits`, async ({ page }) => {
@@ -378,10 +382,10 @@ test("the game grid uses more columns on a tablet than on a phone", async ({ pag
 });
 
 test("reloading the edit page of a session opens the form", async ({ page }) => {
-	test.fail(true, "BUG: a reload of the session edit page shows the error page because the loader runs before auth");
 	await page.setViewportSize(phone);
 	await page.goto("/sessions/update/1");
 
+	test.fail(true, "BUG: a reload of the session edit page shows the error page because the loader runs before auth");
 	await expect(page.getByRole("heading", { name: "Something went wrong" })).toHaveCount(0);
 	await expect(page.getByRole("spinbutton", { name: "Duration" })).toBeVisible({ timeout: 3000 });
 });

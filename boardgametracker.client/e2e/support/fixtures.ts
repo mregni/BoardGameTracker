@@ -1,3 +1,6 @@
+import { readFile, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { type Browser, type BrowserContext, test as base, expect, type Page, type TestInfo } from "@playwright/test";
 
 type TestInfoUse = TestInfo["project"]["use"];
@@ -7,6 +10,16 @@ export const readerCredentials = { username: "reader", password: "reader-passwor
 export const writerCredentials = { username: "writer", password: "writer-password", role: "User" };
 
 const REFRESH_REUSE_MS = 5 * 60_000;
+const LOGIN_SPACING_MS = 8_000;
+const loginTurnFile = path.join(tmpdir(), `bgt-e2e-login-turn-${process.env.E2E_CLIENT_PORT ?? 5543}`);
+
+export const paceLogin = async () => {
+	const lastTurn = await readFile(loginTurnFile, "utf8").then(Number, () => 0);
+	const now = Date.now();
+	const turn = Math.max(now, lastTurn + LOGIN_SPACING_MS);
+	await writeFile(loginTurnFile, String(turn));
+	await new Promise((resolve) => setTimeout(resolve, turn - now));
+};
 
 const shareRefreshes = async (context: BrowserContext) => {
 	let shared: { json: unknown; expires: number } | null = null;
@@ -28,6 +41,7 @@ const signIn = async (browser: Browser, use: TestInfoUse, login: { username: str
 	await page.goto("/login");
 	await page.getByLabel("Username").fill(login.username);
 	await page.getByLabel("Password").fill(login.password);
+	await paceLogin();
 	await page.getByRole("button", { name: "Sign in" }).click();
 	await page.waitForURL((url) => url.pathname !== "/login");
 	await page.close();
@@ -35,7 +49,7 @@ const signIn = async (browser: Browser, use: TestInfoUse, login: { username: str
 	return context;
 };
 
-const useWatchedPage = async (
+export const useWatchedPage = async (
 	context: BrowserContext,
 	allowedApiStatuses: number[],
 	use: (page: Page) => Promise<void>,
@@ -52,8 +66,8 @@ const useWatchedPage = async (
 	});
 	page.on("response", (response) => {
 		const status = response.status();
-		const isApiFailure = status >= 400 && new URL(response.url()).pathname.startsWith("/api/");
-		if (status >= 500 || (isApiFailure && !allowedApiStatuses.includes(status))) {
+		const isApi = new URL(response.url()).pathname.startsWith("/api/");
+		if (status >= (isApi ? 400 : 500) && !allowedApiStatuses.includes(status)) {
 			problems.push(`${status} ${response.url()}`);
 		}
 	});

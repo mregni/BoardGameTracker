@@ -17,6 +17,7 @@ import {
 	typeDate,
 } from "../support/loansPage";
 import { games, loans, players } from "../support/seedData";
+import { expectingFailures } from "../support/settings";
 
 const activeCount = loans.filter((loan) => !loan.returned).length;
 const returnedCount = loans.length - activeCount;
@@ -158,9 +159,9 @@ test.describe("a new borrower", () => {
 	});
 
 	test("is selected right away", async ({ page }) => {
-		test.fail(true, "BUG: a player created from the lend dialog is not selected as borrower");
 		const dialog = await createInDialog(page);
 
+		test.fail(true, "BUG: a player created from the lend dialog is not selected as borrower");
 		await expect(dialog.getByRole("combobox", { name: "Borrower", exact: true })).toContainText(name, {
 			timeout: 3_000,
 		});
@@ -185,15 +186,15 @@ test.describe("a game that was lent in the meantime", () => {
 		return dialog;
 	};
 
-	test("is refused", async ({ writerPage }) => {
-		const dialog = await tryToLend(writerPage);
+	expectingFailures("is refused", async ({ page }) => {
+		const dialog = await tryToLend(page);
 
 		await expect(dialog).toBeVisible();
 	});
 
 	test("gives no unhandled error in the page", async ({ page }) => {
-		test.fail(true, "BUG: a refused loan rejects mutateAsync inside form submit: unhandled promise rejection");
 		await tryToLend(page);
+		test.fail(true, "BUG: a refused loan rejects mutateAsync inside form submit: unhandled promise rejection");
 	});
 });
 
@@ -244,9 +245,11 @@ test("refuses a return date before the start of the loan", async ({ page, reques
 	await typeDate(page, dialog, "Returned on", subDays(start, 1));
 
 	await expect(dialog.getByText("The return date can't be before the start of the loan")).toBeVisible();
+	const sent = page.waitForRequest("**/api/loans/return", { timeout: 1_000 }).catch(() => null);
 
 	await dialog.getByRole("button", { name: "Mark returned" }).click();
 
+	expect(await sent).toBeNull();
 	await expect(dialog).toBeVisible();
 
 	await dialog.getByRole("button", { name: "Cancel" }).click();
@@ -343,11 +346,12 @@ test("refuses a due date before the start when editing", async ({ page, request 
 	await typeDate(page, dialog, "Due date", subDays(start, 1));
 
 	await expect(dialog.getByText("The due date can't be before the start date")).toBeVisible();
+	const sent = page.waitForRequest("**/api/loans", { timeout: 1_000 }).catch(() => null);
 
 	await dialog.getByRole("button", { name: "Save" }).click();
 
+	expect(await sent).toBeNull();
 	await expect(dialog).toBeVisible();
-	await expect(toast(page, "Loan saved")).toHaveCount(0);
 });
 
 test("edits the return date of a returned loan", async ({ page, request }) => {
@@ -434,11 +438,11 @@ test("does not call a game lent before the loan starts", async ({ page, request 
 });
 
 test("shows the same number of active loans on the page and in the sidebar", async ({ page, request }) => {
-	test.fail(true, "BUG: a loan that starts in the future counts as On loan on /loans but not in the sidebar");
 	await lend(request, game, { loanDate: addDays(new Date(), 5), dueDate: addDays(new Date(), 10) });
 	await openLoans(page);
 	await expect(sidebarLink(page, `Loans ${activeCount}`)).toBeVisible();
 
+	test.fail(true, "BUG: a loan that starts in the future counts as On loan on /loans but not in the sidebar");
 	await expect(page.getByRole("main").getByRole("button", { name: `On loan ${activeCount}` })).toBeVisible({
 		timeout: 2_000,
 	});

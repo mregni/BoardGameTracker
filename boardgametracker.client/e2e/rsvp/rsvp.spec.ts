@@ -5,6 +5,7 @@ import { gameNights, games, linkedPlayer, pastGameNight } from "../support/seedD
 import { apiFor, expect, test } from "../support/session";
 
 test.describe.configure({ timeout: 60_000 });
+test.use({ allowedApiStatuses: [401, 404] });
 
 const HALF_A_DAY_MS = 12 * 60 * 60_000;
 const [strategyNight, familyAfternoon] = gameNights;
@@ -215,27 +216,31 @@ for (const [name, linkId] of [
 }
 
 test("explains that a link without an id does not work", async ({ guestPage: page }) => {
-	test.fail(true, "BUG: /rsvp without linkId shows the generic crash page instead of the invalid invite message");
 	await page.goto("/rsvp");
 
+	test.fail(true, "BUG: /rsvp without linkId shows the generic crash page instead of the invalid invite message");
 	await expect(page.getByRole("heading", { name: "This invite link doesn't work", level: 1 })).toBeVisible({
 		timeout: 3_000,
 	});
 });
 
-test("does not call a link broken when the server fails", async ({ guestPage: page }) => {
-	test.fail(true, "BUG: a 500 or 429 on the invite is reported as an invalid invite link");
-	await page.route("**/api/gamenight/link/**", (route) => route.fulfill({ status: 500, json: {} }));
-	await page.goto(inviteUrl(linkIds.get(strategyNight.title) ?? ""));
+test.describe("when the server fails", () => {
+	test.use({ allowedApiStatuses: [500] });
 
-	const calledBroken = await page
-		.getByRole("heading", { name: "This invite link doesn't work" })
-		.waitFor({ timeout: 3_000 })
-		.then(
-			() => true,
-			() => false,
-		);
-	expect(calledBroken).toBe(false);
+	test("does not call a link broken when the server fails", async ({ guestPage: page }) => {
+		await page.route("**/api/gamenight/link/**", (route) => route.fulfill({ status: 500, json: {} }));
+		await page.goto(inviteUrl(linkIds.get(strategyNight.title) ?? ""));
+
+		test.fail(true, "BUG: a 500 or 429 on the invite is reported as an invalid invite link");
+		const calledBroken = await page
+			.getByRole("heading", { name: "This invite link doesn't work" })
+			.waitFor({ timeout: 3_000 })
+			.then(
+				() => true,
+				() => false,
+			);
+		expect(calledBroken).toBe(false);
+	});
 });
 
 test("shows a signed in user the same invite, without the menu", async ({ page }) => {

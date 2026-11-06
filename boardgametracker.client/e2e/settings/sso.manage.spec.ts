@@ -84,6 +84,7 @@ test("creates a provider, shows it on the login page and removes it", async ({ p
 	const context = await openContext(browser, baseURL);
 	const visitor = await context.newPage();
 	await visitor.goto("/login");
+	await visitor.waitForLoadState("networkidle");
 	await expect(visitor.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
 	await expect(visitor.getByText(label)).toHaveCount(0);
 
@@ -134,6 +135,7 @@ test("creates a provider, shows it on the login page and removes it", async ({ p
 	await expect(page.getByRole("button", { name: "Create provider" })).toBeVisible();
 
 	await visitor.reload();
+	await visitor.waitForLoadState("networkidle");
 	await expect(visitor.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
 	await expect(visitor.getByRole("button", { name: new RegExp(label) })).toHaveCount(0);
 	await context.close();
@@ -169,6 +171,7 @@ test("edits a provider, warns about a new authority and hides a disabled provide
 	const context = await openContext(browser, baseURL);
 	const visitor = await context.newPage();
 	await visitor.goto("/login");
+	await visitor.waitForLoadState("networkidle");
 	await expect(visitor.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
 	await expect(visitor.getByRole("button", { name: /Renamed login/ })).toHaveCount(0);
 	await context.close();

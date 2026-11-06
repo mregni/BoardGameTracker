@@ -111,7 +111,7 @@ for (const [reset, message] of [
 	});
 }
 
-test("signs out after a factory reset, with the call mocked so the seed stays", async ({ page }) => {
+test("goes to the login page after a factory reset, with the call mocked so the seed stays", async ({ page }) => {
 	await page.route("**/api/maintenance/factory-reset", (route) => route.fulfill({ status: 204 }));
 	await openSection(page, "advanced");
 

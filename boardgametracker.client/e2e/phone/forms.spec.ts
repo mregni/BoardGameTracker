@@ -29,27 +29,27 @@ test("add game keeps its buttons in a bar at the bottom of the screen", async ({
 });
 
 test("add game shows the error next to the title when tapping save from the bottom", async ({ page }) => {
-	test.fail(
-		true,
-		"BUG: a refused form stays scrolled down, so the error at the title is off screen and nothing seems to happen",
-	);
 	await page.goto("/games/new");
 	await settled(page);
 	await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
 
 	await bar(page).getByRole("button", { name: "Add game" }).click();
 
+	test.fail(
+		true,
+		"BUG: a refused form stays scrolled down, so the error at the title is off screen and nothing seems to happen",
+	);
 	await expect(page.getByText("Game title is required")).toBeInViewport();
 	await expect(page).toHaveURL("/games/new");
 });
 
 test("every field of add game stays clear of the action bar while tabbing", async ({ page }) => {
-	test.fail(true, "BUG: the fixed action bar covers the focused field while tabbing down a form on a phone");
 	await page.goto("/games/new");
 	await settled(page);
 	await page.getByRole("textbox", { name: "Game title" }).focus();
 	const cancel = bar(page).getByRole("button", { name: "Cancel" });
 
+	test.fail(true, "BUG: the fixed action bar covers the focused field while tabbing down a form on a phone");
 	for (let step = 1; step < 40; step++) {
 		await page.keyboard.press("Tab");
 		await page.evaluate(() => new Promise(requestAnimationFrame));
@@ -163,8 +163,8 @@ test("log session refuses a session without a game", async ({ page }) => {
 
 	await bar(page).getByRole("button", { name: "Log session" }).click();
 
+	await expect(page.getByText("Game is required")).toBeVisible();
 	await expect(page).toHaveURL("/sessions/new");
-	await expect(page.getByRole("heading", { name: "Log session", level: 1 })).toBeVisible();
 });
 
 test("the games filters fold open and closed", async ({ page }) => {

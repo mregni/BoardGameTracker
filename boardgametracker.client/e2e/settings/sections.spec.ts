@@ -149,6 +149,7 @@ test("announces a new version in the sidebar", async ({ page }) => {
 
 test("shows the rules chat only when the server has AI switched on", async ({ page }) => {
 	await page.goto("/settings");
+	await page.waitForLoadState("networkidle");
 	await expect(sidebarLink(page, "Settings")).toBeVisible();
 	await expect(sidebarLink(page, "Rules chat")).toHaveCount(0);
 

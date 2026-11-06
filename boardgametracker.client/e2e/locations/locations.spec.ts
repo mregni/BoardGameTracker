@@ -242,9 +242,9 @@ test.describe("not found", () => {
 
 	for (const id of ["abc", "0", "-1"]) {
 		test(`treats the id ${id} as not found`, async ({ page }) => {
-			test.fail(true, "BUG: an invalid location id shows the generic error page instead of 'Location not found'");
 			await page.goto(`/locations/${id}`);
 
+			test.fail(true, "BUG: an invalid location id shows the generic error page instead of 'Location not found'");
 			await expect(page.getByRole("heading", { name: "Location not found", level: 1 })).toBeVisible({
 				timeout: 3_000,
 			});

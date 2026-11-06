@@ -167,10 +167,6 @@ expectingFailures("keeps the input and says so when saving fails", async ({ page
 });
 
 expectingFailures("does not leave an unhandled rejection when saving fails", async ({ page }) => {
-	expectingFailures.fail(
-		true,
-		"BUG: a refused save rejects unhandled in the form submit, so the page reports an error",
-	);
 	const errors: string[] = [];
 	page.on("pageerror", (error) => errors.push(error.message));
 	await page.route("**/api/settings", (route) =>
@@ -183,6 +179,10 @@ expectingFailures("does not leave an unhandled rejection when saving fails", asy
 	await page.getByRole("button", { name: "Save settings" }).click();
 
 	await expect(page.getByText("Failed saving settings")).toBeVisible();
+	expectingFailures.fail(
+		true,
+		"BUG: a refused save rejects unhandled in the form submit, so the page reports an error",
+	);
 	expect(errors).toEqual([]);
 });
 

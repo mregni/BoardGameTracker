@@ -4,6 +4,7 @@ import { apiFor } from "../support/api";
 import { expect, test } from "../support/fixtures";
 import { playerId } from "../support/playerStats";
 import { expected, games, linkedPlayer, loans, mostPlayedGame, players } from "../support/seedData";
+import { expectingFailures } from "../support/settings";
 
 const count = (total: number) => `${total} players`;
 
@@ -242,25 +243,25 @@ test("sends a reader away from the new player page", async ({ readerPage }) => {
 test.describe("refused by the server", () => {
 	test.use({ allowedApiStatuses: [400, 401, 409, 422] });
 
-	test("refuses a name that is taken", async ({ writerPage }) => {
-		await writerPage.goto("/players/new");
-		await writerPage.getByRole("textbox", { name: "Name" }).fill(linkedPlayer);
-		await writerPage.getByRole("main").getByRole("button", { name: "Add player" }).click();
+	expectingFailures("refuses a name that is taken", async ({ page }) => {
+		await page.goto("/players/new");
+		await page.getByRole("textbox", { name: "Name" }).fill(linkedPlayer);
+		await page.getByRole("main").getByRole("button", { name: "Add player" }).click();
 
-		await expect(writerPage.getByText("A player with this name already exists")).toBeVisible();
-		await expect(writerPage).toHaveURL("/players/new");
+		await expect(page.getByText("A player with this name already exists")).toBeVisible();
+		await expect(page).toHaveURL("/players/new");
 	});
 
-	test("refuses renaming to a name that is taken", async ({ writerPage }) => {
-		const id = await addPlayer(writerPage, "Lew Zealand");
-		const dialog = await openEdit(writerPage);
+	expectingFailures("refuses renaming to a name that is taken", async ({ page }) => {
+		const id = await addPlayer(page, "Lew Zealand");
+		const dialog = await openEdit(page);
 
 		await dialog.getByRole("textbox", { name: "Name" }).fill(linkedPlayer);
 		await dialog.getByRole("button", { name: "Save" }).click();
 
-		await expect(writerPage.getByText("A player with this name already exists")).toBeVisible();
+		await expect(page.getByText("A player with this name already exists")).toBeVisible();
 		await dialog.getByRole("button", { name: "Cancel" }).click();
-		await deletePlayer(writerPage, id);
+		await deletePlayer(page, id);
 	});
 
 	test("keeps the host of a game night", async ({ page }) => {

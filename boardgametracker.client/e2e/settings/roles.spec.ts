@@ -2,6 +2,8 @@ import type { Page } from "@playwright/test";
 import { expect, readerCredentials, test, writerCredentials } from "../support/fixtures";
 import { api, openContext, sidebarLink } from "../support/settings";
 
+test.use({ allowedApiStatuses: [401, 404] });
+
 const accounts = [
 	{ role: "Reader", username: readerCredentials.username, fixture: "readerPage" },
 	{ role: "User", username: writerCredentials.username, fixture: "writerPage" },
@@ -38,10 +40,10 @@ for (const { role, username, fixture } of accounts) {
 		});
 
 		test("does not get stuck on the single sign-on section", async ({ readerPage, writerPage }) => {
-			test.fail(true, "BUG: ?tab=sso keeps a non-admin on an endless spinner instead of opening the account section");
 			const page = fixture === "readerPage" ? readerPage : writerPage;
 			await page.goto("/settings?tab=sso");
 
+			test.fail(true, "BUG: ?tab=sso keeps a non-admin on an endless spinner instead of opening the account section");
 			await expectOnlyAccount(page, username);
 		});
 

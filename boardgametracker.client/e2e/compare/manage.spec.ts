@@ -206,7 +206,6 @@ test("shows half points in the closest tile", async ({ page }) => {
 });
 
 test("does not credit one player for a shared win on the closest tile", async ({ page }) => {
-	test.fail(true, "BUG: the closest tile says only the left player won when both players won that session");
 	await addSession({
 		gameId: gameId(neverPlayedGame.title),
 		start: days(1),
@@ -218,11 +217,11 @@ test("does not credit one player for a shared win on the closest tile", async ({
 
 	const tiles = page.getByRole("region", { name: "Together", exact: true });
 	await expect(tiles).toContainText("Closest0 pts");
+	test.fail(true, "BUG: the closest tile says only the left player won when both players won that session");
 	await expect(tiles).not.toContainText(`${LEFT} won`, { timeout: 3000 });
 });
 
 test("does not claim someone won the closest session when nobody did", async ({ page }) => {
-	test.fail(true, "BUG: the closest tile says someone else won a session without a winner");
 	await addSession({
 		gameId: gameId(neverPlayedGame.title),
 		start: days(1),
@@ -234,6 +233,7 @@ test("does not claim someone won the closest session when nobody did", async ({ 
 
 	const tiles = page.getByRole("region", { name: "Together", exact: true });
 	await expect(tiles).toContainText("Closest1 pt");
+	test.fail(true, "BUG: the closest tile says someone else won a session without a winner");
 	await expect(tiles).not.toContainText("someone else won", { timeout: 3000 });
 });
 
@@ -276,10 +276,13 @@ test("drops a deleted session from the open comparison", async ({ page }) => {
 
 test("moves on to other players when a player in the link was deleted", async ({ page }) => {
 	const temporary = await api.addPlayer("Crazy Harry");
-	await page.goto(compareOf(temporary, left));
-	await expect(page.getByRole("combobox", { name: "Change left player, now Crazy Harry" })).toBeVisible();
+	try {
+		await page.goto(compareOf(temporary, left));
+		await expect(page.getByRole("combobox", { name: "Change left player, now Crazy Harry" })).toBeVisible();
+	} finally {
+		await api.removePlayer(temporary);
+	}
 
-	await api.removePlayer(temporary);
 	await page.goto(compareOf(temporary, left));
 
 	await expect(page.getByRole("combobox", { name: `Change right player, now ${LEFT}` })).toBeVisible();

@@ -8,6 +8,8 @@ const enableEmail = (page: Page) =>
 		await route.fulfill({ response, json: { ...(await response.json()), emailEnabled: true } });
 	});
 
+test.use({ allowedApiStatuses: [400, 401, 404] });
+
 const resetUrl = "/reset-password?userId=9f1c2d3e-aaaa-bbbb-cccc-1234567890ab&token=not-a-real-token";
 
 test("tells a visitor to ask an admin when email is not set up", async ({ guestPage: page }) => {
@@ -43,13 +45,13 @@ test("asks for a username and confirms without revealing whether it exists", asy
 });
 
 test("does not ask for a reset without a username", async ({ guestPage: page }) => {
-	test.fail(true, "BUG: forgot password submits an empty username and confirms a reset link was sent");
 	await enableEmail(page);
 	await page.goto("/forgot-password");
 	await page.route("**/api/auth/forgot-password", (route) => route.fulfill({ status: 204 }));
 
 	await page.getByRole("button", { name: "Send reset link" }).click();
 
+	test.fail(true, "BUG: forgot password submits an empty username and confirms a reset link was sent");
 	const confirmed = await page
 		.getByText("a reset link has been sent")
 		.waitFor({ timeout: 3_000 })
@@ -104,13 +106,22 @@ test("checks the new password before sending it", async ({ guestPage: page }) =>
 
 	await newPassword.fill("abc");
 	await submit.click();
-	await expect(page.getByText("Password must be at least 4 characters")).toBeVisible();
+	await expect(page.getByText(/^Password must be at least/)).toBeVisible();
 
 	await newPassword.fill("a-long-enough-password-1A");
 	await confirm.fill("something-else-entirely-1A");
 	await submit.click();
 	await expect(page.getByText("Passwords do not match")).toBeVisible();
 	await expect(page).toHaveURL(resetUrl);
+});
+
+test("tells the password rule of the server on the reset page", async ({ guestPage: page }) => {
+	await page.goto(resetUrl);
+	await page.getByLabel("New password", { exact: true }).fill("short");
+	await page.getByRole("button", { name: "Reset password" }).click();
+
+	test.fail(true, "BUG: the reset password page advertises 4 characters while the server wants 8");
+	await expect(page.getByText("Password must be at least 8 characters")).toBeVisible({ timeout: 2_000 });
 });
 
 test("refuses a reset link that is not valid", async ({ guestPage: page }) => {

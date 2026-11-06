@@ -17,6 +17,7 @@ import { games, linkedPlayer, locations } from "../support/seedData";
 import { type Api, apiFor, changeSettings, expect, signIn, test } from "../support/session";
 
 test.describe.configure({ timeout: 90_000 });
+test.use({ allowedApiStatuses: [400, 401, 404] });
 
 const guests = ["Fozzie", "Gonzo"];
 const [guest, otherGuest] = guests;
@@ -321,11 +322,13 @@ test.describe("when invites need a sign in", () => {
 		const rsvp = night.invitedPlayers.find((candidate) => candidate.player.name === guest);
 
 		const read = await page.request.get(`/api/gamenight/link/${night.linkId}`);
+		const manuals = await page.request.get(`/api/manual/gamenight/${night.linkId}`);
 		const write = await page.request.put(`/api/gamenight/link/${night.linkId}/rsvp`, {
 			data: { id: rsvp?.id, gameNightId: night.id, playerId: await playerIdOf(api, guest), state: "accepted" },
 		});
 
 		expect(read.status()).toBe(401);
+		expect(manuals.status()).toBe(401);
 		expect(write.status()).toBe(401);
 		expect(await rsvpStateOf(api, night.id, guest)).toBe("pending");
 		expect((await gameNightOf(api, night.id)).title).toBe(night.title);

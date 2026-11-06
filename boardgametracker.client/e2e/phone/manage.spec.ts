@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "../support/fixtures";
+import { displayDate } from "../support/format";
 import { pick } from "../support/gamesPage";
 import { apiFor, expectNoSidewaysScroll, gameId, locationId, phone, playerId, settled } from "../support/phone";
 import { expected, games, linkedPlayer, locations, neverPlayedGame, players } from "../support/seedData";
@@ -213,7 +214,6 @@ test.describe("from the detail page", () => {
 });
 
 test("a long game title in most played keeps the player page on a phone", async ({ page }) => {
-	test.fail(true, "BUG: a long title in Most played widens the grid of the player page, so the page scrolls sideways");
 	const api = await apiFor(page);
 	const player = await api.post("/api/player", { name: "Phone player with a long title" });
 	const game = await api.post("/api/game", {
@@ -237,6 +237,10 @@ test("a long game title in most played keeps the player page on a phone", async 
 		await settled(page);
 		await expect(page.getByRole("heading", { name: "Most played games", level: 2 })).toBeVisible();
 
+		test.fail(
+			true,
+			"BUG: a long title in Most played widens the grid of the player page, so the page scrolls sideways",
+		);
 		await expectNoSidewaysScroll(page);
 	} finally {
 		await api.tidy(`/api/session/${session.id}`);
@@ -264,7 +268,7 @@ test("adds a game with a select, a date and a price and removes it", async ({ pa
 		const game = await api.get<{ state: string; buyingPrice: number; additionDate: string }>(`/api/game/${id}`);
 		expect(game.state).toBe("wanted");
 		expect(game.buyingPrice).toBe(42);
-		expect(new Date(game.additionDate).getDate()).toBe(15);
+		expect(displayDate(new Date(game.additionDate))).toMatch(/^15-/);
 	} finally {
 		await api.tidy(`/api/game/${id}`);
 	}
@@ -315,17 +319,21 @@ test("adds and renames a location in a dialog with the Enter key", async ({ page
 test("logs a session from the phone form and finds it in the card list", async ({ page }) => {
 	const title = neverPlayedGame.title;
 	const api = await apiFor(page);
-	await page.goto(`/sessions/new/${gameId(title)}`);
-	await settled(page);
+	try {
+		await page.goto(`/sessions/new/${gameId(title)}`);
+		await settled(page);
 
-	await page.getByRole("combobox", { name: "Players & scores" }).click();
-	await page.getByRole("option", { name: new RegExp(`^${linkedPlayer}`) }).click();
-	await page.keyboard.press("Escape");
-	await bar(page).getByRole("button", { name: "Log session" }).click();
+		await page.getByRole("combobox", { name: "Players & scores" }).click();
+		await page.getByRole("option", { name: new RegExp(`^${linkedPlayer}`) }).click();
+		await page.keyboard.press("Escape");
+		await bar(page).getByRole("button", { name: "Log session" }).click();
+		await expect(page).toHaveURL(`/games/${gameId(title)}`);
 
-	await page.goto(`/games/${gameId(title)}/sessions`);
-	await settled(page);
-	await expect(main(page).getByRole("button", { name: "Edit" })).toHaveCount(1);
-	const sessions = await api.get<{ id: number }[]>(`/api/game/${gameId(title)}/sessions`);
-	for (const session of sessions) await api.tidy(`/api/session/${session.id}`);
+		await page.goto(`/games/${gameId(title)}/sessions`);
+		await settled(page);
+		await expect(main(page).getByRole("button", { name: "Edit" })).toHaveCount(1);
+	} finally {
+		const sessions = await api.get<{ id: number }[]>(`/api/game/${gameId(title)}/sessions`);
+		for (const session of sessions) await api.tidy(`/api/session/${session.id}`);
+	}
 });

@@ -2,6 +2,7 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "../support/fixtures";
 import { gameId, phone, playerId, settled } from "../support/phone";
 import { expected, gameNights, games, linkedPlayer, loans, locations } from "../support/seedData";
+import { mockSettings } from "../support/settings";
 
 const bottomNav = (page: Page) => page.getByRole("navigation");
 const moreButton = (page: Page) => bottomNav(page).getByRole("button", { name: "More" });
@@ -87,18 +88,18 @@ test("lights the entry of the open page and only that one", async ({ page }) => 
 });
 
 test("keeps Games lit on a game detail page", async ({ page }) => {
-	test.fail(true, "BUG: the bottom bar lights nothing on detail pages, it compares the exact path");
 	await page.goto(`/games/${gameId(games[0].title)}`);
 	await settled(page);
 
+	test.fail(true, "BUG: the bottom bar lights nothing on detail pages, it compares the exact path");
 	await expect(lit(page)).toHaveText(["Games"], { timeout: 1000 });
 });
 
 test("keeps More lit on a game night detail page", async ({ page }) => {
-	test.fail(true, "BUG: the bottom bar lights nothing on detail pages, it compares the exact path");
 	await page.goto("/game-nights/1");
 	await settled(page);
 
+	test.fail(true, "BUG: the bottom bar lights nothing on detail pages, it compares the exact path");
 	await expect(lit(page)).toHaveText(["More"], { timeout: 1000 });
 });
 
@@ -156,23 +157,23 @@ test("tapping next to the More menu closes it", async ({ page }) => {
 });
 
 test("Escape closes the More menu", async ({ page }) => {
-	test.fail(true, "BUG: the More menu ignores Escape, so keyboard users have to tab back to the More button");
 	await page.goto("/");
 	await openMore(page);
 
 	await page.keyboard.press("Escape");
 
+	test.fail(true, "BUG: the More menu ignores Escape, so keyboard users have to tab back to the More button");
 	await expect(moreEntries(page)).toHaveCount(0, { timeout: 1000 });
 });
 
 test("a bottom bar entry closes the More menu", async ({ page }) => {
-	test.fail(true, "BUG: the More menu stays open over the new page after tapping a bottom bar entry");
 	await page.goto("/");
 	await openMore(page);
 
 	await bottomNav(page).getByRole("link", { name: "Games" }).click();
 
 	await expect(page).toHaveURL("/games");
+	test.fail(true, "BUG: the More menu stays open over the new page after tapping a bottom bar entry");
 	await expect(moreEntries(page)).toHaveCount(0, { timeout: 1000 });
 });
 
@@ -243,13 +244,13 @@ test.describe("as a Reader", () => {
 		await expect(bottomNav(page).locator("a, button")).toHaveText(["Dashboard", "Games", "Players", "More"]);
 	});
 
-	test("shows the same More entries without chat", async ({ readerPage: page }) => {
+	test("shows the same More entries without the rules chat", async ({ readerPage: page }) => {
+		await mockSettings(page, { ragEnabled: true });
 		await page.setViewportSize(phone);
 		await page.goto("/");
 		await openMore(page);
 
 		await expect(moreEntries(page)).toHaveText(adminEntries.map(({ name, count }) => `${name}${count ?? ""}`));
-		await expect(page.getByRole("link", { name: "Chat" })).toHaveCount(0);
 	});
 
 	test("shows the reader as the user with a log out button", async ({ readerPage: page }) => {

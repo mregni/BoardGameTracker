@@ -1,6 +1,6 @@
-import { startOfYear, subMonths } from "date-fns";
+import { subMonths } from "date-fns";
 import { test } from "../support/fixtures";
-import { expectFilters, expectLeaderboard } from "../support/leaderboardPage";
+import { expectFilters, expectLeaderboard, pinnedYear, pinYearStart } from "../support/leaderboardPage";
 import { games, sessions } from "../support/seedData";
 import { between, brusselsDay, gameId, leaderboard, type RankBy } from "../support/standings";
 
@@ -21,7 +21,7 @@ const minimumQuery = (minimum: number) => (minimum === 5 ? "" : `min=${minimum}`
 
 const today = new Date();
 const periods = [
-	{ query: "range=year", label: "This year", subset: between(brusselsDay(startOfYear(today))) },
+	{ query: "range=year", label: "This year", subset: pinnedYear },
 	{ query: "range=12m", label: "Last 12 months", subset: between(brusselsDay(subMonths(today, 12))) },
 ];
 
@@ -42,6 +42,7 @@ for (const { rank, label, query } of rankings) {
 
 	for (const period of periods) {
 		test(`ranks ${period.label} by ${label}`, async ({ page }) => {
+			await pinYearStart(page);
 			await page.goto(url(period.query, query));
 
 			await expectFilters(page, { period: period.label, game: "All games", min: "5 sessions", rank: label });

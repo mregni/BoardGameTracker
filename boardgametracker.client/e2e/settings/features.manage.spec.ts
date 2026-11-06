@@ -38,8 +38,10 @@ test("removes the shelf of shame everywhere when it is switched off", async ({ p
 
 	await page.goto("/shames");
 	await expect(page).toHaveURL("/");
+	expect((await (await api(page)).get("/api/game/shames")).status()).toBe(404);
 
 	await readerPage.goto("/");
+	await readerPage.waitForLoadState("networkidle");
 	await expect(sidebarLink(readerPage, "Dashboard")).toBeVisible();
 	await expect(sidebarLink(readerPage, /^Shelf of Shame/)).toHaveCount(0);
 });
@@ -63,8 +65,10 @@ test("removes game nights everywhere when they are switched off", async ({ page,
 		await page.goto(path);
 		await expect(page).toHaveURL("/");
 	}
+	expect((await (await api(page)).get("/api/gamenight")).status()).toBe(404);
 
 	await readerPage.goto("/");
+	await readerPage.waitForLoadState("networkidle");
 	await expect(sidebarLink(readerPage, "Dashboard")).toBeVisible();
 	await expect(sidebarLink(readerPage, /^Game nights/)).toHaveCount(0);
 });
@@ -103,7 +107,6 @@ test("refuses a months threshold below one", async ({ page }) => {
 });
 
 test("explains the months threshold in plain words", async ({ page }) => {
-	test.fail(true, "BUG: a too low months threshold shows the raw validator text instead of a translated message");
 	await openSection(page, "shelf-of-shame");
 
 	const months = page.getByRole("spinbutton", { name: "Months threshold" });
@@ -111,6 +114,7 @@ test("explains the months threshold in plain words", async ({ page }) => {
 	await months.fill("0");
 
 	await expect(months).toHaveAttribute("aria-invalid", "true");
+	test.fail(true, "BUG: a too low months threshold shows the raw validator text instead of a translated message");
 	await expect(page.getByText(/expected number/)).toHaveCount(0, { timeout: 1000 });
 });
 

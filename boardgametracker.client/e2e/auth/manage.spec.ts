@@ -3,6 +3,7 @@ import { expected, players } from "../support/seedData";
 import { type Api, apiFor, expect, paceLogin, SESSION_HEADERS, signIn, test } from "../support/session";
 
 test.describe.configure({ timeout: 60_000 });
+test.use({ allowedApiStatuses: [400, 401, 404] });
 
 const password = "first-login-password";
 
@@ -15,6 +16,9 @@ test.beforeAll(async ({ signedInContext }) => {
 
 test.afterAll(async () => {
 	for (const id of userIds) await api.call("DELETE", `/api/admin/users/${id}`);
+	const left: { id: number; name: string }[] = await (await api.call("GET", "/api/player")).json();
+	for (const { id } of left.filter(({ name }) => !players.includes(name)))
+		await api.call("DELETE", `/api/player/${id}`);
 });
 
 const createUser = async (username: string, role: string) => {
@@ -53,7 +57,9 @@ test("a first login can skip, link or create a player", async ({ guestPage: page
 	await expect(dialog.getByRole("radio", { name: /I'm new here/ })).not.toBeChecked();
 	await expect(dialog.getByRole("button", { name: "This is me" })).toBeDisabled();
 
+	const skipped = page.waitForResponse("**/api/auth/player-link/skip");
 	await dialog.getByRole("button", { name: "Not now" }).click();
+	expect((await skipped).status()).toBe(200);
 	await expect(dialog).toHaveCount(0);
 	expect((await userInfo()).playerId).toBeNull();
 
@@ -128,18 +134,17 @@ test("refuses a disabled account", async ({ guestPage: page }) => {
 });
 
 test("tells a disabled account why it cannot sign in", async ({ guestPage: page }) => {
-	test.fail(true, "BUG: a disabled account gets the message for too many failed attempts");
 	const user = await createUser("disabled-message-user", "User");
 	expect((await api.call("POST", `/api/admin/users/${user.id}/disable`, {})).ok()).toBe(true);
 	await page.goto("/login");
 
 	await signIn(page, user);
 
+	test.fail(true, "BUG: a disabled account gets the message for too many failed attempts");
 	await expect(page.getByText("This account is disabled. Ask an admin to enable it.")).toBeVisible();
 });
 
 test("stops accepting the access token after logging out", async ({ guestPage: page }) => {
-	test.fail(true, "BUG: the access token keeps working for up to 15 minutes after logout");
 	const user = await createUser("logout-token-user", "Reader");
 	await paceLogin();
 	const { accessToken } = await (await page.request.post("/api/auth/login", { data: user })).json();
@@ -148,5 +153,6 @@ test("stops accepting the access token after logging out", async ({ guestPage: p
 
 	await page.request.post("/api/auth/logout", { headers: { ...SESSION_HEADERS, ...headers } });
 
+	test.fail(true, "BUG: the access token keeps working for up to 15 minutes after logout");
 	expect((await page.request.get("/api/auth/profile", { headers })).status()).toBe(401);
 });

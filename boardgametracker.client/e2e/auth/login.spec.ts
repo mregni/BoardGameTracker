@@ -3,8 +3,11 @@ import { expect, paceLogin, SESSION_HEADERS, signIn, test } from "../support/ses
 
 const invalid = "Invalid username or password";
 
+test.use({ allowedApiStatuses: [400, 401, 404] });
+
 test("shows the sign in form", async ({ guestPage: page }) => {
 	await page.goto("/login");
+	await page.waitForLoadState("networkidle");
 
 	await expect(page.getByText("Sign in to BoardGameTracker")).toBeVisible();
 	await expect(page.getByLabel("Username")).toHaveAttribute("placeholder", "Enter your username");
@@ -44,6 +47,7 @@ test("refuses a wrong password, then signs in and returns to the requested page"
 test("does not sign in with empty fields", async ({ guestPage: page }) => {
 	await page.goto("/login");
 
+	await paceLogin();
 	await page.getByRole("button", { name: "Sign in" }).click();
 
 	await expect(page.getByText(invalid)).toBeVisible();
@@ -65,27 +69,31 @@ for (const { name, status, title, message } of [
 	},
 	{ name: "a server error", status: 500, title: "", message: "A server error occurred. Please try again later." },
 ]) {
-	test(`explains ${name}`, async ({ guestPage: page }) => {
-		await page.route("**/api/auth/login", (route) => route.fulfill({ status, json: { title } }));
-		await page.goto("/login");
+	test.describe(`with status ${status}`, () => {
+		test.use({ allowedApiStatuses: [401, 404, status] });
 
-		await signIn(page, credentials);
+		test(`explains ${name}`, async ({ guestPage: page }) => {
+			await page.route("**/api/auth/login", (route) => route.fulfill({ status, json: { title } }));
+			await page.goto("/login");
 
-		await expect(page.getByText(message)).toBeVisible();
-		await expect(page).toHaveURL("/login");
+			await signIn(page, credentials);
+
+			await expect(page.getByText(message)).toBeVisible();
+			await expect(page).toHaveURL("/login");
+		});
 	});
 }
 
-test("logs out everywhere and leaves nothing that still works", async ({ guestPage: page }) => {
+test("logs out every tab and leaves nothing that still works", async ({ guestPage: page }) => {
 	const context = page.context();
 	await page.goto("/games");
 	await signIn(page, credentials);
 	await expect(page).toHaveURL("/games");
-	const refreshCookies = await context.cookies();
-	const cookie = refreshCookies.map(({ name, value }) => `${name}=${value}`).join("; ");
 	const otherTab = await context.newPage();
 	await otherTab.goto("/loans");
 	await expect(otherTab.getByRole("button", { name: "Log out" })).toBeVisible();
+	const refreshCookies = await context.cookies();
+	const cookie = refreshCookies.map(({ name, value }) => `${name}=${value}`).join("; ");
 
 	await page.getByRole("button", { name: "Log out" }).click();
 

@@ -16,6 +16,7 @@ import {
 } from "../support/settings";
 
 test.use({ allowedApiStatuses: [400, 401, 404] });
+test.describe.configure({ timeout: 60_000 });
 
 const tempUser = "temp-user";
 const tempPassword = "temp-password";
@@ -90,7 +91,7 @@ test("refuses a new user without the required fields", async ({ page }) => {
 	await expect(dialog.getByText("Required", { exact: false })).toHaveCount(3);
 
 	await field(page, "Password").fill("abc");
-	await expect(dialog.getByText("Password must be at least 4 characters")).toBeVisible();
+	await expect(dialog.getByText(/^Password must be at least/)).toBeVisible();
 
 	await dialog.getByRole("button", { name: "Cancel" }).click();
 	await expect(dialog).toBeHidden();
@@ -222,6 +223,7 @@ test("refuses an edit to an existing or empty username", async ({ page }) => {
 test("disables a user, ends the session and enables the user again", async ({ page, browser, baseURL }) => {
 	await createUser(page, tempUser, tempPassword);
 	const own = await signInAs(browser, baseURL, tempUser, tempPassword);
+	const ownClient = await api(own);
 	try {
 		await openSection(page, "account");
 		await row(page, tempUser).getByRole("button", { name: "Access" }).click();
@@ -244,10 +246,12 @@ test("disables a user, ends the session and enables the user again", async ({ pa
 		await dialog.getByText("Close", { exact: true }).click();
 		await expect(row(page, tempUser).getByText("Disabled")).toBeVisible();
 
+		expect((await ownClient.get("/api/auth/profile")).status()).toBe(401);
 		await own.goto("/settings");
 		await expect(own).toHaveURL(/\/login/);
+		const refused = own.waitForResponse("**/api/auth/login");
 		await submitLogin(own, tempUser, tempPassword);
-		await expect(own.getByText("Too many failed attempts. Try again later.")).toBeVisible();
+		expect((await refused).status()).toBe(401);
 		await expect(own).toHaveURL(/\/login/);
 
 		await row(page, tempUser).getByRole("button", { name: "Access" }).click();
@@ -264,7 +268,6 @@ test("disables a user, ends the session and enables the user again", async ({ pa
 });
 
 test("tells a disabled user why the sign-in is refused", async ({ page, browser, baseURL }) => {
-	test.fail(true, "BUG: a disabled user sees Too many failed attempts instead of the account disabled message");
 	await createUser(page, tempUser, tempPassword);
 	const user = await findUser(page, tempUser);
 	await (await api(page)).post(`/api/admin/users/${user?.id}/disable`);
@@ -274,6 +277,7 @@ test("tells a disabled user why the sign-in is refused", async ({ page, browser,
 	try {
 		await submitLogin(visitor, tempUser, tempPassword);
 
+		test.fail(true, "BUG: a disabled user sees Too many failed attempts instead of the account disabled message");
 		await expect(visitor.getByText("This account is disabled. Ask an admin to enable it.")).toBeVisible({
 			timeout: 3000,
 		});
@@ -318,6 +322,21 @@ test("resets a password to a temporary one that works", async ({ page, browser, 
 	await visitorContext.close();
 });
 
+test("ends the sessions of a user whose password is reset", async ({ page, browser, baseURL }) => {
+	await createUser(page, tempUser, tempPassword);
+	const user = await findUser(page, tempUser);
+	const own = await signInAs(browser, baseURL, tempUser, tempPassword);
+	try {
+		expect((await (await api(page)).post(`/api/auth/reset-password/${user?.id}`)).ok()).toBe(true);
+
+		await own.goto("/settings");
+
+		await expect(own).toHaveURL(/\/login/);
+	} finally {
+		await own.context().close();
+	}
+});
+
 test("protects the own account", async ({ page }) => {
 	const self = await findUser(page, credentials.username);
 	await openSection(page, "account");
@@ -345,7 +364,6 @@ test("protects the own account", async ({ page }) => {
 });
 
 test("refuses an email address that is not one", async ({ page }) => {
-	test.fail(true, "BUG: the add user dialog accepts any text as email address");
 	const dialog = await openAddUser(page);
 	await field(page, "Username").fill(tempUser);
 	await field(page, "Email").fill("not an email");
@@ -356,15 +374,16 @@ test("refuses an email address that is not one", async ({ page }) => {
 		.catch(() => null);
 	await dialog.getByRole("button", { name: "Add", exact: true }).click();
 
+	test.fail(true, "BUG: the add user dialog accepts any text as email address");
 	expect(await sent).toBeNull();
 });
 
 test("tells the password rule of the server when adding a user", async ({ page }) => {
-	test.fail(true, "BUG: the add user dialog advertises 4 characters while the server wants 8");
 	await openAddUser(page);
 
 	await field(page, "Password").fill("abc");
 
+	test.fail(true, "BUG: the add user dialog advertises 4 characters while the server wants 8");
 	await expect(page.getByRole("dialog").getByText("Password must be at least 8 characters")).toBeVisible({
 		timeout: 2000,
 	});
@@ -373,10 +392,12 @@ test("tells the password rule of the server when adding a user", async ({ page }
 test("keeps the dialog open when the server refuses a short password", async ({ page }) => {
 	const dialog = await openAddUser(page);
 	await fillNewUser(page, tempUser, "short");
+	const refused = page.waitForResponse("**/api/auth/register");
 
 	await dialog.getByRole("button", { name: "Add", exact: true }).click();
 
-	await expect(dialog.getByText("One or more validation errors occurred.")).toBeVisible();
+	expect((await refused).status()).toBe(400);
+	await expect(dialog).toBeVisible();
 	await expect(row(page, tempUser)).toHaveCount(0);
 });
 

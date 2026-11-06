@@ -1,9 +1,10 @@
 import { type APIRequestContext, expect } from "@playwright/test";
-import { credentials } from "./fixtures";
+import { credentials, paceLogin } from "./fixtures";
 
 let accessToken: string | null = null;
 
 const signIn = async (request: APIRequestContext) => {
+	await paceLogin();
 	const login = await request.post("/api/auth/login", { data: credentials });
 	expect(login.ok()).toBe(true);
 	return (await login.json()).accessToken as string;

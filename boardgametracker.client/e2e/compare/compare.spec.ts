@@ -270,8 +270,10 @@ test("opens from a rival on the player page with both players chosen", async ({ 
 });
 
 test("keeps the old numbers dimmed while another player loads", async ({ page }) => {
-	const [, , third] = players;
 	const oldWins = String(headToHead(busiest, rival).oneWins);
+	const third =
+		players.find((name) => name !== busiest && name !== rival && String(headToHead(name, rival).oneWins) !== oldWins) ??
+		"";
 	await openCompare(page, busiest, rival);
 	const release = await holdComparisons(page);
 
@@ -369,19 +371,19 @@ test.describe("too few players", () => {
 });
 
 test("explains when the comparison cannot be loaded", async ({ page }) => {
-	test.fail(true, "BUG: /compare keeps spinning forever when the comparison request fails");
 	await page.route("**/api/compare/*/*", (route) => route.abort());
 
 	await page.goto(compareUrl(busiest, rival));
 
+	test.fail(true, "BUG: /compare keeps spinning forever when the comparison request fails");
 	await expect(page.getByText("Couldn't load this page")).toBeVisible({ timeout: 3000 });
 });
 
 test("explains when the players cannot be loaded", async ({ page }) => {
-	test.fail(true, "BUG: /compare says there are not enough players when the player list fails to load");
 	await page.route(PLAYERS_ROUTE, (route) => route.abort());
 
 	await page.goto("/compare");
 
+	test.fail(true, "BUG: /compare says there are not enough players when the player list fails to load");
 	await expect(page.getByText("Couldn't load this page")).toBeVisible({ timeout: 3000 });
 });

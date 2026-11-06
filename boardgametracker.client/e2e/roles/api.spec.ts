@@ -5,7 +5,9 @@ const writes: [string, string][] = [
 	["PUT", "/api/game"],
 	["DELETE", "/api/game/1"],
 	["POST", "/api/game/bgg/search"],
+	["GET", "/api/game/bgg/import"],
 	["POST", "/api/game/bgg/import"],
+	["POST", "/api/rag/game/1/ask"],
 	["POST", "/api/game/1/watch"],
 	["POST", "/api/game/1/expansions"],
 	["POST", "/api/game/1/expansions/manual"],
@@ -56,9 +58,18 @@ const adminOnly: [string, string][] = [
 	["POST", "/api/admin/users/1/disable"],
 	["POST", "/api/admin/users/1/enable"],
 	["PUT", "/api/admin/players/1/account"],
+	["POST", "/api/admin/users/1/role/identity-provider"],
+	["GET", "/api/admin/users/1/external-logins"],
+	["DELETE", "/api/admin/users/1/external-logins/1"],
 	["GET", "/api/admin/oidc-providers"],
+	["GET", "/api/admin/oidc-providers/setup"],
+	["POST", "/api/admin/oidc-providers/test-discovery"],
 	["POST", "/api/admin/oidc-providers"],
+	["GET", "/api/admin/oidc-providers/1"],
+	["PUT", "/api/admin/oidc-providers/1"],
 	["DELETE", "/api/admin/oidc-providers/1"],
+	["GET", "/api/settings/integrations/status"],
+	["POST", "/api/settings/integrations/bgg/test"],
 	["POST", "/api/maintenance/reset"],
 	["POST", "/api/maintenance/factory-reset"],
 	["POST", "/api/update/check"],
@@ -119,10 +130,14 @@ test.describe("a user", () => {
 		});
 	}
 
-	test("passes the role check for writes", async () => {
-		await expectStatus(api, "POST", "/api/player", 400);
-		await expectStatus(api, "PUT", "/api/loans", 400);
-	});
+	for (const [method, path] of writes.filter(([, url]) => url !== "/api/auth/player-link/new")) {
+		test(`passes the role check for ${method} ${path}`, async () => {
+			const unknownIds = path.replace(/\/1(?=\/|$)/g, "/999999");
+			const response = await api.call(method, unknownIds, method === "POST" || method === "PUT" ? {} : undefined);
+
+			expect([401, 403]).not.toContain(response.status());
+		});
+	}
 });
 
 test.describe("a visitor", () => {

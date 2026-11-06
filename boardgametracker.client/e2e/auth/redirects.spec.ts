@@ -1,5 +1,7 @@
 import { expect, test } from "../support/session";
 
+test.use({ allowedApiStatuses: [401, 404] });
+
 const protectedPages = [
 	"/",
 	"/games",
@@ -32,18 +34,7 @@ const protectedPages = [
 	"/games?view=table",
 ];
 
-const gatedByRole = [
-	"/games/add",
-	"/games/new",
-	"/games/bgg",
-	"/games/import/start",
-	"/games/1/update",
-	"/players/new",
-	"/sessions/new",
-	"/sessions/new/1",
-	"/sessions/update/1",
-	"/chat",
-];
+const losesDeepLink = ["/games/import/start", "/sessions/new", "/sessions/new/1", "/sessions/update/1", "/chat"];
 
 for (const path of protectedPages) {
 	test(`sends a visitor from ${path} to the login page`, async ({ guestPage: page }) => {
@@ -52,9 +43,11 @@ for (const path of protectedPages) {
 		await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
 		await expect(page).toHaveURL(/\/login\?/);
 		await expect(page.getByRole("complementary")).toHaveCount(0);
-		if (!gatedByRole.includes(path)) {
-			expect(new URL(page.url()).searchParams.get("redirect")).toBe(path);
-		}
+		test.fail(
+			losesDeepLink.includes(path),
+			"BUG: a visitor loses the deep link to this page and lands elsewhere after signing in",
+		);
+		expect(new URL(page.url()).searchParams.get("redirect")).toBe(path);
 	});
 }
 

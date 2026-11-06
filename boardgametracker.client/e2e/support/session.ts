@@ -1,16 +1,16 @@
 import type { BrowserContext, Page } from "@playwright/test";
-import { test as base, expect } from "./fixtures";
+import { test as base, expect, paceLogin, useWatchedPage } from "./fixtures";
 
 export const test = base.extend<{ guestPage: Page }>({
-	guestPage: async ({ browser }, use, testInfo) => {
+	guestPage: async ({ browser, allowedApiStatuses }, use, testInfo) => {
 		const { baseURL, locale, timezoneId, viewport } = testInfo.project.use;
 		const context = await browser.newContext({ baseURL, locale, timezoneId, viewport });
-		await use(await context.newPage());
+		await useWatchedPage(context, allowedApiStatuses, use);
 		await context.close();
 	},
 });
 
-export { expect };
+export { expect, paceLogin };
 
 export const spaced = (spacingMs: number) => {
 	let nextTurn = 0;
@@ -21,8 +21,6 @@ export const spaced = (spacingMs: number) => {
 		await new Promise((resolve) => setTimeout(resolve, wait));
 	};
 };
-
-export const paceLogin = spaced(8_000);
 
 export const SESSION_HEADERS = { "X-Requested-With": "XMLHttpRequest" };
 
