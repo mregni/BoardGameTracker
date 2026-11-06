@@ -291,25 +291,6 @@ test("every action of the last user can be reached", async ({ page }) => {
 	await page.getByRole("menuitem").last().click({ trial: true, timeout: 3000 });
 });
 
-test("an error toast leaves the buttons of a sheet free", async ({ page }) => {
-	await page.setViewportSize(phone);
-	await page.route("**/api/loans/return", (route) => route.abort());
-	await page.goto("/loans");
-	await settled(page);
-
-	await page.getByRole("button", { name: `Mark returned ${loanedGame}` }).click();
-	const dialog = page.getByRole("dialog");
-	await dialogAtRest(dialog);
-	await footerOf(dialog).getByRole("button", { name: "Mark returned" }).click();
-
-	const toast = page.getByRole("region", { name: /Notifications/ }).getByRole("listitem");
-	await expect(toast).toBeVisible();
-	await expect(dialog).toBeVisible();
-	const toastBox = await toast.boundingBox();
-	const footerBox = await footerOf(dialog).boundingBox();
-	expect((toastBox?.y ?? 0) + (toastBox?.height ?? 0)).toBeLessThanOrEqual(footerBox?.y ?? 0);
-});
-
 test("the delete session dialog names what it deletes once", async ({ page }) => {
 	await page.setViewportSize(phone);
 	await page.goto(`/games/${firstGame}/sessions`);

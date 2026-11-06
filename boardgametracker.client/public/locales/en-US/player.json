@@ -96,7 +96,7 @@
     "to-rank_other": "{{count}} more sessions to make the leaderboard"
   },
   "actions": {
-    "log-session": "Log a session",
+    "log-session": "Log session",
     "compare": "Compare"
   },
   "record": {

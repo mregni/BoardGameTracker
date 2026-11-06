@@ -522,7 +522,7 @@ test.describe("statistics", () => {
 
 		await expect(card.getByRole("progressbar")).toHaveCount(attendees.length);
 		for (const name of attendees) {
-			await expect(card.getByRole("progressbar", { name: `${name} came to 1 of 1 nights` })).toBeVisible();
+			await expect(card.getByRole("progressbar", { name: `${name} came to 1 of 1 night` })).toBeVisible();
 		}
 		await expect(card.getByRole("button", { name: `Show the last nights of ${host}` })).toContainText("host 1×");
 		await expect(card.getByRole("button", { name: `Show the last nights of ${host}` })).toHaveAttribute(

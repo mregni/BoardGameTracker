@@ -390,7 +390,7 @@ test("refuses a bad email address and an empty username when editing a user", as
 	await dialog.getByRole("button", { name: "Save" }).click();
 
 	await expect(field(page, "Username")).toBeFocused();
-	await expect(dialog.getByText("Required")).toBeVisible();
+	await expect(dialog.getByText("Username is required")).toBeVisible();
 	await expect(dialog.getByText("Enter a valid email address")).toBeVisible();
 	expect(await sent).toBeNull();
 });

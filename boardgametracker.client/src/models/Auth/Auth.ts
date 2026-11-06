@@ -141,7 +141,7 @@ export const CreateUserSchema = z.object({
 });
 
 export const EditUserSchema = z.object({
-	username: requiredString,
+	username: z.string().min(1, { message: "error:auth.username-required" }),
 	email: z.string().email(invalidEmail).or(z.literal("")),
 });
 

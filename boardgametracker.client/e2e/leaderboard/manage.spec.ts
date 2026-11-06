@@ -53,7 +53,7 @@ test("gives identical stats the same rank and skips the next one", async ({ page
 
 	await expect(podium(page)).toHaveCount(3);
 	await expect(podium(page).nth(0)).toHaveAccessibleName("Place 1, Alpha, 1 Win, 100% · 1 session");
-	await expect(podium(page).nth(1)).toHaveAccessibleName("Place 1, Bravo, 1 Wins, 100% · 1 session");
+	await expect(podium(page).nth(1)).toHaveAccessibleName("Place 1, Bravo, 1 Win, 100% · 1 session");
 	await expect(podium(page).nth(2)).toHaveAccessibleName("Place 3, Charlie, 0 Wins, 0% · 2 sessions");
 });
 
@@ -88,8 +88,8 @@ test("breaks equal sessions on the wins", async ({ page }) => {
 
 	await page.goto(boardOf(1, "sessions"));
 
-	await expect(podium(page).nth(0)).toHaveAccessibleName("Place 1, Bravo, 1 Sessions, 1 win · 100%");
-	await expect(podium(page).nth(1)).toHaveAccessibleName("Place 2, Alpha, 1 Sessions, 0 wins · 0%");
+	await expect(podium(page).nth(0)).toHaveAccessibleName("Place 1, Bravo, 1 Session, 1 win · 100%");
+	await expect(podium(page).nth(1)).toHaveAccessibleName("Place 2, Alpha, 1 Session, 0 wins · 0%");
 });
 
 test("uses two steps for two ranked players and no ranking list", async ({ page }) => {

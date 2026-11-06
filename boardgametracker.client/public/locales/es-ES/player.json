@@ -96,7 +96,7 @@
     "to-rank_other": "{{count}} partidas más para entrar en la clasificación"
   },
   "actions": {
-    "log-session": "Registrar una partida",
+    "log-session": "Registrar partida",
     "compare": "Comparar"
   },
   "record": {
