@@ -5,7 +5,6 @@ import { expected, linkedPlayer, players } from "../support/seedData";
 import {
 	api,
 	createUser,
-	expectingFailures,
 	findUser,
 	openContext,
 	openSection,
@@ -277,10 +276,7 @@ test("tells a disabled user why the sign-in is refused", async ({ page, browser,
 	try {
 		await submitLogin(visitor, tempUser, tempPassword);
 
-		test.fail(true, "BUG: a disabled user sees Too many failed attempts instead of the account disabled message");
-		await expect(visitor.getByText("This account is disabled. Ask an admin to enable it.")).toBeVisible({
-			timeout: 3000,
-		});
+		await expect(visitor.getByText("This account is disabled. Ask an admin to enable it.")).toBeVisible();
 	} finally {
 		await context.close();
 	}
@@ -383,22 +379,28 @@ test("tells the password rule of the server when adding a user", async ({ page }
 
 	await field(page, "Password").fill("abc");
 
-	test.fail(true, "BUG: the add user dialog advertises 4 characters while the server wants 8");
-	await expect(page.getByRole("dialog").getByText("Password must be at least 8 characters")).toBeVisible({
-		timeout: 2000,
-	});
+	await expect(page.getByRole("dialog").getByText("Password must be at least 8 characters")).toBeVisible();
 });
 
-test("keeps the dialog open when the server refuses a short password", async ({ page }) => {
+test("stops a password of 7 characters, which the server refuses too", async ({ page }) => {
+	const password = "seven-7";
 	const dialog = await openAddUser(page);
-	await fillNewUser(page, tempUser, "short");
-	const refused = page.waitForResponse("**/api/auth/register");
+	await fillNewUser(page, tempUser, password);
+	const sent = page
+		.waitForRequest((request) => request.url().endsWith("/api/auth/register"), { timeout: 1500 })
+		.catch(() => null);
 
 	await dialog.getByRole("button", { name: "Add", exact: true }).click();
 
-	expect((await refused).status()).toBe(400);
+	expect(await sent).toBeNull();
 	await expect(dialog).toBeVisible();
-	await expect(row(page, tempUser)).toHaveCount(0);
+	const refused = await (await api(page)).post("/api/auth/register", {
+		username: tempUser,
+		email: `${tempUser}@example.test`,
+		password,
+		role: "User",
+	});
+	expect(refused.status()).toBe(400);
 });
 
 test("says so when resetting a password or disabling a user fails", async ({ page }) => {
@@ -427,7 +429,7 @@ test("says so when resetting a password or disabling a user fails", async ({ pag
 	await expect(access.getByText("Can sign in")).toBeVisible();
 });
 
-expectingFailures("says so when deleting a user fails", async ({ page }) => {
+test("says so when deleting a user fails", async ({ page }) => {
 	await page.route("**/api/admin/users/*", (route) =>
 		route.request().method() === "DELETE"
 			? route.fulfill({ status: 400, json: { title: "error.test.unknown" } })

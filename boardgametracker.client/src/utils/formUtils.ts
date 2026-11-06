@@ -1,3 +1,5 @@
+import { isApiError } from "@/models";
+
 interface FormLike {
 	handleSubmit: () => Promise<unknown>;
 }
@@ -10,10 +12,20 @@ const showFirstError = (form: Element) => {
 	error?.scrollIntoView?.({ block: "center" });
 };
 
+export const ignoreApiError = async (work: unknown) => {
+	try {
+		await work;
+	} catch (error) {
+		if (!isApiError(error)) {
+			throw error;
+		}
+	}
+};
+
 export const handleFormSubmit = (form: FormLike) => async (e: React.FormEvent) => {
 	e.preventDefault();
 	e.stopPropagation();
 	const formElement = e.currentTarget;
-	await form.handleSubmit();
+	await ignoreApiError(form.handleSubmit());
 	requestAnimationFrame(() => showFirstError(formElement));
 };

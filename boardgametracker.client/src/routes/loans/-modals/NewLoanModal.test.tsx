@@ -244,6 +244,16 @@ describe("NewLoanModal", () => {
 		await waitFor(() => expect(screen.getByRole("combobox", { name: "new.player.label" })).toHaveValue("8"));
 	});
 
+	it("selects a player created from the dialog when the player list already has it", async () => {
+		mocks.players = [kathleen, nova];
+		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
+
+		await userEvent.click(screen.getByRole("button", { name: "player-session:new.create-player" }));
+		act(() => fireEvent.click(screen.getByRole("button", { name: "save-new-player", hidden: true })));
+
+		await waitFor(() => expect(screen.getByRole("combobox", { name: "new.player.label" })).toHaveValue("8"));
+	});
+
 	it("starts over when the dialog is opened again", async () => {
 		const { rerender } = renderWithProviders(<NewLoanModal open close={vi.fn()} />);
 		await userEvent.click(preset("new.due.none"));
