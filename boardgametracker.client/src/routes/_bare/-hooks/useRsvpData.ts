@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import type { GameNightRsvpState, GameNightRsvps, UpdateGameNightRsvp } from "@/models";
+import { type GameNightRsvpState, type GameNightRsvps, isApiError, type UpdateGameNightRsvp } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { updateGameNightRsvpByLinkCall } from "@/services/gameNightService";
 import { getGameNightByLink } from "@/services/queries/gameNights";
@@ -18,7 +18,7 @@ export const useRsvpData = (linkId: string) => {
 	const [answer, setAnswer] = useState<RsvpAnswer | null>(null);
 	const [isEditing, setIsEditing] = useState(true);
 
-	const { data: gameNight, isLoading, refetch } = useQuery(getGameNightByLink(linkId));
+	const { data: gameNight, isLoading, error, refetch } = useQuery(getGameNightByLink(linkId));
 	const { data: manuals } = useQuery(getGameNightManuals(linkId));
 
 	const rsvpMutation = useMutation({
@@ -41,6 +41,9 @@ export const useRsvpData = (linkId: string) => {
 		gameNight,
 		manuals: manuals ?? [],
 		isLoading,
+		isNotFound: !linkId || (isApiError(error) && error.status === 404),
+		error,
+		retry: () => void refetch(),
 		answer,
 		isEditing,
 		submitRsvp,

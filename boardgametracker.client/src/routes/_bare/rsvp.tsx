@@ -25,7 +25,7 @@ import { RsvpWhosComing } from "./-components/RsvpWhosComing";
 import { useRsvpData } from "./-hooks/useRsvpData";
 
 const rsvpSearchSchema = z.object({
-	linkId: z.string(),
+	linkId: z.string().catch(""),
 });
 
 export const Route = createFileRoute("/_bare/rsvp")({
@@ -40,12 +40,23 @@ function RsvpPage() {
 	const { linkId } = Route.useSearch();
 	const isAuthenticated = useAuth((s) => s.isAuthenticated);
 	const authStatus = useAuth((s) => s.authStatus);
-	const { gameNight, manuals, isLoading, answer, isEditing, submitRsvp, isSubmitting, changeResponse } =
-		useRsvpData(linkId);
+	const {
+		gameNight,
+		manuals,
+		isLoading,
+		isNotFound,
+		error,
+		retry,
+		answer,
+		isEditing,
+		submitRsvp,
+		isSubmitting,
+		changeResponse,
+	} = useRsvpData(linkId);
 	const { data: profile } = useQuery({ ...getProfile(), enabled: isAuthenticated });
 	useDocumentTitle(gameNight?.title);
 
-	const requiresAuth = settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !isAuthenticated;
+	const requiresAuth = linkId && settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !isAuthenticated;
 
 	if (requiresAuth) {
 		return (
@@ -62,7 +73,7 @@ function RsvpPage() {
 		);
 	}
 
-	if (!isLoading && !gameNight) {
+	if (isNotFound) {
 		return (
 			<BgtEmptyPage
 				showHeader={false}
@@ -75,7 +86,13 @@ function RsvpPage() {
 
 	return (
 		<BgtPage>
-			<BgtPageContent isLoading={isLoading} data={{ gameNight, settings }} className="mx-auto w-full max-w-2xl">
+			<BgtPageContent
+				isLoading={isLoading}
+				data={{ gameNight, settings }}
+				error={error}
+				onRetry={retry}
+				className="mx-auto w-full max-w-2xl"
+			>
 				{({ gameNight, settings }) => {
 					if (isNightPast(gameNight)) {
 						return (

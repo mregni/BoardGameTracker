@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
 	getGameNightManualsCall: vi.fn(),
 	errorToast: vi.fn(),
 	settings: {} as Record<string, unknown>,
+	linkId: "abc",
 	auth: { isAuthenticated: false, authStatus: { authEnabled: false } },
 	getProfileCall: vi.fn(),
 }));
@@ -19,7 +20,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@tanstack/react-router", () => ({
 	createFileRoute: () => (config: { component: FC }) => {
 		mocks.captured.Page = config.component;
-		return { ...config, useSearch: () => ({ linkId: "abc" }) };
+		return { ...config, useSearch: () => ({ linkId: mocks.linkId }) };
 	},
 	useNavigate: () => mocks.navigate,
 }));
@@ -98,6 +99,7 @@ describe("RsvpPage", () => {
 			rsvpAuthenticationEnabled: false,
 		} satisfies Partial<Settings>;
 		mocks.auth = { isAuthenticated: false, authStatus: { authEnabled: false } };
+		mocks.linkId = "abc";
 		mocks.getGameNightManualsCall.mockResolvedValue([]);
 		mocks.updateGameNightRsvpByLinkCall.mockResolvedValue({ hostNotified: true });
 	});
@@ -111,12 +113,42 @@ describe("RsvpPage", () => {
 	});
 
 	it("explains an unknown or expired link", async () => {
-		mocks.getGameNightByLinkCall.mockRejectedValue(new Error("404"));
+		mocks.getGameNightByLinkCall.mockRejectedValue({ kind: "client", status: 404, message: "Not found" });
 
 		renderPage();
 
 		expect(await screen.findByText("not-found")).toBeInTheDocument();
 		expect(screen.getByText("not-found-description")).toBeInTheDocument();
+	});
+
+	it("explains a link without an id without asking the server or a login", () => {
+		mocks.linkId = "";
+		mocks.settings.rsvpAuthenticationEnabled = true;
+		mocks.auth = { isAuthenticated: false, authStatus: { authEnabled: true } };
+
+		renderPage();
+
+		expect(screen.getByText("not-found")).toBeInTheDocument();
+		expect(mocks.getGameNightByLinkCall).not.toHaveBeenCalled();
+	});
+
+	it.each([
+		["a server failure", { kind: "server", status: 500, message: "Failed" }],
+		["too many requests", { kind: "client", status: 429, message: "Slow down" }],
+		["a lost connection", { kind: "network", status: null, message: "Network error" }],
+	])("does not call the link broken on %s and offers a retry", async (_name, error) => {
+		const user = userEvent.setup();
+		mocks.getGameNightByLinkCall.mockRejectedValueOnce(error).mockResolvedValue(gameNight(addDays(new Date(), 2)));
+
+		renderPage();
+
+		expect(await screen.findByText("load-failed")).toBeInTheDocument();
+		expect(screen.queryByText("not-found")).not.toBeInTheDocument();
+
+		await user.click(screen.getByRole("button", { name: "common:try-again" }));
+
+		expect(await screen.findByRole("heading", { level: 1 })).toBeInTheDocument();
+		expect(screen.queryByText("load-failed")).not.toBeInTheDocument();
 	});
 
 	it("asks to log in when RSVPs require an account", async () => {
