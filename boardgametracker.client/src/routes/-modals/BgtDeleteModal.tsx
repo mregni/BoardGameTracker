@@ -7,15 +7,13 @@ import {
 	BgtDialogTitle,
 } from "../../components/BgtDialog";
 
-interface Props {
+type Props = {
 	open: boolean;
 	close: () => void;
 	onDelete?: (() => Promise<void>) | (() => void);
-	title: string;
-	heading?: string;
 	description: string;
 	confirmLabel?: string;
-}
+} & ({ title: string; heading?: string } | { title?: undefined; heading: string });
 
 export const BgtDeleteModal = (props: Props) => {
 	const { open, close, onDelete, title, heading, description, confirmLabel } = props;

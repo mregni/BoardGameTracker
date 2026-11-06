@@ -298,6 +298,5 @@ test("the delete session dialog names what it deletes once", async ({ page }) =>
 
 	await page.getByRole("main").getByRole("button", { name: "Delete" }).first().click();
 
-	test.fail(true, "BUG: the delete session dialog is titled Delete Delete session");
 	await expect(page.getByRole("dialog").getByRole("heading")).toHaveText("Delete session", { timeout: 1000 });
 });
