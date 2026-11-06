@@ -35,6 +35,33 @@ const signIn = async (browser: Browser, use: TestInfoUse, login: { username: str
 	return context;
 };
 
+const useWatchedPage = async (
+	context: BrowserContext,
+	allowedApiStatuses: number[],
+	use: (page: Page) => Promise<void>,
+) => {
+	const page = await context.newPage();
+	const problems: string[] = [];
+	page.on("pageerror", (error) => {
+		if (!error.message.startsWith("Transition was ")) problems.push(error.message);
+	});
+	page.on("console", (message) => {
+		if (message.type() === "error" && !message.text().startsWith("Failed to load resource")) {
+			problems.push(message.text());
+		}
+	});
+	page.on("response", (response) => {
+		const status = response.status();
+		const isApiFailure = status >= 400 && new URL(response.url()).pathname.startsWith("/api/");
+		if (status >= 500 || (isApiFailure && !allowedApiStatuses.includes(status))) {
+			problems.push(`${status} ${response.url()}`);
+		}
+	});
+	await use(page);
+	await page.close();
+	expect(problems).toEqual([]);
+};
+
 export const test = base.extend<
 	{ allowedApiStatuses: number[]; readerPage: Page; writerPage: Page },
 	{ signedInContext: BrowserContext; readerContext: BrowserContext; writerContext: BrowserContext }
@@ -64,37 +91,14 @@ export const test = base.extend<
 		},
 		{ scope: "worker" },
 	],
-	readerPage: async ({ readerContext }, use) => {
-		const page = await readerContext.newPage();
-		await use(page);
-		await page.close();
+	readerPage: async ({ readerContext, allowedApiStatuses }, use) => {
+		await useWatchedPage(readerContext, allowedApiStatuses, use);
 	},
-	writerPage: async ({ writerContext }, use) => {
-		const page = await writerContext.newPage();
-		await use(page);
-		await page.close();
+	writerPage: async ({ writerContext, allowedApiStatuses }, use) => {
+		await useWatchedPage(writerContext, allowedApiStatuses, use);
 	},
 	page: async ({ signedInContext, allowedApiStatuses }, use) => {
-		const page = await signedInContext.newPage();
-		const problems: string[] = [];
-		page.on("pageerror", (error) => {
-			if (!error.message.startsWith("Transition was ")) problems.push(error.message);
-		});
-		page.on("console", (message) => {
-			if (message.type() === "error" && !message.text().startsWith("Failed to load resource")) {
-				problems.push(message.text());
-			}
-		});
-		page.on("response", (response) => {
-			const status = response.status();
-			const isApiFailure = status >= 400 && new URL(response.url()).pathname.startsWith("/api/");
-			if (status >= 500 || (isApiFailure && !allowedApiStatuses.includes(status))) {
-				problems.push(`${status} ${response.url()}`);
-			}
-		});
-		await use(page);
-		await page.close();
-		expect(problems).toEqual([]);
+		await useWatchedPage(signedInContext, allowedApiStatuses, use);
 	},
 });
 
