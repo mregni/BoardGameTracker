@@ -341,6 +341,7 @@ describe("GameNightCard main action", () => {
 		);
 
 		expect(screen.getByText("card.live-since")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "card.manage-rsvps" })).toBeInTheDocument();
 		expect(screen.getByText("card.running")).toBeInTheDocument();
 		expect(screen.queryByText("card.waiting")).not.toBeInTheDocument();
 		await user.click(screen.getByRole("button", { name: "play.start.button" }));

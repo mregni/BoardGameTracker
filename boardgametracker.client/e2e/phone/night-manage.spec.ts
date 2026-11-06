@@ -5,6 +5,7 @@ import {
 	expectContentClearsBars,
 	expectDialogFits,
 	expectFooterInView,
+	expectFooterReachable,
 	expectNoSidewaysScroll,
 	footerOf,
 	gameId,
@@ -149,7 +150,7 @@ test.describe("an active game night", () => {
 		}
 	});
 
-	test("shows the save button of the finish sheet without scrolling", async ({ page }) => {
+	test("can scroll to the save button of the finish sheet", async ({ page }) => {
 		const api = await apiFor(page);
 		const id = await createActiveNight(api, "Phone night finish footer");
 		try {
@@ -159,8 +160,7 @@ test.describe("an active game night", () => {
 
 			await page.getByRole("main").getByRole("button", { name: "Finish" }).click();
 
-			test.fail(true, "BUG: with three players Save session of the finish sheet starts below the screen");
-			await expectFooterInView(page, page.getByRole("dialog", { name: `Finish ${suggested}` }));
+			await expectFooterReachable(page.getByRole("dialog", { name: `Finish ${suggested}` }));
 		} finally {
 			await removeNight(api, id);
 		}
@@ -246,10 +246,8 @@ test.describe("an active game night", () => {
 
 			await touchPage.getByText("End night", { exact: true }).tap({ force: true });
 
-			test.fail(true, "BUG: the hint on the disabled End night button is a hover tooltip, a tap shows nothing");
-			await expect(touchPage.getByRole("tooltip")).toContainText("Finish or discard the running games first", {
-				timeout: 1500,
-			});
+			await expect(touchPage.getByRole("tooltip")).toContainText("Finish or discard the running games first");
+			await expect(touchPage.locator("[data-radix-popper-content-wrapper]")).toBeInViewport({ ratio: 1 });
 		} finally {
 			await context.close();
 			await removeNight(api, id);

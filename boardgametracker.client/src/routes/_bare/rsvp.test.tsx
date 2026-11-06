@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
 	errorToast: vi.fn(),
 	settings: {} as Record<string, unknown>,
 	auth: { isAuthenticated: false, authStatus: { authEnabled: false } },
+	getProfileCall: vi.fn(),
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -51,6 +52,10 @@ vi.mock("@/routes/-hooks/useToasts", () => ({
 
 vi.mock("@/utils/errorUtils", () => ({
 	apiErrorMessage: (error: unknown, fallbackKey: string) => (error instanceof Error ? error.message : fallbackKey),
+}));
+
+vi.mock("@/services/queries/auth", () => ({
+	getProfile: () => ({ queryKey: ["profile"], queryFn: () => mocks.getProfileCall() }),
 }));
 
 vi.mock("@/hooks/useMediaQuery", () => ({
@@ -211,14 +216,42 @@ describe("RsvpPage", () => {
 		expect(screen.queryByText("Bring snacks")).not.toBeInTheDocument();
 	});
 
-	it("says a night that has started is in progress and closed for answers", async () => {
+	it("preselects the own player of a signed-in user, not of a guest", async () => {
+		mocks.getGameNightByLinkCall.mockResolvedValue(gameNight(addDays(new Date(), 3)));
+		mocks.getProfileCall.mockResolvedValue({ playerId: 7 });
+		mocks.auth.isAuthenticated = true;
+
+		renderPage();
+
+		const group = await screen.findByRole("group", { name: "who-are-you" });
+		expect(await within(group).findByRole("button", { pressed: true })).toHaveTextContent("Gina");
+	});
+
+	it("does not ask a guest for a profile", async () => {
+		mocks.getGameNightByLinkCall.mockResolvedValue(gameNight(addDays(new Date(), 3)));
+
+		renderPage();
+
+		const group = await screen.findByRole("group", { name: "who-are-you" });
+		expect(within(group).queryByRole("button", { pressed: true })).not.toBeInTheDocument();
+		expect(mocks.getProfileCall).not.toHaveBeenCalled();
+	});
+
+	it("keeps answers open while a night is in progress", async () => {
 		mocks.getGameNightByLinkCall.mockResolvedValue(gameNight(addHours(new Date(), -2)));
 
 		renderPage();
 
-		expect(await screen.findByRole("heading", { level: 1, name: "in-progress-title" })).toBeInTheDocument();
-		expect(screen.getByText("in-progress-description")).toBeInTheDocument();
-		expect(screen.queryByText("past-title")).not.toBeInTheDocument();
+		expect(await screen.findByRole("group", { name: "who-are-you" })).toBeInTheDocument();
+		expect(screen.queryByRole("heading", { name: "past-title" })).not.toBeInTheDocument();
+	});
+
+	it("closes answers as soon as the night was ended", async () => {
+		mocks.getGameNightByLinkCall.mockResolvedValue({ ...gameNight(addHours(new Date(), -2)), endedAt: new Date() });
+
+		renderPage();
+
+		expect(await screen.findByRole("heading", { level: 1, name: "past-title" })).toBeInTheDocument();
 		expect(screen.queryByRole("group", { name: "who-are-you" })).not.toBeInTheDocument();
 	});
 

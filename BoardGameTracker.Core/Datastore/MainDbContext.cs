@@ -161,7 +161,7 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
 
         builder.Entity<GameNight>()
             .HasOne(x => x.Location)
-            .WithMany()
+            .WithMany(x => x.GameNights)
             .HasForeignKey(x => x.LocationId)
             .OnDelete(DeleteBehavior.Restrict);
 
@@ -414,6 +414,8 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
         builder.Entity<RefreshToken>()
             .HasIndex(x => x.Token)
             .IsUnique();
+        builder.Entity<RefreshToken>()
+            .HasIndex(x => x.SessionId);
         builder.Entity<RefreshToken>()
             .Property(x => x.RevokedAt)
             .IsConcurrencyToken();

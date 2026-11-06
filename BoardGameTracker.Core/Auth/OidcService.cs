@@ -510,8 +510,8 @@ public class OidcService : IOidcService
     private async Task<LoginResponse> IssueTokensAsync(ApplicationUser user)
     {
         var roles = await _userManager.GetRolesAsync(user);
-        var jwt = _tokenService.GenerateAccessToken(user, roles);
         var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user.Id);
+        var jwt = _tokenService.GenerateAccessToken(user, roles, refreshToken.SessionId);
 
         return new LoginResponse(
             jwt,

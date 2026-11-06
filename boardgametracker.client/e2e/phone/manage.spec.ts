@@ -189,8 +189,6 @@ test("deletes a game night from the list after cancelling once", async ({ page }
 });
 
 test.describe("from the detail page", () => {
-	test.use({ allowedApiStatuses: [401, 404] });
-
 	test("deletes a game night", async ({ page }) => {
 		const title = "Phone night from the detail page";
 		const api = await apiFor(page);

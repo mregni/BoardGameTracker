@@ -27,8 +27,14 @@
   },
   "delete": {
     "description": "Locatie '{{name}}' verwijderen?",
-    "description-with-sessions_one": "Locatie '{{name}}' verwijderen? De {{count}} sessie blijft bewaard, maar is niet langer aan een locatie gekoppeld.",
-    "description-with-sessions_other": "Locatie '{{name}}' verwijderen? De {{count}} sessies blijven bewaard, maar zijn niet langer aan een locatie gekoppeld."
+    "in-use": {
+      "title": "Deze locatie is in gebruik",
+      "sessions_one": "{{count}} sessie is eraan gekoppeld.",
+      "sessions_other": "{{count}} sessies zijn eraan gekoppeld.",
+      "game-nights_one": "{{count}} spelavond is eraan gekoppeld.",
+      "game-nights_other": "{{count}} spelavonden zijn eraan gekoppeld.",
+      "hint": "Verplaats ze eerst naar een andere locatie voordat je deze verwijdert."
+    }
   },
   "detail": {
     "back": "Terug naar locaties",

@@ -80,6 +80,7 @@
   "server": "Se ha producido un error en el servidor. Inténtalo de nuevo más tarde.",
   "location": {
     "used-by-game-nights": "Esta ubicación se usa en una o más noches de juego",
+    "used-by-sessions": "Esta ubicación se usa en una o más sesiones",
     "name-required": "El nombre de la ubicación es obligatorio",
     "name-already-exists": "Ya existe una ubicación con este nombre"
   },

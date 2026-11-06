@@ -10,7 +10,7 @@ import {
 interface Props {
 	open: boolean;
 	close: () => void;
-	onDelete: (() => Promise<void>) | (() => void);
+	onDelete?: (() => Promise<void>) | (() => void);
 	title: string;
 	heading?: string;
 	description: string;
@@ -28,7 +28,8 @@ export const BgtDeleteModal = (props: Props) => {
 				<BgtDialogDescription>{description}</BgtDialogDescription>
 				<BgtDialogFooter
 					onCancel={close}
-					confirmLabel={confirmLabel ?? t("delete.button")}
+					cancelLabel={onDelete ? undefined : t("close")}
+					confirmLabel={onDelete ? (confirmLabel ?? t("delete.button")) : undefined}
 					onConfirm={onDelete}
 					variant="destructive"
 				/>

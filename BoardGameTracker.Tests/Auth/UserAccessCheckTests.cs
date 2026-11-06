@@ -93,6 +93,32 @@ public class UserAccessCheckTests : IDisposable
     }
 
     [Fact]
+    public async Task IsSessionActiveAsync_ShouldSurviveARotation_AndEndWithoutTouchingOtherDevices()
+    {
+        await AddUserAsync("user-1");
+        var first = RefreshToken.Create("user-1", 7);
+        var otherDevice = RefreshToken.Create("user-1", 7);
+        var rotated = RefreshToken.Create("user-1", 7, first.SessionId);
+        first.Revoke(RefreshToken.RotatedReason, rotated.Token);
+        _context.RefreshTokens.AddRange(first, rotated, otherDevice);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        (await _check.IsSessionActiveAsync(first.SessionId, TestContext.Current.CancellationToken)).Should().BeTrue();
+
+        rotated.Revoke("Logged out");
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        (await _check.IsSessionActiveAsync(first.SessionId, TestContext.Current.CancellationToken)).Should().BeFalse("no cache may hide a logout");
+        (await _check.IsSessionActiveAsync(otherDevice.SessionId, TestContext.Current.CancellationToken)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task IsSessionActiveAsync_ShouldRefuseAnUnknownSession()
+    {
+        (await _check.IsSessionActiveAsync(Guid.NewGuid(), TestContext.Current.CancellationToken)).Should().BeFalse();
+    }
+
+    [Fact]
     public void CacheLifetime_ShouldBeShort()
     {
         UserAccessCheck.CacheLifetime.Should().BeLessThanOrEqualTo(TimeSpan.FromMinutes(1));

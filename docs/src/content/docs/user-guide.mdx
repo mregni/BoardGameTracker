@@ -51,7 +51,7 @@ The *Table view* adds a *Current price* column, an *In stock only* filter and a 
 
 Players are the people you play with; they exist independently of user accounts. The overview shows each player as a tile with their win rate and number of sessions, most active players first; use the filter to find someone by name. Give a player an email address to send them game-night invitations.
 
-A player page shows win rate, favourite games, play time, recent sessions and the **badges** the player earned. Badges are awarded when a session is saved:
+A player page shows win rate, favourite games, play time, recent sessions, the games the player has on loan and the **badges** the player earned. Badges are awarded when a session is saved:
 
 - One-off badges: *First Try* (win a game on the first play), *Photo Finish* (win by two points or less), *Almost there* (lose by two points or less), *Marathon Runner* (a session of four hours or more), *Learning Curve* (three improving scores in a row), *Monthly Goal* (20 sessions in a calendar month) and *Consistent Schedule* (a Saturday game ten weeks in a row).
 - Tiered badges (green, blue, red, gold) count sessions, different games, wins, hours played, win percentage, solo sessions, winning streaks and different opponents.
@@ -82,7 +82,7 @@ The page is split into **Upcoming** and **Past**. Each upcoming night is a card 
 
 *Email invites* mails the RSVP link to every invitee who has not answered yet and has an email address, at most 50 per send. It first lists who gets one and who has no address, and only sends after you confirm. A night can be emailed once every 10 minutes. The button stays disabled, with the reason, while email or the public URL is not set up. Past nights are a short list; open one to see who attended.
 
-Before a night opens, its page shows the plan: when it starts, the RSVPs with *Manage RSVPs*, and the planned games. Starting, logging and finishing games and *End night* become available 12 hours before the start time.
+Before a night opens, its page shows the plan: when it starts, the RSVPs with *Manage RSVPs*, and the planned games. Starting, logging and finishing games and *End night* become available 12 hours before the start time. The RSVPs stay on the page until the night is over.
 
 ### Managing RSVPs
 
@@ -90,7 +90,7 @@ Before a night opens, its page shows the plan: when it starts, the RSVPs with *M
 
 ### The invite link
 
-Every game night has a public invite link that players open without an account. The page shows the date, location, host and notes, who is coming (grouped into *Coming*, *Maybe*, *No answer* and *Not coming*), the games you might play and their rulebooks. To answer, a player picks their name under *Who are you?*, chooses *Coming*, *Maybe* or *Not coming* and presses *Send answer*. The host sees *Maybe* apart from players who haven't answered, and only *Coming* counts as attending. *Change answer* lets them pick again. Once the night has started the link no longer accepts answers.
+Every game night has a public invite link that players open without an account. The page shows the date, location, host and notes, who is coming (grouped into *Coming*, *Maybe*, *No answer* and *Not coming*), the games you might play and their rulebooks. To answer, a player picks their name under *Who are you?*, chooses *Coming*, *Maybe* or *Not coming* and presses *Send answer*. The host sees *Maybe* apart from players who haven't answered, and only *Coming* counts as attending. *Change answer* lets them pick again. A signed-in user linked to an invited player finds that player already picked. The link keeps accepting answers while the night is in progress and stops once the night has ended or is 12 hours past its start.
 
 When email is configured and the host's player has an email address, the host gets a mail when someone answers (at most one per invitee every five minutes; the host's own answer is not mailed). Turn on *Require authentication for RSVPs* if the link should only work for signed-in users. The invite link and the invitation emails use the **Public URL** setting under *Settings → General*, so set that to the address your players use. Invitations are not sent while it is empty.
 
@@ -106,7 +106,7 @@ Active loans are listed with the soonest due date first. Each row shows how the 
 
 The places you play, such as your living room, a friend's house or the local game café. A session can be linked to a location, and a game night needs one. Each location is a tile with its number of sessions; filter them by name.
 
-Open a location to see the sessions, games and players played there and the total play time, followed by its sessions, newest first, with the winners and duration (*Show all* lists every session). Edit and delete the location from this page. Deleting a location unlinks its sessions; a location that a game night still uses cannot be deleted.
+Open a location to see the sessions, games and players played there and the total play time, followed by its sessions, newest first, with the winners and duration (*Show all* lists every session). Edit and delete the location from this page. A location that a session or a game night still uses cannot be deleted: the page says what is linked to it, so move those to another location first.
 
 ## Settings
 

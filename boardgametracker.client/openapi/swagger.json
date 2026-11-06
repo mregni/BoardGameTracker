@@ -8387,6 +8387,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "gameNightCount": {
+            "type": "integer",
+            "format": "int32"
+          },
           "lastPlayed": {
             "type": "string",
             "format": "date-time",

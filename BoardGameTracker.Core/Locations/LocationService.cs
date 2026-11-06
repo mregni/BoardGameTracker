@@ -94,6 +94,11 @@ public class LocationService : ILocationService
             throw new DomainException(Constants.Errors.LocationUsedByGameNights);
         }
 
+        if (await _sessionRepository.AnyAsync(new SessionsByLocationRecentFirstSpec(id, 1)))
+        {
+            throw new DomainException(Constants.Errors.LocationUsedBySessions);
+        }
+
         await _locationRepository.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Location {LocationId} deleted", id);

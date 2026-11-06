@@ -1,4 +1,4 @@
-import { type InvalidateQueryFilters, QueryClient } from "@tanstack/react-query";
+import { type InvalidateQueryFilters, QueryClient, QueryObserver } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, type MockInstance, vi } from "vitest";
 import { QUERY_KEYS } from "@/models";
 import { QueryInvalidator } from "./invalidations";
@@ -139,12 +139,41 @@ describe("QueryInvalidator", () => {
 		expect(predicate?.({ queryKey: [QUERY_KEYS.game, 3, QUERY_KEYS.sessions] } as never)).toBe(false);
 	});
 
-	it("invalidateGameNights refreshes the game nights, the menu counts and the dashboard", async () => {
+	it("invalidateGameNightDeleted refreshes the list but never fetches the deleted night", async () => {
+		spy.mockRestore();
+		const fetchList = vi.fn().mockResolvedValue([]);
+		const fetchNight = vi.fn().mockResolvedValue({});
+		const fetchOtherNight = vi.fn().mockResolvedValue({});
+		const observers = [
+			new QueryObserver(queryClient, { queryKey: [QUERY_KEYS.gameNights], queryFn: fetchList }),
+			new QueryObserver(queryClient, { queryKey: [QUERY_KEYS.gameNights, 4], queryFn: fetchNight }),
+			new QueryObserver(queryClient, { queryKey: [QUERY_KEYS.gameNights, 5], queryFn: fetchOtherNight }),
+		];
+		const unsubscribes = observers.map((observer) => observer.subscribe(() => {}));
+		await vi.waitFor(() => expect(queryClient.isFetching()).toBe(0));
+
+		await invalidator.invalidateGameNightDeleted(4);
+
+		expect(fetchList).toHaveBeenCalledTimes(2);
+		expect(fetchOtherNight).toHaveBeenCalledTimes(2);
+		expect(fetchNight).toHaveBeenCalledTimes(1);
+		expect(queryClient.getQueryState([QUERY_KEYS.gameNights, 4])?.isInvalidated).toBe(true);
+		for (const unsubscribe of unsubscribes) unsubscribe();
+	});
+
+	it("invalidateGameNightDeleted refreshes the locations", async () => {
+		await invalidator.invalidateGameNightDeleted(4);
+
+		expect(invalidatedKeys(spy)).toContainEqual([QUERY_KEYS.locations]);
+	});
+
+	it("invalidateGameNights refreshes the game nights, the locations, the menu counts and the dashboard", async () => {
 		await invalidator.invalidateGameNights();
 
 		expect(invalidatedKeys(spy)).toEqual(
 			expect.arrayContaining([
 				[QUERY_KEYS.gameNights],
+				[QUERY_KEYS.locations],
 				[QUERY_KEYS.counts],
 				[QUERY_KEYS.dashboard, QUERY_KEYS.statistics],
 			]),

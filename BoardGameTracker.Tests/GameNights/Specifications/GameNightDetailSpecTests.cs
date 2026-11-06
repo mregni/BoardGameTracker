@@ -51,7 +51,7 @@ public class GameNightDetailSpecTests
 
         spec.IsSatisfiedBy(gameNight).Should().BeTrue();
         new GameNightAttendanceSpec(6).IsSatisfiedBy(gameNight).Should().BeFalse();
-        spec.ShouldIncludeExactly("Sessions", "Sessions.PlayerSessions", "RunningGames", "RunningGames.Players", "Attendance");
+        spec.ShouldIncludeExactly("Sessions", "Sessions.PlayerSessions", "RunningGames", "RunningGames.Players", "Attendance", "InvitedPlayers");
         spec.AsNoTracking.Should().BeFalse();
     }
 

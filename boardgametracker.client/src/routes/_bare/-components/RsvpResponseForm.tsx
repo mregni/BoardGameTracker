@@ -16,6 +16,7 @@ interface Props {
 	invitedPlayers: GameNightRsvps[];
 	hostId: number;
 	initialAnswer: Pick<RsvpAnswer, "playerId" | "state"> | null;
+	ownPlayerId?: number | null;
 	onSubmit: (rsvp: GameNightRsvps, state: GameNightRsvpState) => void;
 	isSubmitting: boolean;
 }
@@ -29,10 +30,10 @@ const responseOptions = [
 const MAX_NAME_TILES = 8;
 
 export const RsvpResponseForm = (props: Props) => {
-	const { invitedPlayers, hostId, initialAnswer, onSubmit, isSubmitting } = props;
+	const { invitedPlayers, hostId, initialAnswer, ownPlayerId, onSubmit, isSubmitting } = props;
 	const { t } = useTranslation("rsvp");
 	const headingId = useId();
-	const [playerId, setPlayerId] = useState<number | null>(initialAnswer?.playerId ?? null);
+	const [chosenPlayerId, setPlayerId] = useState<number | null>(initialAnswer?.playerId ?? null);
 	const [state, setState] = useState<GameNightRsvpState | null>(initialAnswer?.state ?? null);
 
 	const playerItems: BgtSelectImageItem[] = useMemo(
@@ -43,6 +44,8 @@ export const RsvpResponseForm = (props: Props) => {
 		[invitedPlayers, hostId],
 	);
 
+	const canAnswerForOwnPlayer = playerItems.some((item) => item.value === ownPlayerId);
+	const playerId = chosenPlayerId ?? (canAnswerForOwnPlayer ? (ownPlayerId ?? null) : null);
 	const rsvp = invitedPlayers.find((x) => x.playerId === playerId);
 	const canSubmit = !!rsvp && state !== null && !isSubmitting;
 

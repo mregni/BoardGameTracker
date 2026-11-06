@@ -163,6 +163,20 @@ export class QueryInvalidator {
 	async invalidateGameNights() {
 		await Promise.all([
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.gameNights] }),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] }),
+			this.invalidateCounts(),
+			this.invalidateDashboard(),
+		]);
+	}
+
+	async invalidateGameNightDeleted(gameNightId: number) {
+		await Promise.all([
+			this.queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.gameNights],
+				predicate: (query) => query.queryKey[1] !== gameNightId,
+			}),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.gameNights, gameNightId], refetchType: "none" }),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] }),
 			this.invalidateCounts(),
 			this.invalidateDashboard(),
 		]);

@@ -110,8 +110,8 @@ public class AuthService : IAuthService
         await _userManager.UpdateAsync(user);
 
         var roles = await _userManager.GetRolesAsync(user);
-        var accessToken = _tokenService.GenerateAccessToken(user, roles);
         var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user.Id);
+        var accessToken = _tokenService.GenerateAccessToken(user, roles, refreshToken.SessionId);
 
         _logger.LogInformation("User {Username} logged in", user.UserName);
 
@@ -155,7 +155,7 @@ public class AuthService : IAuthService
             throw new AuthenticationFailedException(Constants.Errors.RefreshTokenSuperseded);
         }
 
-        var accessToken = _tokenService.GenerateAccessToken(user, roles);
+        var accessToken = _tokenService.GenerateAccessToken(user, roles, newRefreshToken.SessionId);
 
         return new LoginResponse(
             accessToken,

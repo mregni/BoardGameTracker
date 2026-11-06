@@ -49,7 +49,7 @@ public class TokenServiceTests : IDisposable
         var roles = new List<string> { "Admin", "User" };
 
         // Act
-        var token = _tokenService.GenerateAccessToken(user, roles);
+        var token = _tokenService.GenerateAccessToken(user, roles, Guid.NewGuid());
 
         // Assert
         token.Should().NotBeNullOrEmpty();
@@ -68,13 +68,37 @@ public class TokenServiceTests : IDisposable
         var roles = new List<string> { "Admin", "User" };
 
         // Act
-        var token = _tokenService.GenerateAccessToken(user, roles);
+        var token = _tokenService.GenerateAccessToken(user, roles, Guid.NewGuid());
 
         // Assert
         var jwtToken = new JsonWebTokenHandler().ReadJsonWebToken(token);
         var roleClaims = jwtToken.Claims.Where(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").ToList();
         roleClaims.Should().HaveCount(2);
         roleClaims.Select(c => c.Value).Should().Contain("Admin").And.Contain("User");
+    }
+
+    [Fact]
+    public void GenerateAccessToken_ShouldCarryTheSession()
+    {
+        var user = new ApplicationUser("testuser", "test@test.com");
+        var sessionId = Guid.NewGuid();
+
+        var token = _tokenService.GenerateAccessToken(user, new List<string>(), sessionId);
+
+        new JsonWebTokenHandler().ReadJsonWebToken(token).Claims.Should().Contain(c => c.Type == TokenService.SessionIdClaim && c.Value == sessionId.ToString());
+    }
+
+    [Fact]
+    public async Task ReplacingARefreshToken_ShouldKeepItsSession_WhileANewLoginGetsItsOwn()
+    {
+        var first = await _tokenService.GenerateRefreshTokenAsync("user-1");
+        var rotated = await _tokenService.RotateRefreshTokenAsync(first);
+        var superseded = await _tokenService.SupersedeRefreshTokenAsync(rotated);
+        var otherDevice = await _tokenService.GenerateRefreshTokenAsync("user-1");
+
+        rotated.SessionId.Should().Be(first.SessionId);
+        superseded.SessionId.Should().Be(first.SessionId);
+        otherDevice.SessionId.Should().NotBe(first.SessionId);
     }
 
     [Fact]
@@ -256,7 +280,7 @@ public class TokenServiceTests : IDisposable
         var user = new ApplicationUser("testuser", "test@test.com");
         var roles = new List<string> { "User" };
 
-        var token = _tokenService.GenerateAccessToken(user, roles);
+        var token = _tokenService.GenerateAccessToken(user, roles, Guid.NewGuid());
 
         var jwtToken = new JsonWebTokenHandler().ReadJsonWebToken(token);
         jwtToken.Claims.Should().NotContain(c => c.Type == "display_name");
@@ -268,7 +292,7 @@ public class TokenServiceTests : IDisposable
         var service = new TokenService(Options.Create(new JwtOptions()), _context);
         var user = new ApplicationUser("testuser", "test@test.com");
 
-        var act = () => service.GenerateAccessToken(user, new List<string>());
+        var act = () => service.GenerateAccessToken(user, new List<string>(), Guid.NewGuid());
 
         act.Should().Throw<InvalidOperationException>();
     }

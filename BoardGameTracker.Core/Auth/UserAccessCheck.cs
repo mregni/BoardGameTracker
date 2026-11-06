@@ -42,5 +42,10 @@ public class UserAccessCheck : IUserAccessCheck
         _cache.Remove(CacheKey(userId));
     }
 
+    public Task<bool> IsSessionActiveAsync(Guid sessionId, CancellationToken cancellationToken = default)
+    {
+        return _context.RefreshTokens.AnyAsync(x => x.SessionId == sessionId && x.RevokedAt == null, cancellationToken);
+    }
+
     private static string CacheKey(string userId) => $"user-access:{userId}";
 }

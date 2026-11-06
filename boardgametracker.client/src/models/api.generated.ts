@@ -6018,6 +6018,8 @@ export interface components {
             name: string;
             /** Format: int32 */
             playCount: number;
+            /** Format: int32 */
+            gameNightCount: number;
             /** Format: date-time */
             lastPlayed: string | null;
         };

@@ -1,5 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { isPast } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import AlertTriangle from "@/assets/icons/alert-triangle.svg?react";
@@ -11,7 +11,8 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { isNightInProgress } from "@/routes/game-nights/-utils/gameNightPlay";
+import { isNightPast } from "@/routes/game-nights/-utils/gameNightPlay";
+import { getProfile } from "@/services/queries/auth";
 import { toCalendarHref } from "@/utils/calendarFile";
 import { toDisplay, toDisplayTime, toDisplayWithWeekday } from "@/utils/dateUtils";
 import { effectivePublicUrl } from "@/utils/publicUrl";
@@ -41,6 +42,7 @@ function RsvpPage() {
 	const authStatus = useAuth((s) => s.authStatus);
 	const { gameNight, manuals, isLoading, answer, isEditing, submitRsvp, isSubmitting, changeResponse } =
 		useRsvpData(linkId);
+	const { data: profile } = useQuery({ ...getProfile(), enabled: isAuthenticated });
 	useDocumentTitle(gameNight?.title);
 
 	const requiresAuth = settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !isAuthenticated;
@@ -75,19 +77,16 @@ function RsvpPage() {
 		<BgtPage>
 			<BgtPageContent isLoading={isLoading} data={{ gameNight, settings }} className="mx-auto w-full max-w-2xl">
 				{({ gameNight, settings }) => {
-					if (isPast(gameNight.startDate)) {
-						const inProgress = isNightInProgress(gameNight);
+					if (isNightPast(gameNight)) {
 						return (
-							<BgtCard className="gap-1.5" data-testid={inProgress ? "rsvp-in-progress" : "rsvp-past"}>
+							<BgtCard className="gap-1.5" data-testid="rsvp-past">
 								<BgtHeading as="h1" size="5" className="wrap-anywhere">
-									{inProgress
-										? t("in-progress-title", { title: gameNight.title })
-										: t("past-title", { title: gameNight.title })}
+									{t("past-title", { title: gameNight.title })}
 								</BgtHeading>
 								<BgtText size="2" color="gray">
 									{toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage)}
 								</BgtText>
-								<BgtText size="2">{inProgress ? t("in-progress-description") : t("past-description")}</BgtText>
+								<BgtText size="2">{t("past-description")}</BgtText>
 							</BgtCard>
 						);
 					}
@@ -123,6 +122,7 @@ function RsvpPage() {
 									invitedPlayers={gameNight.invitedPlayers}
 									hostId={gameNight.hostId}
 									initialAnswer={answer}
+									ownPlayerId={profile?.playerId}
 									onSubmit={submitRsvp}
 									isSubmitting={isSubmitting}
 								/>

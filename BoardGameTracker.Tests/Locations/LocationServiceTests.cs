@@ -63,6 +63,12 @@ public class LocationServiceTests
             x => x.AnyAsync(It.IsAny<GameNightsAtLocationSpec>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    private void VerifySessionsChecked()
+    {
+        _sessionRepositoryMock.Verify(
+            x => x.AnyAsync(It.IsAny<SessionsByLocationRecentFirstSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     #region GetLocations Tests
 
     [Fact]
@@ -232,6 +238,10 @@ public class LocationServiceTests
             .Setup(x => x.AnyAsync(It.IsAny<GameNightsAtLocationSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
+        _sessionRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<SessionsByLocationRecentFirstSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
         _locationRepositoryMock
             .Setup(x => x.DeleteAsync(locationId))
             .ReturnsAsync(true);
@@ -245,6 +255,7 @@ public class LocationServiceTests
 
         // Assert
         VerifyGameNightsChecked();
+        VerifySessionsChecked();
         _locationRepositoryMock.Verify(x => x.DeleteAsync(locationId), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
@@ -262,6 +273,27 @@ public class LocationServiceTests
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.LocationUsedByGameNights);
 
         VerifyGameNightsChecked();
+        _locationRepositoryMock.Verify(x => x.DeleteAsync(It.IsAny<int>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Delete_ShouldThrowDomainException_WhenLocationIsUsedBySessions()
+    {
+        _gameNightRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<GameNightsAtLocationSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _sessionRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<SessionsByLocationRecentFirstSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var act = async () => await _locationService.Delete(1);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.LocationUsedBySessions);
+
+        VerifyGameNightsChecked();
+        VerifySessionsChecked();
         _locationRepositoryMock.Verify(x => x.DeleteAsync(It.IsAny<int>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();

@@ -24,6 +24,15 @@ const deleteOnPage = async (page: Page, name: string) => {
 	await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
 };
 
+const expectInUse = async (page: Page, name: string, text: string) => {
+	await page.getByRole("button", { name: `Delete ${name}` }).click();
+	const dialog = page.getByRole("dialog", { name: "This location is in use" });
+	await expect(dialog).toContainText(text);
+	await expect(dialog.getByRole("button", { name: "Delete" })).toHaveCount(0);
+	await dialog.getByRole("button", { name: "Close" }).last().click();
+	await expect(dialog).toBeHidden();
+};
+
 const sessionAt = (locationId: number, minutes: number) => ({
 	gameId: 1,
 	start: subDays(new Date(), 2).toISOString(),
@@ -150,7 +159,7 @@ test("shows a new name at the game nights and sessions of the location", async (
 	await expect(page.getByRole("heading", { name: cafe, level: 1 })).toBeVisible();
 });
 
-test("keeps the sessions of a deleted location", async ({ page, request }) => {
+test("refuses to delete a location with a session until the session is gone", async ({ page, request }) => {
 	const name = "Attic";
 	const minutes = 75;
 	const api = await adminApi(request);
@@ -171,17 +180,43 @@ test("keeps the sessions of a deleted location", async ({ page, request }) => {
 		).toBeVisible();
 		await expect(main.getByRole("button", { name: /^Show all/ })).toHaveCount(0);
 
-		await page.getByRole("button", { name: `Delete ${name}` }).click();
-		await expect(page.getByRole("dialog")).toContainText(
-			`Delete location '${name}'? Its 1 session is kept, but no longer linked to a location.`,
-		);
-		await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
+		await expectInUse(page, name, "1 session is linked to it. Move them to another location before deleting it.");
+	} finally {
+		await api.remove(`/api/session/${session.id}`);
+	}
 
-		await expect(toast(page, "Location deleted")).toBeVisible();
-		await expect(page).toHaveURL("/locations");
+	await page.reload();
+	await deleteOnPage(page, name);
 
-		const kept = await api.get(`/api/session/${session.id}`);
-		expect(kept.locationId).toBeNull();
+	await expect(toast(page, "Location deleted")).toBeVisible();
+	await expect(page).toHaveURL("/locations");
+});
+
+test("is refused by the server when the page does not know about the session yet", async ({ page, request }) => {
+	const name = "Stale attic";
+	const api = await adminApi(request);
+	const location = await api.post("/api/location", { name });
+	const session = await api.post("/api/session", sessionAt(location.id, 30));
+	await page.route(`**/api/location/${location.id}`, async (route) => {
+		if (route.request().method() !== "GET") {
+			await route.fallback();
+			return;
+		}
+		const response = await route.fetch();
+		if (!response.ok()) {
+			await route.fulfill({ response });
+			return;
+		}
+		await route.fulfill({ response, json: { ...(await response.json()), playCount: 0 } });
+	});
+
+	try {
+		await page.goto(`/locations/${location.id}`);
+		await deleteOnPage(page, name);
+
+		await expect(toast(page, "This location is used by one or more sessions")).toBeVisible();
+		await expect(page).toHaveURL(`/locations/${location.id}`);
+		expect((await api.get(`/api/location/${location.id}`)).playCount).toBe(1);
 	} finally {
 		await api.remove(`/api/session/${session.id}`);
 	}
@@ -202,13 +237,12 @@ test("refuses to delete a location with a game night until the night is gone", a
 	});
 
 	await page.goto(`/locations/${location.id}`);
-	await deleteOnPage(page, name);
-
-	await expect(toast(page, "This location is used by one or more game nights")).toBeVisible();
+	await expectInUse(page, name, "1 game night is linked to it. Move them to another location before deleting it.");
 	await expect(page).toHaveURL(`/locations/${location.id}`);
 	await expect(page.getByRole("heading", { name, level: 1 })).toBeVisible();
 
 	await api.remove(`/api/gamenight/${gameNight.id}`);
+	await page.reload();
 	await deleteOnPage(page, name);
 
 	await expect(toast(page, "Location deleted")).toBeVisible();

@@ -80,6 +80,7 @@
   "server": "A server error occurred. Please try again later.",
   "location": {
     "used-by-game-nights": "This location is used by one or more game nights",
+    "used-by-sessions": "This location is used by one or more sessions",
     "name-required": "Location name is required",
     "name-already-exists": "A location with this name already exists"
   },

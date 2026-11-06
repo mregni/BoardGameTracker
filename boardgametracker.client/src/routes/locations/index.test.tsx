@@ -52,8 +52,8 @@ const renderPage = () => {
 describe("Locations overview", () => {
 	beforeEach(() => {
 		mocks.locations = [
-			{ id: 1, name: "Bij Kathleen", playCount: 0, lastPlayed: null },
-			{ id: 2, name: "Thuis", playCount: 9, lastPlayed: "2026-10-16T20:00:00Z" },
+			{ id: 1, name: "Bij Kathleen", playCount: 0, gameNightCount: 0, lastPlayed: null },
+			{ id: 2, name: "Thuis", playCount: 9, gameNightCount: 0, lastPlayed: "2026-10-16T20:00:00Z" },
 		];
 		mocks.failing = false;
 	});

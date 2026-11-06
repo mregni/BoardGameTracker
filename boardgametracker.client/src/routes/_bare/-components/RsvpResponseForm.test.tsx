@@ -56,6 +56,40 @@ describe("RsvpResponseForm", () => {
 		expect(within(names).getByRole("button", { name: /Guest Gina/ })).toBeInTheDocument();
 	});
 
+	it("preselects the own player of a signed-in user who is invited", () => {
+		renderWithTheme(
+			<RsvpResponseForm
+				invitedPlayers={invitedPlayers}
+				hostId={10}
+				initialAnswer={null}
+				ownPlayerId={20}
+				onSubmit={vi.fn()}
+				isSubmitting={false}
+			/>,
+		);
+
+		expect(screen.getByRole("button", { name: /Guest Gina/ })).toHaveAttribute("aria-pressed", "true");
+	});
+
+	it.each([
+		["a player who is not invited", 99],
+		["the host", 10],
+		["nobody", null],
+	])("preselects nobody for %s", (_, ownPlayerId) => {
+		renderWithTheme(
+			<RsvpResponseForm
+				invitedPlayers={invitedPlayers}
+				hostId={10}
+				initialAnswer={null}
+				ownPlayerId={ownPlayerId}
+				onSubmit={vi.fn()}
+				isSubmitting={false}
+			/>,
+		);
+
+		expect(screen.getByRole("button", { name: /Guest Gina/ })).toHaveAttribute("aria-pressed", "false");
+	});
+
 	it("falls back to a searchable name picker for a long guest list", () => {
 		const crowd = Array.from({ length: 9 }, (_, i) => rsvp(100 + i, 200 + i, `Guest ${i}`));
 		renderWithTheme(

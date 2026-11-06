@@ -34,7 +34,5 @@
   "not-found": "Este enlace de invitación no funciona",
   "not-found-description": "Puede que haya caducado o que no se haya copiado bien. Pide al anfitrión un enlace nuevo.",
   "rsvp-failed": "No se pudo enviar tu respuesta",
-  "answer-saved": "Tu respuesta se ha guardado.",
-  "in-progress-title": "{{title}} está en curso",
-  "in-progress-description": "Ya no se aceptan respuestas."
+  "answer-saved": "Tu respuesta se ha guardado."
 }

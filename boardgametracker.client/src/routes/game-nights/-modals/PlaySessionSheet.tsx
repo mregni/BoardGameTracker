@@ -37,6 +37,7 @@ const endingNow = (minutes: number) => subMinutes(startOfMinute(new Date()), min
 interface Props {
 	close: () => void;
 	gameNight: GameNight;
+	isOver: boolean;
 	runningGame: RunningGame | null;
 	games: Game[];
 	players: Player[];
@@ -55,6 +56,7 @@ export const PlaySessionSheet = (props: Props) => {
 	const {
 		close,
 		gameNight,
+		isOver,
 		runningGame,
 		games,
 		players,
@@ -67,6 +69,7 @@ export const PlaySessionSheet = (props: Props) => {
 	} = props;
 	const { t } = useTranslation(["game-nights", "player-session", "common"]);
 	const shortDuration = useShortDuration();
+	const defaultStart = (minutes: number) => (isOver ? new Date(gameNight.startDate) : endingNow(minutes));
 	const [initialPlayers] = useState(() => toPlayers(runningGame?.playerIds ?? attendeeIds));
 	const [defaults] = useState(() => {
 		const gameId = runningGame?.gameId ?? 0;
@@ -75,7 +78,7 @@ export const PlaySessionSheet = (props: Props) => {
 			return { gameId, start, minutes: Math.max(1, differenceInMinutes(new Date(), start)) };
 		}
 		const minutes = games.find((x) => x.id === gameId)?.maxPlayTime ?? DEFAULT_MINUTES;
-		return { gameId, start: endingNow(minutes), minutes };
+		return { gameId, start: defaultStart(minutes), minutes };
 	});
 
 	const form = useAppForm({
@@ -114,7 +117,7 @@ export const PlaySessionSheet = (props: Props) => {
 	const syncStartWithDuration = (minutes: number | undefined) => {
 		if (typeof minutes !== "number" || minutes <= 0) return;
 		if (form.getFieldMeta("start")?.isDirty) return;
-		form.setFieldValue("start", endingNow(minutes), { dontUpdateMeta: true });
+		form.setFieldValue("start", defaultStart(minutes), { dontUpdateMeta: true });
 	};
 
 	const handleGameChange = (gameId: number) => {

@@ -32,13 +32,14 @@ const startTimeSegment = (name: RegExp) =>
 	within(screen.getByRole("group", { name: "common:time" })).getByRole("spinbutton", { name });
 const startTime = () => `${startTimeSegment(/hour/i).textContent}:${startTimeSegment(/minute/i).textContent}`;
 
-const renderSheet = (runningGame: RunningGame | null) => {
+const renderSheet = (runningGame: RunningGame | null, isOver = false, night = gameNight) => {
 	const onSave = vi.fn().mockResolvedValue(undefined);
 	const close = vi.fn();
 	renderWithProviders(
 		<PlaySessionSheet
 			close={close}
-			gameNight={gameNight}
+			gameNight={night}
+			isOver={isOver}
 			runningGame={runningGame}
 			games={games}
 			players={players}
@@ -130,6 +131,22 @@ describe("PlaySessionSheet", () => {
 			expect(onSave.mock.calls[0][0].start).toEqual(new Date(2026, 9, 16, 20, 30));
 		});
 
+		it("starts on the date of a night that is over, also after picking a game", async () => {
+			const user = userEvent.setup();
+			const startDate = new Date(2026, 9, 2, 19, 30);
+			const { onSave } = renderSheet(null, true, { ...gameNight, startDate });
+
+			expect(startTime()).toBe("19:30");
+			await user.click(screen.getByRole("combobox", { name: "new.game.label" }));
+			await user.click(await screen.findByRole("option", { name: "Brass" }));
+			expect(startTime()).toBe("19:30");
+			await user.click(screen.getAllByRole("button", { name: "form.player.won" })[0]);
+			await user.click(screen.getByRole("button", { name: "play.save" }));
+
+			await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+			expect(onSave.mock.calls[0][0].start).toEqual(startDate);
+		});
+
 		it("moves the start when the duration is typed", async () => {
 			const user = userEvent.setup();
 			renderSheet(null);
@@ -188,6 +205,7 @@ describe("PlaySessionSheet", () => {
 			<PlaySessionSheet
 				close={vi.fn()}
 				gameNight={gameNight}
+				isOver={false}
 				runningGame={runningGame}
 				games={withExpansion}
 				players={players}
