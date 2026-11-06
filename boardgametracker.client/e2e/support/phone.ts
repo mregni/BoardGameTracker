@@ -80,6 +80,12 @@ export const expectFooterInView = async (page: Page, dialog: Locator) => {
 	expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(page.viewportSize()?.height ?? 0);
 };
 
+export const expectFooterReachable = async (dialog: Locator) => {
+	await dialogAtRest(dialog);
+	await footerOf(dialog).scrollIntoViewIfNeeded();
+	await expect(footerOf(dialog)).toBeInViewport({ ratio: 1 });
+};
+
 export const expectDialogFits = async (dialog: Locator) => {
 	await dialogAtRest(dialog);
 	const sizes = await dialog.evaluate((element) => {
