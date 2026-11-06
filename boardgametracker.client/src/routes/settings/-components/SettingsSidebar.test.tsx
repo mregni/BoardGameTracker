@@ -44,6 +44,15 @@ describe("SettingsSidebar", () => {
 			expect(nav.queryByText("settings:sidebar.account.description")).not.toBeInTheDocument();
 		});
 
+		it("should mark only the open category as the current page", () => {
+			render(<SettingsSidebar {...defaultProps} />);
+
+			const nav = within(screen.getByRole("navigation"));
+			expect(nav.getAllByRole("button").filter((button) => button.hasAttribute("aria-current"))).toEqual([
+				nav.getByRole("button", { name: /settings:sidebar.general.title/ }),
+			]);
+		});
+
 		it("should render category descriptions", () => {
 			render(<SettingsSidebar {...defaultProps} />);
 

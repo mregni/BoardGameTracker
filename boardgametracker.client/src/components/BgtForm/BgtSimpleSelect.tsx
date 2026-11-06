@@ -160,6 +160,7 @@ export const BgtSimpleSelect = (props: Props) => {
 										value={searchTerm}
 										onChange={(e) => setSearchTerm(e.target.value)}
 										placeholder={t("search")}
+										aria-label={t("search")}
 										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 										onClick={(e) => e.stopPropagation()}
 										onKeyDown={(e) => handleSelectSearchKeyDown(e, selectSearchMatch)}
