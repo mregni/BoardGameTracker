@@ -6,6 +6,7 @@ using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Auth.Pictures;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -19,7 +20,13 @@ public class UserProfileImageServiceTests
 {
     private const string Authority = "https://idp.example.com";
     private const string PictureUrl = "https://idp.example.com/avatars/jane.png";
+    private const string ImportedImage = "/images/profile/idp.webp";
+    private const string UploadedImage = "/images/profile/mine.webp";
+    private const string OldImage = "/images/profile/idp-old.webp";
 
+    private static readonly byte[] Content = [1, 2, 3];
+
+    private readonly Mock<IUserStore<ApplicationUser>> _userStoreMock = new();
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
     private readonly Mock<IImageService> _imageServiceMock = new();
     private readonly Mock<IIdentityProviderPictureDownloader> _downloaderMock = new();
@@ -27,16 +34,19 @@ public class UserProfileImageServiceTests
     private readonly Mock<ILogger<UserProfileImageService>> _loggerMock = new();
     private readonly UserProfileImageService _service;
     private readonly ApplicationUser _user = new("jane", "jane@example.com", "Jane");
+    private readonly IFormFile _file = new FormFile(Stream.Null, 0, 0, "file", "mine.png");
+    private readonly CancellationToken _token = new CancellationTokenSource().Token;
 
     public UserProfileImageServiceTests()
     {
         _userManagerMock = new Mock<UserManager<ApplicationUser>>(
-            Mock.Of<IUserStore<ApplicationUser>>(), null!, null!, null!, null!, null!, null!, null!, null!);
+            _userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _userManagerMock.Setup(x => x.FindByIdAsync(_user.Id)).ReturnsAsync(_user);
         _userManagerMock.Setup(x => x.UpdateAsync(_user)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.Setup(x => x.GetRolesAsync(_user)).ReturnsAsync(["User"]);
-        _downloaderMock.Setup(x => x.DownloadAsync(It.IsAny<string>(), Authority, It.IsAny<CancellationToken>())).ReturnsAsync([1, 2, 3]);
-        _imageServiceMock.Setup(x => x.SaveProfileImage(It.IsAny<byte[]>())).ReturnsAsync("/images/profile/idp.webp");
+        _downloaderMock.Setup(x => x.DownloadAsync(PictureUrl, Authority, _token)).ReturnsAsync(Content);
+        _imageServiceMock.Setup(x => x.SaveProfileImage(Content)).ReturnsAsync(ImportedImage);
+        _imageServiceMock.Setup(x => x.SaveImage(_file, UploadFileType.Profile)).ReturnsAsync(UploadedImage);
         _service = new UserProfileImageService(_userManagerMock.Object, _imageServiceMock.Object, _downloaderMock.Object, _playerAccountImageServiceMock.Object, _loggerMock.Object);
     }
 
@@ -45,209 +55,260 @@ public class UserProfileImageServiceTests
     {
         await ImportAsync(PictureUrl);
 
-        _user.ProfileImage.Should().Be("/images/profile/idp.webp");
+        _user.ProfileImage.Should().Be(ImportedImage);
         _user.ProfileImageSource.Should().Be(ProfileImageSource.IdentityProvider);
         _user.ProfileImageSourceUrl.Should().Be(PictureUrl);
-        _userManagerMock.Verify(x => x.UpdateAsync(_user), Times.Once);
-        _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(_user), Times.Once);
+        VerifyImported(PictureUrl);
+        _imageServiceMock.Verify(x => x.DeleteImage(null), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Import_ShouldNeverOverwriteAnUploadedImage()
     {
-        _user.UseUploadedProfileImage("/images/profile/mine.webp");
+        _user.UseUploadedProfileImage(UploadedImage);
 
         await ImportAsync(PictureUrl);
 
-        _user.ProfileImage.Should().Be("/images/profile/mine.webp");
+        _user.ProfileImage.Should().Be(UploadedImage);
         _user.ProfileImageSource.Should().Be(ProfileImageSource.Upload);
-        _downloaderMock.Verify(x => x.DownloadAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-        _userManagerMock.Verify(x => x.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Never);
-        _playerAccountImageServiceMock.VerifyNoOtherCalls();
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Import_ShouldNotDownloadAgain_WhenThePictureAddressIsUnchanged()
     {
-        _user.UseIdentityProviderPicture("/images/profile/idp-old.webp", PictureUrl);
+        _user.UseIdentityProviderPicture(OldImage, PictureUrl);
 
         await ImportAsync(PictureUrl);
 
-        _downloaderMock.Verify(x => x.DownloadAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-        _user.ProfileImage.Should().Be("/images/profile/idp-old.webp");
+        _user.ProfileImage.Should().Be(OldImage);
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Import_ShouldReplaceAnEarlierImportedPicture_WhenTheAddressChanges()
     {
-        _user.UseIdentityProviderPicture("/images/profile/idp-old.webp", "https://idp.example.com/avatars/old.png");
+        _user.UseIdentityProviderPicture(OldImage, "https://idp.example.com/avatars/old.png");
 
         await ImportAsync(PictureUrl);
 
-        _user.ProfileImage.Should().Be("/images/profile/idp.webp");
+        _user.ProfileImage.Should().Be(ImportedImage);
         _user.ProfileImageSourceUrl.Should().Be(PictureUrl);
-        _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/idp-old.webp"), Times.Once);
+        VerifyImported(PictureUrl);
+        _imageServiceMock.Verify(x => x.DeleteImage(OldImage), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Import_ShouldNotBringBackARemovedPicture_UntilTheProviderPictureChanges()
     {
-        _user.UseIdentityProviderPicture("/images/profile/idp-old.webp", PictureUrl);
+        const string newPicture = "https://idp.example.com/avatars/new.png";
+        _user.UseIdentityProviderPicture(OldImage, PictureUrl);
         _user.RemoveProfileImage();
+        _downloaderMock.Setup(x => x.DownloadAsync(newPicture, Authority, _token)).ReturnsAsync(Content);
 
         await ImportAsync(PictureUrl);
         _user.ProfileImage.Should().BeNull();
 
-        await ImportAsync("https://idp.example.com/avatars/new.png");
-        _user.ProfileImage.Should().Be("/images/profile/idp.webp");
+        await ImportAsync(newPicture);
+        _user.ProfileImage.Should().Be(ImportedImage);
         _user.ProfileImageSource.Should().Be(ProfileImageSource.IdentityProvider);
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Exactly(2));
+        _downloaderMock.Verify(x => x.DownloadAsync(newPicture, Authority, _token), Times.Once);
+        _imageServiceMock.Verify(x => x.SaveProfileImage(Content), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(_user), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage(null), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(_user), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, $"Imported the identity provider picture of user {_user.Id}");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Import_ShouldKeepTheCurrentImage_WhenTheDownloadFails()
     {
-        _downloaderMock.Setup(x => x.DownloadAsync(PictureUrl, Authority, It.IsAny<CancellationToken>())).ReturnsAsync((byte[]?)null);
+        _downloaderMock.Setup(x => x.DownloadAsync(PictureUrl, Authority, _token)).ReturnsAsync((byte[]?)null);
 
         await ImportAsync(PictureUrl);
 
         _user.ProfileImage.Should().BeNull();
         _user.ProfileImageSourceUrl.Should().BeNull("a failed download is tried again on the next sign-in");
-        _imageServiceMock.Verify(x => x.SaveProfileImage(It.IsAny<byte[]>()), Times.Never);
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Once);
+        _downloaderMock.Verify(x => x.DownloadAsync(PictureUrl, Authority, _token), Times.Once);
+        VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task Import_ShouldKeepTheCurrentImage_WhenTheBytesAreNotAnImage()
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task Import_ShouldKeepTheCurrentImage_WhenTheBytesAreNotAnImage(string? saved)
     {
-        _imageServiceMock.Setup(x => x.SaveProfileImage(It.IsAny<byte[]>())).ReturnsAsync(string.Empty);
+        _imageServiceMock.Setup(x => x.SaveProfileImage(Content)).ReturnsAsync(saved!);
 
         await ImportAsync(PictureUrl);
 
         _user.ProfileImage.Should().BeNull();
-        _userManagerMock.Verify(x => x.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Once);
+        _downloaderMock.Verify(x => x.DownloadAsync(PictureUrl, Authority, _token), Times.Once);
+        _imageServiceMock.Verify(x => x.SaveProfileImage(Content), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, $"The identity provider picture of user {_user.Id} could not be read as an image");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Import_ShouldDiscardTheNewFile_WhenTheAccountChangedMeanwhile()
     {
+        _user.UseIdentityProviderPicture(OldImage, "https://idp.example.com/avatars/old.png");
         _userManagerMock.Setup(x => x.UpdateAsync(_user)).ReturnsAsync(IdentityResult.Failed(new IdentityErrorDescriber().ConcurrencyFailure()));
 
         await ImportAsync(PictureUrl);
 
-        _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/idp.webp"), Times.Once);
-        _playerAccountImageServiceMock.VerifyNoOtherCalls();
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Once);
+        _downloaderMock.Verify(x => x.DownloadAsync(PictureUrl, Authority, _token), Times.Once);
+        _imageServiceMock.Verify(x => x.SaveProfileImage(Content), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(_user), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage(ImportedImage), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, $"Kept the current profile picture of user {_user.Id} because the account changed during the import");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Import_ShouldIgnoreAnUnknownUser()
     {
-        await _service.ImportFromIdentityProviderAsync(new IdentityProviderPictureImport("missing", PictureUrl, Authority), TestContext.Current.CancellationToken);
+        await _service.ImportFromIdentityProviderAsync(new IdentityProviderPictureImport("missing", PictureUrl, Authority), _token);
 
-        _downloaderMock.Verify(x => x.DownloadAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _userManagerMock.Verify(x => x.FindByIdAsync("missing"), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Upload_ShouldMarkTheImageAsUploaded_AndDeleteThePreviousFile()
     {
-        _user.UseIdentityProviderPicture("/images/profile/idp-old.webp", PictureUrl);
-        var file = Mock.Of<IFormFile>();
-        _imageServiceMock.Setup(x => x.SaveImage(file, UploadFileType.Profile)).ReturnsAsync("/images/profile/mine.webp");
+        _user.UseIdentityProviderPicture(OldImage, PictureUrl);
 
-        var profile = await _service.UploadAsync(_user.Id, file);
+        var profile = await _service.UploadAsync(_user.Id, _file);
 
-        profile.ProfileImage.Should().Be("/images/profile/mine.webp");
+        profile.ProfileImage.Should().Be(UploadedImage);
+        profile.Roles.Should().Equal("User");
         _user.ProfileImageSource.Should().Be(ProfileImageSource.Upload);
-        _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/idp-old.webp"), Times.Once);
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Once);
+        _imageServiceMock.Verify(x => x.SaveImage(_file, UploadFileType.Profile), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(_user), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage(OldImage), Times.Once);
         _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(_user), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(_user), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {_user.Id} uploaded a profile picture");
+        VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task Upload_ShouldRefuse_AnEmptyFile()
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task Upload_ShouldRefuse_AnEmptyFile(string? saved)
     {
-        _imageServiceMock.Setup(x => x.SaveImage(null, UploadFileType.Profile)).ReturnsAsync(string.Empty);
+        _imageServiceMock.Setup(x => x.SaveImage(null, UploadFileType.Profile)).ReturnsAsync(saved!);
 
         var action = () => _service.UploadAsync(_user.Id, null);
 
         await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.ImageUnsupportedFormat);
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Once);
+        _imageServiceMock.Verify(x => x.SaveImage(null, UploadFileType.Profile), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Upload_ShouldDiscardTheNewFile_WhenSavingTheAccountFails()
     {
-        var file = Mock.Of<IFormFile>();
-        _imageServiceMock.Setup(x => x.SaveImage(file, UploadFileType.Profile)).ReturnsAsync("/images/profile/mine.webp");
+        _user.UseUploadedProfileImage("/images/profile/previous.webp");
         _userManagerMock.Setup(x => x.UpdateAsync(_user)).ReturnsAsync(IdentityResult.Failed(new IdentityErrorDescriber().ConcurrencyFailure()));
 
-        var action = () => _service.UploadAsync(_user.Id, file);
+        var action = () => _service.UploadAsync(_user.Id, _file);
 
         await action.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.ProfileImageUpdateFailed);
-        _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/mine.webp"), Times.Once);
-        _playerAccountImageServiceMock.VerifyNoOtherCalls();
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Once);
+        _imageServiceMock.Verify(x => x.SaveImage(_file, UploadFileType.Profile), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(_user), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage(UploadedImage), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Upload_ShouldThrow_ForAnUnknownUser()
     {
-        var action = () => _service.UploadAsync("missing", Mock.Of<IFormFile>());
+        var action = () => _service.UploadAsync("missing", _file);
 
         await action.Should().ThrowAsync<EntityNotFoundException>();
+        _userManagerMock.Verify(x => x.FindByIdAsync("missing"), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Remove_ShouldClearTheImage_AndDeleteTheFile()
     {
-        _user.UseUploadedProfileImage("/images/profile/mine.webp");
+        _user.UseUploadedProfileImage(UploadedImage);
 
         var profile = await _service.RemoveAsync(_user.Id);
 
         profile.ProfileImage.Should().BeNull();
+        profile.Roles.Should().Equal("User");
         _user.ProfileImageSource.Should().Be(ProfileImageSource.None);
-        _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/mine.webp"), Times.Once);
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(_user), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage(UploadedImage), Times.Once);
         _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(_user), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(_user), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {_user.Id} removed their profile picture");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task ImportService_ShouldSwallowFailures_SoTheQueueKeepsRunning()
+    public async Task Remove_ShouldKeepTheFile_WhenSavingTheAccountFails()
     {
-        var services = new Mock<IServiceProvider>();
-        var images = new Mock<IUserProfileImageService>();
-        images.Setup(x => x.ImportFromIdentityProviderAsync(It.IsAny<IdentityProviderPictureImport>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("boom"));
-        services.Setup(x => x.GetService(typeof(IUserProfileImageService))).Returns(images.Object);
-        var scope = new Mock<Microsoft.Extensions.DependencyInjection.IServiceScope>();
-        scope.Setup(x => x.ServiceProvider).Returns(services.Object);
-        var scopeFactory = new Mock<Microsoft.Extensions.DependencyInjection.IServiceScopeFactory>();
-        scopeFactory.Setup(x => x.CreateScope()).Returns(scope.Object);
-        var logger = new Mock<ILogger<IdentityProviderPictureImportService>>();
-        var worker = new IdentityProviderPictureImportService(scopeFactory.Object, new IdentityProviderPictureQueue(), logger.Object);
+        _user.UseUploadedProfileImage(UploadedImage);
+        _userManagerMock.Setup(x => x.UpdateAsync(_user)).ReturnsAsync(IdentityResult.Failed(new IdentityErrorDescriber().ConcurrencyFailure()));
 
-        await worker.ImportAsync(new IdentityProviderPictureImport(_user.Id, PictureUrl, Authority), TestContext.Current.CancellationToken);
+        var action = () => _service.RemoveAsync(_user.Id);
 
-        logger.Verify(x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception?>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once);
+        await action.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.ProfileImageUpdateFailed);
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(_user), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage(null), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task ImportService_ShouldImportQueuedPictures()
+    public async Task Remove_ShouldThrow_ForAnUnknownUser()
     {
-        var services = new Mock<IServiceProvider>();
-        var images = new Mock<IUserProfileImageService>();
-        services.Setup(x => x.GetService(typeof(IUserProfileImageService))).Returns(images.Object);
-        var scope = new Mock<Microsoft.Extensions.DependencyInjection.IServiceScope>();
-        scope.Setup(x => x.ServiceProvider).Returns(services.Object);
-        var scopeFactory = new Mock<Microsoft.Extensions.DependencyInjection.IServiceScopeFactory>();
-        scopeFactory.Setup(x => x.CreateScope()).Returns(scope.Object);
-        var queue = new IdentityProviderPictureQueue();
-        var import = new IdentityProviderPictureImport(_user.Id, PictureUrl, Authority);
-        var imported = new TaskCompletionSource();
-        images.Setup(x => x.ImportFromIdentityProviderAsync(import, It.IsAny<CancellationToken>())).Callback(() => imported.TrySetResult()).Returns(Task.CompletedTask);
-        using var worker = new IdentityProviderPictureImportService(scopeFactory.Object, queue, Mock.Of<ILogger<IdentityProviderPictureImportService>>());
+        var action = () => _service.RemoveAsync("missing");
 
-        await worker.StartAsync(TestContext.Current.CancellationToken);
-        queue.Enqueue(import).Should().BeTrue();
-        await imported.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
-        await worker.StopAsync(TestContext.Current.CancellationToken);
-
-        images.Verify(x => x.ImportFromIdentityProviderAsync(import, It.IsAny<CancellationToken>()), Times.Once);
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+        _userManagerMock.Verify(x => x.FindByIdAsync("missing"), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     private Task ImportAsync(string pictureUrl) =>
-        _service.ImportFromIdentityProviderAsync(new IdentityProviderPictureImport(_user.Id, pictureUrl, Authority), TestContext.Current.CancellationToken);
+        _service.ImportFromIdentityProviderAsync(new IdentityProviderPictureImport(_user.Id, pictureUrl, Authority), _token);
+
+    private void VerifyImported(string pictureUrl)
+    {
+        _userManagerMock.Verify(x => x.FindByIdAsync(_user.Id), Times.Once);
+        _downloaderMock.Verify(x => x.DownloadAsync(pictureUrl, Authority, _token), Times.Once);
+        _imageServiceMock.Verify(x => x.SaveProfileImage(Content), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(_user), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(_user), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, $"Imported the identity provider picture of user {_user.Id}");
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _userStoreMock.VerifyNoOtherCalls();
+        _userManagerMock.VerifySet(x => x.Logger = null!, Times.Once);
+        _userManagerMock.VerifyNoOtherCalls();
+        _imageServiceMock.VerifyNoOtherCalls();
+        _downloaderMock.VerifyNoOtherCalls();
+        _playerAccountImageServiceMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
+    }
 }
