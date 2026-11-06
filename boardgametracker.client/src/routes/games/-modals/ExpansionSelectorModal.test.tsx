@@ -73,6 +73,19 @@ describe("ExpansionSelectorModal", () => {
 		await waitFor(() => expect(close).toHaveBeenCalledTimes(1));
 	});
 
+	it("stays open with the selection when the save is refused", async () => {
+		const user = userEvent.setup();
+		const close = vi.fn();
+		mocks.saveExpansions.mockRejectedValue({ kind: "server", status: 500, message: "Failed" });
+		renderWithProviders(<ExpansionSelectorModal open close={close} gameId={5} selectedExpansions={[11]} />);
+
+		await user.click(screen.getByRole("button", { name: "expansions.update" }));
+
+		await waitFor(() => expect(mocks.saveExpansions).toHaveBeenCalled());
+		expect(close).not.toHaveBeenCalled();
+		expect(screen.getByRole("checkbox", { name: "Base expansion" })).toBeChecked();
+	});
+
 	it("unticks an expansion that was already linked", async () => {
 		const user = userEvent.setup();
 		renderWithProviders(<ExpansionSelectorModal open close={vi.fn()} gameId={5} selectedExpansions={[11, 22]} />);
