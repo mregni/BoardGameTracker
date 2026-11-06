@@ -1,12 +1,24 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { expect, test as setup } from "@playwright/test";
-import { credentials } from "../support/fixtures";
-import { avatars, expansions, gameNights, games, linkedPlayer, locations, sessions } from "../support/seedData";
+import { credentials, paceLogin, readerCredentials, writerCredentials } from "../support/fixtures";
+import {
+	avatars,
+	expansions,
+	gameNights,
+	games,
+	linkedPlayer,
+	loans,
+	locations,
+	pastGameNight,
+	seedTime,
+	sessions,
+} from "../support/seedData";
 
 setup("seed the database through the api", async ({ request }) => {
 	setup.setTimeout(120_000);
 
+	await paceLogin();
 	const login = await request.post("/api/auth/login", { data: credentials });
 	expect(login.ok()).toBe(true);
 	const { accessToken, user } = await login.json();
@@ -57,24 +69,6 @@ setup("seed the database through the api", async ({ request }) => {
 		await post(`/api/game/${gameIds.get(expansion.game)}/expansions/manual`, { title: expansion.title });
 	}
 
-	for (const session of sessions) {
-		await post("/api/session", {
-			gameId: gameIds.get(session.game),
-			start: session.start.toISOString(),
-			minutes: session.minutes,
-			locationId: locationIds.get(session.location),
-			expansionIds: [],
-			isCoop: session.isCoop,
-			teamWon: session.teamWon,
-			playerSessions: session.scores.map(({ player, score }) => ({
-				playerId: playerIds.get(player),
-				score,
-				firstPlay: false,
-				won: player === session.winner || session.teamWon === true,
-			})),
-		});
-	}
-
 	for (const night of gameNights) {
 		const created = await post("/api/gamenight", {
 			title: night.title,
@@ -91,5 +85,54 @@ setup("seed the database through the api", async ({ request }) => {
 			const rsvp = detail.gameNight.invitedPlayers.find((x: { playerId: number }) => x.playerId === playerId);
 			await send("put", "/api/gamenight/rsvp", { id: rsvp.id, gameNightId: created.id, playerId, state });
 		}
+	}
+	const pastNight = await post("/api/gamenight", {
+		title: pastGameNight.title,
+		notes: "",
+		startDate: pastGameNight.startDate.toISOString(),
+		hostId: playerIds.get(linkedPlayer),
+		locationId: locationIds.get(pastGameNight.location),
+		suggestedGameIds: pastGameNight.suggestedGames.map((title) => gameIds.get(title)),
+		invitedPlayerIds: pastGameNight.attendees.map((name) => playerIds.get(name)),
+	});
+
+	for (const session of sessions) {
+		await post("/api/session", {
+			gameId: gameIds.get(session.game),
+			start: session.start.toISOString(),
+			minutes: session.minutes,
+			locationId: locationIds.get(session.location),
+			gameNightId: session.gameNight ? pastNight.id : undefined,
+			expansionIds: [],
+			isCoop: session.isCoop,
+			teamWon: session.teamWon,
+			playerSessions: session.scores.map(({ player, score }) => ({
+				playerId: playerIds.get(player),
+				score,
+				firstPlay: false,
+				won: player === session.winner || session.teamWon === true,
+			})),
+		});
+	}
+
+	await send("post", `/api/gamenight/${pastNight.id}/end`, {});
+
+	for (const loan of loans) {
+		const created = await post("/api/loans", {
+			gameId: gameIds.get(loan.game),
+			playerId: playerIds.get(loan.player),
+			loanDate: loan.loanDate.toISOString(),
+			dueDate: loan.dueDate?.toISOString() ?? null,
+		});
+		if (loan.returned) await send("put", "/api/loans/return", { id: created.id, returnDate: seedTime.toISOString() });
+	}
+
+	for (const user of [readerCredentials, writerCredentials]) {
+		await send("post", "/api/auth/register", {
+			username: user.username,
+			email: `${user.username}@example.test`,
+			password: user.password,
+			role: user.role,
+		});
 	}
 });

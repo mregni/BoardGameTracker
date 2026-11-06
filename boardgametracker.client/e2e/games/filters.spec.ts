@@ -34,6 +34,7 @@ test.describe("filters", () => {
 		{ combobox: "Weight", option: "Light (< 2)", titles: titlesOf((game) => game.weight < 2) },
 		{ combobox: "Weight", option: "Medium (2 - 3)", titles: titlesOf((game) => game.weight >= 2 && game.weight <= 3) },
 		{ combobox: "Weight", option: "Heavy (> 3)", titles: titlesOf((game) => game.weight > 3) },
+		{ combobox: "Age", option: "≤ 6", titles: titlesOf(({ minAge }) => minAge !== null && minAge <= 6) },
 		{
 			combobox: "Age",
 			option: "7 - 9",

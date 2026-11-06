@@ -1,5 +1,5 @@
 import { expect, expectVisibleImagesToLoad, test } from "../support/fixtures";
-import { duration } from "../support/format";
+import { displayDate, duration, whole } from "../support/format";
 import { expected, gameNights, linkedPlayer, games as seededGames, sessions } from "../support/seedData";
 
 test.beforeEach(async ({ page }) => {
@@ -23,10 +23,10 @@ test("shows the next game night with its answers and suggestions", async ({ page
 	await expect(card.getByRole("heading", { name: night.title })).toBeVisible();
 	await expect(card).toContainText("in 3 days");
 	await expect(card).toContainText(`${night.location} · host ${linkedPlayer}`);
-	await expect(card).toContainText("2 coming");
-	await expect(card).toContainText("1 maybe");
-	await expect(card).toContainText("1 no answer");
-	await expect(card).toContainText("1 not coming");
+	await expect(card).toContainText(whole("2 coming"));
+	await expect(card).toContainText(whole("1 maybe"));
+	await expect(card).toContainText(whole("1 no answer"));
+	await expect(card).toContainText(whole("1 not coming"));
 	for (const game of night.suggestedGames) {
 		await expect(card.getByRole("link", { name: game })).toBeVisible();
 	}
@@ -56,7 +56,7 @@ test("lists the last sessions newest first with their winner", async ({ page }) 
 		const row = rows.nth(index);
 		await expect(row).toContainText(session.game);
 		await expect(row).toContainText(`${session.scores.length} players`);
-		await expect(row).toContainText(duration(session.minutes));
+		await expect(row).toContainText(whole(duration(session.minutes)));
 		if (session.isCoop) {
 			await expect(row).toContainText(session.teamWon ? "Co-op · won" : "Co-op · lost");
 		} else {
@@ -75,9 +75,9 @@ test("ranks the top players by wins", async ({ page }) => {
 	for (const [index, player] of expected.topPlayers.entries()) {
 		const row = rows.nth(index);
 		await expect(row).toContainText(player.name);
-		await expect(row).toContainText(`${player.sessions} sessions`);
-		await expect(row).toContainText(`${player.wins} wins`);
-		await expect(row).toContainText(`${Math.round(player.winRate * 100)}% won`);
+		await expect(row).toContainText(whole(`${player.sessions} sessions`));
+		await expect(row).toContainText(whole(`${player.wins} wins`));
+		await expect(row).toContainText(whole(`${Math.round(player.winRate * 100)}% won`));
 	}
 	await expect(card.getByRole("link", { name: "Leaderboard" })).toHaveAttribute("href", "/leaderboard");
 });
@@ -88,10 +88,10 @@ test("shows the most played games per period", async ({ page }) => {
 
 	const expectRows = async (games: [string, number][]) => {
 		await expect(rows).toHaveCount(games.length);
-		for (const [index, [, count]] of games.entries()) {
-			await expect(rows.nth(index)).toContainText(`${count}×`);
+		for (const [index, [title, count]] of games.entries()) {
+			await expect(rows.nth(index)).toContainText(title);
+			await expect(rows.nth(index)).toContainText(whole(`${count}×`));
 		}
-		await expect(rows.first()).toContainText(games[0][0]);
 	};
 
 	await expect(card.getByRole("button", { name: "All time" })).toHaveAttribute("aria-pressed", "true");
@@ -113,9 +113,12 @@ test("sums the collection, what was paid for it and what was added last", async 
 	await expect(card.getByText(`€${ownedValue.toLocaleString("en-US")}`)).toBeVisible();
 	await expect(card.getByText(`${ownedCount} of ${ownedCount} priced`)).toBeVisible();
 	await expect(card.getByRole("link", { name: "Games", exact: true })).toHaveAttribute("href", "/games");
-	for (const title of expected.recentlyAdded) {
-		await expect(card.getByRole("link", { name: title }).first()).toBeVisible();
-	}
+	await expect(card.getByRole("listitem").getByRole("link")).toHaveText(
+		expected.recentlyAdded.map((title) => {
+			const added = new Date(seededGames.find((game) => game.title === title)?.additionDate ?? 0);
+			return `${title}· ${displayDate(added)}`;
+		}),
+	);
 });
 
 test("nudges about the games gathering dust on the shelf", async ({ page }) => {

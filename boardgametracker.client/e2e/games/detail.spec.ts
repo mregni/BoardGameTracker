@@ -1,5 +1,5 @@
 import { expect, expectVisibleImagesToLoad, test } from "../support/fixtures";
-import { displayDate, duration } from "../support/format";
+import { displayDate, duration, whole } from "../support/format";
 import { gameLink, openGames } from "../support/gamesPage";
 import {
 	coopGame,
@@ -97,7 +97,7 @@ test.describe("detail of a played game", () => {
 			const best = Math.max(...session.scores.map((score) => score.score ?? 0));
 			await expect(rows.nth(index)).toContainText(session.winner ?? "");
 			await expect(rows.nth(index)).toContainText(`${session.scores.length} players`);
-			await expect(rows.nth(index)).toContainText(String(best));
+			await expect(rows.nth(index)).toContainText(whole(String(best)));
 		}
 		await expect(main.getByRole("link", { name: "View sessions" })).toHaveAttribute("href", "/games/1/sessions");
 	});
@@ -144,7 +144,7 @@ test.describe("detail of a played game", () => {
 		await expect(page).toHaveURL("/games");
 	});
 
-	test("charts the sessions by player count next to the weekday chart", async ({ page }) => {
+	test("charts the sessions by player count and titles the weekday card", async ({ page }) => {
 		const main = page.getByRole("main");
 		const threePlayers = played.filter((session) => session.scores.length === 3).length;
 		const fourPlayers = played.length - threePlayers;
@@ -178,8 +178,8 @@ test.describe("detail of a played game", () => {
 			const average = own.reduce((sum, score) => sum + score, 0) / own.length;
 			await expect(row).toContainText(player.name);
 			await expect(row).toContainText(`${player.sessions} sessions · ${Number(average.toFixed(1))} avg`);
-			await expect(row).toContainText(`${player.wins} win`);
-			await expect(row).toContainText(`${Math.round(player.winRate * 100)}%`);
+			await expect(row).toContainText(whole(`${player.wins} wins?`));
+			await expect(row).toContainText(whole(`${Math.round(player.winRate * 100)}%`));
 			await expect(row.getByRole("link")).toHaveAttribute("href", `/players/${players.indexOf(player.name) + 1}`);
 		}
 		await expectVisibleImagesToLoad(page);
