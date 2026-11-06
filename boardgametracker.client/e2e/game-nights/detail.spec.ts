@@ -402,10 +402,14 @@ test.describe("a finished night as a reader", () => {
 	});
 });
 
-test("shows an error instead of a crash for an address that is no number", async ({ readerPage: page }) => {
-	await page.goto("/game-nights/abc");
+test.describe("an address that is no number", () => {
+	test.use({ allowedApiStatuses: [401, 404] });
 
-	await expect(page.getByRole("main").getByRole("button", { name: "Game nights" })).toBeVisible({ timeout: 3_000 });
+	test("shows an error instead of a crash for an address that is no number", async ({ readerPage: page }) => {
+		await page.goto("/game-nights/abc");
+
+		await expect(page.getByRole("main").getByRole("button", { name: "Game nights" })).toBeVisible({ timeout: 3_000 });
+	});
 });
 
 test("ignores an unknown start value in the address", async ({ page }) => {

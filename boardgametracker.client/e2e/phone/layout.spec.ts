@@ -381,7 +381,6 @@ test("reloading the edit page of a session opens the form", async ({ page }) => 
 	await page.setViewportSize(phone);
 	await page.goto("/sessions/update/1");
 
-	test.fail(true, "BUG: a reload of the session edit page shows the error page because the loader runs before auth");
 	await expect(page.getByRole("heading", { name: "Something went wrong" })).toHaveCount(0);
 	await expect(page.getByRole("spinbutton", { name: "Duration" })).toBeVisible({ timeout: 3000 });
 });
