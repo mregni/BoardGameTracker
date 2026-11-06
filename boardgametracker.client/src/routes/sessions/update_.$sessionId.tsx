@@ -1,9 +1,10 @@
 import { noop } from "@tanstack/react-query";
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { BgtDataGuard } from "@/components/BgtDataGuard/BgtDataGuard";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { CreateSession, Session } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getGame } from "@/services/queries/games";
 import { getSession } from "@/services/queries/sessions";
 import { sessionIdParamSchema } from "@/utils/routeSchemas";
@@ -14,9 +15,11 @@ import { useUpdateSessionData } from "./-hooks/useUpdateSessionData";
 export const Route = createFileRoute("/sessions/update_/$sessionId")({
 	component: RouteComponent,
 	params: sessionIdParamSchema,
-	loader: async ({ params, context: { queryClient } }) => {
-		const data = await queryClient.query(getSession(params.sessionId));
-		queryClient.query(getGame(data.gameId)).catch(noop);
+	loader: ({ params, context: { queryClient } }) => {
+		queryClient
+			.query(getSession(params.sessionId))
+			.then((data) => queryClient.query(getGame(data.gameId)))
+			.catch(noop);
 	},
 });
 
@@ -29,11 +32,11 @@ function RouteComponent() {
 	const backTo = useBackTo();
 	const { canWrite } = usePermissions();
 
-	const { game, session, updateSession, isPending, isLoading } = useUpdateSessionData({
+	const { game, session, updateSession, isPending, isLoading, error } = useUpdateSessionData({
 		sessionId,
 	});
 
-	if (!canWrite) return <Navigate to="/" />;
+	if (!canWrite) return <RequireWrite>{null}</RequireWrite>;
 
 	const save = async (data: CreateSession) => {
 		if (session === undefined) return;
@@ -44,7 +47,7 @@ function RouteComponent() {
 	};
 
 	return (
-		<BgtDataGuard isLoading={isLoading} data={{ game, session }}>
+		<BgtDataGuard isLoading={isLoading} data={{ game, session }} error={error}>
 			{({ game, session }) => (
 				<SessionForm
 					game={game}

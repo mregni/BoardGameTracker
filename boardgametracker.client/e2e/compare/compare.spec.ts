@@ -375,7 +375,6 @@ test("explains when the comparison cannot be loaded", async ({ page }) => {
 
 	await page.goto(compareUrl(busiest, rival));
 
-	test.fail(true, "BUG: /compare keeps spinning forever when the comparison request fails");
 	await expect(page.getByText("Couldn't load this page")).toBeVisible({ timeout: 3000 });
 });
 
@@ -384,6 +383,5 @@ test("explains when the players cannot be loaded", async ({ page }) => {
 
 	await page.goto("/compare");
 
-	test.fail(true, "BUG: /compare says there are not enough players when the player list fails to load");
 	await expect(page.getByText("Couldn't load this page")).toBeVisible({ timeout: 3000 });
 });

@@ -9,9 +9,10 @@ export interface PlayersSearch {
 }
 
 export const parsePlayersSearch = (search: Record<string, unknown>): PlayersSearch => {
-	const q = typeof search.q === "string" && search.q.trim().length > 0 ? search.q : undefined;
+	const text = typeof search.q === "number" ? String(search.q) : search.q;
+	const q = typeof text === "string" && text.trim().length > 0 ? text : undefined;
 	const sort = PLAYER_SORTS.find((x) => x !== "recent" && x === search.sort) as PlayersSearch["sort"];
-	return { ...(q && { q }), ...(sort && { sort }) };
+	return { q, sort };
 };
 
 const lastPlayedTime = (player: PlayerOverview) => (player.lastPlayed ? new Date(player.lastPlayed).getTime() : 0);

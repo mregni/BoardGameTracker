@@ -307,7 +307,6 @@ test("explains when the leaderboard cannot be loaded", async ({ page }) => {
 
 	await page.goto("/leaderboard");
 
-	test.fail(true, "BUG: /leaderboard keeps spinning forever when the leaderboard request fails");
 	await expect(page.getByText("Couldn't load this page")).toBeVisible({ timeout: 3000 });
 });
 

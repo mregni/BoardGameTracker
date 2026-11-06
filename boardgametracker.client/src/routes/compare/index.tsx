@@ -43,11 +43,22 @@ function RouteComponent() {
 	const search = Route.useSearch();
 	const { canWrite } = usePermissions();
 
-	const { players, leftId, rightId, shownLeftId, shownRightId, compare, settings, isLoading, isUpdating } =
-		useCompareData({
-			left: search.left,
-			right: search.right,
-		});
+	const {
+		players,
+		leftId,
+		rightId,
+		shownLeftId,
+		shownRightId,
+		compare,
+		settings,
+		isLoading,
+		isUpdating,
+		error,
+		retry,
+	} = useCompareData({
+		left: search.left,
+		right: search.right,
+	});
 
 	const goTo = useCallback(
 		(left: number, right: number) => navigate({ to: "/compare", search: { left, right }, replace: true }),
@@ -63,7 +74,7 @@ function RouteComponent() {
 	const playerOne = players.find((player) => player.id === leftId);
 	const playerTwo = players.find((player) => player.id === rightId);
 
-	if (!isLoading && players.length < 2) {
+	if (!isLoading && !error && players.length < 2) {
 		return (
 			<BgtEmptyPage
 				header={t("title")}
@@ -81,7 +92,12 @@ function RouteComponent() {
 	return (
 		<BgtPage>
 			<BgtPageHeader header={t("title")} icon={TrendUp} />
-			<BgtPageContent isLoading={isLoading} data={{ compare, settings, playerOne, playerTwo, shownOne, shownTwo }}>
+			<BgtPageContent
+				isLoading={isLoading}
+				data={{ compare, settings, playerOne, playerTwo, shownOne, shownTwo }}
+				error={error}
+				onRetry={retry}
+			>
 				{({ compare, settings, playerOne, playerTwo, shownOne, shownTwo }) => (
 					<div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
 						<div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5 sm:gap-3">

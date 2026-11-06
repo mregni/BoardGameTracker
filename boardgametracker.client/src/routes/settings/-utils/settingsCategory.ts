@@ -22,7 +22,7 @@ export const settingsSearchSchema = z.object({
 		.catch(undefined),
 });
 
-const userCategories: SettingsCategory[] = ["account", "sso"];
+const userCategories: SettingsCategory[] = ["account"];
 
 export const resolveSettingsCategory = (
 	tab: SettingsCategory | undefined,

@@ -237,10 +237,6 @@ test("a long game title in most played keeps the player page on a phone", async 
 		await settled(page);
 		await expect(page.getByRole("heading", { name: "Most played games", level: 2 })).toBeVisible();
 
-		test.fail(
-			true,
-			"BUG: a long title in Most played widens the grid of the player page, so the page scrolls sideways",
-		);
 		await expectNoSidewaysScroll(page);
 	} finally {
 		await api.tidy(`/api/session/${session.id}`);

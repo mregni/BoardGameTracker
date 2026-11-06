@@ -402,11 +402,14 @@ test.describe("a finished night as a reader", () => {
 	});
 });
 
-test("shows an error instead of a crash for an address that is no number", async ({ readerPage: page }) => {
-	await page.goto("/game-nights/abc");
+test.describe("an address that is no number", () => {
+	test.use({ allowedApiStatuses: [401, 404] });
 
-	test.fail(true, "BUG: /game-nights/abc throws in the route params and lands on the generic error page");
-	await expect(page.getByRole("main").getByRole("button", { name: "Game nights" })).toBeVisible({ timeout: 3_000 });
+	test("shows an error instead of a crash for an address that is no number", async ({ readerPage: page }) => {
+		await page.goto("/game-nights/abc");
+
+		await expect(page.getByRole("main").getByRole("button", { name: "Game nights" })).toBeVisible({ timeout: 3_000 });
+	});
 });
 
 test("ignores an unknown start value in the address", async ({ page }) => {
@@ -427,7 +430,6 @@ test.describe("a night that does not exist", () => {
 	test("explains it instead of loading forever", async ({ page }) => {
 		await openMissing(page);
 
-		test.fail(true, "BUG: /game-nights/9999 stays on Loading data... forever, the detail page has no not-found state");
 		await expect(page.getByRole("main").getByText("Loading data...")).toHaveCount(0, { timeout: 5_000 });
 	});
 

@@ -157,7 +157,11 @@
     "played": "Jugado: {{games}}"
   },
   "detail": {
-    "back": "Noches de juego"
+    "back": "Noches de juego",
+    "not-found": {
+      "title": "Noche de juegos no encontrada",
+      "description": "Puede que se haya eliminado o que el enlace esté desactualizado."
+    }
   },
   "play": {
     "start": {

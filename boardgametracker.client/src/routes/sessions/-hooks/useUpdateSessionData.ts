@@ -43,6 +43,7 @@ export const useUpdateSessionData = ({ sessionId, onSuccess }: Props) => {
 		session,
 		game,
 		isLoading: sessionQuery.isLoading || gameQuery.isLoading,
+		error: sessionQuery.error ?? gameQuery.error,
 		isPending: updateSessionMutation.isPending,
 		updateSession: updateSessionMutation.mutateAsync,
 	};
