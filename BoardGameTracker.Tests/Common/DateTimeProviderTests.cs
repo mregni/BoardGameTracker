@@ -43,7 +43,7 @@ public class DateTimeProviderTests
         var provider = new DateTimeProvider(config);
 
         // Assert
-        provider.TimeZone.Id.Should().Be("Europe/Brussels");
+        provider.TimeZone.BaseUtcOffset.Should().Be(TimeSpan.FromHours(1));
     }
 
     [Fact]

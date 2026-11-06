@@ -176,6 +176,12 @@
         "resolved": "10.0.13",
         "contentHash": "a+EovgC1fBnwdlQ6cn3j4JFBfKqiFaFvoAhjisOoSvazLAcIznaBzPQP0oYnvccmeXfqUH1KebVZOxSeH6rMaw=="
       },
+      "TimeZoneConverter": {
+        "type": "Direct",
+        "requested": "[8.0.1, )",
+        "resolved": "8.0.1",
+        "contentHash": "d+svH8alqTWfqci5L/bWW9Tqx4JbkNUBPQotw+Z5SL8kXYiifYW0323KgFAct3BgHRHZCCPudeNYSLXQ9pfVew=="
+      },
       "BouncyCastle.Cryptography": {
         "type": "Transitive",
         "resolved": "2.6.2",
