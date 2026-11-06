@@ -26,8 +26,9 @@ public class EfRepositoryTests
         var repository = new EfRepository<Loan>(context);
         var loan = new Loan(1, 1, DateTime.UtcNow);
 
-        await repository.CreateAsync(loan);
+        var created = await repository.CreateAsync(loan);
 
+        created.Should().BeSameAs(loan);
         // The entity is tracked as Added but must NOT be committed until IUnitOfWork saves.
         context.ChangeTracker.Entries<Loan>().Count(e => e.State == EntityState.Added).Should().Be(1);
         (await context.Loans.CountAsync()).Should().Be(0);
@@ -82,6 +83,39 @@ public class EfRepositoryTests
 
         result.Should().NotBeNull();
         result!.Id.Should().Be(loan.Id);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnTheRequestedEntity_AmongOthers()
+    {
+        await using var context = CreateContext();
+        var other = new Loan(1, 1, DateTime.UtcNow);
+        var wanted = new Loan(2, 2, DateTime.UtcNow);
+        await context.Loans.AddRangeAsync(other, wanted);
+        await context.SaveChangesAsync();
+
+        var result = await new EfRepository<Loan>(context).GetByIdAsync(wanted.Id);
+
+        result.Should().BeSameAs(wanted);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_ShouldNotTrackTheEntities()
+    {
+        var options = new DbContextOptionsBuilder<MainDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using (var seed = new MainDbContext(options))
+        {
+            await seed.Loans.AddAsync(new Loan(1, 1, DateTime.UtcNow));
+            await seed.SaveChangesAsync();
+        }
+
+        await using var context = new MainDbContext(options);
+        var result = await new EfRepository<Loan>(context).GetAllAsync();
+
+        result.Should().ContainSingle();
+        context.ChangeTracker.Entries<Loan>().Should().BeEmpty();
     }
 
     [Fact]
