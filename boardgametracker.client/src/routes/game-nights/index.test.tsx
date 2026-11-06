@@ -190,13 +190,13 @@ describe("Game nights overview", () => {
 		expect(screen.getByText("empty.upcoming")).toBeInTheDocument();
 	});
 
-	it("accepts only the known views and periods in the address", () => {
+	it("ignores unknown views and periods in the address", () => {
 		const { parse } = mocks.captured.config.validateSearch;
 
 		expect(parse({ view: "stats", period: "last12Months" })).toEqual({ view: "stats", period: "last12Months" });
 		expect(parse({})).toEqual({});
-		expect(() => parse({ view: "chart" })).toThrow();
-		expect(() => parse({ period: "forever" })).toThrow();
+		expect(parse({ view: "chart" })).toEqual({});
+		expect(parse({ period: "forever" })).toEqual({});
 	});
 
 	it("shows the nights by default and switches to the statistics in the address", async () => {

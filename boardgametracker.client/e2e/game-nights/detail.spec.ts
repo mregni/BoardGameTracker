@@ -414,8 +414,6 @@ test.describe("an address that is no number", () => {
 
 test("ignores an unknown start value in the address", async ({ page }) => {
 	await page.goto("/game-nights/1?start=1");
-
-	test.fail(true, "BUG: /game-nights/1?start=1 fails the search schema and lands on the generic error page");
 	await expect(page.getByRole("heading", { name: night.title, level: 1 })).toBeVisible({ timeout: 3_000 });
 });
 

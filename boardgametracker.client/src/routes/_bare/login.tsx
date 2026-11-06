@@ -25,8 +25,8 @@ import { loginErrorKey } from "./-utils/loginError";
 const HTTPS_REQUIRED_ERROR = "error.auth.oidc-https-required";
 
 const loginSearchSchema = z.object({
-	redirect: z.string().optional(),
-	error: z.string().optional(),
+	redirect: z.string().optional().catch(undefined),
+	error: z.string().optional().catch(undefined),
 	sso: z.boolean().optional().catch(undefined),
 });
 

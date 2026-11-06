@@ -19,6 +19,7 @@ import { getGames } from "@/services/queries/games";
 import { getLocations } from "@/services/queries/locations";
 import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
+import { ignoreApiError } from "@/utils/formUtils";
 import { gameNightIdParamSchema } from "@/utils/routeSchemas";
 import { useBack } from "../-hooks/useBack";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
@@ -38,7 +39,7 @@ import { freePlayerIds, isNightOver, nightGameIds, nightTable } from "./-utils/g
 export const Route = createFileRoute("/game-nights/$gameNightId")({
 	component: RouteComponent,
 	params: gameNightIdParamSchema,
-	validateSearch: z.object({ start: z.boolean().optional() }),
+	validateSearch: z.object({ start: z.boolean().optional().catch(undefined) }),
 	beforeLoad: async ({ context: { queryClient } }) => {
 		const settings = await queryClient.query({ ...getSettings(), staleTime: "static" });
 		if (!settings.gameNightsEnabled) {
@@ -174,7 +175,7 @@ function RouteComponent() {
 								onEdit={modals.editModal.show}
 								onDelete={modals.deleteModal.show}
 								onEnd={endModal.show}
-								onReopen={() => reopenNight()}
+								onReopen={() => ignoreApiError(reopenNight())}
 								onEditAttendees={attendanceModal.show}
 								onManageRsvps={modals.manageRsvpModal.show}
 								onStart={(gameId, playerIds) => setSheet({ kind: "start", gameId, playerIds })}
