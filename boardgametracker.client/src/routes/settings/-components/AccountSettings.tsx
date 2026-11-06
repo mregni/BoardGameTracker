@@ -267,7 +267,7 @@ const ProfilePictureSection = ({ profile, onUpload, onRemove, isBusy }: ProfileP
 };
 
 const emailChanged = (email: string, current: string | null) =>
-	email.trim() !== "" && email.trim().toLowerCase() !== (current ?? "").trim().toLowerCase();
+	email.trim().toLowerCase() !== (current ?? "").trim().toLowerCase();
 
 interface ProfileSectionProps {
 	profile: ProfileResponse;
@@ -304,7 +304,7 @@ const ProfileSection = ({
 		onSubmit: async ({ value }) => {
 			await updateProfile({
 				displayName: value.displayName || null,
-				email: value.email || null,
+				email: value.email,
 				playerId: value.playerId ? value.playerId : null,
 				currentPassword: emailChanged(value.email, profile.email) ? value.currentPassword : null,
 			});

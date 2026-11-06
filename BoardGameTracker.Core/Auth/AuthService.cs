@@ -289,11 +289,12 @@ public class AuthService : IAuthService
 
         user.UpdateDisplayName(request.DisplayName);
         string? previousEmail = null;
-        if (request.Email != null && !string.Equals(request.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+        var email = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email;
+        if (request.Email != null && !string.Equals(email ?? string.Empty, user.Email ?? string.Empty, StringComparison.OrdinalIgnoreCase))
         {
             await EnsureEmailChangeAllowedAsync(user, request.CurrentPassword);
             previousEmail = user.Email;
-            user.UpdateEmail(request.Email, false);
+            user.UpdateEmail(email, false);
         }
 
         var previousPlayerId = user.PlayerId;
@@ -356,9 +357,9 @@ public class AuthService : IAuthService
         }
 
         var username = WebUtility.HtmlEncode(user.UserName);
-        var newEmail = WebUtility.HtmlEncode(user.Email);
+        var change = user.Email == null ? "was removed" : $"was changed to {WebUtility.HtmlEncode(user.Email)}";
         const string subject = "Your BoardGameTracker email address was changed";
-        var body = $"<p>The email address of your account <strong>{username}</strong> was changed to {newEmail}.</p><p>If you did not do this, change your password and contact your administrator.</p>";
+        var body = $"<p>The email address of your account <strong>{username}</strong> {change}.</p><p>If you did not do this, change your password and contact your administrator.</p>";
         try
         {
             _backgroundEmailSender.Queue(previousEmail, subject, body);
