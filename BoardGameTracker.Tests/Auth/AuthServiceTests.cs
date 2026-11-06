@@ -663,6 +663,7 @@ public class AuthServiceTests : IDisposable
     {
         await _authService.LogoutAsync(userId, refreshToken);
 
+        _tokenServiceMock.Invocations.Should().BeEmpty();
         VerifyNoOtherCalls();
     }
 
@@ -2237,6 +2238,26 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Verify(x => x.ResetPasswordAsync(user, "reset-token", second.TempPassword), Times.Once);
         _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync(userId, "Password reset by admin"), Times.Exactly(2));
         _loggerMock.VerifyLog(LogLevel.Information, "Admin reset password for user testuser", Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact(Skip = "BUG: UpdateProfileAsync ignores a failed UpdateAsync, sends the email-change notice and reports success")]
+    public async Task UpdateProfileAsync_ShouldReportTheFailure_AndSendNoNotice_WhenTheUserCannotBeSaved()
+    {
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", "old@test.com", "Name");
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.HasPasswordAsync(user)).ReturnsAsync(true);
+        _userManagerMock.Setup(x => x.CheckPasswordAsync(user, "current-password")).ReturnsAsync(true);
+        _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "failed" }));
+
+        var act = () => _authService.UpdateProfileAsync(userId, new UpdateProfileRequest("Name", "new@test.com", null, "current-password"));
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("failed");
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.CheckPasswordAsync(user, "current-password"), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
         VerifyNoOtherCalls();
     }
 }
