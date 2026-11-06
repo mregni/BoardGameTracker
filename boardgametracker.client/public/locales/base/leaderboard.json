@@ -33,6 +33,10 @@
     "time": "Time"
   },
   "values": {
+    "wins-label_one": "Win",
+    "wins-label_other": "Wins",
+    "sessions-label_one": "Session",
+    "sessions-label_other": "Sessions",
     "wins_one": "{{count}} win",
     "wins_other": "{{count}} wins",
     "sessions_one": "{{count}} session",

@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { useAppForm } from "@/hooks/form";
-import { type BgtSelectItem, isApiError, type Player, type UserDto } from "@/models";
+import { type BgtSelectItem, EditUserSchema, isApiError, type Player, type UserDto } from "@/models";
 import { translateApiError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { zodValidator } from "@/utils/zodValidator";
 import { buildPlayerLinkItems } from "../-utils/playerLinkOptions";
 
 interface Props {
@@ -79,10 +80,10 @@ export const EditUserModal = ({ open, close, user, players, users, onSubmit, isL
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
 					<BgtDialogTitle>{t("account.users.edit.title")}</BgtDialogTitle>
 					<div className="flex flex-col gap-2 mb-3 mt-3">
-						<form.Field name="username">
+						<form.Field name="username" validators={zodValidator(EditUserSchema, "username")}>
 							{(field) => <BgtInputField field={field} type="text" label={t("auth:username")} disabled={isLoading} />}
 						</form.Field>
-						<form.Field name="email">
+						<form.Field name="email" validators={zodValidator(EditUserSchema, "email")}>
 							{(field) => (
 								<BgtInputField
 									field={field}

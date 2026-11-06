@@ -442,9 +442,13 @@ test("shows an error when returning fails", async ({ page, request }) => {
 	await openLoans(page);
 
 	await page.getByRole("button", { name: `Mark returned ${game}` }).click();
-	await page.getByRole("dialog").getByRole("button", { name: "Mark returned" }).click();
+	const dialog = page.getByRole("dialog");
+	await dialog.getByRole("button", { name: "Mark returned" }).click();
 
 	await expect(toast(page, "Couldn't mark the game as returned. Try again in a moment.")).toBeVisible();
+	await expect(dialog).toBeVisible();
+
+	await dialog.getByRole("button", { name: "Cancel" }).click();
 	await expect(borrower(page, guest).getByRole("paragraph")).toHaveText("1 game");
 	await expect(sidebarLink(page, `Loans ${activeCount + 1}`)).toBeVisible();
 });

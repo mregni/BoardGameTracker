@@ -1,6 +1,7 @@
 {
   "bgg": {
-    "id-not-found": "No se encontró el juego en BoardGameGeek"
+    "id-not-found": "No se encontró el juego en BoardGameGeek",
+    "invalid-api-key": "Clave de API de BGG no válida. Revisa la clave en los ajustes."
   },
   "image": {
     "type-not-supported": "Tipo de imagen no compatible",
@@ -18,6 +19,7 @@
     "cannot-delete-last-admin": "No se puede eliminar la última cuenta de administrador",
     "cannot-remove-last-admin": "No se puede quitar el rol de administrador a la última cuenta de administrador",
     "invalid-credentials": "Nombre de usuario o contraseña no válidos",
+    "incorrect-password": "Contraseña incorrecta.",
     "invalid-refresh-token": "Sesión no válida o caducada",
     "refresh-token-superseded": "Tu sesión se renovó en otra pestaña. Inténtalo de nuevo.",
     "missing-session-header": "Se bloqueó esta solicitud porque no procede de la aplicación.",
@@ -78,6 +80,8 @@
   "network": "No se puede conectar con el servidor. Comprueba tu conexión.",
   "timeout": "La petición tardó demasiado. Inténtalo de nuevo.",
   "server": "Se ha producido un error en el servidor. Inténtalo de nuevo más tarde.",
+  "not-found": "Este elemento ya no existe.",
+  "conflict": "Alguien acaba de cambiar esto. Inténtalo de nuevo.",
   "location": {
     "used-by-game-nights": "Esta ubicación se usa en una o más noches de juego",
     "used-by-sessions": "Esta ubicación se usa en una o más sesiones",

@@ -67,14 +67,22 @@ describe("BgtDatePicker", () => {
 	});
 
 	describe("Disabled State", () => {
+		it("should keep the date locked until the settings give its order, so nothing typed gets lost", async () => {
+			renderWithProviders(<BgtDatePicker {...defaultProps} />);
+
+			const [segment] = screen.getAllByRole("spinbutton");
+			expect(segment).toHaveAttribute("aria-disabled", "true");
+			await waitFor(() => expect(screen.getAllByRole("spinbutton")[0]).not.toHaveAttribute("aria-disabled"));
+		});
+
 		it("should disable the calendar button when disabled is true", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} disabled />);
 			expect(screen.getByLabelText("common:open-calendar")).toBeDisabled();
 		});
 
-		it("should not disable the calendar button by default", () => {
+		it("should not disable the calendar button by default", async () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
-			expect(screen.getByLabelText("common:open-calendar")).not.toBeDisabled();
+			await waitFor(() => expect(screen.getByLabelText("common:open-calendar")).not.toBeDisabled());
 		});
 	});
 

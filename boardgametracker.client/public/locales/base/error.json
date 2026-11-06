@@ -1,6 +1,7 @@
 {
   "bgg": {
-    "id-not-found": "Could not find game on BoardGameGeek"
+    "id-not-found": "Could not find game on BoardGameGeek",
+    "invalid-api-key": "Invalid BGG API key. Please check your API key in settings."
   },
   "image": {
     "type-not-supported": "Image type not supported",
@@ -18,6 +19,7 @@
     "cannot-delete-last-admin": "Cannot delete the last admin account",
     "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
     "invalid-credentials": "Invalid username or password",
+    "incorrect-password": "Incorrect password.",
     "account-locked-out": "Too many failed attempts. Try again later.",
     "too-many-requests": "Too many sign-in attempts. Wait a minute and try again.",
     "invalid-refresh-token": "Invalid or expired session",
@@ -78,6 +80,8 @@
   "network": "Unable to connect to the server. Please check your connection.",
   "timeout": "The request took too long. Please try again.",
   "server": "A server error occurred. Please try again later.",
+  "not-found": "This item no longer exists.",
+  "conflict": "Someone else changed this just now. Please try again.",
   "location": {
     "used-by-game-nights": "This location is used by one or more game nights",
     "used-by-sessions": "This location is used by one or more sessions",

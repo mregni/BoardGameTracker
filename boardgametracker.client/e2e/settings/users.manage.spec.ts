@@ -371,8 +371,56 @@ test("refuses an email address that is not one", async ({ page }) => {
 		.catch(() => null);
 	await dialog.getByRole("button", { name: "Add", exact: true }).click();
 
-	test.fail(true, "BUG: the add user dialog accepts any text as email address");
+	await expect(dialog.getByText("Enter a valid email address")).toBeVisible();
 	expect(await sent).toBeNull();
+});
+
+test("refuses a bad email address and an empty username when editing a user", async ({ page }) => {
+	await openSection(page, "account");
+	await row(page, credentials.username).getByRole("button", { name: "Edit" }).click();
+	const dialog = page.getByRole("dialog");
+	await field(page, "Email").fill("not an email");
+	await field(page, "Username").fill("");
+
+	const sent = page
+		.waitForRequest((request) => request.method() === "PUT" && request.url().includes("/api/admin/users/"), {
+			timeout: 1500,
+		})
+		.catch(() => null);
+	await dialog.getByRole("button", { name: "Save" }).click();
+
+	await expect(field(page, "Username")).toBeFocused();
+	await expect(dialog.getByText("Username is required")).toBeVisible();
+	await expect(dialog.getByText("Enter a valid email address")).toBeVisible();
+	expect(await sent).toBeNull();
+});
+
+test("offers to retry when the users fail to load", async ({ page }) => {
+	let failing = true;
+	await page.route("**/api/admin/users", (route) =>
+		failing ? route.fulfill({ status: 400, json: {} }) : route.fallback(),
+	);
+	await openSection(page, "account");
+	const main = page.getByRole("main");
+
+	await expect(main.getByText("Couldn't load this page")).toBeVisible();
+	await expect(main.getByText("No users yet")).toHaveCount(0);
+
+	failing = false;
+	await main.getByRole("button", { name: "Try again" }).click();
+
+	await expect(page.getByRole("row")).toHaveCount(4);
+});
+
+test("names the failed action when the server gives no reason", async ({ page }) => {
+	const dialog = await openAddUser(page);
+	await fillNewUser(page);
+	await page.route("**/api/auth/register", (route) => route.fulfill({ status: 400, json: {} }));
+
+	await dialog.getByRole("button", { name: "Add", exact: true }).click();
+
+	await expect(dialog.getByText("Failed to create user")).toBeVisible();
+	await expect(dialog.getByText("An unexpected error occurred")).toHaveCount(0);
 });
 
 test("tells the password rule of the server when adding a user", async ({ page }) => {

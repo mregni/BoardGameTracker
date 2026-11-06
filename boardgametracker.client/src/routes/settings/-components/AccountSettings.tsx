@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { BgtActionMenu } from "@/components/BgtActionMenu/BgtActionMenu";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
+import { BgtDataGuard } from "@/components/BgtDataGuard/BgtDataGuard";
 import {
 	BgtDialog,
 	BgtDialogContent,
@@ -18,20 +19,22 @@ import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
 import { useAppForm } from "@/hooks/form";
 import { useAuth } from "@/hooks/useAuth";
 import { useModalState } from "@/hooks/useModalState";
-import type {
-	BgtSelectItem,
-	Player,
-	PlayerLink,
-	ProfileResponse,
-	ResetPasswordResponse,
-	UpdateProfileRequest,
-	UserDto,
+import {
+	type BgtSelectItem,
+	EditUserSchema,
+	type Player,
+	type PlayerLink,
+	type ProfileResponse,
+	type ResetPasswordResponse,
+	type UpdateProfileRequest,
+	type UserDto,
 } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
 import { getSettings } from "@/services/queries/settings";
 import { toDisplayDateTime } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { zodValidator } from "@/utils/zodValidator";
 import { useAccountData } from "../-hooks/useAccountData";
 import { useExternalLogins } from "../-hooks/useExternalLogins";
 import { ChangePasswordModal } from "../-modals/ChangePasswordModal";
@@ -51,6 +54,9 @@ export const AccountSettings = () => {
 		profile,
 		isProfileLoading,
 		users,
+		isLoadingUsers,
+		usersError,
+		retryUsers,
 		linkablePlayers,
 		players,
 		isAdmin,
@@ -109,6 +115,9 @@ export const AccountSettings = () => {
 			{isAdmin && (
 				<UserManagementSection
 					users={users}
+					isLoading={isLoadingUsers}
+					error={usersError}
+					onRetry={retryUsers}
 					players={players}
 					currentUserId={currentUser?.id ?? ""}
 					onCreateUser={createUserModal.show}
@@ -328,7 +337,7 @@ const ProfileSection = ({
 						/>
 					)}
 				</form.Field>
-				<form.Field name="email">
+				<form.Field name="email" validators={zodValidator(EditUserSchema, "email")}>
 					{(field) => (
 						<BgtInputField
 							field={field}
@@ -381,6 +390,9 @@ const ProfileSection = ({
 
 interface UserManagementSectionProps {
 	users: UserDto[];
+	isLoading: boolean;
+	error: unknown;
+	onRetry: () => void;
 	players: Player[];
 	currentUserId: string;
 	onCreateUser: () => void;
@@ -392,6 +404,9 @@ interface UserManagementSectionProps {
 
 const UserManagementSection = ({
 	users,
+	isLoading,
+	error,
+	onRetry,
 	players,
 	currentUserId,
 	onCreateUser,
@@ -522,45 +537,51 @@ const UserManagementSection = ({
 			<div className="mb-4">
 				<BgtButton onClick={onCreateUser}>{t("account.users.create-button")}</BgtButton>
 			</div>
-			<div className="hidden md:block">
-				<BgtDataTable columns={columns} data={users} noDataMessage={t("account.users.no-users")} />
-			</div>
-			<ul className="flex flex-col gap-2 md:hidden" aria-label={t("account.users.title")}>
-				{users.length === 0 && <li className="text-sm text-white/60">{t("account.users.no-users")}</li>}
-				{users.map((user) => (
-					<li
-						key={user.id}
-						data-testid="user-card"
-						className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-3"
-					>
-						<BgtAvatar image={user.profileImage} title={user.username} colorKey={user.id} size="large" />
-						<div className="flex min-w-0 flex-1 flex-col gap-1">
-							<div className="flex flex-wrap items-center gap-2">
-								<span className="truncate font-semibold text-white">{user.username}</span>
-								{badges(user)}
-							</div>
-							<span className="text-sm text-white/70">{roleNames(user)}</span>
-							<span className="text-sm text-white/70">
-								{t("account.users.player-column")}: {playerChip(user)}
-							</span>
-							<span className="text-xs text-white/50">
-								{t("account.users.last-login")}: {lastLogin(user)}
-							</span>
+			<BgtDataGuard isLoading={isLoading} data={{ users: error ? undefined : users }} error={error} onRetry={onRetry}>
+				{() => (
+					<>
+						<div className="hidden md:block">
+							<BgtDataTable columns={columns} data={users} noDataMessage={t("account.users.no-users")} />
 						</div>
-						<BgtActionMenu
-							label={t("account.users.actions", { username: user.username })}
-							items={[
-								{ label: t("common:edit"), onSelect: () => onEditUser(user) },
-								{ label: t("account.users.access.button"), onSelect: () => onManageAccess(user) },
-								{ label: t("account.users.reset-password.button"), onSelect: () => onResetPassword(user) },
-								...(user.id !== currentUserId
-									? [{ label: t("common:delete.button"), onSelect: () => onDeleteUser(user), destructive: true }]
-									: []),
-							]}
-						/>
-					</li>
-				))}
-			</ul>
+						<ul className="flex flex-col gap-2 md:hidden" aria-label={t("account.users.title")}>
+							{users.length === 0 && <li className="text-sm text-white/60">{t("account.users.no-users")}</li>}
+							{users.map((user) => (
+								<li
+									key={user.id}
+									data-testid="user-card"
+									className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-3"
+								>
+									<BgtAvatar image={user.profileImage} title={user.username} colorKey={user.id} size="large" />
+									<div className="flex min-w-0 flex-1 flex-col gap-1">
+										<div className="flex flex-wrap items-center gap-2">
+											<span className="truncate font-semibold text-white">{user.username}</span>
+											{badges(user)}
+										</div>
+										<span className="text-sm text-white/70">{roleNames(user)}</span>
+										<span className="text-sm text-white/70">
+											{t("account.users.player-column")}: {playerChip(user)}
+										</span>
+										<span className="text-xs text-white/50">
+											{t("account.users.last-login")}: {lastLogin(user)}
+										</span>
+									</div>
+									<BgtActionMenu
+										label={t("account.users.actions", { username: user.username })}
+										items={[
+											{ label: t("common:edit"), onSelect: () => onEditUser(user) },
+											{ label: t("account.users.access.button"), onSelect: () => onManageAccess(user) },
+											{ label: t("account.users.reset-password.button"), onSelect: () => onResetPassword(user) },
+											...(user.id !== currentUserId
+												? [{ label: t("common:delete.button"), onSelect: () => onDeleteUser(user), destructive: true }]
+												: []),
+										]}
+									/>
+								</li>
+							))}
+						</ul>
+					</>
+				)}
+			</BgtDataGuard>
 		</SettingsSection>
 	);
 };

@@ -15,6 +15,10 @@ interface CapturedRoute {
 	loader: (args: { context: { queryClient: unknown } }) => void;
 }
 
+vi.mock("@/utils/i18n", () => ({
+	default: { t: (key: string) => key },
+}));
+
 const mocks = vi.hoisted(() => ({
 	navigate: vi.fn(),
 	search: {} as ChatSearch,

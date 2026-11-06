@@ -195,7 +195,7 @@ function RouteComponent() {
 									open={sessionToDelete !== null}
 									close={() => setSessionToDelete(null)}
 									onDelete={() => sessionToDelete && deleteSession(sessionToDelete)}
-									title={t("sessions:delete.title")}
+									heading={t("sessions:delete.title")}
 									description={t("sessions:delete.description")}
 								/>
 							</BgtCard>

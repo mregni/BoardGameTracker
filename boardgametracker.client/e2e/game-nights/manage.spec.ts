@@ -323,6 +323,16 @@ test.describe("manage RSVPs", () => {
 test.describe("a night in the coming twelve hours", () => {
 	const title = "Night later today";
 
+	test("tells a reader nothing was played without naming buttons they do not have", async ({ readerPage, request }) => {
+		const id = await createNight(request, { title, startDate: new Date(Date.now() - 60 * 60_000) });
+
+		await openNight(readerPage, title, id);
+
+		const played = readerPage.getByRole("region", { name: "Played tonight" });
+		await expect(played).toContainText("Nothing played yet.");
+		await expect(played).not.toContainText("Start a game");
+	});
+
 	test("is still upcoming but can already be played, with the RSVPs still open", async ({ page, request }) => {
 		const startDate = new Date(Date.now() + 6 * 60 * 60_000);
 		const id = await createNight(request, { title, startDate, rsvps: { [guest]: "accepted" } });

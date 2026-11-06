@@ -33,6 +33,10 @@
     "time": "Tijd"
   },
   "values": {
+    "wins-label_one": "Overwinning",
+    "wins-label_other": "Overwinningen",
+    "sessions-label_one": "Sessie",
+    "sessions-label_other": "Sessies",
     "wins_one": "{{count}} overwinning",
     "wins_other": "{{count}} overwinningen",
     "sessions_one": "{{count}} sessie",

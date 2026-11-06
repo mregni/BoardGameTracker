@@ -212,13 +212,14 @@
     "leading": "Vanavond aan de leiding",
     "night-winner": "Winnaar van de avond",
     "no-winner": "Nog geen winnaar",
-    "wins_one": "{{count}} van {{total}} spellen gewonnen",
-    "wins_other": "{{count}} van {{total}} spellen gewonnen"
+    "wins_one": "{{won}} van {{count}} spel gewonnen",
+    "wins_other": "{{won}} van {{count}} spellen gewonnen"
   },
   "played": {
     "tonight": "Vanavond gespeeld",
     "after": "Gespeeld",
     "empty": "Nog niets gespeeld. Tik op “Start een spel” zodra een spel begint; datum, tijd, locatie en spelers worden voor je ingevuld.",
+    "empty-reader": "Nog niets gespeeld.",
     "empty-after": "Er werd niets gespeeld genoteerd voor deze avond. Gebruik “Sessie registreren” om toe te voegen wat er gespeeld werd.",
     "empty-ended": "Er werd niets genoteerd voor deze avond.",
     "won": "gewonnen"
@@ -280,7 +281,8 @@
       "games-won_one": "{{count}} spel gewonnen",
       "games-won_other": "{{count}} spellen gewonnen",
       "share": "{{value}} van de avonden",
-      "bar": "{{name}}: {{won}} van {{attended}} avonden gewonnen",
+      "bar_one": "{{name}}: {{won}} van {{count}} avond gewonnen",
+      "bar_other": "{{name}}: {{won}} van {{count}} avonden gewonnen",
       "footer": "Gerangschikt op gewonnen avonden; de balk is het deel van hun avonden dat ze wonnen.",
       "ties_one": "{{count}} avond eindigde gelijk en telt voor elke winnaar.",
       "ties_other": "{{count}} avonden eindigden gelijk en tellen voor elke winnaar.",
@@ -308,7 +310,8 @@
       "nights_other": "op {{count}} avonden",
       "planned": "{{count}}× gepland",
       "times": "{{count}}×",
-      "bar": "{{name}}: {{count}} keer gespeeld",
+      "bar_one": "{{name}}: {{count}} keer gespeeld",
+      "bar_other": "{{name}}: {{count}} keer gespeeld",
       "never-played": "Gepland maar nooit gespeeld:",
       "empty": "Nog geen spellen gespeeld op spelavonden."
     },
@@ -331,7 +334,8 @@
       "of_one": "van {{count}} avond",
       "of_other": "van {{count}} avonden",
       "hosted": "gastheer {{count}}×",
-      "bar": "{{name}} kwam naar {{count}} van {{total}} avonden",
+      "bar_one": "{{name}} kwam naar {{attended}} van {{count}} avond",
+      "bar_other": "{{name}} kwam naar {{attended}} van {{count}} avonden",
       "select": "Toon de laatste avonden van {{name}}",
       "recent_one": "Laatste avond",
       "recent_other": "Laatste {{count}} avonden",

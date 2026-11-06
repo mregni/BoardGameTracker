@@ -46,7 +46,7 @@ export const NightWinnersCard = ({ winners, tiedNights, lookup }: Props) => {
 											aria-label={t("stats.winners.bar", {
 												name,
 												won: winner.nightsWon,
-												attended: winner.nightsAttended,
+												count: winner.nightsAttended,
 											})}
 										/>
 									}

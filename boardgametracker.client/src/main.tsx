@@ -11,7 +11,10 @@ ReactDOM.createRoot(document.getElementById("root")!, { onCaughtError: reportRea
 	<React.StrictMode>
 		<Suspense>
 			<AppContainer />
-			<Toaster toastOptions={{ unstyled: true, classNames: classConfig }} />
+			<Toaster
+				mobileOffset={{ bottom: "calc(var(--bottom-nav-h) + 1rem)" }}
+				toastOptions={{ unstyled: true, classNames: classConfig }}
+			/>
 		</Suspense>
 	</React.StrictMode>,
 );
