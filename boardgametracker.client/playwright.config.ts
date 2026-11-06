@@ -11,7 +11,7 @@ export default defineConfig({
 		baseURL,
 		locale: "en-US",
 		timezoneId: "Europe/Brussels",
-		trace: "retain-on-failure",
+		trace: process.env.E2E_TRACE ? "retain-on-failure" : "off",
 		screenshot: "only-on-failure",
 		launchOptions: { slowMo: Number(process.env.SLOW_MO) || 0 },
 	},
