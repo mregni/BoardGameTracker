@@ -31,18 +31,16 @@ const ImagePreview = (props: ImagePreviewProps) => {
 	const { t } = useTranslation("images");
 
 	return (
-		<div className="group relative w-28 h-28 rounded-lg overflow-hidden">
+		<div className="relative w-28 h-28 rounded-lg overflow-hidden">
 			<BgtFallbackImage title={title ?? t("selected-image")} image={src} />
-			<div className="absolute top-0 left-0 w-full h-full collapse group-hover:visible">
-				<div className="flex justify-center items-center w-full h-full">
-					<BgtIconButton
-						size="2"
-						className="rounded-full! border-solid border bg-[rgba(0,0,0,0.4)] hover:bg-[rgba(0,0,0,0.6)]"
-						icon={<TrashIcon className="size-5" color="white" />}
-						onClick={onRemove}
-						aria-label={t("remove")}
-					/>
-				</div>
+			<div className="absolute top-1 right-1">
+				<BgtIconButton
+					size="2"
+					className="rounded-full! border-solid border bg-[rgba(0,0,0,0.4)] hover:bg-[rgba(0,0,0,0.6)]"
+					icon={<TrashIcon className="size-5" color="white" />}
+					onClick={onRemove}
+					aria-label={t("remove")}
+				/>
 			</div>
 		</div>
 	);
