@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
@@ -19,27 +20,35 @@ public class ConsistentScheduleBadgeEvaluatorTests
 
     public ConsistentScheduleBadgeEvaluatorTests()
     {
-        _dateTimeProviderMock.Setup(x => x.ConvertToLocalTime(It.IsAny<DateTime>())).Returns((DateTime utc) => utc);
         _evaluator = new ConsistentScheduleBadgeEvaluator(_dateTimeProviderMock.Object);
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _dateTimeProviderMock.VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CanAwardBadge_ShouldUseTheConfiguredTimeZone_WhenUtcStartFallsOnAnotherDay()
     {
-        _dateTimeProviderMock.Setup(x => x.ConvertToLocalTime(It.IsAny<DateTime>())).Returns((DateTime utc) => utc.AddHours(12));
         var badge = TestBadges.Create(BadgeType.ConsistentSchedule, BadgeLevel.Green);
         var saturday = new DateTime(2026, 9, 5, 0, 0, 0, DateTimeKind.Utc);
         var sessions = CreateSessionsForConsecutiveSaturdays(saturday, 10);
 
+        SetupLocalTime(sessions, offsetHours: 12);
+
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
         result.Should().BeFalse();
+        VerifyLocalTimeLookups(sessions[0]);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public void BadgeType_ShouldBeConsistentSchedule()
     {
         _evaluator.BadgeType.Should().Be(BadgeType.ConsistentSchedule);
+        VerifyNoOtherCalls();
     }
 
     #region Consecutive Saturdays Tests
@@ -54,9 +63,13 @@ public class ConsistentScheduleBadgeEvaluatorTests
         var saturdayDate = GetNextDayOfWeek(DateTime.UtcNow, DayOfWeek.Saturday);
         var sessions = CreateSessionsForConsecutiveSaturdays(saturdayDate, weekCount);
 
+        SetupLocalTime(sessions);
+
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
         result.Should().Be(expected);
+        VerifyLocalTimeLookups(sessions[0], sessions);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -78,9 +91,74 @@ public class ConsistentScheduleBadgeEvaluatorTests
             sessions.Add(new SessionBuilder().Between(saturdayDate.AddDays(-7 * i).Date.AddHours(14), saturdayDate.AddDays(-7 * i).Date.AddHours(16)).Build());
         }
 
+        SetupLocalTime(sessions);
+
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
         result.Should().BeFalse();
+        VerifyLocalTimeLookups(sessions[0], sessions);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CanAwardBadge_ShouldReturnFalse_WhenOnlyTheTenthSaturdayIsMissing()
+    {
+        var badge = TestBadges.Create(BadgeType.ConsistentSchedule, BadgeLevel.Green);
+        var saturdayDate = GetNextDayOfWeek(DateTime.UtcNow, DayOfWeek.Saturday);
+        var sessions = CreateSessionsForConsecutiveSaturdays(saturdayDate, 9);
+        sessions.AddRange(CreateSessionsForConsecutiveSaturdays(saturdayDate.AddDays(-70), 1));
+        SetupLocalTime(sessions);
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+
+        result.Should().BeFalse();
+        VerifyLocalTimeLookups(sessions[0], sessions);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CanAwardBadge_ShouldCountBackwards_FromTheEvaluatedSession()
+    {
+        var badge = TestBadges.Create(BadgeType.ConsistentSchedule, BadgeLevel.Green);
+        var saturdayDate = GetNextDayOfWeek(DateTime.UtcNow, DayOfWeek.Saturday);
+        var sessions = CreateSessionsForConsecutiveSaturdays(saturdayDate, 10);
+        SetupLocalTime(sessions);
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[^1], sessions);
+
+        result.Should().BeFalse();
+        VerifyLocalTimeLookups(sessions[^1], sessions);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CanAwardBadge_ShouldAward_WhenTheLocalDateIsSaturdayButTheUtcDateIsFriday()
+    {
+        var badge = TestBadges.Create(BadgeType.ConsistentSchedule, BadgeLevel.Green);
+        var friday = new DateTime(2026, 9, 4, 0, 0, 0, DateTimeKind.Utc);
+        var sessions = CreateSessionsForConsecutiveSaturdays(friday, 10);
+        SetupLocalTime(sessions, offsetHours: 12);
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+
+        result.Should().BeTrue();
+        VerifyLocalTimeLookups(sessions[0], sessions);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CanAwardBadge_ShouldConvertStartsAsUtc_WhenTheStoredKindIsUnspecified()
+    {
+        var badge = TestBadges.Create(BadgeType.ConsistentSchedule, BadgeLevel.Green);
+        var saturday = new DateTime(2026, 9, 5, 0, 0, 0, DateTimeKind.Unspecified);
+        var sessions = CreateSessionsForConsecutiveSaturdays(saturday, 10);
+        SetupLocalTime(sessions);
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+
+        result.Should().BeTrue();
+        VerifyLocalTimeLookups(sessions[0], sessions);
+        VerifyNoOtherCalls();
     }
 
     #endregion
@@ -101,9 +179,13 @@ public class ConsistentScheduleBadgeEvaluatorTests
             sessions.Add(new SessionBuilder().Between(saturdayDate.AddDays(-14 * i).Date.AddHours(14), saturdayDate.AddDays(-14 * i).Date.AddHours(16)).Build()); // Every 2 weeks
         }
 
+        SetupLocalTime(sessions);
+
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
         result.Should().BeFalse();
+        VerifyLocalTimeLookups(sessions[0], sessions);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -119,12 +201,16 @@ public class ConsistentScheduleBadgeEvaluatorTests
         {
             var saturday = saturdayDate.AddDays(-7 * i);
             sessions.Add(new SessionBuilder().Between(saturday.Date.AddHours(14), saturday.Date.AddHours(16)).Build());
-            sessions.Add(new SessionBuilder().Between(saturday.AddHours(4).Date.AddHours(14), saturday.AddHours(4).Date.AddHours(16)).Build()); // Second session same day
+            sessions.Add(new SessionBuilder().Between(saturday.Date.AddHours(18), saturday.Date.AddHours(20)).Build()); // Second session same day
         }
+
+        SetupLocalTime(sessions);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
         result.Should().BeTrue();
+        VerifyLocalTimeLookups(sessions[0], sessions);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -146,9 +232,13 @@ public class ConsistentScheduleBadgeEvaluatorTests
         sessions.Add(new SessionBuilder().Between(saturdayDate.AddDays(-2).Date.AddHours(14), saturdayDate.AddDays(-2).Date.AddHours(16)).Build()); // Thursday
         sessions.Add(new SessionBuilder().Between(saturdayDate.AddDays(1).Date.AddHours(14), saturdayDate.AddDays(1).Date.AddHours(16)).Build());  // Sunday
 
+        SetupLocalTime(sessions);
+
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
         result.Should().BeTrue();
+        VerifyLocalTimeLookups(sessions[0], sessions);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -163,9 +253,13 @@ public class ConsistentScheduleBadgeEvaluatorTests
         var saturdayDate = GetNextDayOfWeek(DateTime.UtcNow, DayOfWeek.Saturday);
         var sessions = CreateSessionsForConsecutiveSaturdays(saturdayDate, 10);
 
+        SetupLocalTime(sessions);
+
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
         result.Should().BeTrue();
+        VerifyLocalTimeLookups(sessions[0], sessions);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -182,14 +276,37 @@ public class ConsistentScheduleBadgeEvaluatorTests
         var session = new SessionBuilder().Between(date.Date.AddHours(14), date.Date.AddHours(16)).Build();
         var sessions = new List<Session> { session };
 
+        SetupLocalTime(sessions);
+
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
 
         result.Should().BeFalse();
+        VerifyLocalTimeLookups(session);
+        VerifyNoOtherCalls();
     }
 
     #endregion
 
     #region Helper Methods
+
+    private void SetupLocalTime(IEnumerable<Session> sessions, int offsetHours = 0)
+    {
+        foreach (var start in sessions.Select(x => x.Start).Distinct())
+        {
+            _dateTimeProviderMock.Setup(x => x.ConvertToLocalTime(start)).Returns(start.AddHours(offsetHours));
+        }
+    }
+
+    private void VerifyLocalTimeLookups(Session evaluated, IEnumerable<Session>? history = null)
+    {
+        var starts = (history ?? []).Select(x => x.Start).Append(evaluated.Start);
+        foreach (var lookups in starts.GroupBy(x => x))
+        {
+            _dateTimeProviderMock.Verify(
+                x => x.ConvertToLocalTime(It.Is<DateTime>(utc => utc == lookups.Key && utc.Kind == DateTimeKind.Utc)),
+                Times.Exactly(lookups.Count()));
+        }
+    }
 
     private static DateTime GetNextDayOfWeek(DateTime from, DayOfWeek dayOfWeek)
     {

@@ -18,7 +18,9 @@ public class CloseWinBadgeEvaluatorTests
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly CloseWinBadgeEvaluator _evaluator;
     private const int PlayerId = 1;
-    private const int GameId = 1;
+    private const int GameId = 7;
+    private static readonly Game EvaluatedGame = new("Evaluated") { Id = GameId };
+    private static readonly Game OtherGame = new("Other") { Id = GameId + 1 };
 
     public CloseWinBadgeEvaluatorTests()
     {
@@ -30,6 +32,7 @@ public class CloseWinBadgeEvaluatorTests
     public void BadgeType_ShouldBeCloseWin()
     {
         _evaluator.BadgeType.Should().Be(BadgeType.CloseWin);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -84,7 +87,7 @@ public class CloseWinBadgeEvaluatorTests
     {
         var badge = TestBadges.Create(BadgeType.CloseWin, BadgeLevel.Green);
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None))
+            .Setup(x => x.FirstOrDefaultAsync(It.Is<GameHasScoringSpec>(s => s.IsSatisfiedBy(EvaluatedGame) && !s.IsSatisfiedBy(OtherGame)), CancellationToken.None))
             .ReturnsAsync(false);
 
         var session = new SessionBuilder().ForGame(GameId)
@@ -105,7 +108,7 @@ public class CloseWinBadgeEvaluatorTests
     {
         var badge = TestBadges.Create(BadgeType.CloseWin, BadgeLevel.Green);
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None))
+            .Setup(x => x.FirstOrDefaultAsync(It.Is<GameHasScoringSpec>(s => s.IsSatisfiedBy(EvaluatedGame) && !s.IsSatisfiedBy(OtherGame)), CancellationToken.None))
             .ReturnsAsync((bool?)null);
 
         var session = new SessionBuilder().ForGame(GameId)
@@ -247,6 +250,73 @@ public class CloseWinBadgeEvaluatorTests
     }
 
     [Theory]
+    [InlineData(100, 98, 50, true)]
+    [InlineData(100, 97, 50, false)]
+    [InlineData(10, 12, 50, true)]
+    [InlineData(10, 13, 50, false)]
+    [InlineData(100, 100, 50, true)]
+    [InlineData(50, 50, 100, true)]
+    public async Task CanAwardBadge_ShouldCompareWithTheClosestLoser(double playerScore, double closestLoserScore, double farthestLoserScore, bool expected)
+    {
+        var badge = TestBadges.Create(BadgeType.CloseWin, BadgeLevel.Green);
+        SetupGameWithScoring();
+
+        var session = new SessionBuilder().ForGame(GameId)
+            .WithWinner(PlayerId, playerScore)
+            .WithPlayer(2, closestLoserScore)
+            .WithPlayer(3, farthestLoserScore)
+            .Build();
+        var sessions = new List<Session> { session };
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
+
+        result.Should().Be(expected);
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(100.005, false)]
+    [InlineData(100.02, true)]
+    public async Task CanAwardBadge_ShouldTreatScoresWithinTheToleranceAsEqual(double playerScore, bool expected)
+    {
+        var badge = TestBadges.Create(BadgeType.CloseWin, BadgeLevel.Green);
+        SetupGameWithScoring();
+
+        var session = new SessionBuilder().ForGame(GameId)
+            .WithWinner(PlayerId, playerScore)
+            .WithPlayer(2, 100)
+            .Build();
+        var sessions = new List<Session> { session };
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
+
+        result.Should().Be(expected);
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CanAwardBadge_ShouldIgnoreOtherWinners_WhenLookingForSecondPlace()
+    {
+        var badge = TestBadges.Create(BadgeType.CloseWin, BadgeLevel.Green);
+        SetupGameWithScoring();
+
+        var session = new SessionBuilder().ForGame(GameId)
+            .WithWinner(PlayerId, 100)
+            .WithWinner(2, 99)
+            .WithPlayer(3, 50)
+            .Build();
+        var sessions = new List<Session> { session };
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
+
+        result.Should().BeFalse();
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
     [InlineData(BadgeLevel.Green)]
     [InlineData(BadgeLevel.Blue)]
     [InlineData(BadgeLevel.Red)]
@@ -272,13 +342,13 @@ public class CloseWinBadgeEvaluatorTests
     private void SetupGameWithScoring()
     {
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None))
+            .Setup(x => x.FirstOrDefaultAsync(It.Is<GameHasScoringSpec>(s => s.IsSatisfiedBy(EvaluatedGame) && !s.IsSatisfiedBy(OtherGame)), CancellationToken.None))
             .ReturnsAsync(true);
     }
 
     private void VerifyGameLookup()
     {
-        _gameRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.Is<GameHasScoringSpec>(s => s.IsSatisfiedBy(EvaluatedGame) && !s.IsSatisfiedBy(OtherGame)), CancellationToken.None), Times.Once);
     }
 
     private void VerifyNoOtherCalls()
