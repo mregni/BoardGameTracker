@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { subDays } from "date-fns";
-import { type Api, signedInApi } from "../support/scenarioApi";
 import { expect, test } from "../support/fixtures";
+import { type Api, signedInApi } from "../support/scenarioApi";
 import { neverPlayedGame } from "../support/seedData";
 import { gameId } from "../support/standings";
 

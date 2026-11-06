@@ -1,3 +1,4 @@
+import { apiFor } from "../support/api";
 import { expect, test } from "../support/fixtures";
 import { gameLink, openGames, pick } from "../support/gamesPage";
 import { coopGame, expected, games, sessions } from "../support/seedData";
@@ -144,14 +145,25 @@ test("edits a game, marks it as sold and keeps the sold price", async ({ page })
 test("deletes a session and updates the game", async ({ page }) => {
 	const played = sessions.filter((session) => session.game === coopGame.title).length;
 	const gameId = games.indexOf(coopGame) + 1;
+	const { post } = await apiFor(page);
+	await post("/api/session", {
+		gameId,
+		start: new Date().toISOString(),
+		minutes: 10,
+		locationId: 1,
+		expansionIds: [],
+		isCoop: true,
+		teamWon: true,
+		playerSessions: [{ playerId: 1, score: null, firstPlay: false, won: true }],
+	});
 	await page.goto(`/games/${gameId}/sessions`);
 	const rows = page.getByRole("table").getByRole("rowgroup").nth(1).getByRole("row");
-	await expect(rows).toHaveCount(played);
+	await expect(rows).toHaveCount(played + 1);
 
 	await rows.first().getByRole("button", { name: "Delete" }).click();
 	await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
 
-	await expect(rows).toHaveCount(played - 1);
+	await expect(rows).toHaveCount(played);
 	await page.goto(`/games/${gameId}`);
-	await expect(page.getByRole("region", { name: new RegExp(`^Played ${played - 1} times`) })).toBeVisible();
+	await expect(page.getByRole("region", { name: new RegExp(`^Played ${played} times`) })).toBeVisible();
 });

@@ -1,7 +1,7 @@
 import { subDays } from "date-fns";
-import { type Api, signedInApi } from "../support/scenarioApi";
 import { expect, test } from "../support/fixtures";
 import { displayDate } from "../support/format";
+import { type Api, signedInApi } from "../support/scenarioApi";
 import { coopGame, neverPlayedGame, unscoredGame } from "../support/seedData";
 import { gameId } from "../support/standings";
 
