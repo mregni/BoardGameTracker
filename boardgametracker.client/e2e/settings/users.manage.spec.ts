@@ -371,7 +371,27 @@ test("refuses an email address that is not one", async ({ page }) => {
 		.catch(() => null);
 	await dialog.getByRole("button", { name: "Add", exact: true }).click();
 
-	test.fail(true, "BUG: the add user dialog accepts any text as email address");
+	await expect(dialog.getByText("Enter a valid email address")).toBeVisible();
+	expect(await sent).toBeNull();
+});
+
+test("refuses a bad email address and an empty username when editing a user", async ({ page }) => {
+	await openSection(page, "account");
+	await row(page, credentials.username).getByRole("button", { name: "Edit" }).click();
+	const dialog = page.getByRole("dialog");
+	await field(page, "Email").fill("not an email");
+	await field(page, "Username").fill("");
+
+	const sent = page
+		.waitForRequest((request) => request.method() === "PUT" && request.url().includes("/api/admin/users/"), {
+			timeout: 1500,
+		})
+		.catch(() => null);
+	await dialog.getByRole("button", { name: "Save" }).click();
+
+	await expect(field(page, "Username")).toBeFocused();
+	await expect(dialog.getByText("Required")).toBeVisible();
+	await expect(dialog.getByText("Enter a valid email address")).toBeVisible();
 	expect(await sent).toBeNull();
 });
 

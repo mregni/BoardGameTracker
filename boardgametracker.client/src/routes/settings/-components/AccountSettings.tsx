@@ -18,20 +18,22 @@ import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
 import { useAppForm } from "@/hooks/form";
 import { useAuth } from "@/hooks/useAuth";
 import { useModalState } from "@/hooks/useModalState";
-import type {
-	BgtSelectItem,
-	Player,
-	PlayerLink,
-	ProfileResponse,
-	ResetPasswordResponse,
-	UpdateProfileRequest,
-	UserDto,
+import {
+	type BgtSelectItem,
+	EditUserSchema,
+	type Player,
+	type PlayerLink,
+	type ProfileResponse,
+	type ResetPasswordResponse,
+	type UpdateProfileRequest,
+	type UserDto,
 } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
 import { getSettings } from "@/services/queries/settings";
 import { toDisplayDateTime } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { zodValidator } from "@/utils/zodValidator";
 import { useAccountData } from "../-hooks/useAccountData";
 import { useExternalLogins } from "../-hooks/useExternalLogins";
 import { ChangePasswordModal } from "../-modals/ChangePasswordModal";
@@ -328,7 +330,7 @@ const ProfileSection = ({
 						/>
 					)}
 				</form.Field>
-				<form.Field name="email">
+				<form.Field name="email" validators={zodValidator(EditUserSchema, "email")}>
 					{(field) => (
 						<BgtInputField
 							field={field}

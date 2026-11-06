@@ -126,6 +126,7 @@ export interface AdminUpdateUserRequest {
 
 const requiredString = z.string().min(1, { message: "common:required" });
 const passwordString = requiredString.min(8, { message: "settings:account.password.min-length" });
+const invalidEmail = { message: "player:email.invalid" };
 
 export const ChangePasswordSchema = z.object({
 	currentPassword: requiredString,
@@ -135,8 +136,13 @@ export const ChangePasswordSchema = z.object({
 
 export const CreateUserSchema = z.object({
 	username: requiredString,
-	email: requiredString,
+	email: requiredString.email(invalidEmail),
 	password: passwordString,
+});
+
+export const EditUserSchema = z.object({
+	username: requiredString,
+	email: z.string().email(invalidEmail).or(z.literal("")),
 });
 
 export const ForgotPasswordSchema = z.object({
