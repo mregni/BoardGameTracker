@@ -1,10 +1,12 @@
-import type { ReactNode } from "react";
+import type { AriaRole, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useBottomNavStore } from "@/hooks/useHideBottomNav";
-import { act, renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { act, renderWithTheme, screen, userEvent, within } from "@/test/test-utils";
 import { BottomNav } from "./BottomNav";
 
 const Icon = () => <svg />;
+
+const route = vi.hoisted(() => ({ pathname: "/games" }));
 
 vi.mock("@tanstack/react-router", () => ({
 	Link: ({
@@ -29,7 +31,7 @@ vi.mock("@tanstack/react-router", () => ({
 			{children}
 		</a>
 	),
-	useRouterState: () => ({ location: { pathname: "/games" } }),
+	useRouterState: () => ({ location: { pathname: route.pathname } }),
 }));
 
 const auth = vi.hoisted(() => ({
@@ -51,17 +53,23 @@ vi.mock("../-hooks/useMenuInfo", () => ({
 		menuItems: [
 			{ icon: Icon, menuLabel: "games", path: "/games", mobileVisible: true },
 			{ icon: Icon, menuLabel: "locations", path: "/locations", mobileVisible: false },
+			{ icon: Icon, menuLabel: "loans", path: "/loans", mobileVisible: false },
 		],
 	}),
 }));
 
 vi.mock("@/components/BgtMenu/BgtMenuItem", () => ({
-	BgtMenuItem: ({ item }: { item: { path: string } }) => <div data-testid="more-item">{item.path}</div>,
+	BgtMenuItem: ({ item, role }: { item: { path: string }; role?: AriaRole }) => (
+		<a href={item.path} role={role} data-testid="more-item">
+			{item.path}
+		</a>
+	),
 }));
 
 describe("BottomNav", () => {
 	beforeEach(() => {
 		useBottomNavStore.setState({ hideRequests: 0 });
+		route.pathname = "/games";
 		auth.state = { user: null, isAuthenticated: false, authStatus: { authEnabled: false } };
 	});
 
@@ -114,7 +122,7 @@ describe("BottomNav", () => {
 
 		await user.click(screen.getByRole("button", { name: "common:more" }));
 
-		const sheet = screen.getByTestId("more-item").closest(".fixed") as HTMLElement;
+		const sheet = screen.getAllByTestId("more-item")[0].closest(".fixed") as HTMLElement;
 		expect(sheet).toHaveClass("bottom-(--bottom-nav-h)");
 	});
 
@@ -122,11 +130,73 @@ describe("BottomNav", () => {
 		const user = userEvent.setup();
 		renderWithTheme(<BottomNav />);
 		await user.click(screen.getByRole("button", { name: "common:more" }));
-		expect(screen.getByTestId("more-item")).toBeInTheDocument();
+		expect(screen.getAllByTestId("more-item")).toHaveLength(2);
 
 		await user.click(screen.getByRole("link", { name: "games" }));
 
 		expect(screen.queryByTestId("more-item")).not.toBeInTheDocument();
+	});
+
+	it.each([
+		["/games/12", "games"],
+		["/games", "games"],
+	])("lights the parent entry on %s", (pathname, name) => {
+		route.pathname = pathname;
+		renderWithTheme(<BottomNav />);
+
+		expect(screen.getByRole("link", { name }).querySelector(".bg-primary")).toBeInTheDocument();
+	});
+
+	it("lights More on a page below a More entry", () => {
+		route.pathname = "/locations/3";
+		renderWithTheme(<BottomNav />);
+
+		expect(screen.getByRole("button", { name: "common:more" }).querySelector(".bg-primary")).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: "games" }).querySelector(".bg-primary")).not.toBeInTheDocument();
+	});
+
+	it("does not light an entry for a path that only starts the same", () => {
+		route.pathname = "/games-archive";
+		renderWithTheme(<BottomNav />);
+
+		expect(screen.getByRole("link", { name: "games" }).querySelector(".bg-primary")).not.toBeInTheDocument();
+	});
+
+	it("opens the More menu on its first entry and walks it with the arrow keys", async () => {
+		const user = userEvent.setup();
+		renderWithTheme(<BottomNav />);
+
+		await user.click(screen.getByRole("button", { name: "common:more" }));
+
+		const [first, second] = within(screen.getByRole("menu", { name: "common:more" })).getAllByRole("menuitem");
+		expect(first).toHaveFocus();
+
+		await user.keyboard("{ArrowDown}");
+		expect(second).toHaveFocus();
+
+		await user.keyboard("{ArrowDown}");
+		expect(first).toHaveFocus();
+
+		await user.keyboard("{ArrowUp}");
+		expect(second).toHaveFocus();
+
+		await user.keyboard("{Home}");
+		expect(first).toHaveFocus();
+
+		await user.keyboard("{End}");
+		expect(second).toHaveFocus();
+	});
+
+	it("closes the More menu on Escape and returns to the More button", async () => {
+		const user = userEvent.setup();
+		renderWithTheme(<BottomNav />);
+		const more = screen.getByRole("button", { name: "common:more" });
+		await user.click(more);
+
+		await user.keyboard("{Escape}");
+
+		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+		expect(more).toHaveFocus();
 	});
 
 	it("disappears while a form asks to hide it and comes back afterwards", () => {

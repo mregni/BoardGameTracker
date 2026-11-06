@@ -22,7 +22,7 @@ export const DisabledActionHint = ({ label, hint }: Props) => {
 					}}
 				>
 					<span className="inline-flex cursor-not-allowed" title={hint}>
-						<BgtButton variant="cancel" size="1" disabled aria-describedby={hintId} className="pointer-events-none">
+						<BgtButton variant="cancel" size="1" aria-disabled aria-describedby={hintId}>
 							{label}
 						</BgtButton>
 						<span id={hintId} className="sr-only">

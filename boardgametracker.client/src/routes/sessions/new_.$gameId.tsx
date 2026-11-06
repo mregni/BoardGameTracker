@@ -2,6 +2,10 @@ import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
+import AlertTriangle from "@/assets/icons/alert-triangle.svg?react";
+import { BgtEmptyState } from "@/components/BgtLayout/BgtEmptyState";
+import { BgtPage } from "@/components/BgtLayout/BgtPage";
+import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { CreateSession } from "@/models";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
@@ -26,10 +30,10 @@ export const Route = createFileRoute("/sessions/new_/$gameId")({
 function RouteComponent() {
 	const { gameId } = Route.useParams();
 	const navigate = useNavigate();
-	const { t } = useTranslation("player-session");
+	const { t } = useTranslation(["player-session", "game"]);
 	const { canWrite } = usePermissions();
 
-	const { game, isLoading, isPending, saveSession } = useNewSessionWithGameData({ gameId });
+	const { game, isLoading, error, retry, isPending, saveSession } = useNewSessionWithGameData({ gameId });
 
 	if (!canWrite) return <RequireWrite>{null}</RequireWrite>;
 
@@ -38,7 +42,28 @@ function RouteComponent() {
 		navigate({ to: `/games/${result.gameId}` });
 	};
 
-	if (isLoading || game === undefined) return null;
+	if (game === undefined) {
+		return (
+			<BgtPage>
+				<BgtPageContent
+					isLoading={isLoading}
+					data={{ game }}
+					error={error}
+					onRetry={retry}
+					notFound={
+						<BgtEmptyState
+							icon={AlertTriangle}
+							title={t("game:notifications.not-found")}
+							description={t("game:load-error.not-found-description")}
+							action={{ label: t("game:load-error.back"), onClick: () => navigate({ to: "/games" }) }}
+						/>
+					}
+				>
+					{() => null}
+				</BgtPageContent>
+			</BgtPage>
+		);
+	}
 
 	return (
 		<SessionForm

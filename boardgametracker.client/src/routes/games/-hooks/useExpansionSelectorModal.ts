@@ -6,11 +6,9 @@ import { getGameExpansions } from "@/services/queries/games";
 
 interface Props {
 	gameId: number;
-	onSaveSuccess?: () => void;
-	onSaveError?: () => void;
 }
 
-export const useExpansionSelectorModal = ({ gameId, onSaveError, onSaveSuccess }: Props) => {
+export const useExpansionSelectorModal = ({ gameId }: Props) => {
 	const queryClient = useQueryClient();
 
 	const [expansionQuery] = useQueries({
@@ -27,10 +25,6 @@ export const useExpansionSelectorModal = ({ gameId, onSaveError, onSaveSuccess }
 		onSuccess: async () => {
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, gameId] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
-			onSaveSuccess?.();
-		},
-		onError: () => {
-			onSaveError?.();
 		},
 	});
 

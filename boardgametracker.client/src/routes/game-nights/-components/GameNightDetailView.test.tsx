@@ -313,7 +313,7 @@ describe("GameNightDetailView", () => {
 		renderView(buildDetail(tonight(), played()));
 
 		const endButton = screen.getByRole("button", { name: "end.button" });
-		expect(endButton).toBeDisabled();
+		expect(endButton).toHaveAttribute("aria-disabled", "true");
 		expect(endButton).toHaveAccessibleDescription("end.running-hint");
 		expect(endButton.parentElement).toHaveAttribute("title", "end.running-hint");
 	});

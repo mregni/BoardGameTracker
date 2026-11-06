@@ -630,7 +630,5 @@ test.describe("statistics in other states", () => {
 
 test("ignores an unknown view in the address", async ({ page }) => {
 	await page.goto("/game-nights?view=bogus");
-
-	test.fail(true, "BUG: /game-nights?view=bogus fails the search schema and lands on the generic error page");
 	await expect(cards(page)).toHaveCount(gameNights.length, { timeout: 3_000 });
 });

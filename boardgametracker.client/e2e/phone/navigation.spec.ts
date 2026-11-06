@@ -90,16 +90,12 @@ test("lights the entry of the open page and only that one", async ({ page }) => 
 test("keeps Games lit on a game detail page", async ({ page }) => {
 	await page.goto(`/games/${gameId(games[0].title)}`);
 	await settled(page);
-
-	test.fail(true, "BUG: the bottom bar lights nothing on detail pages, it compares the exact path");
 	await expect(lit(page)).toHaveText(["Games"], { timeout: 1000 });
 });
 
 test("keeps More lit on a game night detail page", async ({ page }) => {
 	await page.goto("/game-nights/1");
 	await settled(page);
-
-	test.fail(true, "BUG: the bottom bar lights nothing on detail pages, it compares the exact path");
 	await expect(lit(page)).toHaveText(["More"], { timeout: 1000 });
 });
 
@@ -162,8 +158,26 @@ test("Escape closes the More menu", async ({ page }) => {
 
 	await page.keyboard.press("Escape");
 
-	test.fail(true, "BUG: the More menu ignores Escape, so keyboard users have to tab back to the More button");
 	await expect(moreEntries(page)).toHaveCount(0, { timeout: 1000 });
+	await expect(moreButton(page)).toBeFocused();
+});
+
+test("the More menu is a menu that opens on its first entry and follows the arrow keys", async ({ page }) => {
+	await page.goto("/");
+	await openMore(page);
+	const entries = page.getByRole("menu", { name: "More" }).getByRole("menuitem");
+
+	await expect(entries).toHaveCount(adminEntries.length);
+	await expect(entries.first()).toBeFocused();
+
+	await page.keyboard.press("ArrowDown");
+	await expect(entries.nth(1)).toBeFocused();
+
+	await page.keyboard.press("End");
+	await expect(entries.last()).toBeFocused();
+
+	await page.keyboard.press("ArrowDown");
+	await expect(entries.first()).toBeFocused();
 });
 
 test("a bottom bar entry closes the More menu", async ({ page }) => {

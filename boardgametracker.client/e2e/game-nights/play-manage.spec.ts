@@ -416,6 +416,10 @@ test.describe("a running game", () => {
 		);
 		await expect(main(page).getByRole("button", { name: "End night" })).toBeDisabled();
 		await expect(page.getByTestId("night-actions")).toContainText(toolTip);
+		await main(page).getByRole("button", { name: "End night" }).focus();
+		await expect(page.getByRole("tooltip")).toHaveText(toolTip);
+		await page.keyboard.press("Enter");
+		await expect(page.getByRole("dialog")).toHaveCount(0);
 		const panel = page.getByRole("region", { name: "Planned games" });
 		await expect(panel.getByRole("button", { name: planned })).toBeVisible();
 		await expect(panel).toContainText("playing now");
