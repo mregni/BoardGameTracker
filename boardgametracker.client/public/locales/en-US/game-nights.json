@@ -232,7 +232,8 @@
   "planned": {
     "title": "Planned games",
     "played": "played",
-    "playing": "playing now"
+    "playing": "playing now",
+    "start-game": "Start {{game}}"
   },
   "end": {
     "button": "End night",
