@@ -1,7 +1,7 @@
 import type { Browser, Page } from "@playwright/test";
 import type { Settings } from "../../src/models";
 import { expect, test } from "../support/fixtures";
-import { api, expectingFailures, openContext, openSection, readSettings, writeSettings } from "../support/settings";
+import { api, openContext, openSection, readSettings, writeSettings } from "../support/settings";
 
 test.use({ allowedApiStatuses: [401, 404] });
 
@@ -94,14 +94,18 @@ test("refuses a changedetection address that is not http(s)", async ({ page }) =
 	expect(saves).toEqual([]);
 });
 
-expectingFailures("refuses plain http for a changedetection address on another machine", async ({ page }) => {
-	await openSection(page, "integrations");
+test.describe("refused by the server", () => {
+	test.use({ allowedApiStatuses: [400, 401, 404] });
 
-	await page.getByRole("textbox", { name: "Base URL" }).fill("http://changes.example.test");
-	await page.getByRole("button", { name: "Save settings" }).click();
+	test("refuses plain http for a changedetection address on another machine", async ({ page }) => {
+		await openSection(page, "integrations");
 
-	await expect(page.getByText("Use an https address for changedetection.io", { exact: false })).toBeVisible();
-	expect((await readSettings(page)).changeDetectionBaseUrl).toBe("");
+		await page.getByRole("textbox", { name: "Base URL" }).fill("http://changes.example.test");
+		await page.getByRole("button", { name: "Save settings" }).click();
+
+		await expect(page.getByText("Use an https address for changedetection.io", { exact: false })).toBeVisible();
+		expect((await readSettings(page)).changeDetectionBaseUrl).toBe("");
+	});
 });
 
 test("reports a changedetection service that does not answer, and hides the address from others", async ({

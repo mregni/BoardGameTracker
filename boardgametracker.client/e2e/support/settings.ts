@@ -1,6 +1,6 @@
 import { type Browser, expect, type Page } from "@playwright/test";
 import type { Settings } from "../../src/models";
-import { paceLogin, test } from "./fixtures";
+import { paceLogin } from "./fixtures";
 
 export type SettingsTab =
 	| "general"
@@ -10,14 +10,6 @@ export type SettingsTab =
 	| "game-nights"
 	| "sso"
 	| "advanced";
-
-export const expectingFailures = test.extend({
-	page: async ({ signedInContext }, use) => {
-		const page = await signedInContext.newPage();
-		await use(page);
-		await page.close();
-	},
-});
 
 export const openSection = async (page: Page, tab: SettingsTab) => {
 	await page.goto(`/settings?tab=${tab}`);

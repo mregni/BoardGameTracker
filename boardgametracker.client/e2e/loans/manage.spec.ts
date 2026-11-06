@@ -17,7 +17,6 @@ import {
 	typeDate,
 } from "../support/loansPage";
 import { games, loans, players } from "../support/seedData";
-import { expectingFailures } from "../support/settings";
 
 const activeCount = loans.filter((loan) => !loan.returned).length;
 const returnedCount = loans.length - activeCount;
@@ -161,10 +160,7 @@ test.describe("a new borrower", () => {
 	test("is selected right away", async ({ page }) => {
 		const dialog = await createInDialog(page);
 
-		test.fail(true, "BUG: a player created from the lend dialog is not selected as borrower");
-		await expect(dialog.getByRole("combobox", { name: "Borrower", exact: true })).toContainText(name, {
-			timeout: 3_000,
-		});
+		await expect(dialog.getByRole("combobox", { name: "Borrower", exact: true })).toContainText(name);
 	});
 });
 
@@ -186,15 +182,10 @@ test.describe("a game that was lent in the meantime", () => {
 		return dialog;
 	};
 
-	expectingFailures("is refused", async ({ page }) => {
+	test("is refused", async ({ page }) => {
 		const dialog = await tryToLend(page);
 
 		await expect(dialog).toBeVisible();
-	});
-
-	test("gives no unhandled error in the page", async ({ page }) => {
-		await tryToLend(page);
-		test.fail(true, "BUG: a refused loan rejects mutateAsync inside form submit: unhandled promise rejection");
 	});
 });
 
@@ -442,10 +433,7 @@ test("shows the same number of active loans on the page and in the sidebar", asy
 	await openLoans(page);
 	await expect(sidebarLink(page, `Loans ${activeCount}`)).toBeVisible();
 
-	test.fail(true, "BUG: a loan that starts in the future counts as On loan on /loans but not in the sidebar");
-	await expect(page.getByRole("main").getByRole("button", { name: `On loan ${activeCount}` })).toBeVisible({
-		timeout: 2_000,
-	});
+	await expect(page.getByRole("main").getByRole("button", { name: `On loan ${activeCount}` })).toBeVisible();
 });
 
 test("shows an error when returning fails", async ({ page, request }) => {

@@ -6,7 +6,6 @@ import { avatars, linkedPlayer, players } from "../support/seedData";
 import {
 	api,
 	createUser,
-	expectingFailures,
 	findUser,
 	openSection,
 	removeUser,
@@ -62,7 +61,7 @@ test("changes the display name and shows it in the sidebar", async ({ page }) =>
 	}
 });
 
-expectingFailures("asks for the current password before changing the email", async ({ page }) => {
+test("asks for the current password before changing the email", async ({ page }) => {
 	const email = "admin@example.test";
 	try {
 		await openSection(page, "account");
@@ -231,7 +230,6 @@ test("tells the password rule of the server", async ({ page }) => {
 
 	await field(page, "New password").fill("short");
 
-	test.fail(true, "BUG: the dialog accepts and advertises 4 characters while the server wants 8");
 	await expect(dialog.getByText("Password must be at least 8 characters")).toBeVisible();
 });
 

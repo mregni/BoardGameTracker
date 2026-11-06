@@ -5,7 +5,6 @@ import { credentials, expect, test } from "../support/fixtures";
 import { api, removeCreatedData } from "../support/gameNights";
 import { playerId } from "../support/playerStats";
 import { expected, games, linkedPlayer, loans, mostPlayedGame, players } from "../support/seedData";
-import { expectingFailures } from "../support/settings";
 
 const count = (total: number) => `${total} players`;
 
@@ -236,7 +235,7 @@ test("sends a reader away from the new player page", async ({ readerPage }) => {
 test.describe("refused by the server", () => {
 	test.use({ allowedApiStatuses: [400, 401, 409, 422] });
 
-	expectingFailures("refuses a name that is taken", async ({ page }) => {
+	test("refuses a name that is taken", async ({ page }) => {
 		await page.goto("/players/new");
 		await page.getByRole("textbox", { name: "Name" }).fill(linkedPlayer);
 		await page.getByRole("main").getByRole("button", { name: "Add player" }).click();
@@ -245,7 +244,7 @@ test.describe("refused by the server", () => {
 		await expect(page).toHaveURL("/players/new");
 	});
 
-	expectingFailures("refuses renaming to a name that is taken", async ({ page }) => {
+	test("refuses renaming to a name that is taken", async ({ page }) => {
 		await addPlayer(page, "Lew Zealand");
 		const dialog = await openEdit(page);
 

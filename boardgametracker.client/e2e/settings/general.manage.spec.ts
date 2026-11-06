@@ -7,7 +7,6 @@ import { openGames, pick } from "../support/gamesPage";
 import { expected, games } from "../support/seedData";
 import {
 	api,
-	expectingFailures,
 	mockSettings,
 	openSection,
 	readSettings,
@@ -150,40 +149,24 @@ test("refuses empty and invalid regional fields without saving", async ({ page }
 	expect(saves).toEqual([]);
 });
 
-expectingFailures("keeps the input and says so when saving fails", async ({ page }) => {
-	await page.route("**/api/settings", (route) =>
-		route.request().method() === "PUT"
-			? route.fulfill({ status: 400, json: { title: "error.test.unknown" } })
-			: route.fallback(),
-	);
-	await openSection(page, "general");
-	await field(page, "Currency").fill("$");
+test.describe("refused by the server", () => {
+	test.use({ allowedApiStatuses: [400, 401] });
 
-	await page.getByRole("button", { name: "Save settings" }).click();
+	test("keeps the input and says so when saving fails", async ({ page }) => {
+		await page.route("**/api/settings", (route) =>
+			route.request().method() === "PUT"
+				? route.fulfill({ status: 400, json: { title: "error.test.unknown" } })
+				: route.fallback(),
+		);
+		await openSection(page, "general");
+		await field(page, "Currency").fill("$");
 
-	await expect(page.getByText("Failed saving settings")).toBeVisible();
-	await expect(field(page, "Currency")).toHaveValue("$");
-	expect((await readSettings(page)).currency).toBe(original.currency);
-});
+		await page.getByRole("button", { name: "Save settings" }).click();
 
-expectingFailures("does not leave an unhandled rejection when saving fails", async ({ page }) => {
-	const errors: string[] = [];
-	page.on("pageerror", (error) => errors.push(error.message));
-	await page.route("**/api/settings", (route) =>
-		route.request().method() === "PUT"
-			? route.fulfill({ status: 400, json: { title: "error.test.unknown" } })
-			: route.fallback(),
-	);
-	await openSection(page, "general");
-
-	await page.getByRole("button", { name: "Save settings" }).click();
-
-	await expect(page.getByText("Failed saving settings")).toBeVisible();
-	expectingFailures.fail(
-		true,
-		"BUG: a refused save rejects unhandled in the form submit, so the page reports an error",
-	);
-	expect(errors).toEqual([]);
+		await expect(page.getByText("Failed saving settings")).toBeVisible();
+		await expect(field(page, "Currency")).toHaveValue("$");
+		expect((await readSettings(page)).currency).toBe(original.currency);
+	});
 });
 
 test.describe("with a public url that is not set by the environment", () => {

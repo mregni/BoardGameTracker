@@ -120,8 +120,7 @@ test("tells the password rule of the server on the reset page", async ({ guestPa
 	await page.getByLabel("New password", { exact: true }).fill("short");
 	await page.getByRole("button", { name: "Reset password" }).click();
 
-	test.fail(true, "BUG: the reset password page advertises 4 characters while the server wants 8");
-	await expect(page.getByText("Password must be at least 8 characters")).toBeVisible({ timeout: 2_000 });
+	await expect(page.getByText("Password must be at least 8 characters")).toBeVisible();
 });
 
 test("refuses a reset link that is not valid", async ({ guestPage: page }) => {
