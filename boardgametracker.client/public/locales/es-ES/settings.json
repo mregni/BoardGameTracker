@@ -56,7 +56,8 @@
       "description": "Sigue los juegos a los que no has jugado desde hace tiempo."
     },
     "months": {
-      "label": "Umbral de meses"
+      "label": "Umbral de meses",
+      "invalid": "Introduce al menos 1 mes"
     }
   },
   "game-nights": {

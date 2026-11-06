@@ -56,7 +56,8 @@
       "description": "Track games that haven't been played in a while."
     },
     "months": {
-      "label": "Months threshold"
+      "label": "Months threshold",
+      "invalid": "Enter at least 1 month"
     }
   },
   "game-nights": {

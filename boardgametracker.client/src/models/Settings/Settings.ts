@@ -69,7 +69,13 @@ export const SettingsSchema = z.object({
 	updateCheckEnabled: z.boolean(),
 	versionTrack: z.string(),
 	shelfOfShameEnabled: z.boolean(),
-	shelfOfShameMonthsLimit: z.number().min(1),
+	shelfOfShameMonthsLimit: z
+		.number({
+			error: "settings:shame.months.invalid",
+		})
+		.min(1, {
+			message: "settings:shame.months.invalid",
+		}),
 	gameNightsEnabled: z.boolean(),
 	rsvpAuthenticationEnabled: z.boolean(),
 	bggApiKey: z.string().nullable(),

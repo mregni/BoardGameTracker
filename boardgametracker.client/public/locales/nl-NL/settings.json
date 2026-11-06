@@ -56,7 +56,8 @@
       "description": "Houd spellen bij die al een tijd niet meer gespeeld zijn."
     },
     "months": {
-      "label": "Drempel in maanden"
+      "label": "Drempel in maanden",
+      "invalid": "Vul minstens 1 maand in"
     }
   },
   "game-nights": {
