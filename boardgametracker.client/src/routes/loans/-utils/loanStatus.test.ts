@@ -95,11 +95,15 @@ describe("getLoanStats", () => {
 			loan({ id: 5 }),
 		];
 
-		expect(getLoanStats(loans, now)).toEqual({ overdue: 2, longOverdue: 1, dueThisWeek: 2 });
+		expect(getLoanStats(loans, now)).toEqual({ onLoan: 6, overdue: 2, longOverdue: 1, dueThisWeek: 2 });
+	});
+
+	it("does not count a loan that has not started as on loan", () => {
+		expect(getLoanStats([loan({ id: 1 }), loan({ id: 2, isActive: false })], now).onLoan).toBe(1);
 	});
 
 	it("returns zeros without loans", () => {
-		expect(getLoanStats([], now)).toEqual({ overdue: 0, longOverdue: 0, dueThisWeek: 0 });
+		expect(getLoanStats([], now)).toEqual({ onLoan: 0, overdue: 0, longOverdue: 0, dueThisWeek: 0 });
 	});
 });
 

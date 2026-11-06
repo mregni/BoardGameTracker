@@ -66,10 +66,10 @@ describe("BgtImageSelector", () => {
 			expect(screen.queryByText("upload")).not.toBeInTheDocument();
 		});
 
-		it("should show trash icon on hover for removal", () => {
+		it("should keep the remove button reachable without hovering", () => {
 			const testFile = new File(["test"], "test.png", { type: "image/png" });
 			renderWithTheme(<BgtImageSelector image={testFile} setImage={mockSetImage} />);
-			expect(screen.getByTestId("trash-icon")).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "remove" }).closest(".collapse")).toBeNull();
 		});
 	});
 

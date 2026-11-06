@@ -55,14 +55,14 @@ describe("CreateUserModal", () => {
 
 		await user.type(screen.getByLabelText("account.users.create.username.label"), "kathleen");
 		await user.type(screen.getByLabelText("account.users.create.email.label"), "kathleen@example.com");
-		await user.type(screen.getByLabelText("account.users.create.password.label"), "secret");
+		await user.type(screen.getByLabelText("account.users.create.password.label"), "long-secret");
 		await user.click(within(footer()).getByRole("button", { name: "account.users.create.save" }));
 
 		await waitFor(() =>
 			expect(onSubmit).toHaveBeenCalledWith({
 				username: "kathleen",
 				email: "kathleen@example.com",
-				password: "secret",
+				password: "long-secret",
 				role: "User",
 				createPlayer: true,
 				playerId: null,

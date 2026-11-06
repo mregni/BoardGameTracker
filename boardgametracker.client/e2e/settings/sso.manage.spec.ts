@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test, writerCredentials } from "../support/fixtures";
-import { api, expectingFailures, openContext, openSection } from "../support/settings";
+import { api, openContext, openSection } from "../support/settings";
 
 test.use({ allowedApiStatuses: [400, 401, 404] });
 
@@ -67,7 +67,7 @@ test("refuses a form with missing or invalid fields", async ({ page }) => {
 	expect(creates).toEqual([]);
 });
 
-expectingFailures("refuses plain http for a provider on another machine", async ({ page }) => {
+test("refuses plain http for a provider on another machine", async ({ page }) => {
 	await openSection(page, "sso");
 	await fillForm(page, "http://sso.example.test");
 
