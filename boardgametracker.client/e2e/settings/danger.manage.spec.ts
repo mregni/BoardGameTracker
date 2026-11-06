@@ -1,6 +1,6 @@
 import { expect, test } from "../support/fixtures";
 import { expected } from "../support/seedData";
-import { expectingFailures, openSection } from "../support/settings";
+import { openSection } from "../support/settings";
 
 const resets = [
 	{
@@ -94,22 +94,26 @@ test("reports a finished data reset, with the call mocked so the seed stays", as
 	await expect(page.getByText(`${expected.gameCount} games`)).toBeVisible();
 });
 
-for (const [reset, message] of [
-	[resets[0], "Failed to reset data"],
-	[resets[1], "Failed to factory reset"],
-] as const) {
-	expectingFailures(`shows that ${reset.button} failed`, async ({ page }) => {
-		await page.route(reset.path, (route) => route.fulfill({ status: 400, json: { title: "error.test.unknown" } }));
-		await openSection(page, "advanced");
+test.describe("refused by the server", () => {
+	test.use({ allowedApiStatuses: [400, 401] });
 
-		await page.getByRole("button", { name: reset.button, exact: true }).click();
-		const dialog = page.getByRole("dialog");
-		await dialog.getByRole("textbox", { name: reset.input }).fill(reset.keyword);
-		await dialog.getByRole("button", { name: reset.confirm, exact: true }).click();
+	for (const [reset, message] of [
+		[resets[0], "Failed to reset data"],
+		[resets[1], "Failed to factory reset"],
+	] as const) {
+		test(`shows that ${reset.button} failed`, async ({ page }) => {
+			await page.route(reset.path, (route) => route.fulfill({ status: 400, json: { title: "error.test.unknown" } }));
+			await openSection(page, "advanced");
 
-		await expect(page.getByText(message)).toBeVisible();
-	});
-}
+			await page.getByRole("button", { name: reset.button, exact: true }).click();
+			const dialog = page.getByRole("dialog");
+			await dialog.getByRole("textbox", { name: reset.input }).fill(reset.keyword);
+			await dialog.getByRole("button", { name: reset.confirm, exact: true }).click();
+
+			await expect(page.getByText(message)).toBeVisible();
+		});
+	}
+});
 
 test("goes to the login page after a factory reset, with the call mocked so the seed stays", async ({ page }) => {
 	await page.route("**/api/maintenance/factory-reset", (route) => route.fulfill({ status: 204 }));

@@ -92,10 +92,10 @@ public class AuthService : IAuthService
         }
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
-        if (result.IsLockedOut)
+        if (result.IsLockedOut && await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            _logger.LogWarning("Login attempt for locked out user {UserId}", user.Id);
-            throw new AuthenticationFailedException(Constants.Errors.AccountLockedOut);
+            _logger.LogWarning("Login attempt for disabled user {UserId}", user.Id);
+            throw new AuthenticationFailedException(Constants.Errors.AccountDisabled);
         }
 
         if (!result.Succeeded)

@@ -100,8 +100,8 @@ function RouteComponent() {
 		{
 			value: "all",
 			label: t("statistics.on-loan"),
-			chip: t("chip.on-loan", { count: activeLoans.length }),
-			count: activeLoans.length,
+			chip: t("chip.on-loan", { count: stats.onLoan }),
+			count: stats.onLoan,
 		},
 		{
 			value: "overdue",

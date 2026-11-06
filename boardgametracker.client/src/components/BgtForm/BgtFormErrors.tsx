@@ -9,7 +9,7 @@ export const BgtFormErrors = ({ errors, id }: Props) => {
 	}
 
 	return (
-		<div id={id} className="mt-1">
+		<div id={id} data-slot="form-error" className="mt-1">
 			{errors.map((error) => (
 				<div key={error} className="text-error text-sm">
 					{error}

@@ -212,7 +212,7 @@
       "confirm": {
         "label": "Confirm new password"
       },
-      "min-length": "Password must be at least 4 characters",
+      "min-length": "Password must be at least 8 characters",
       "mismatch": "Passwords do not match",
       "save": "Change password"
     },

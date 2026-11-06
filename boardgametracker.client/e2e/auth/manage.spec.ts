@@ -140,7 +140,6 @@ test("tells a disabled account why it cannot sign in", async ({ guestPage: page 
 
 	await signIn(page, user);
 
-	test.fail(true, "BUG: a disabled account gets the message for too many failed attempts");
 	await expect(page.getByText("This account is disabled. Ask an admin to enable it.")).toBeVisible();
 });
 

@@ -110,7 +110,9 @@ describe("BgtDeleteModal", () => {
 	describe("Async Error Handling", () => {
 		it("should handle async onDelete rejection gracefully", async () => {
 			const user = userEvent.setup();
-			const onDeleteMock = vi.fn().mockRejectedValue(new Error("Network error"));
+			const onDeleteMock = vi
+				.fn()
+				.mockRejectedValue({ kind: "network", status: null, message: "Network error", url: undefined });
 			renderWithTheme(<BgtDeleteModal {...defaultProps} onDelete={onDeleteMock} />);
 
 			await user.click(screen.getByRole("button", { name: /delete/i }));

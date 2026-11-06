@@ -133,12 +133,15 @@ test("deletes a night from its card", async ({ page, request }) => {
 });
 
 test.describe("deleting from the page of the night", () => {
-	test.use({ allowedApiStatuses: [401, 404] });
-
-	test("returns to the list", async ({ page, request }) => {
+	test("returns to the list without asking for the deleted night", async ({ page, request }) => {
 		const title = "Night to delete";
 		const id = await createNight(request, { title, startDate: addDays(new Date(), 20) });
 		await openNight(page, title, id);
+		const nightReads: string[] = [];
+		page.on("request", (call) => {
+			if (call.method() === "GET" && new URL(call.url()).pathname === `/api/gamenight/${id}`)
+				nightReads.push(call.url());
+		});
 
 		await page.getByRole("main").getByRole("button", { name: "Delete", exact: true }).click();
 		await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
@@ -146,6 +149,7 @@ test.describe("deleting from the page of the night", () => {
 		await expect(page).toHaveURL("/game-nights");
 		await expect(page.getByText("Game night deleted")).toBeVisible();
 		await expect(cards(page)).toHaveCount(gameNights.length);
+		expect(nightReads).toEqual([]);
 	});
 });
 

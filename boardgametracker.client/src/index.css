@@ -236,6 +236,7 @@
 	--bottom-nav-h: calc(4rem + env(safe-area-inset-bottom));
 	--form-action-bar-h: calc(4rem + env(safe-area-inset-bottom));
 	color-scheme: dark;
+	scroll-padding-bottom: calc(var(--form-action-bar-h) + 0.5rem);
 }
 
 [data-bottom-nav="hidden"] {

@@ -201,22 +201,47 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoginAsync_ShouldThrowUnauthorizedAccessException_WhenUserIsLockedOut()
+    public async Task LoginAsync_ShouldSayTheAccountIsDisabled_WhenTheDisabledUserHasTheRightPassword()
     {
         var request = new LoginRequest("testuser", "password123");
         var user = new ApplicationUser("testuser", "test@test.com");
 
         _userManagerMock.Setup(x => x.FindByNameAsync("testuser")).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.CheckPasswordAsync(user, "password123")).ReturnsAsync(true);
         _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "password123", false))
             .ReturnsAsync(SignInResult.LockedOut);
 
         var act = () => _authService.LoginAsync(request, ClientAddress);
 
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage(Constants.Errors.AccountLockedOut);
+            .WithMessage(Constants.Errors.AccountDisabled);
 
         _userManagerMock.Verify(x => x.FindByNameAsync("testuser"), Times.Once);
+        _userManagerMock.Verify(x => x.CheckPasswordAsync(user, "password123"), Times.Once);
         _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "password123", false), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LoginAsync_ShouldTreatAWrongPasswordLikeAnyOther_WhenTheAccountIsDisabled()
+    {
+        var request = new LoginRequest("testuser", "wrong-password");
+        var user = new ApplicationUser("testuser", "test@test.com");
+
+        _userManagerMock.Setup(x => x.FindByNameAsync("testuser")).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.CheckPasswordAsync(user, "wrong-password")).ReturnsAsync(false);
+        _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "wrong-password", false))
+            .ReturnsAsync(SignInResult.LockedOut);
+
+        var act = () => _authService.LoginAsync(request, ClientAddress);
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>()
+            .WithMessage(Constants.Errors.InvalidCredentials);
+
+        _userManagerMock.Verify(x => x.FindByNameAsync("testuser"), Times.Once);
+        _userManagerMock.Verify(x => x.CheckPasswordAsync(user, "wrong-password"), Times.Once);
+        _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "wrong-password", false), Times.Once);
+        _loginAttemptsMock.Verify(x => x.RecordFailure("testuser", ClientAddress), Times.Once);
         VerifyNoOtherCalls();
     }
 
