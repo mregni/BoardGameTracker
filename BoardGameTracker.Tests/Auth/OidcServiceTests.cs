@@ -360,6 +360,7 @@ public class OidcServiceTests : IDisposable
 
         result.Should().BeNull();
         _configurationsMock.Verify(x => x.GetAsync("https://sso.example.com/realms/bgt", default), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Could not build the identity provider sign-out address for Keycloak");
         VerifyNoOtherCalls();
     }
 
@@ -516,7 +517,11 @@ public class OidcServiceTests : IDisposable
         result.SigningCertificateExpiredOn.Should().BeNull();
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), kind == "insecure" ? Times.Once() : Times.Exactly(2));
         _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
-        _loggerMock.VerifyLog(LogLevel.Warning, "The signing keys of https://sso.example.com/realms/bgt could not be loaded: NotFound");
+        if (kind == "missing")
+        {
+            _loggerMock.VerifyLog(LogLevel.Warning, "The signing keys of https://sso.example.com/realms/bgt could not be loaded: NotFound");
+        }
+
         VerifyNoOtherCalls();
     }
 
@@ -531,6 +536,7 @@ public class OidcServiceTests : IDisposable
         result.SigningCertificateExpiredOn.Should().BeNull();
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
         _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The signing keys of https://sso.example.com/realms/bgt could not be loaded");
         VerifyNoOtherCalls();
     }
 
@@ -550,7 +556,11 @@ public class OidcServiceTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
-        _loggerMock.Invocations.Clear();
+        if (document == "not json")
+        {
+            _loggerMock.VerifyLog(LogLevel.Error, $"OIDC discovery at {DiscoveryAuthority} returned something that is not a discovery document");
+        }
+
         VerifyNoOtherCalls();
     }
 
@@ -575,6 +585,7 @@ public class OidcServiceTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Error, "OIDC discovery at https://sso.example.com/realms/bgt could not be reached");
         VerifyNoOtherCalls();
     }
 
@@ -590,6 +601,7 @@ public class OidcServiceTests : IDisposable
         result.Should().BeNull();
         _configurationsMock.Verify(x => x.GetAsync("https://sso.example.com/realms/bgt", default), Times.Once);
         _secretProtectorMock.Verify(x => x.Unprotect("protected-id-token"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Could not build the identity provider sign-out address for Keycloak");
         VerifyNoOtherCalls();
     }
 
