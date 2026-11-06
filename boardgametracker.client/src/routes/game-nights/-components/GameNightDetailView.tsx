@@ -134,7 +134,7 @@ export const GameNightDetailView = (props: Props) => {
 							players={players}
 							uiLanguage={settings.uiLanguage}
 							canOpen={canWrite}
-							emptyText={isOverByTime ? t("played.empty-after") : t("played.empty")}
+							emptyText={isOverByTime ? t("played.empty-after") : isOver ? t("played.empty-ended") : t("played.empty")}
 						/>
 					</section>
 					<NightSidePanel

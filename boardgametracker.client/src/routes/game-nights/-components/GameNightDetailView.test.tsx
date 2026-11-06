@@ -242,6 +242,14 @@ describe("GameNightDetailView", () => {
 		expect(screen.queryByText("played.empty")).not.toBeInTheDocument();
 	});
 
+	it("only states that nothing was logged on an ended night", () => {
+		renderView(buildDetail(tonight(), [], false, new Date()));
+
+		expect(screen.getByText("played.empty-ended")).toBeInTheDocument();
+		expect(screen.queryByText("played.empty")).not.toBeInTheDocument();
+		expect(screen.queryByText("played.empty-after")).not.toBeInTheDocument();
+	});
+
 	it("explains how to start when nothing was played yet", () => {
 		renderView(buildDetail(tonight(), [], false));
 
