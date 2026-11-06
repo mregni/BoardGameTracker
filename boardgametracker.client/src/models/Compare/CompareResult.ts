@@ -33,6 +33,8 @@ export interface PreferredGame {
 
 export interface ClosestGame {
 	playerId: number | null;
+	bothWon: boolean;
+	otherWon: boolean;
 	gameId: number | null;
 	scoringDifference: number;
 }

@@ -46,6 +46,8 @@
     "points_other": "{{value}} ptn",
     "closest-winner": "{{game}} · {{player}} won",
     "closest-other": "{{game}} · iemand anders won",
+    "closest-both": "{{game}} · allebei gewonnen",
+    "closest-none": "{{game}} · geen winnaar",
     "title": "Samen"
   },
   "per-game": {
