@@ -29,14 +29,18 @@ public class IntegrationKeyMigratorTests : IDisposable
     public IntegrationKeyMigratorTests()
     {
         Environment.SetEnvironmentVariable(Constants.BggConfig.EnvApiKeyName, null);
-        _protectorMock.Setup(x => x.IsProtected(It.IsAny<string>()))
-            .Returns<string>(value => value.StartsWith("dp1:", StringComparison.Ordinal));
+        _protectorMock.Setup(x => x.IsProtected(BggPlaintext)).Returns(false);
+        _protectorMock.Setup(x => x.IsProtected(ChangeDetectionPlaintext)).Returns(false);
+        _protectorMock.Setup(x => x.IsProtected(BggProtected)).Returns(true);
         _protectorMock.Setup(x => x.Protect(BggPlaintext)).Returns(BggProtected);
         _protectorMock.Setup(x => x.Protect(ChangeDetectionPlaintext)).Returns(ChangeDetectionProtected);
         _protectorMock.Setup(x => x.Reveal(Constants.BggConfig.ApiKey, BggProtected)).Returns(BggPlaintext);
         _protectorMock.Setup(x => x.Reveal(Constants.ChangeDetectionConfig.ApiKey, ChangeDetectionProtected)).Returns(ChangeDetectionPlaintext);
         _configRepositoryMock
-            .Setup(x => x.ReplaceConfigValueAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(x => x.ReplaceConfigValueAsync(Constants.BggConfig.ApiKey, BggPlaintext, BggProtected))
+            .ReturnsAsync(true);
+        _configRepositoryMock
+            .Setup(x => x.ReplaceConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey, ChangeDetectionPlaintext, ChangeDetectionProtected))
             .ReturnsAsync(true);
 
         _migrator = new IntegrationKeyMigrator(_configRepositoryMock.Object, _protectorMock.Object, _loggerMock.Object);
@@ -52,6 +56,17 @@ public class IntegrationKeyMigratorTests : IDisposable
     {
         _configRepositoryMock.VerifyNoOtherCalls();
         _protectorMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
+    }
+
+    private void VerifyEncryptedLog(string setting)
+    {
+        _loggerMock.VerifyLog(LogLevel.Information, $"Encrypted the stored {setting} at rest");
+    }
+
+    private void VerifyLeftUnencryptedLog(string setting)
+    {
+        _loggerMock.VerifyLog(LogLevel.Warning, $"The stored {setting} was left unencrypted because the encrypted value could not be read back");
     }
 
     private void SetupStored(Dictionary<string, string> configs)
@@ -80,6 +95,8 @@ public class IntegrationKeyMigratorTests : IDisposable
         _protectorMock.Verify(x => x.Reveal(Constants.ChangeDetectionConfig.ApiKey, ChangeDetectionProtected), Times.Once);
         _configRepositoryMock.Verify(x => x.ReplaceConfigValueAsync(Constants.BggConfig.ApiKey, BggPlaintext, BggProtected), Times.Once);
         _configRepositoryMock.Verify(x => x.ReplaceConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey, ChangeDetectionPlaintext, ChangeDetectionProtected), Times.Once);
+        VerifyEncryptedLog(Constants.BggConfig.ApiKey);
+        VerifyEncryptedLog(Constants.ChangeDetectionConfig.ApiKey);
         VerifyNoOtherCalls();
     }
 
@@ -121,6 +138,7 @@ public class IntegrationKeyMigratorTests : IDisposable
         _protectorMock.Verify(x => x.Protect(BggPlaintext), Times.Once);
         _protectorMock.Verify(x => x.Reveal(Constants.BggConfig.ApiKey, BggProtected), Times.Once);
         _configRepositoryMock.Verify(x => x.ReplaceConfigValueAsync(Constants.BggConfig.ApiKey, BggPlaintext, BggProtected), Times.Once);
+        VerifyEncryptedLog(Constants.BggConfig.ApiKey);
         VerifyNoOtherCalls();
     }
 
@@ -137,6 +155,7 @@ public class IntegrationKeyMigratorTests : IDisposable
         _protectorMock.Verify(x => x.IsProtected(BggPlaintext), Times.Once);
         _protectorMock.Verify(x => x.Protect(BggPlaintext), Times.Once);
         _protectorMock.Verify(x => x.Reveal(Constants.BggConfig.ApiKey, BggProtected), Times.Once);
+        VerifyLeftUnencryptedLog(Constants.BggConfig.ApiKey);
         VerifyNoOtherCalls();
     }
 
@@ -174,24 +193,56 @@ public class IntegrationKeyMigratorTests : IDisposable
     }
 
     [Fact]
-    public async Task ProtectLegacyKeysAsync_ShouldNotLogTheKeyValues()
+    public async Task ProtectLegacyKeysAsync_ShouldLogOnlyTheSettingName()
     {
         SetupStored(new Dictionary<string, string> { [Constants.BggConfig.ApiKey] = BggPlaintext });
 
         await _migrator.ProtectLegacyKeysAsync();
 
-        _loggerMock.Verify(x => x.Log(
-                It.IsAny<LogLevel>(),
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains(BggPlaintext) || state.ToString()!.Contains(BggProtected)),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Never);
+        VerifyEncryptedLog(Constants.BggConfig.ApiKey);
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         _protectorMock.Verify(x => x.IsProtected(BggPlaintext), Times.Once);
         _protectorMock.Verify(x => x.Protect(BggPlaintext), Times.Once);
         _protectorMock.Verify(x => x.Reveal(Constants.BggConfig.ApiKey, BggProtected), Times.Once);
         _configRepositoryMock.Verify(x => x.ReplaceConfigValueAsync(Constants.BggConfig.ApiKey, BggPlaintext, BggProtected), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ProtectLegacyKeysAsync_ShouldStillMigrateTheNextKey_WhenTheFirstCannotBeReadBack()
+    {
+        SetupStored(new Dictionary<string, string>
+        {
+            [Constants.BggConfig.ApiKey] = BggPlaintext,
+            [Constants.ChangeDetectionConfig.ApiKey] = ChangeDetectionPlaintext
+        });
+        _protectorMock.Setup(x => x.Reveal(Constants.BggConfig.ApiKey, BggProtected)).Returns("something-else");
+
+        var migrated = await _migrator.ProtectLegacyKeysAsync();
+
+        migrated.Should().Be(1);
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        _protectorMock.Verify(x => x.IsProtected(BggPlaintext), Times.Once);
+        _protectorMock.Verify(x => x.IsProtected(ChangeDetectionPlaintext), Times.Once);
+        _protectorMock.Verify(x => x.Protect(BggPlaintext), Times.Once);
+        _protectorMock.Verify(x => x.Protect(ChangeDetectionPlaintext), Times.Once);
+        _protectorMock.Verify(x => x.Reveal(Constants.BggConfig.ApiKey, BggProtected), Times.Once);
+        _protectorMock.Verify(x => x.Reveal(Constants.ChangeDetectionConfig.ApiKey, ChangeDetectionProtected), Times.Once);
+        _configRepositoryMock.Verify(x => x.ReplaceConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey, ChangeDetectionPlaintext, ChangeDetectionProtected), Times.Once);
+        VerifyLeftUnencryptedLog(Constants.BggConfig.ApiKey);
+        VerifyEncryptedLog(Constants.ChangeDetectionConfig.ApiKey);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ProtectLegacyKeysAsync_ShouldSkipBlankAndMissingKeys()
+    {
+        SetupStored(new Dictionary<string, string> { [Constants.BggConfig.ApiKey] = "   " });
+
+        var migrated = await _migrator.ProtectLegacyKeysAsync();
+
+        migrated.Should().Be(0);
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 }

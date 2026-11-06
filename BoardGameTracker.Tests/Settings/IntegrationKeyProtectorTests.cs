@@ -1,8 +1,10 @@
 using BoardGameTracker.Common;
 using BoardGameTracker.Core.Settings;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -23,6 +25,11 @@ public class IntegrationKeyProtectorTests
     private void VerifyNoOtherCalls()
     {
         _loggerMock.VerifyNoOtherCalls();
+    }
+
+    private void VerifyUndecryptableWarning(string setting)
+    {
+        _loggerMock.VerifyLog(LogLevel.Warning, $"The stored {setting} could not be decrypted; the data-protection keys may have been lost or rotated. The integration is treated as not configured until the key is entered again in the settings");
     }
 
     [Fact]
@@ -72,22 +79,13 @@ public class IntegrationKeyProtectorTests
     [Fact]
     public void Reveal_ShouldReturnNull_AndWarnWithoutTheValue_WhenTheKeysChanged()
     {
-        var foreign = new IntegrationKeyProtector(new EphemeralDataProtectionProvider(), Mock.Of<ILogger<IntegrationKeyProtector>>());
+        var foreign = new IntegrationKeyProtector(new EphemeralDataProtectionProvider(), NullLogger<IntegrationKeyProtector>.Instance);
         var stored = foreign.Protect(Plaintext);
 
         var result = _protector.Reveal(Constants.ChangeDetectionConfig.ApiKey, stored);
 
         result.Should().BeNull();
-        _loggerMock.Verify(x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, _) =>
-                    state.ToString()!.Contains(Constants.ChangeDetectionConfig.ApiKey) &&
-                    !state.ToString()!.Contains(Plaintext) &&
-                    !state.ToString()!.Contains(stored)),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
+        VerifyUndecryptableWarning(Constants.ChangeDetectionConfig.ApiKey);
         VerifyNoOtherCalls();
     }
 
@@ -99,13 +97,7 @@ public class IntegrationKeyProtectorTests
         var result = _protector.Reveal(Constants.BggConfig.ApiKey, stored);
 
         result.Should().BeNull();
-        _loggerMock.Verify(x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
+        VerifyUndecryptableWarning(Constants.BggConfig.ApiKey);
         VerifyNoOtherCalls();
     }
 
@@ -119,13 +111,16 @@ public class IntegrationKeyProtectorTests
         var result = protector.Reveal(Constants.BggConfig.ApiKey, otherPurpose);
 
         result.Should().BeNull();
-        _loggerMock.Verify(x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
+        VerifyUndecryptableWarning(Constants.BggConfig.ApiKey);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void IsProtected_ShouldOnlyAcceptTheExactCasedMarkerAtTheStart()
+    {
+        _protector.IsProtected("dp1:value").Should().BeTrue();
+        _protector.IsProtected("DP1:value").Should().BeFalse();
+        _protector.IsProtected("key-dp1:value").Should().BeFalse();
         VerifyNoOtherCalls();
     }
 }
