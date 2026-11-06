@@ -328,7 +328,7 @@ public class GameNightService : IGameNightService
             throw new EntityNotFoundException(nameof(GameNightRsvp), rsvp.Id);
         }
 
-        if (gameNight.StartDate.ToUniversalTime() < _dateTimeProvider.UtcNow)
+        if (gameNight.IsOver(_dateTimeProvider.UtcNow))
         {
             throw new ValidationException(Constants.Errors.RsvpClosed);
         }

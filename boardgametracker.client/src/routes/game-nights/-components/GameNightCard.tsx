@@ -61,7 +61,6 @@ export const GameNightCard = (props: Props) => {
 	]
 		.map((answer) => ({ ...answer, names: namesIn(answer.state) }))
 		.filter((answer) => answer.names !== "");
-	const showManageRsvps = canWrite && !live;
 	const { copied, copy } = useInviteLink(gameNight);
 	const startTime = toDisplayTime(gameNight.startDate, settings.timeFormat, settings.uiLanguage);
 	const runningGames = gameNight.summary.runningGames;
@@ -155,11 +154,9 @@ export const GameNightCard = (props: Props) => {
 						)}
 						{canWrite && (
 							<div className="relative z-10 ml-auto flex flex-wrap items-center gap-2">
-								{showManageRsvps && (
-									<BgtButton variant="cancel" size="2" onClick={() => onManageRsvps(gameNight)}>
-										{t("card.manage-rsvps")}
-									</BgtButton>
-								)}
+								<BgtButton variant="cancel" size="2" onClick={() => onManageRsvps(gameNight)}>
+									{t("card.manage-rsvps")}
+								</BgtButton>
 								{!live && <EmailInvitesButton gameNight={gameNight} players={players} />}
 								{highlight && !live && (
 									<BgtButton variant="primary" size="2" onClick={copy} disabled={copied}>

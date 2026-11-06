@@ -2,7 +2,14 @@ import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import { AvatarChipButton } from "@/components/GameNight/AvatarChip";
 import type { Game, GameNightDetail, Player, RunningGame, Settings } from "@/models";
-import { freePlayerIds, hasPlayOpened, isNightOver, latestPlays, nightTable } from "../-utils/gameNightPlay";
+import {
+	freePlayerIds,
+	hasPlayOpened,
+	isNightOver,
+	isNightPast,
+	latestPlays,
+	nightTable,
+} from "../-utils/gameNightPlay";
 import { GameNightDetailHeader } from "./GameNightDetailHeader";
 import { NightPlanPanel } from "./NightPlanPanel";
 import { NightSectionTitle } from "./NightSectionTitle";
@@ -79,8 +86,6 @@ export const GameNightDetailView = (props: Props) => {
 				onLog={onLog}
 			/>
 
-			{isPlanned && <NightPlanPanel gameNight={gameNight} canWrite={canWrite} onManageRsvps={onManageRsvps} />}
-
 			{runningGames.map((runningGame) => (
 				<RunningGameCard
 					key={runningGame.id}
@@ -147,6 +152,10 @@ export const GameNightDetailView = (props: Props) => {
 						onEditAttendees={onEditAttendees}
 					/>
 				</div>
+			)}
+
+			{!isNightPast(gameNight) && (
+				<NightPlanPanel gameNight={gameNight} canWrite={canWrite} showGames={isPlanned} onManageRsvps={onManageRsvps} />
 			)}
 		</div>
 	);

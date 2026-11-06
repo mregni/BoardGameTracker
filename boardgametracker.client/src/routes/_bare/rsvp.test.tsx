@@ -211,14 +211,21 @@ describe("RsvpPage", () => {
 		expect(screen.queryByText("Bring snacks")).not.toBeInTheDocument();
 	});
 
-	it("says a night that has started is in progress and closed for answers", async () => {
+	it("keeps answers open while a night is in progress", async () => {
 		mocks.getGameNightByLinkCall.mockResolvedValue(gameNight(addHours(new Date(), -2)));
 
 		renderPage();
 
-		expect(await screen.findByRole("heading", { level: 1, name: "in-progress-title" })).toBeInTheDocument();
-		expect(screen.getByText("in-progress-description")).toBeInTheDocument();
-		expect(screen.queryByText("past-title")).not.toBeInTheDocument();
+		expect(await screen.findByRole("group", { name: "who-are-you" })).toBeInTheDocument();
+		expect(screen.queryByRole("heading", { name: "past-title" })).not.toBeInTheDocument();
+	});
+
+	it("closes answers as soon as the night was ended", async () => {
+		mocks.getGameNightByLinkCall.mockResolvedValue({ ...gameNight(addHours(new Date(), -2)), endedAt: new Date() });
+
+		renderPage();
+
+		expect(await screen.findByRole("heading", { level: 1, name: "past-title" })).toBeInTheDocument();
 		expect(screen.queryByRole("group", { name: "who-are-you" })).not.toBeInTheDocument();
 	});
 

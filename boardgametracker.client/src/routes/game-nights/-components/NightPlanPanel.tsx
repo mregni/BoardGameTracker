@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
@@ -13,17 +14,21 @@ import { NightSectionTitle } from "./NightSectionTitle";
 interface Props {
 	gameNight: GameNight;
 	canWrite: boolean;
+	showGames: boolean;
 	onManageRsvps: () => void;
 }
 
-export const NightPlanPanel = ({ gameNight, canWrite, onManageRsvps }: Props) => {
+export const NightPlanPanel = ({ gameNight, canWrite, showGames, onManageRsvps }: Props) => {
 	const { t } = useTranslation("game-nights");
 	const navigate = useNavigate();
 	const { copied, copy } = useInviteLink(gameNight);
 	const waiting = gameNight.invitedPlayers.filter((rsvp) => rsvp.state === GameNightRsvpState.Pending).length;
 
 	return (
-		<div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:gap-6" data-testid="night-plan">
+		<div
+			className={cx("grid gap-4 xl:gap-6", showGames && "lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]")}
+			data-testid="night-plan"
+		>
 			<section className="flex flex-col gap-2" aria-labelledby="night-rsvps">
 				<NightSectionTitle id="night-rsvps">{t("plan.rsvps")}</NightSectionTitle>
 				<BgtCard className="gap-3">
@@ -49,16 +54,18 @@ export const NightPlanPanel = ({ gameNight, canWrite, onManageRsvps }: Props) =>
 				</BgtCard>
 			</section>
 
-			<section className="flex flex-col gap-2" aria-labelledby="planned-games">
-				<NightSectionTitle id="planned-games">{t("planned.title")}</NightSectionTitle>
-				{gameNight.suggestedGames.length === 0 ? (
-					<BgtText size="2" color="gray">
-						{t("plan.no-games")}
-					</BgtText>
-				) : (
-					<PlannedGameList games={gameNight.suggestedGames} onOpenGame={(id) => navigate({ to: `/games/${id}` })} />
-				)}
-			</section>
+			{showGames && (
+				<section className="flex flex-col gap-2" aria-labelledby="planned-games">
+					<NightSectionTitle id="planned-games">{t("planned.title")}</NightSectionTitle>
+					{gameNight.suggestedGames.length === 0 ? (
+						<BgtText size="2" color="gray">
+							{t("plan.no-games")}
+						</BgtText>
+					) : (
+						<PlannedGameList games={gameNight.suggestedGames} onOpenGame={(id) => navigate({ to: `/games/${id}` })} />
+					)}
+				</section>
+			)}
 		</div>
 	);
 };
