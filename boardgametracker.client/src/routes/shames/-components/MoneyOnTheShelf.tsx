@@ -18,7 +18,9 @@ export const MoneyOnTheShelf = ({ statistics, shames, currency, canAddPrices, on
 
 	const shelfValue = statistics.totalValue ?? 0;
 	if (statistics.collectionValue <= 0 || shelfValue <= 0) {
-		return canAddPrices ? <p className="text-sm text-white/60">{t("money.none")}</p> : null;
+		return canAddPrices && statistics.collectionValue <= 0 ? (
+			<p className="text-sm text-white/60">{t("money.none")}</p>
+		) : null;
 	}
 
 	const neverPlayed = statistics.neverPlayedValue;

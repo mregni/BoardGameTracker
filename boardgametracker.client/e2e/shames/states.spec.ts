@@ -84,7 +84,6 @@ test("does not ask for prices when only the shelf games lack one", async ({ page
 	await open(page);
 	await expect(shelfRows(page)).toHaveCount(shelf.length);
 
-	test.fail(true, "BUG: the shelf asks to add what you paid although the rest of the collection has prices");
 	await expect(page.getByRole("main")).not.toContainText("Add what you paid", { timeout: 1_000 });
 });
 
