@@ -53,6 +53,7 @@ export const useLoans = () => {
 			successToast("loans:return.successfull", { label: "loans:return.undo", onClick: () => undoReturns(loanIds) });
 		} catch (error) {
 			errorToast(apiErrorMessage(error, "loans:return.failed"));
+			throw error;
 		}
 	};
 
@@ -63,6 +64,7 @@ export const useLoans = () => {
 			successToast("loans:notifications.updated");
 		} catch (error) {
 			errorToast(apiErrorMessage(error, "loans:notifications.update-failed"));
+			throw error;
 		}
 	};
 

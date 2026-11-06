@@ -90,6 +90,17 @@ describe("ReturnLoanModal", () => {
 		await waitFor(() => expect(onReturn).toHaveBeenCalledWith([7, 8], new Date(2026, 9, 11)));
 	});
 
+	it("stays open when returning fails", async () => {
+		const { close, onReturn } = renderModal();
+		onReturn.mockRejectedValue({ kind: "client", status: 400, message: "", url: "/api/loans/return" });
+
+		await userEvent.click(within(footer()).getByRole("button", { name: "return.confirm" }));
+
+		await waitFor(() => expect(onReturn).toHaveBeenCalled());
+		await waitFor(() => expect(footer()).toBeInTheDocument());
+		expect(close).not.toHaveBeenCalled();
+	});
+
 	it("does not return anything without a loan", async () => {
 		const { onReturn } = renderModal({ loans: [] });
 
