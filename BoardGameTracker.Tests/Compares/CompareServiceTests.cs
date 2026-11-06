@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models.Compare;
@@ -7,7 +8,7 @@ using BoardGameTracker.Core.Compares;
 using BoardGameTracker.Core.Compares.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -27,7 +28,7 @@ public class CompareServiceTests
     {
         _compareRepositoryMock = new Mock<ICompareRepository>();
         _playerRepositoryMock = new Mock<IPlayerRepository>();
-        _compareService = new CompareService(_compareRepositoryMock.Object, _playerRepositoryMock.Object, new Mock<ILogger<CompareService>>().Object);
+        _compareService = new CompareService(_compareRepositoryMock.Object, _playerRepositoryMock.Object, NullLogger<CompareService>.Instance);
     }
 
     private void VerifyNoOtherCalls()
@@ -53,7 +54,6 @@ public class CompareServiceTests
         }
 
         _compareRepositoryMock.Verify(x => x.GetSessionsTogether(PlayerOne, PlayerTwo), Times.Once);
-        VerifyNoOtherCalls();
     }
 
     private static SessionTogether Session(int id, int gameId, int daysAgo, bool oneWon, bool twoWon, double? oneScore = null, double? twoScore = null) => new()
@@ -98,11 +98,12 @@ public class CompareServiceTests
         result.WonByOthers.Should().Be(1);
         result.TotalSessionsTogether.Should().Be(3);
         result.MinutesPlayed.Should().Be(135);
-        result.Games.Should().HaveCount(2);
+        result.Games.Select(g => g.GameId).Should().Equal(10, 11);
         result.ClosestGame.Should().BeEquivalentTo(new ClosestGame { GameId = 10, ScoringDifference = 1, PlayerId = PlayerOne });
         result.Streak.Should().BeEquivalentTo(new CompareStreak { Side = CompareOutcome.PlayerOne, Count = 2 });
-        result.RecentSessions.Should().HaveCount(3);
+        result.RecentSessions.Select(s => s.SessionId).Should().Equal(3, 2, 1);
         VerifyComparisonCalls();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -122,6 +123,7 @@ public class CompareServiceTests
         result.TotalSessionsTogether.Should().Be(0);
         result.Games.Should().BeEmpty();
         VerifyComparisonCalls();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
