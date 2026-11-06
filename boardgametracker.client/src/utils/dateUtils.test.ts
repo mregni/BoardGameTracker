@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
 	isValidDate,
+	minutesIntoDay,
 	monthsSince,
 	normalizeDateFnsFormat,
 	safeParseDate,
@@ -15,6 +16,13 @@ import {
 } from "./dateUtils";
 
 describe("dateUtils", () => {
+	describe("minutesIntoDay", () => {
+		it("counts the minutes since midnight in local time", () => {
+			expect(minutesIntoDay(new Date(2026, 9, 5, 20, 15))).toBe(1215);
+			expect(minutesIntoDay(new Date(2026, 9, 5, 0, 0))).toBe(0);
+		});
+	});
+
 	describe("toInputDate", () => {
 		beforeEach(() => {
 			vi.useFakeTimers();

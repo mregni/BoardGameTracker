@@ -135,7 +135,7 @@ export const defaultPair = () => {
 	const pairs = players.flatMap((one, index) =>
 		players.slice(index + 1).map((two) => ({ one, two, sessions: headToHead(one, two).together.length })),
 	);
-	return pairs.reduce((best, pair) => (pair.sessions > best.sessions ? pair : best));
+	return pairs.reduce((best, pair) => (pair.sessions > best.sessions ? pair : best), pairs[0]);
 };
 
 export const allPairs = players.flatMap((one, index) => players.slice(index + 1).map((two) => [one, two] as const));
