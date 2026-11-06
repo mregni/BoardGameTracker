@@ -47,7 +47,7 @@ export const NightAttendanceCard = ({ attendance, recentNights, nights, lookup }
 											value={entry.nightsAttended}
 											max={nights}
 											size="thin"
-											aria-label={t("stats.attendance.bar", { name, count: entry.nightsAttended, total: nights })}
+											aria-label={t("stats.attendance.bar", { name, attended: entry.nightsAttended, count: nights })}
 										/>
 									}
 									value={entry.nightsAttended}

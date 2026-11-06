@@ -68,8 +68,8 @@
     "won": "{{percent}} ganadas",
     "wins_one": "victoria",
     "wins_other": "victorias",
-    "row_one": "{{name}}: {{wins}} victorias en {{total}} partida",
-    "row_other": "{{name}}: {{wins}} victorias en {{total}} partidas",
+    "row_one": "{{name}}: ganó {{wins}} de {{total}} partida",
+    "row_other": "{{name}}: ganó {{wins}} de {{total}} partidas",
     "empty": "Aún no se han jugado partidas"
   },
   "most-played": {

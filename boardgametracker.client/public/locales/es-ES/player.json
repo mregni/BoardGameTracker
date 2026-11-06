@@ -7,7 +7,8 @@
   "back": "Volver a jugadores",
   "count_other": "{{count}} jugadores",
   "count_one": "{{count}} jugador",
-  "count-filtered": "{{count}} de {{total}} jugadores",
+  "count-filtered_one": "{{shown}} de {{count}} jugador",
+  "count-filtered_other": "{{shown}} de {{count}} jugadores",
   "notifications": {
     "created": "Jugador añadido",
     "create-failed": "Error al crear el jugador",

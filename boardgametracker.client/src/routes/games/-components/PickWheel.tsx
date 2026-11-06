@@ -291,7 +291,10 @@ export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude, w
 							<span className="text-sm text-white/60">{t("pick.tonight")}</span>
 							<span className="text-xl font-bold text-white">{picked.title}</span>
 							<span className="text-sm text-card-value">
-								{t("pick.players", { range: formatRange(picked.minPlayers, picked.maxPlayers) ?? "-" })}
+								{t("pick.players", {
+									count: picked.maxPlayers ?? picked.minPlayers ?? 0,
+									range: formatRange(picked.minPlayers, picked.maxPlayers) ?? "-",
+								})}
 								{" · "}
 								{durationRange(picked.minPlayTime, picked.maxPlayTime) ?? "-"}
 							</span>

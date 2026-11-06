@@ -68,8 +68,8 @@
     "won": "{{percent}} won",
     "wins_one": "win",
     "wins_other": "wins",
-    "row_one": "{{name}}: {{wins}} wins of {{total}} session",
-    "row_other": "{{name}}: {{wins}} wins of {{total}} sessions",
+    "row_one": "{{name}}: won {{wins}} of {{total}} session",
+    "row_other": "{{name}}: won {{wins}} of {{total}} sessions",
     "empty": "No sessions played yet"
   },
   "most-played": {

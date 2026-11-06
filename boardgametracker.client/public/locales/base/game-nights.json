@@ -212,8 +212,8 @@
     "leading": "Leading tonight",
     "night-winner": "Night winner",
     "no-winner": "No winner yet",
-    "wins_one": "{{count}} of {{total}} games won",
-    "wins_other": "{{count}} of {{total}} games won"
+    "wins_one": "{{won}} of {{count}} game won",
+    "wins_other": "{{won}} of {{count}} games won"
   },
   "played": {
     "tonight": "Played tonight",
@@ -280,7 +280,8 @@
       "games-won_one": "{{count}} game won",
       "games-won_other": "{{count}} games won",
       "share": "{{value}} of nights",
-      "bar": "{{name}}: {{won}} of {{attended}} nights won",
+      "bar_one": "{{name}}: {{won}} of {{count}} night won",
+      "bar_other": "{{name}}: {{won}} of {{count}} nights won",
       "footer": "Ranked by nights won; the bar is the share of their nights they won.",
       "ties_one": "{{count}} night ended in a tie and counts for every winner.",
       "ties_other": "{{count}} nights ended in a tie and count for every winner.",
@@ -308,7 +309,8 @@
       "nights_other": "at {{count}} nights",
       "planned": "planned {{count}}×",
       "times": "{{count}}×",
-      "bar": "{{name}}: played {{count}} times",
+      "bar_one": "{{name}}: played {{count}} time",
+      "bar_other": "{{name}}: played {{count}} times",
       "never-played": "Planned but never played:",
       "empty": "No games played at game nights yet."
     },
@@ -331,7 +333,8 @@
       "of_one": "of {{count}} night",
       "of_other": "of {{count}} nights",
       "hosted": "host {{count}}×",
-      "bar": "{{name}} came to {{count}} of {{total}} nights",
+      "bar_one": "{{name}} came to {{attended}} of {{count}} night",
+      "bar_other": "{{name}} came to {{attended}} of {{count}} nights",
       "select": "Show the last nights of {{name}}",
       "recent_one": "Last night",
       "recent_other": "Last {{count}} nights",

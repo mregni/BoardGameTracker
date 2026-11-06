@@ -476,7 +476,7 @@ test.describe("statistics", () => {
 
 		await expect(card.getByRole("progressbar")).toHaveCount(winners.length);
 		for (const name of winners) {
-			await expect(card.getByRole("progressbar", { name: `${name}: 1 of 1 nights won` })).toBeVisible();
+			await expect(card.getByRole("progressbar", { name: `${name}: 1 of 1 night won` })).toBeVisible();
 			await expect(card).toContainText(`${name}1 night · ${mostWins} game won`);
 		}
 		await expect(card).toContainText("1 night ended in a tie and counts for every winner.");

@@ -7,7 +7,8 @@
   "back": "Terug naar spelers",
   "count_other": "{{count}} spelers",
   "count_one": "{{count}} speler",
-  "count-filtered": "{{count}} van {{total}} spelers",
+  "count-filtered_one": "{{shown}} van {{count}} speler",
+  "count-filtered_other": "{{shown}} van {{count}} spelers",
   "notifications": {
     "created": "Speler toegevoegd",
     "create-failed": "Speler aanmaken mislukt",

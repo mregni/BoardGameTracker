@@ -52,7 +52,7 @@ test("gives identical stats the same rank and skips the next one", async ({ page
 	await page.goto(boardOf(1));
 
 	await expect(podium(page)).toHaveCount(3);
-	await expect(podium(page).nth(0)).toHaveAccessibleName("Place 1, Alpha, 1 Wins, 100% · 1 session");
+	await expect(podium(page).nth(0)).toHaveAccessibleName("Place 1, Alpha, 1 win, 100% · 1 session");
 	await expect(podium(page).nth(1)).toHaveAccessibleName("Place 1, Bravo, 1 Wins, 100% · 1 session");
 	await expect(podium(page).nth(2)).toHaveAccessibleName("Place 3, Charlie, 0 Wins, 0% · 2 sessions");
 });

@@ -7,7 +7,8 @@
   "back": "Back to players",
   "count_other": "{{count}} players",
   "count_one": "{{count}} player",
-  "count-filtered": "{{count}} of {{total}} players",
+  "count-filtered_one": "{{shown}} of {{count}} player",
+  "count-filtered_other": "{{shown}} of {{count}} players",
   "notifications": {
     "created": "Player added",
     "create-failed": "Failed creating player",

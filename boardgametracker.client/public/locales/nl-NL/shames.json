@@ -34,8 +34,8 @@
     "game": "Spel",
     "last-played": "Laatst gespeeld",
     "paid": "Betaald",
-    "count_one": "{{count}} van {{total}} spellen",
-    "count_other": "{{count}} van {{total}} spellen"
+    "count_one": "{{shown}} van {{count}} spel",
+    "count_other": "{{shown}} van {{count}} spellen"
   },
   "row": {
     "owned-since": "in bezit sinds {{date}}",
@@ -84,7 +84,8 @@
     "planned-across_other": "{{count}} spellen komen van de plank, verspreid over {{nights}} spelavonden."
   },
   "summary": {
-    "on-shelf": "{{count}} van {{total}} spellen in bezit op de plank",
+    "on-shelf_one": "{{shelved}} van {{total}} spel in bezit op de plank",
+    "on-shelf_other": "{{shelved}} van {{total}} spellen in bezit op de plank",
     "never-played_one": "{{count}} nooit gespeeld",
     "never-played_other": "{{count}} nooit gespeeld",
     "oldest": "oudste: {{title}}",

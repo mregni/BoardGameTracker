@@ -539,7 +539,7 @@ test.describe("a running game", () => {
 		await expect(main(page)).toContainText(/Games played1\D/);
 		await expect(main(page)).toContainText(`Time in games${duration(minutes)}`);
 		await expect(main(page)).toContainText(`Leading tonight${guest}`);
-		await expect(main(page)).toContainText("1 of 1 games won");
+		await expect(main(page)).toContainText("1 of 1 game won");
 		await expect(page.getByRole("region", { name: "Planned games" })).toContainText("played");
 		await expect(page.getByRole("region", { name: "Planned games" })).not.toContainText("playing now");
 		await expect(page.getByRole("button", { name: `Play ${planned} again` })).toBeVisible();
@@ -624,7 +624,7 @@ test.describe("co-op results", () => {
 		await expect(row).toContainText([linkedPlayer, guest, third].join(" · "));
 		await expect(row.getByRole("img", { name: "won", exact: true })).toHaveCount(0);
 		await expect(main(page)).toContainText(`Leading tonight${[linkedPlayer, guest, third].join(", ")}`);
-		await expect(main(page)).toContainText("1 of 1 games won");
+		await expect(main(page)).toContainText("1 of 1 game won");
 	});
 
 	test("shows a lost game with no winner", async ({ page, request }) => {

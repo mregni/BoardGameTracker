@@ -212,8 +212,8 @@
     "leading": "Liderando esta noche",
     "night-winner": "Ganador de la noche",
     "no-winner": "Aún no hay ganador",
-    "wins_one": "{{count}} de {{total}} juegos ganados",
-    "wins_other": "{{count}} de {{total}} juegos ganados"
+    "wins_one": "{{won}} de {{count}} juego ganado",
+    "wins_other": "{{won}} de {{count}} juegos ganados"
   },
   "played": {
     "tonight": "Jugado esta noche",
@@ -280,7 +280,8 @@
       "games-won_one": "{{count}} partida ganada",
       "games-won_other": "{{count}} partidas ganadas",
       "share": "{{value}} de las noches",
-      "bar": "{{name}}: {{won}} de {{attended}} noches ganadas",
+      "bar_one": "{{name}}: {{won}} de {{count}} noche ganada",
+      "bar_other": "{{name}}: {{won}} de {{count}} noches ganadas",
       "footer": "Ordenados por noches ganadas; la barra es la parte de sus noches que ganaron.",
       "ties_one": "{{count}} noche terminó en empate y cuenta para cada ganador.",
       "ties_other": "{{count}} noches terminaron en empate y cuentan para cada ganador.",
@@ -308,7 +309,8 @@
       "nights_other": "en {{count}} noches",
       "planned": "planificado {{count}}×",
       "times": "{{count}}×",
-      "bar": "{{name}}: jugado {{count}} veces",
+      "bar_one": "{{name}}: jugado {{count}} vez",
+      "bar_other": "{{name}}: jugado {{count}} veces",
       "never-played": "Planificado pero nunca jugado:",
       "empty": "Aún no se ha jugado nada en las noches de juego."
     },
@@ -331,7 +333,8 @@
       "of_one": "de {{count}} noche",
       "of_other": "de {{count}} noches",
       "hosted": "anfitrión {{count}}×",
-      "bar": "{{name}} vino a {{count}} de {{total}} noches",
+      "bar_one": "{{name}} vino a {{attended}} de {{count}} noche",
+      "bar_other": "{{name}} vino a {{attended}} de {{count}} noches",
       "select": "Mostrar las últimas noches de {{name}}",
       "recent_one": "Última noche",
       "recent_other": "Últimas {{count}} noches",

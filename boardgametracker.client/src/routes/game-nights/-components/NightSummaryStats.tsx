@@ -30,7 +30,7 @@ export const NightSummaryStats = (props: Props) => {
 				<BgtTextStatistic
 					title={isOver ? t("summary.night-winner") : t("summary.leading")}
 					content={winners || t("summary.no-winner")}
-					suffix={winners ? t("summary.wins", { count: summary.mostWins, total: summary.gamesPlayed }) : null}
+					suffix={winners ? t("summary.wins", { won: summary.mostWins, count: summary.gamesPlayed }) : null}
 					textSize="4"
 				/>
 			</div>
