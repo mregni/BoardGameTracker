@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
-import { useState } from "react";
+import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import More from "@/assets/icons/more.svg?react";
 import { BgtMenuItem } from "@/components/BgtMenu/BgtMenuItem";
@@ -9,6 +9,25 @@ import { useIsBottomNavHidden } from "@/hooks/useHideBottomNav";
 import { useMenuInfo } from "../-hooks/useMenuInfo";
 import { UserCard } from "./UserCard";
 
+const isOnPath = (path: string, current: string) =>
+	path === "/" ? current === path : current === path || current.startsWith(`${path}/`);
+
+const moveMenuFocus = (event: KeyboardEvent<HTMLDivElement>) => {
+	const items = [...event.currentTarget.querySelectorAll<HTMLElement>("[role='menuitem']")];
+	const current = items.indexOf(document.activeElement as HTMLElement);
+	const target: Record<string, HTMLElement | undefined> = {
+		ArrowDown: items[current + 1] ?? items[0],
+		ArrowUp: items[current - 1] ?? items.at(-1),
+		Home: items[0],
+		End: items.at(-1),
+	};
+
+	if (target[event.key]) {
+		event.preventDefault();
+		target[event.key]?.focus();
+	}
+};
+
 export const BottomNav = () => {
 	const { t } = useTranslation(["version", "common"]);
 	const { versionInfo, menuItems, counts } = useMenuInfo();
@@ -16,12 +35,28 @@ export const BottomNav = () => {
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname;
 	const hidden = useIsBottomNavHidden();
+	const moreButtonRef = useRef<HTMLButtonElement>(null);
+	const moreMenuRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (!showMoreMenu) return;
+		moreMenuRef.current?.querySelector<HTMLElement>("[role='menuitem']")?.focus();
+
+		const handleKey = (event: globalThis.KeyboardEvent) => {
+			if (event.key !== "Escape") return;
+			setShowMoreMenu(false);
+			moreButtonRef.current?.focus();
+		};
+
+		document.addEventListener("keydown", handleKey);
+		return () => document.removeEventListener("keydown", handleKey);
+	}, [showMoreMenu]);
 
 	const handleMoreClick = () => {
 		setShowMoreMenu(!showMoreMenu);
 	};
 
-	const isMoreMenuActive = menuItems.some((x) => !x.mobileVisible && x.path === currentPath);
+	const isMoreMenuActive = menuItems.some((x) => !x.mobileVisible && isOnPath(x.path, currentPath));
 
 	const mobileMenuItems = menuItems.filter((x) => x.mobileVisible);
 	mobileMenuItems.push({
@@ -58,7 +93,7 @@ export const BottomNav = () => {
 
 					<UserCard />
 
-					<div>
+					<div ref={moreMenuRef} role="menu" aria-label={t("common:more")} onKeyDown={moveMenuFocus}>
 						{menuItems
 							.filter((x) => !x.mobileVisible)
 							.map((item) => (
@@ -66,6 +101,7 @@ export const BottomNav = () => {
 									onClick={() => setShowMoreMenu(false)}
 									key={item.path}
 									item={item}
+									role="menuitem"
 									count={counts?.find((y) => item.path.endsWith(y.key))?.value}
 									className="m-0!"
 								/>
@@ -78,7 +114,9 @@ export const BottomNav = () => {
 				<div className="flex h-full items-center justify-between">
 					{mobileMenuItems.map((item) => {
 						const isActive =
-							item.path === "more" ? isMoreMenuActive || showMoreMenu : !showMoreMenu && currentPath === item.path;
+							item.path === "more"
+								? isMoreMenuActive || showMoreMenu
+								: !showMoreMenu && isOnPath(item.path, currentPath);
 						const itemClassName =
 							"relative flex flex-col items-center justify-center gap-0.5 py-1 flex-1 h-full transition-all active:scale-95";
 
@@ -111,6 +149,7 @@ export const BottomNav = () => {
 						if (item.path === "more") {
 							return (
 								<button
+									ref={moreButtonRef}
 									key={item.path}
 									type="button"
 									onClick={handleMoreClick}
