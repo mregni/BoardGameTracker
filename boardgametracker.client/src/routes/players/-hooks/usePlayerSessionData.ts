@@ -28,6 +28,11 @@ export const usePlayerSessionData = ({ playerId, onDeleteSuccess }: UsePlayerSes
 
 	const isLoading = settingsQuery.isLoading || playerQuery.isLoading || gamesQuery.isLoading || sessionsQuery.isLoading;
 
+	const retry = () => {
+		playerQuery.refetch();
+		settingsQuery.refetch();
+	};
+
 	const deleteSession = async (id: number) => {
 		const deleted = sessions.find((session) => session.id === id);
 		try {
@@ -44,6 +49,8 @@ export const usePlayerSessionData = ({ playerId, onDeleteSuccess }: UsePlayerSes
 	};
 
 	return {
+		error: playerQuery.error ?? settingsQuery.error,
+		retry,
 		player,
 		sessions,
 		games,

@@ -320,6 +320,7 @@ function RouteComponent() {
 								columns={columns}
 								data={games.slice(page * countPerPage, (page + 1) * countPerPage)}
 								noDataMessage={t("no-data")}
+								enableSorting={false}
 								widths={["w-[48px]", "w-[70px]", null, "w-[100px]"]}
 							/>
 						</SelectAllContext.Provider>

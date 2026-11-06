@@ -584,7 +584,6 @@ export const standingsOf = (subset: typeof sessions) =>
 		.sort((a, b) => b.wins - a.wins || b.winRate - a.winRate || b.sessions - a.sessions);
 
 export const mostPlayedGame = games[0];
-export const secondMostPlayedGame = games[1];
 export const neverPlayedGame = games[PLAYED_GAMES];
 export const wantedGame = games[OWNED_GAMES];
 export const previouslyOwnedGame = games[OWNED_GAMES + WANTED_GAMES];

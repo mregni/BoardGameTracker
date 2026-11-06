@@ -1,3 +1,4 @@
+import userEvent from "@testing-library/user-event";
 import type { FC } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Player, Session } from "@/models";
@@ -108,6 +109,19 @@ describe("Player sessions page", () => {
 		expect(pills[1]).toHaveTextContent("Mikhaël");
 		expect(pills[1]).toHaveTextContent("61");
 		expect(within(pills[1]).queryByRole("img", { name: "won" })).not.toBeInTheDocument();
+	});
+
+	it("sorts on the duration column, longest first", async () => {
+		mocks.sessions = [
+			{ ...sessions[0], id: 43, minutes: 30 },
+			{ ...sessions[0], id: 44, minutes: 90 },
+		];
+		const user = userEvent.setup();
+		renderPage();
+
+		await user.click(screen.getByRole("button", { name: "duration" }));
+
+		expect(within(screen.getAllByRole("row")[1]).getByText("short-duration.hours-minutes")).toBeInTheDocument();
 	});
 
 	it("shows the duration in the short format", () => {

@@ -1,5 +1,5 @@
 import { expect, expectVisibleImagesToLoad, test } from "../support/fixtures";
-import { duration } from "../support/format";
+import { displayDate, duration } from "../support/format";
 import { gameLink, openGames } from "../support/gamesPage";
 import {
 	coopGame,
@@ -7,6 +7,7 @@ import {
 	forTradeGame,
 	mostPlayedGame,
 	neverPlayedGame,
+	players,
 	previouslyOwnedGame,
 	sessions,
 	soldGame,
@@ -33,15 +34,12 @@ test.describe("detail of a played game", () => {
 		await expect(page.getByRole("heading", { name: mostPlayedGame.title, level: 1 })).toBeVisible();
 	});
 
-	test("shows the header with its actions", async ({ page }) => {
+	test("shows the state, description and counts in the header", async ({ page }) => {
 		const main = page.getByRole("main");
 		const gameExpansions = expansions.filter((expansion) => expansion.game === mostPlayedGame.title);
 
 		await expect(main.getByText("Owned", { exact: true })).toBeVisible();
 		await expect(main.getByText(mostPlayedGame.description)).toBeVisible();
-		await expect(main.getByRole("button", { name: "Log session" })).toBeVisible();
-		await expect(main.getByRole("button", { name: "Edit" })).toBeVisible();
-		await expect(main.getByRole("button", { name: "Delete" })).toBeVisible();
 		await expect(main.getByRole("button", { name: "Manuals (0)" })).toBeVisible();
 		await expect(main.getByRole("button", { name: `Expansions (${gameExpansions.length})` })).toBeVisible();
 	});
@@ -95,6 +93,7 @@ test.describe("detail of a played game", () => {
 
 		await expect(rows).toHaveCount(5);
 		for (const [index, session] of played.slice(0, 5).entries()) {
+			await expect(rows.nth(index)).toContainText(displayDate(session.start));
 			const best = Math.max(...session.scores.map((score) => score.score ?? 0));
 			await expect(rows.nth(index)).toContainText(session.winner ?? "");
 			await expect(rows.nth(index)).toContainText(`${session.scores.length} players`);
@@ -121,13 +120,36 @@ test.describe("detail of a played game", () => {
 		await expect(page.locator('a[href="/players/0"]')).toHaveCount(0);
 	});
 
-	test("charts the sessions by weekday and player count", async ({ page }) => {
+	test("links the scoring results to the player who set them", async ({ page }) => {
+		const highest = (list: typeof scores) => list.reduce((a, b) => (b.score > a.score ? b : a), list[0]);
+		const lowest = (list: typeof scores) => list.reduce((a, b) => (b.score < a.score ? b : a), list[0]);
+		const wins = scores.filter((score) => score.won);
+		const losses = scores.filter((score) => !score.won);
+
+		for (const [label, { player }] of [
+			["Top score", highest(scores)],
+			["Highest losing", highest(losses)],
+			["Lowest winning", lowest(wins)],
+			["Lowest", lowest(scores)],
+		] as const) {
+			const row = page.getByRole("progressbar", { name: label, exact: true }).locator("xpath=ancestor::div[.//a][1]");
+			await expect(row.getByRole("link")).toHaveText(player);
+			await expect(row.getByRole("link")).toHaveAttribute("href", `/players/${players.indexOf(player) + 1}`);
+		}
+	});
+
+	test("goes back to the games", async ({ page }) => {
+		await page.getByRole("button", { name: "Back" }).click();
+
+		await expect(page).toHaveURL("/games");
+	});
+
+	test("charts the sessions by player count next to the weekday chart", async ({ page }) => {
 		const main = page.getByRole("main");
 		const threePlayers = played.filter((session) => session.scores.length === 3).length;
 		const fourPlayers = played.length - threePlayers;
 
 		await expect(main.getByRole("heading", { name: "Sessions by weekday" })).toBeVisible();
-		await expect(main.getByText("Mon", { exact: true })).toBeVisible();
 		await expect(main.getByRole("heading", { name: "Sessions by player count" })).toBeVisible();
 		await expect(
 			main.getByRole("img", {
@@ -138,7 +160,7 @@ test.describe("detail of a played game", () => {
 
 	test("shows the facts, the copy and the best players", async ({ page }) => {
 		const side = page.getByRole("complementary").last();
-		const [best] = standingsOf(played);
+		const ranking = standingsOf(played).slice(0, 5);
 
 		await expect(side.getByRole("img", { name: mostPlayedGame.title }).first()).toBeVisible();
 		await expect(side).toContainText(`Year published${mostPlayedGame.yearPublished}`);
@@ -148,9 +170,18 @@ test.describe("detail of a played game", () => {
 		await expect(side).toContainText(`Rating${mostPlayedGame.rating} / 10`);
 		await expect(side).toContainText(`Weight${mostPlayedGame.weight} / 5`);
 		await expect(side).toContainText(`Cost€${mostPlayedGame.buyingPrice}`);
-		await expect(side.getByRole("listitem").first()).toContainText(best.name);
-		await expect(side.getByRole("listitem").first()).toContainText(`${best.sessions} sessions`);
-		await expect(side.getByRole("listitem").first()).toContainText(`${best.wins} win`);
+		await expect(side).toContainText(`In collection${displayDate(new Date(mostPlayedGame.additionDate))}`);
+		await expect(side.getByRole("listitem")).toHaveCount(ranking.length);
+		for (const [index, player] of ranking.entries()) {
+			const row = side.getByRole("listitem").nth(index);
+			const own = scores.filter((score) => score.player === player.name).map((score) => score.score);
+			const average = own.reduce((sum, score) => sum + score, 0) / own.length;
+			await expect(row).toContainText(player.name);
+			await expect(row).toContainText(`${player.sessions} sessions · ${Number(average.toFixed(1))} avg`);
+			await expect(row).toContainText(`${player.wins} win`);
+			await expect(row).toContainText(`${Math.round(player.winRate * 100)}%`);
+			await expect(row.getByRole("link")).toHaveAttribute("href", `/players/${players.indexOf(player.name) + 1}`);
+		}
 		await expectVisibleImagesToLoad(page);
 	});
 });
@@ -165,6 +196,9 @@ test("shows no statistics for a game that was never played", async ({ page }) =>
 	await expect(main.getByRole("button", { name: "Log the first play" })).toBeVisible();
 	await expect(main.getByRole("heading", { name: "Recent sessions" })).toHaveCount(0);
 	await expect(main.getByRole("heading", { name: "Scoring results" })).toHaveCount(0);
+
+	await main.getByRole("button", { name: "Log the first play" }).click();
+	await expect(page).toHaveURL(/\/sessions\/new\/\d+$/);
 });
 
 test("shows the team results of a co-op game instead of scores", async ({ page }) => {
@@ -177,6 +211,7 @@ test("shows the team results of a co-op game instead of scores", async ({ page }
 
 	await expect(main.getByText("Team win rate")).toBeVisible();
 	await expect(main.getByText(`${won} of ${played.length} co-op sessions`)).toBeVisible();
+	await expect(main.getByRole("list").first().getByRole("listitem").first()).toContainText("Co-op · won");
 	await expect(main.getByRole("heading", { name: "Scoring results" })).toHaveCount(0);
 });
 
@@ -203,6 +238,11 @@ for (const [game, state] of [
 
 		await expect(main.getByRole("heading", { name: game.title, level: 1 })).toBeVisible();
 		await expect(main.getByText(state, { exact: true })).toBeVisible();
+		if (game.buyingPrice === null) {
+			await expect(main.getByRole("complementary").last()).not.toContainText("Cost");
+		} else {
+			await expect(main.getByRole("complementary").last()).toContainText(`Cost€${game.buyingPrice}`);
+		}
 	});
 }
 
