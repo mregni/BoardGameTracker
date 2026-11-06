@@ -35,6 +35,8 @@ test.beforeAll(async ({ signedInContext }) => {
 const openInvite = async (page: Page, title: string) => {
 	await paceInviteRequests(page);
 	await page.goto(inviteUrl(linkIds.get(title) ?? ""));
+	await expect(page.getByRole("main")).toBeVisible();
+	await expect(page.getByRole("main")).not.toContainText("Loading data...", { timeout: 20_000 });
 };
 
 test("shows a guest what the night is about", async ({ guestPage: page }) => {

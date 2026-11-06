@@ -22,7 +22,7 @@ export default defineConfig({
 		{ name: "empty", testMatch: "setup/empty.spec.ts" },
 		{ name: "seed", testMatch: "setup/seed.setup.ts", dependencies: ["empty"] },
 		{ name: "pages", testIgnore: ["setup/**", "**/*manage.spec.ts"], dependencies: ["seed"] },
-		{ name: "mutations", testMatch: "**/*manage.spec.ts", dependencies: ["pages"] },
+		{ name: "mutations", testMatch: "**/*manage.spec.ts", dependencies: ["seed"] },
 	],
 	webServer: {
 		command: "pnpm build && dotnet run --project ../BoardGameTracker.AppHost --launch-profile http -- --e2e",
