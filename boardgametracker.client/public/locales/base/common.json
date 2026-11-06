@@ -94,8 +94,7 @@
   },
   "no-sessions": {
     "title": "No sessions logged yet",
-    "content": "Log your first game session to view analytics",
-    "button": ""
+    "content": "Log your first game session to view analytics"
   },
   "days": {
     "sunday": "Sunday",
