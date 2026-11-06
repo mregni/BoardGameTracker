@@ -133,7 +133,7 @@ export const EditPlayerModal = (props: Props) => {
 						<div className="flex-none">
 							<BgtImageSelector image={image} setImage={setImage} defaultImage={player.image} title={player.name} />
 						</div>
-						<div className="grow">
+						<div className="min-w-0 grow">
 							<form.Field name="name" validators={zodValidator(CreatePlayerSchema, "name")}>
 								{(field) => (
 									<BgtInputField
