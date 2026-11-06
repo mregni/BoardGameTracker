@@ -157,7 +157,11 @@
     "played": "Gespeeld: {{games}}"
   },
   "detail": {
-    "back": "Spelavonden"
+    "back": "Spelavonden",
+    "not-found": {
+      "title": "Game night niet gevonden",
+      "description": "Misschien is die verwijderd, of de link is verouderd."
+    }
   },
   "play": {
     "start": {

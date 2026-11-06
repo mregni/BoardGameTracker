@@ -293,14 +293,12 @@ test.describe("a player that does not exist", () => {
 test("treats a malformed player address as not found", async ({ page }) => {
 	await page.goto("/players/abc");
 
-	test.fail(true, "BUG: /players/abc throws in the router and shows the generic error page");
 	await expect(page.getByRole("heading", { name: "Player not found", level: 1 })).toBeVisible({ timeout: 2_000 });
 });
 
 test("treats an id with letters behind it as not found", async ({ page }) => {
 	await page.goto(`/players/${playerId(linkedPlayer)}abc`);
 
-	test.fail(true, "BUG: /players/1abc opens player 1 because the id is read with parseInt");
 	await expect(page.getByRole("heading", { name: "Player not found", level: 1 })).toBeVisible({ timeout: 2_000 });
 });
 

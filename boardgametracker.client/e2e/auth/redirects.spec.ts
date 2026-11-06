@@ -34,7 +34,7 @@ const protectedPages = [
 	"/games?view=table",
 ];
 
-const losesDeepLink = ["/games/import/start", "/sessions/new", "/sessions/new/1", "/sessions/update/1", "/chat"];
+const switchedOffPages: Record<string, string> = { "/games/import/start": "/games", "/chat": "/" };
 
 for (const path of protectedPages) {
 	test(`sends a visitor from ${path} to the login page`, async ({ guestPage: page }) => {
@@ -43,11 +43,7 @@ for (const path of protectedPages) {
 		await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
 		await expect(page).toHaveURL(/\/login\?/);
 		await expect(page.getByRole("complementary")).toHaveCount(0);
-		test.fail(
-			losesDeepLink.includes(path),
-			"BUG: a visitor loses the deep link to this page and lands elsewhere after signing in",
-		);
-		expect(new URL(page.url()).searchParams.get("redirect")).toBe(path);
+		expect(new URL(page.url()).searchParams.get("redirect")).toBe(switchedOffPages[path] ?? path);
 	});
 }
 

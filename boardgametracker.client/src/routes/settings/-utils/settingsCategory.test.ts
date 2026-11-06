@@ -13,7 +13,7 @@ describe("resolveSettingsCategory", () => {
 
 	it("keeps users without settings permission out of the admin tabs", () => {
 		expect(resolveSettingsCategory("advanced", false)).toBe("account");
-		expect(resolveSettingsCategory("sso", false)).toBe("sso");
+		expect(resolveSettingsCategory("sso", false)).toBe("account");
 	});
 
 	it("keeps old integration links working", () => {

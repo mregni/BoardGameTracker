@@ -42,7 +42,7 @@ function RouteComponent() {
 	const navigate = useNavigate({ from: Route.fullPath });
 	const today = useMemo(() => new Date(), []);
 	const params = useMemo(() => toLeaderboardParams(search, today), [search, today]);
-	const { data: leaderboard, isLoading, isPlaceholderData } = useQuery(getLeaderboard(params));
+	const { data: leaderboard, isLoading, isPlaceholderData, error, refetch } = useQuery(getLeaderboard(params));
 	const { data: games = [] } = useQuery(getGames());
 
 	const updateSearch = useCallback(
@@ -80,6 +80,8 @@ function RouteComponent() {
 				<BgtPageContent
 					isLoading={isLoading}
 					data={{ leaderboard }}
+					error={error}
+					onRetry={() => refetch()}
 					className={cx("transition-opacity", isPlaceholderData && "opacity-60")}
 				>
 					{({ leaderboard }) =>

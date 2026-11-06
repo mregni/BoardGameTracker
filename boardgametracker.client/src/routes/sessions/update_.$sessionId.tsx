@@ -1,9 +1,10 @@
 import { noop } from "@tanstack/react-query";
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { BgtDataGuard } from "@/components/BgtDataGuard/BgtDataGuard";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { CreateSession, Session } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getGame } from "@/services/queries/games";
 import { getSession } from "@/services/queries/sessions";
 import { sessionIdParamSchema } from "@/utils/routeSchemas";
@@ -35,7 +36,7 @@ function RouteComponent() {
 		sessionId,
 	});
 
-	if (!canWrite) return <Navigate to="/" />;
+	if (!canWrite) return <RequireWrite>{null}</RequireWrite>;
 
 	const save = async (data: CreateSession) => {
 		if (session === undefined) return;

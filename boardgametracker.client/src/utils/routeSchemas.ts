@@ -1,13 +1,10 @@
 import { z } from "zod";
 
-const numericIdSchema = z.string().transform((val, ctx) => {
-	const num = Number.parseInt(val, 10);
-	if (Number.isNaN(num) || num <= 0) {
-		ctx.addIssue({ code: "custom", message: `Invalid numeric ID: ${val}` });
-		return z.NEVER;
-	}
-	return num;
-});
+const UNKNOWN_ID = 2_147_483_647;
+
+const numericIdSchema = z
+	.string()
+	.transform((val) => (/^[1-9]\d*$/.test(val) && Number(val) < UNKNOWN_ID ? Number(val) : UNKNOWN_ID));
 
 export const playerIdParamSchema = z.object({
 	playerId: numericIdSchema,

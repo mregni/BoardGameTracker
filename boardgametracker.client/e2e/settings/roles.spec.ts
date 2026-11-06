@@ -43,7 +43,6 @@ for (const { role, username, fixture } of accounts) {
 			const page = fixture === "readerPage" ? readerPage : writerPage;
 			await page.goto("/settings?tab=sso");
 
-			test.fail(true, "BUG: ?tab=sso keeps a non-admin on an endless spinner instead of opening the account section");
 			await expectOnlyAccount(page, username);
 		});
 

@@ -1,9 +1,10 @@
 import { noop } from "@tanstack/react-query";
-import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { CreateSession } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getGame, getGames } from "@/services/queries/games";
 import { getLocations } from "@/services/queries/locations";
 import { getPlayers } from "@/services/queries/players";
@@ -30,7 +31,7 @@ function RouteComponent() {
 
 	const { game, isLoading, isPending, saveSession } = useNewSessionWithGameData({ gameId });
 
-	if (!canWrite) return <Navigate to="/" />;
+	if (!canWrite) return <RequireWrite>{null}</RequireWrite>;
 
 	const save = async (data: CreateSession) => {
 		const result = await saveSession(data);

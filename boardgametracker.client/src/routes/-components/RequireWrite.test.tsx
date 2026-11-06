@@ -1,7 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ canWrite: true }));
+const mocks = vi.hoisted(() => ({ canWrite: true, isAuthenticated: true }));
+
+vi.mock("@/hooks/useAuth", () => ({
+	useAuth: (select: (state: { isAuthenticated: boolean }) => boolean) =>
+		select({ isAuthenticated: mocks.isAuthenticated }),
+}));
 
 vi.mock("@/hooks/usePermissions", () => ({
 	usePermissions: () => ({ canWrite: mocks.canWrite }),
@@ -23,9 +28,19 @@ describe("RequireWrite", () => {
 
 	it("sends readers home", () => {
 		mocks.canWrite = false;
+		mocks.isAuthenticated = true;
 		render(<RequireWrite>form</RequireWrite>);
 
 		expect(screen.queryByText("form")).not.toBeInTheDocument();
 		expect(screen.getByText("redirect to /")).toBeInTheDocument();
+	});
+
+	it("leaves signed-out visitors to the login redirect", () => {
+		mocks.canWrite = false;
+		mocks.isAuthenticated = false;
+		render(<RequireWrite>form</RequireWrite>);
+
+		expect(screen.queryByText("form")).not.toBeInTheDocument();
+		expect(screen.queryByText("redirect to /")).not.toBeInTheDocument();
 	});
 });
