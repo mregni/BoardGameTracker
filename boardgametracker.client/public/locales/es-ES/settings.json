@@ -212,7 +212,7 @@
       "confirm": {
         "label": "Confirmar nueva contraseña"
       },
-      "min-length": "La contraseña debe tener al menos 4 caracteres",
+      "min-length": "La contraseña debe tener al menos 8 caracteres",
       "mismatch": "Las contraseñas no coinciden",
       "save": "Cambiar contraseña"
     },

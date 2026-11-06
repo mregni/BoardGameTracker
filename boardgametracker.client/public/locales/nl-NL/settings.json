@@ -212,7 +212,7 @@
       "confirm": {
         "label": "Bevestig nieuw wachtwoord"
       },
-      "min-length": "Het wachtwoord moet minstens 4 tekens lang zijn",
+      "min-length": "Het wachtwoord moet minstens 8 tekens lang zijn",
       "mismatch": "De wachtwoorden komen niet overeen",
       "save": "Wachtwoord wijzigen"
     },

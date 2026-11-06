@@ -125,7 +125,7 @@ export interface AdminUpdateUserRequest {
 }
 
 const requiredString = z.string().min(1, { message: "common:required" });
-const passwordString = requiredString.min(4, { message: "settings:account.password.min-length" });
+const passwordString = requiredString.min(8, { message: "settings:account.password.min-length" });
 
 export const ChangePasswordSchema = z.object({
 	currentPassword: requiredString,
