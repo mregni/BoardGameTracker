@@ -127,6 +127,7 @@ test("edits a game, marks it as sold and keeps the sold price", async ({ page })
 	await page.getByRole("main").getByRole("button", { name: "Save" }).click();
 
 	await expect(page).toHaveURL(/\/games\/\d+$/);
+	await expect(page.getByRole("heading", { name: title, level: 1 })).toBeVisible();
 	const main = page.getByRole("main");
 	await expect(main.getByText("Sold", { exact: true })).toBeVisible();
 	await expect(main).toContainText("Rating7.5 / 10");

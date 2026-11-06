@@ -4,7 +4,9 @@ import { expect } from "./fixtures";
 export const apiFor = async (page: Page) => {
 	await page.goto("/settings");
 	const { accessToken } = await page.evaluate(() =>
-		fetch("/api/auth/refresh", { method: "POST" }).then((response) => response.json()),
+		fetch("/api/auth/refresh", { method: "POST", headers: { "X-Requested-With": "XMLHttpRequest" } }).then((response) =>
+			response.json(),
+		),
 	);
 	const headers = { Authorization: `Bearer ${accessToken}` };
 
