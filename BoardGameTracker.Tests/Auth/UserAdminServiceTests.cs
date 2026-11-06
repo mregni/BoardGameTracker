@@ -114,6 +114,27 @@ public class UserAdminServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetAllAsync_ShouldOrderUsersByUsername()
+    {
+        var bob = new ApplicationUser("bob", "bob@test.com");
+        var alice = new ApplicationUser("Alice", "alice@test.com");
+        var carol = new ApplicationUser("carol", "carol@test.com");
+        var role = new IdentityRole(Constants.AuthRoles.User);
+        _context.Users.AddRange(bob, carol, alice);
+        _context.Roles.Add(role);
+        _context.UserRoles.AddRange(
+            new IdentityUserRole<string> { UserId = bob.Id, RoleId = role.Id },
+            new IdentityUserRole<string> { UserId = carol.Id, RoleId = role.Id },
+            new IdentityUserRole<string> { UserId = alice.Id, RoleId = role.Id });
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GetAllAsync();
+
+        result.Select(x => x.Username).Should().Equal("Alice", "bob", "carol");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task GetAllAsync_ShouldExcludeUsersWithoutRoles()
     {
         var withRole = new ApplicationUser("alice", "alice@test.com");
