@@ -75,7 +75,11 @@ const optionalText = z
 	.transform((value) => (value === "" ? null : value));
 
 export const OidcProviderSchema = z.object({
-	displayName: z.string().trim().min(1, { message: "settings:sso.validation.display-name" }).max(200),
+	displayName: z
+		.string()
+		.trim()
+		.min(1, { message: "settings:sso.validation.display-name" })
+		.max(200, { message: "settings:sso.validation.display-name-length" }),
 	authority: z
 		.string()
 		.trim()

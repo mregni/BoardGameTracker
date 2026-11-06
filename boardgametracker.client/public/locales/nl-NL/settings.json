@@ -428,6 +428,7 @@
     },
     "validation": {
       "display-name": "Een knoptekst is verplicht",
+      "display-name-length": "Gebruik maximaal 200 tekens",
       "authority": "Geef de https-URL van de provider op",
       "client-id": "De client-ID is verplicht",
       "scopes": "Minstens de scope openid is verplicht"
