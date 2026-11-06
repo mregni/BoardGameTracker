@@ -173,7 +173,6 @@ test("a bottom bar entry closes the More menu", async ({ page }) => {
 	await bottomNav(page).getByRole("link", { name: "Games" }).click();
 
 	await expect(page).toHaveURL("/games");
-	test.fail(true, "BUG: the More menu stays open over the new page after tapping a bottom bar entry");
 	await expect(moreEntries(page)).toHaveCount(0, { timeout: 1000 });
 });
 

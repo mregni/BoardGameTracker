@@ -124,7 +124,7 @@ export const BottomNav = () => {
 						}
 
 						return (
-							<Link key={item.path} to={item.path} className={itemClassName}>
+							<Link key={item.path} to={item.path} className={itemClassName} onClick={() => setShowMoreMenu(false)}>
 								{content}
 							</Link>
 						);
