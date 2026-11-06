@@ -27,7 +27,7 @@ public static class NightAttendanceRule
             .ToList();
     }
 
-    public static List<AttendanceOverride> OverridesFor(int hostId, IEnumerable<int> playedPlayerIds, IEnumerable<int> presentPlayerIds)
+    public static List<AttendanceOverride> OverridesFor(int hostId, IEnumerable<int> playedPlayerIds, IEnumerable<int> comingPlayerIds, IEnumerable<int> presentPlayerIds)
     {
         var played = playedPlayerIds.ToHashSet();
         var present = presentPlayerIds.ToHashSet();
@@ -37,6 +37,12 @@ public static class NightAttendanceRule
             .Order()
             .Select(x => new AttendanceOverride(x, true))
             .ToList();
+
+        overrides.AddRange(comingPlayerIds
+            .Where(x => !present.Contains(x) && !played.Contains(x) && x != hostId)
+            .Distinct()
+            .Order()
+            .Select(x => new AttendanceOverride(x, false)));
 
         if (!present.Contains(hostId) && !played.Contains(hostId))
         {

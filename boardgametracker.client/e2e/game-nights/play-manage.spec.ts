@@ -220,6 +220,52 @@ test.describe("a night in progress before any game", () => {
 	});
 });
 
+test.describe("a player who said yes and is not there yet", () => {
+	const startWithout = async (page: Page, name: string) => {
+		await openStart(page);
+		await sheet(page).getByRole("button", { name: `Leave ${name} out` }).click();
+		await chooseGame(page, planned);
+		await sheet(page).getByRole("button", { name: "Start", exact: true }).click();
+		await expect(runningCard(page, planned)).toBeVisible();
+	};
+
+	test("stays on the list and is proposed for the next game", async ({ page, request }) => {
+		await openLive(page, request);
+		await startWithout(page, third);
+		await page.reload();
+
+		const table = page.getByRole("region", { name: "Expected players" });
+		await expect(table.getByRole("button").filter({ has: page.getByRole("img") })).toHaveText([
+			linkedPlayer,
+			guest,
+			third,
+		]);
+
+		await openStart(page);
+
+		await expect(sheet(page).getByRole("button", { name: /^Leave .* out$/ })).toHaveText([third]);
+	});
+
+	test("stays away once marked as not here", async ({ page, request }) => {
+		await openLive(page, request);
+		await startWithout(page, third);
+
+		await main(page).getByRole("button", { name: "Edit who's here" }).click();
+		const dialog = page.getByRole("dialog", { name: "Who's here?" });
+		await dialog.getByRole("button", { name: new RegExp(`^${third} `) }).click();
+		await dialog.getByRole("button", { name: "Save" }).click();
+		await expect(page.getByText("Attendance saved")).toBeVisible();
+		await page.reload();
+
+		const table = page.getByRole("region", { name: "At the table" });
+		await expect(table.getByRole("button").filter({ has: page.getByRole("img") })).toHaveText([linkedPlayer, guest]);
+
+		await openStart(page);
+
+		await expect(sheet(page).getByRole("button", { name: /^Leave .* out$/ })).toHaveCount(0);
+	});
+});
+
 test.describe("the start sheet", () => {
 	test("starts with the expected players and needs a game", async ({ page, request }) => {
 		await openLive(page, request);

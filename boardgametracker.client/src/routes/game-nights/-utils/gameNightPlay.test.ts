@@ -87,7 +87,7 @@ describe("gameNightPlay", () => {
 		expect(nightTable(planned)).toEqual({ expected: true, playerIds: [2, 5] });
 	});
 
-	it("takes the table from who played once a game started", () => {
+	it("keeps who said yes on the table while others play, as they may arrive late", () => {
 		const night = {
 			...gameNight,
 			summary: { attendeeIds: [2, 6, 7], attendanceRecorded: false, playedGameIds: [] },
@@ -98,7 +98,49 @@ describe("gameNightPlay", () => {
 			runningGames: [{ id: 1, gameId: 3, playerIds: [6, 7] }],
 		} as unknown as GameNightDetail;
 
-		expect(nightTable(playing)).toEqual({ expected: false, playerIds: [2, 6, 7] });
+		expect(nightTable(playing, new Date(2026, 9, 16, 21, 0))).toEqual({ expected: true, playerIds: [2, 6, 7, 5] });
+	});
+
+	it("calls it the table once everyone who said yes played", () => {
+		const night = {
+			...gameNight,
+			summary: { attendeeIds: [2, 5], attendanceRecorded: false, playedGameIds: [] },
+		} as unknown as GameNight;
+		const playing = {
+			gameNight: night,
+			sessions: [],
+			runningGames: [{ id: 1, gameId: 3, playerIds: [2, 5] }],
+		} as unknown as GameNightDetail;
+
+		expect(nightTable(playing, new Date(2026, 9, 16, 21, 0))).toEqual({ expected: false, playerIds: [2, 5] });
+	});
+
+	it("leaves no-shows out once the night is over", () => {
+		const night = {
+			...gameNight,
+			summary: { attendeeIds: [2, 6], attendanceRecorded: false, playedGameIds: [] },
+		} as unknown as GameNight;
+		const over = {
+			gameNight: night,
+			sessions: [session(1, 3, new Date(2026, 9, 16, 21, 0))],
+			runningGames: [],
+		} as unknown as GameNightDetail;
+
+		expect(nightTable(over, new Date(2026, 9, 17, 9, 0))).toEqual({ expected: false, playerIds: [2, 6] });
+	});
+
+	it("does not bring back who was marked as not here", () => {
+		const night = {
+			...gameNight,
+			summary: { attendeeIds: [2, 6], attendanceRecorded: true, playedGameIds: [] },
+		} as unknown as GameNight;
+		const playing = {
+			gameNight: night,
+			sessions: [],
+			runningGames: [{ id: 1, gameId: 3, playerIds: [6] }],
+		} as unknown as GameNightDetail;
+
+		expect(nightTable(playing, new Date(2026, 9, 16, 21, 0))).toEqual({ expected: false, playerIds: [2, 6] });
 	});
 
 	it("takes the table from the recorded attendance even before a game", () => {

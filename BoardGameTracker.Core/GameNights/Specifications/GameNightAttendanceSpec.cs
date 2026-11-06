@@ -13,6 +13,7 @@ public sealed class GameNightAttendanceSpec : SingleResultSpecification<GameNigh
                 .ThenInclude(x => x.PlayerSessions)
             .Include(x => x.RunningGames)
                 .ThenInclude(x => x.Players)
-            .Include(x => x.Attendance);
+            .Include(x => x.Attendance)
+            .Include(x => x.InvitedPlayers);
     }
 }

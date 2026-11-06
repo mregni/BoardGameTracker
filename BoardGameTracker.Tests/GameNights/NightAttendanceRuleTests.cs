@@ -37,7 +37,7 @@ public class NightAttendanceRuleTests
     [Fact]
     public void OverridesFor_ShouldOnlyStoreWhatPlayDoesNotAlreadyTell()
     {
-        var result = NightAttendanceRule.OverridesFor(4, [2, 3], [2, 3, 8, 6]);
+        var result = NightAttendanceRule.OverridesFor(4, [2, 3], [], [2, 3, 8, 6]);
 
         result.Should().Equal(new AttendanceOverride(4, false), new AttendanceOverride(6, true), new AttendanceOverride(8, true));
     }
@@ -45,7 +45,29 @@ public class NightAttendanceRuleTests
     [Fact]
     public void OverridesFor_ShouldStoreNothing_WhenThePickerMatchesWhoPlayed()
     {
-        NightAttendanceRule.OverridesFor(4, [4, 2], [2, 4]).Should().BeEmpty();
+        NightAttendanceRule.OverridesFor(4, [4, 2], [4, 2], [2, 4]).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void OverridesFor_ShouldStoreThatSomeoneWhoSaidYesIsNotHere()
+    {
+        var result = NightAttendanceRule.OverridesFor(4, [2], [4, 2, 5, 6], [4, 2, 6]);
+
+        result.Should().Equal(new AttendanceOverride(6, true), new AttendanceOverride(5, false));
+    }
+
+    [Fact]
+    public void GameNight_ShouldRememberSomeoneWhoSaidYesWasNotHere_WhenThePickerMatchesWhoPlayed()
+    {
+        var gameNight = GameNight.Create("Night", "", Start, 1, 1);
+        gameNight.AddInvitedPlayers([5]);
+        gameNight.InvitedPlayers.Single().UpdateState(GameNightRsvpState.Accepted);
+
+        gameNight.SetAttendance([1]);
+
+        gameNight.Attendance.Should().ContainSingle(x => x.PlayerId == 5 && !x.Present);
+        gameNight.GetAttendeeIds().Should().Equal(1);
+        gameNight.ToSummaryDto().AttendanceRecorded.Should().BeTrue();
     }
 
     [Fact]

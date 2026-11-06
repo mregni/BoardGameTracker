@@ -168,9 +168,9 @@ describe("GameNightDetailView", () => {
 		];
 		renderView(buildDetail(tonight(), declinedButPlayed, false));
 
-		const table = screen.getByRole("region", { name: "table.title" });
+		const table = screen.getByRole("region", { name: "table.expected" });
 		expect(within(table).getByText("Reggi")).toBeInTheDocument();
-		expect(within(table).queryByText("Kathleen")).not.toBeInTheDocument();
+		expect(within(table).getByText("Kathleen")).toBeInTheDocument();
 	});
 
 	it("shows the players who said yes as expected before any game", () => {

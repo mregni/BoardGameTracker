@@ -166,7 +166,8 @@ public class GameNight: HasId
 
     public void SetAttendance(IEnumerable<int> presentPlayerIds)
     {
-        var desired = NightAttendanceRule.OverridesFor(HostId, GetPlayedPlayerIds(), presentPlayerIds);
+        var coming = InvitedPlayers.Where(x => x.State == GameNightRsvpState.Accepted).Select(x => x.PlayerId);
+        var desired = NightAttendanceRule.OverridesFor(HostId, GetPlayedPlayerIds(), coming, presentPlayerIds);
 
         foreach (var stale in Attendance.Where(x => desired.All(d => d.PlayerId != x.PlayerId)).ToList())
         {
