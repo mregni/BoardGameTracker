@@ -4,4 +4,5 @@ public interface IUserAccessCheck
 {
     Task<bool> CanSignInAsync(string userId, CancellationToken cancellationToken = default);
     void Forget(string userId);
+    Task<bool> IsSessionActiveAsync(Guid sessionId, CancellationToken cancellationToken = default);
 }

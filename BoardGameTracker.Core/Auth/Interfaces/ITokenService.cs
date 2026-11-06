@@ -4,7 +4,7 @@ namespace BoardGameTracker.Core.Auth.Interfaces;
 
 public interface ITokenService
 {
-    string GenerateAccessToken(ApplicationUser user, IList<string> roles);
+    string GenerateAccessToken(ApplicationUser user, IList<string> roles, Guid sessionId);
     Task<RefreshToken> GenerateRefreshTokenAsync(string userId);
     Task<RefreshToken> RotateRefreshTokenAsync(RefreshToken current);
     Task<RefreshToken> SupersedeRefreshTokenAsync(RefreshToken unused);

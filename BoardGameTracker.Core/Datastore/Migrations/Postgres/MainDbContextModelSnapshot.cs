@@ -302,6 +302,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<string>("RevokedReason")
                         .HasColumnType("text");
 
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("text");
@@ -311,6 +314,8 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
 
                     b.HasIndex("Token")
                         .IsUnique();

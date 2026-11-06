@@ -32,7 +32,7 @@ public class DisabledUserAccessTests : IDisposable
     }
 
     [Fact]
-    public async Task DisablingAUser_ShouldStopTheirAccessTokenAndImageCookieImmediately_AndEnablingRestoresThem()
+    public async Task DisablingAUser_ShouldStopTheirAccessTokenAndImageCookieImmediately_AndEnablingOnlyRestoresTheCookie()
     {
         const string username = "disabled-now";
         using var admin = await _fixture.CreateAdminClientAsync();
@@ -59,7 +59,7 @@ public class DisabledUserAccessTests : IDisposable
         var enable = await admin.PostAsync($"/api/admin/users/{userId}/enable", null, TestContext.Current.CancellationToken);
         enable.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        (await api.GetAsync("/api/auth/profile", TestContext.Current.CancellationToken)).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await api.GetAsync("/api/auth/profile", TestContext.Current.CancellationToken)).StatusCode.Should().Be(HttpStatusCode.Unauthorized, "disabling ended the session of this token");
         (await browser.GetAsync($"/images/profile/{FileName}", TestContext.Current.CancellationToken)).StatusCode.Should().Be(HttpStatusCode.OK);
     }
 

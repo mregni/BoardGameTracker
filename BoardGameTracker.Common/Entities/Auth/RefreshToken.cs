@@ -11,6 +11,7 @@ public class RefreshToken
 
     public int Id { get; private set; }
     public string Token { get; private set; } = string.Empty;
+    public Guid SessionId { get; private set; }
     public string UserId { get; private set; } = string.Empty;
     public ApplicationUser? User { get; private set; }
     public DateTime CreatedAt { get; private set; }
@@ -31,13 +32,14 @@ public class RefreshToken
 
     private RefreshToken() { }
 
-    public static RefreshToken Create(string userId, int expiryDays)
+    public static RefreshToken Create(string userId, int expiryDays, Guid? sessionId = null)
     {
         var plainText = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         return new RefreshToken
         {
             Token = Hash(plainText),
             PlainTextToken = plainText,
+            SessionId = sessionId ?? Guid.NewGuid(),
             UserId = userId,
             CreatedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddDays(expiryDays)

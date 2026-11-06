@@ -55,7 +55,7 @@ public class OidcFlowTests : IDisposable
         _userManagerMock.Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
 
         _tokenServiceMock = new Mock<ITokenService>();
-        _tokenServiceMock.Setup(x => x.GenerateAccessToken(It.IsAny<ApplicationUser>(), It.IsAny<IList<string>>())).Returns("access-token");
+        _tokenServiceMock.Setup(x => x.GenerateAccessToken(It.IsAny<ApplicationUser>(), It.IsAny<IList<string>>(), It.IsAny<Guid>())).Returns("access-token");
         _tokenServiceMock.Setup(x => x.GenerateRefreshTokenAsync(It.IsAny<string>())).ReturnsAsync((string userId) => RefreshToken.Create(userId, 7));
         _tokenServiceMock.Setup(x => x.GetAccessTokenExpiry()).Returns(new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
@@ -269,7 +269,7 @@ public class OidcFlowTests : IDisposable
         var act = () => LoginAsync();
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
-        _tokenServiceMock.Verify(x => x.GenerateAccessToken(It.IsAny<ApplicationUser>(), It.IsAny<IList<string>>()), Times.Never);
+        _tokenServiceMock.Verify(x => x.GenerateAccessToken(It.IsAny<ApplicationUser>(), It.IsAny<IList<string>>(), It.IsAny<Guid>()), Times.Never);
     }
 
     [Fact]

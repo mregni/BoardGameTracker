@@ -415,6 +415,8 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
             .HasIndex(x => x.Token)
             .IsUnique();
         builder.Entity<RefreshToken>()
+            .HasIndex(x => x.SessionId);
+        builder.Entity<RefreshToken>()
             .Property(x => x.RevokedAt)
             .IsConcurrencyToken();
         builder.Entity<RefreshToken>()
