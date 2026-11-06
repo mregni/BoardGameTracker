@@ -57,9 +57,9 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 	};
 
 	const metricLabel = (entry: LeaderboardEntry) => {
-		if (rankBy === "winRate") return `${metric(entry)} ${t("columns.win-rate")}`;
-		if (rankBy === "sessions") return t("values.sessions", { count: entry.playCount });
-		return t("values.wins", { count: entry.winCount });
+		if (rankBy === "winRate") return t("columns.win-rate");
+		if (rankBy === "sessions") return t("values.sessions-label", { count: entry.playCount });
+		return t("values.wins-label", { count: entry.winCount });
 	};
 
 	const details = (entry: LeaderboardEntry) => {
@@ -91,7 +91,7 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 							<Link
 								to="/players/$playerId"
 								params={{ playerId: entry.playerId }}
-								aria-label={`${t("ranking.place")} ${entry.rank}, ${entry.name}, ${metricLabel(entry)}, ${details(entry)}`}
+								aria-label={`${t("ranking.place")} ${entry.rank}, ${entry.name}, ${metric(entry)} ${metricLabel(entry)}, ${details(entry)}`}
 								className="group flex min-w-0 flex-col items-center text-center"
 							>
 								<CrownIcon
@@ -116,7 +116,7 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 									<span className={cx("mt-1 font-bold leading-none text-card-value", place.value)}>
 										{metric(entry)}
 									</span>
-									<span className="mt-0.5 text-xs text-white/80">{t(metricLabel[rankBy])}</span>
+									<span className="mt-0.5 text-xs text-white/80">{metricLabel(entry)}</span>
 									<small className="max-w-full truncate text-xs text-white/60">{details(entry)}</small>
 								</span>
 							</Link>
