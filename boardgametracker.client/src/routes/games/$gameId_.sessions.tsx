@@ -39,7 +39,7 @@ function RouteComponent() {
 	const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
 	const goBack = useBack(`/games/${gameId}`);
 
-	const { settings, game, sessions, deleteSession, players, isLoading, error } = useGameSessionsData({
+	const { settings, game, sessions, deleteSession, players, isLoading, error, retry } = useGameSessionsData({
 		gameId,
 		onDeleteSuccess: () => {
 			setSessionToDelete(null);
@@ -54,6 +54,7 @@ function RouteComponent() {
 				isLoading={isLoading}
 				data={{ game, settings, players }}
 				error={error}
+				onRetry={retry}
 				notFound={
 					<BgtEmptyState
 						icon={AlertTriangle}

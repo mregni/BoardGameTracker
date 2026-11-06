@@ -6,6 +6,7 @@ import { usePlayerSessionData } from "./usePlayerSessionData";
 
 const mocks = vi.hoisted(() => ({
 	resolveSessions: (_value: unknown[]) => {},
+	playerLoads: 0,
 }));
 
 vi.mock("@/utils/errorUtils", () => ({
@@ -21,7 +22,13 @@ vi.mock("@/services/queries/games", () => ({
 }));
 
 vi.mock("@/services/queries/players", () => ({
-	getPlayer: (id: number) => ({ queryKey: ["player", id], queryFn: () => Promise.resolve({ id, name: "Jane" }) }),
+	getPlayer: (id: number) => ({
+		queryKey: ["player", id],
+		queryFn: () => {
+			mocks.playerLoads += 1;
+			return Promise.resolve({ id, name: "Jane" });
+		},
+	}),
 	getPlayers: () => ({ queryKey: ["players"], queryFn: () => Promise.resolve([]) }),
 	getPlayerSessions: (id: number) => ({
 		queryKey: ["player", id, "sessions"],
@@ -38,6 +45,7 @@ vi.mock("@/services/queries/settings", () => ({
 
 describe("usePlayerSessionData", () => {
 	it("keeps loading until the sessions have arrived", async () => {
+		mocks.playerLoads = 0;
 		const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 		const wrapper = ({ children }: { children: ReactNode }) => (
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -49,5 +57,19 @@ describe("usePlayerSessionData", () => {
 
 		mocks.resolveSessions([]);
 		await waitFor(() => expect(result.current.isLoading).toBe(false));
+	});
+
+	it("loads the player again on retry", async () => {
+		mocks.playerLoads = 0;
+		const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const wrapper = ({ children }: { children: ReactNode }) => (
+			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+		);
+		const { result } = renderHook(() => usePlayerSessionData({ playerId: 1 }), { wrapper });
+		await waitFor(() => expect(mocks.playerLoads).toBe(1));
+
+		result.current.retry();
+
+		await waitFor(() => expect(mocks.playerLoads).toBe(2));
 	});
 });

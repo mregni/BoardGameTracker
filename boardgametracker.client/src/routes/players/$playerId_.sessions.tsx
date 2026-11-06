@@ -42,7 +42,7 @@ function RouteComponent() {
 	const goBack = useBack(`/players/${playerId}`);
 	const { canWrite } = usePermissions();
 
-	const { sessions, deleteSession, settings, games, player, players, isLoading, error } = usePlayerSessionData({
+	const { sessions, deleteSession, settings, games, player, players, isLoading, error, retry } = usePlayerSessionData({
 		playerId,
 		onDeleteSuccess: () => {
 			setSessionToDelete(null);
@@ -77,6 +77,7 @@ function RouteComponent() {
 				isLoading={isLoading}
 				data={{ player, settings, games, players }}
 				error={error}
+				onRetry={retry}
 				notFound={<BgtEmptyState icon={AlertTriangle} title={t("player:notifications.not-found")} />}
 			>
 				{({ player, settings, games, players }) => {
