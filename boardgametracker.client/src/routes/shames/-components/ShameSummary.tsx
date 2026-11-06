@@ -14,7 +14,13 @@ export const ShameSummary = ({ statistics, shames }: Props) => {
 	const format = useNumberFormat();
 	const oldest = oldestNeverPlayed(shames);
 
-	const parts = [t("summary.on-shelf", { count: statistics.count, total: format.integer(statistics.ownedCount) })];
+	const parts = [
+		t("summary.on-shelf", {
+			count: statistics.ownedCount,
+			shelved: statistics.count,
+			total: format.integer(statistics.ownedCount),
+		}),
+	];
 	if (statistics.neverPlayedCount > 0) {
 		parts.push(t("summary.never-played", { count: statistics.neverPlayedCount }));
 	}

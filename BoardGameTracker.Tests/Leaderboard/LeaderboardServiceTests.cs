@@ -38,6 +38,17 @@ public class LeaderboardServiceTests
     }
 
     [Fact]
+    public async Task GetLeaderboardAsync_ShouldLeaveTheWinPercentageUnrounded()
+    {
+        var filter = new LeaderboardFilter();
+        SetupRows(filter, [new LeaderboardRow(1, "Alice", null, 52, 33, 0, 600)]);
+
+        var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
+
+        result.Players[0].WinPercentage.Should().BeApproximately(63.4615, 0.0001);
+    }
+
+    [Fact]
     public async Task GetLeaderboardAsync_ShouldRankByWins_ThenWinRate_ThenPlays()
     {
         var filter = new LeaderboardFilter(MinSessions: 3);

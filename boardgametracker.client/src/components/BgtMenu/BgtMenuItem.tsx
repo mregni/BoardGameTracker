@@ -11,7 +11,7 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const BgtMenuItem = (props: Props) => {
-	const { item, count, onClick, className } = props;
+	const { item, count, onClick, className, role } = props;
 	const { t } = useTranslation();
 
 	const Icon = item.icon;
@@ -19,6 +19,7 @@ export const BgtMenuItem = (props: Props) => {
 	return (
 		<Link
 			onClick={onClick}
+			role={role}
 			to={item.path}
 			activeProps={{ className: "bg-primary/60 border border-primary" }}
 			className={cx(

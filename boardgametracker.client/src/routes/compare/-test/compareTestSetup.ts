@@ -81,7 +81,7 @@ export const compareResult = (overrides: Partial<CompareResult> = {}): CompareRe
 	minutesPlayed: 2410,
 	preferredGame: { gameId: 10, sessionCount: 11 },
 	firstGameTogether: { gameId: 11, startDate: new Date(2025, 2, 12) },
-	closestGame: { gameId: 12, playerId: 1, scoringDifference: 1 },
+	closestGame: { gameId: 12, playerId: 1, bothWon: false, otherWon: false, scoringDifference: 1 },
 	streak: { side: "playerTwo", count: 2 },
 	games: [
 		gameRow({ gameId: 10, sessionCount: 11, playerOneWins: 4, playerTwoWins: 7, lastOutcome: "playerTwo" }),

@@ -18,9 +18,11 @@ import { getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 
+const linkValue = z.union([z.string(), z.number()]).transform(String).optional().catch(undefined);
+
 const resetPasswordSearchSchema = z.object({
-	userId: z.string().optional().catch(undefined),
-	token: z.string().optional().catch(undefined),
+	userId: linkValue,
+	token: linkValue,
 });
 
 export const Route = createFileRoute("/_bare/reset-password")({

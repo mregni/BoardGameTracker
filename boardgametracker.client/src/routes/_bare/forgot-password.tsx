@@ -10,9 +10,11 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAppForm } from "@/hooks/form";
+import { ForgotPasswordSchema } from "@/models";
 import { forgotPasswordCall } from "@/services/authService";
 import { getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { zodValidator } from "@/utils/zodValidator";
 
 export const Route = createFileRoute("/_bare/forgot-password")({
 	component: ForgotPasswordPage,
@@ -71,7 +73,7 @@ function ForgotPasswordPage() {
 						</div>
 					) : (
 						<form onSubmit={handleFormSubmit(form)} className="space-y-4">
-							<form.Field name="username">
+							<form.Field name="username" validators={zodValidator(ForgotPasswordSchema, "username")}>
 								{(field: AnyFieldApi) => (
 									<BgtInputField
 										field={field}

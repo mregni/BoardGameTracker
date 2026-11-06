@@ -28,7 +28,9 @@ export const podiumOf = (standing: Standing) => {
 
 const metric = (entry: Entry, rankBy: RankBy) => {
 	if (rankBy === "winRate") return `${percent(entry.winRate)} Win rate`;
-	return rankBy === "sessions" ? `${entry.sessions} Sessions` : `${entry.wins} Wins`;
+	return rankBy === "sessions"
+		? `${entry.sessions} Session${entry.sessions === 1 ? "" : "s"}`
+		: `${entry.wins} Win${entry.wins === 1 ? "" : "s"}`;
 };
 
 const podiumName = (entry: Ranked, rankBy: RankBy) => {

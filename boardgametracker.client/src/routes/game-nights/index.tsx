@@ -36,8 +36,8 @@ import { splitGameNights } from "./-utils/gameNightPlay";
 import { inviteState } from "./-utils/inviteRecipients";
 
 const gameNightsSearchSchema = z.object({
-	view: z.enum(["nights", "stats"]).optional(),
-	period: z.enum(GameNightStatisticsPeriod).optional(),
+	view: z.enum(["nights", "stats"]).optional().catch(undefined),
+	period: z.enum(GameNightStatisticsPeriod).optional().catch(undefined),
 });
 
 type GameNightsView = "nights" | "stats";

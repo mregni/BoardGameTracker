@@ -1,7 +1,7 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { act, renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
+import { act, renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
 import { BgtDateTimePicker } from "./BgtDateTimePicker";
 
 const mockSettings = vi.hoisted(() => ({
@@ -151,6 +151,7 @@ describe("BgtDateTimePicker", () => {
 
 			renderWithProviders(<BgtDateTimePicker {...defaultProps} field={field} />);
 
+			await waitFor(() => expect(timeSegment(/hour/i)).not.toHaveAttribute("aria-disabled"));
 			act(() => timeSegment(/hour/i).focus());
 			await user.keyboard("{ArrowUp}");
 
@@ -163,6 +164,7 @@ describe("BgtDateTimePicker", () => {
 
 			renderWithProviders(<BgtDateTimePicker {...defaultProps} field={field} />);
 
+			await waitFor(() => expect(timeSegment(/minute/i)).not.toHaveAttribute("aria-disabled"));
 			act(() => timeSegment(/minute/i).focus());
 			await user.keyboard("7");
 

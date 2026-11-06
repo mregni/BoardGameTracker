@@ -1,6 +1,7 @@
 {
   "bgg": {
-    "id-not-found": "Spel niet gevonden op BoardGameGeek"
+    "id-not-found": "Spel niet gevonden op BoardGameGeek",
+    "invalid-api-key": "Ongeldige BGG API-sleutel. Controleer de sleutel in de instellingen."
   },
   "image": {
     "type-not-supported": "Afbeeldingstype wordt niet ondersteund",
@@ -18,6 +19,7 @@
     "cannot-delete-last-admin": "Het laatste beheerdersaccount kan niet worden verwijderd",
     "cannot-remove-last-admin": "De beheerdersrol kan niet worden afgenomen van het laatste beheerdersaccount",
     "invalid-credentials": "Ongeldige gebruikersnaam of wachtwoord",
+    "incorrect-password": "Onjuist wachtwoord.",
     "invalid-refresh-token": "Ongeldige of verlopen sessie",
     "refresh-token-superseded": "Je sessie is in een ander tabblad vernieuwd. Probeer het opnieuw.",
     "missing-session-header": "Dit verzoek is geblokkeerd omdat het niet van de app kwam.",
@@ -78,6 +80,8 @@
   "network": "Kan geen verbinding maken met de server. Controleer je verbinding.",
   "timeout": "De aanvraag duurde te lang. Probeer het opnieuw.",
   "server": "Er is een serverfout opgetreden. Probeer het later opnieuw.",
+  "not-found": "Dit item bestaat niet meer.",
+  "conflict": "Iemand anders heeft dit net gewijzigd. Probeer het opnieuw.",
   "location": {
     "used-by-game-nights": "Deze locatie wordt gebruikt door een of meer spelavonden",
     "used-by-sessions": "Deze locatie wordt gebruikt door een of meer sessies",

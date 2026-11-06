@@ -1,7 +1,7 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { notBeforeValidator, rangeValidator, zodValidator } from "./zodValidator";
+import { changedValueValidator, notBeforeValidator, rangeValidator, zodValidator } from "./zodValidator";
 
 const schema = z.object({ start: z.string(), end: z.string().optional() });
 
@@ -43,6 +43,23 @@ describe("zodValidator", () => {
 
 	it("accepts a valid value", () => {
 		expect(validator.onChange({ value: "Brass" })).toBeUndefined();
+	});
+});
+
+describe("changedValueValidator", () => {
+	const schema = z.object({ email: z.string().email("invalid") });
+
+	it("accepts the stored value even when the schema refuses it", () => {
+		const { onChange } = changedValueValidator(schema, "email", "admin@localhost");
+
+		expect(onChange({ value: "admin@localhost" })).toBeUndefined();
+	});
+
+	it("checks any other value", () => {
+		const { onChange } = changedValueValidator(schema, "email", "admin@localhost");
+
+		expect(onChange({ value: "still-wrong" })).toBeDefined();
+		expect(onChange({ value: "admin@example.com" })).toBeUndefined();
 	});
 });
 

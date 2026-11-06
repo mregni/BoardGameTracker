@@ -68,7 +68,7 @@ const safeParseDateValue = (iso: string | undefined | null): CalendarDate | null
 export const BgtDatePicker = (props: BgtDatePickerProps) => {
 	const { label, disabled = false, className = "", clearable = false, minValue, maxValue } = props;
 	const { t } = useTranslation();
-	const { data: settings } = useQuery(getSettings());
+	const { data: settings, isLoading: isLoadingSettings } = useQuery(getSettings());
 	const portalContainer = useDialogPortalContainer();
 	const calendarButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -109,7 +109,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 				<DatePicker
 					value={value}
 					onChange={handleChange}
-					isDisabled={disabled}
+					isDisabled={disabled || isLoadingSettings}
 					isInvalid={hasErrors}
 					minValue={safeParseDateValue(minValue) ?? undefined}
 					maxValue={safeParseDateValue(maxValue) ?? undefined}

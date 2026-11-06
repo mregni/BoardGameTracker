@@ -114,9 +114,9 @@ test("preselects the player when logging a session", async ({ page }) => {
 	await openSessions(page, linkedPlayer);
 
 	await page.getByRole("main").getByRole("button", { name: "Log session" }).click();
-
-	test.fail(true, "BUG: Log session on the sessions page of a player does not preselect that player");
 	await expect(page).toHaveURL(`/sessions/new?player=${playerId(linkedPlayer)}`);
+	await expect(page.getByRole("heading", { name: "Log session", level: 1 })).toBeVisible();
+	await expect(page.getByRole("main").getByText(linkedPlayer, { exact: true })).toBeVisible();
 });
 
 test("goes back to the player", async ({ page }) => {
@@ -161,8 +161,6 @@ test.describe("a player that does not exist", () => {
 	test("leads back to the players", async ({ page }) => {
 		await page.goto("/players/9999/sessions");
 		await expect(page.getByText("Could not find player")).toBeVisible();
-
-		test.fail(true, "BUG: the sessions page of a missing player has no way back, unlike the one of a missing game");
 		await page.getByRole("button", { name: /^Back/ }).click({ timeout: 2_000 });
 
 		await expect(page).toHaveURL("/players");

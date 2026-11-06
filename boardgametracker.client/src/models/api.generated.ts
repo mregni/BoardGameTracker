@@ -5274,6 +5274,8 @@ export interface components {
         ClosestGame: {
             /** Format: int32 */
             playerId: number | null;
+            bothWon: boolean;
+            otherWon: boolean;
             /** Format: int32 */
             gameId: number | null;
             /** Format: double */

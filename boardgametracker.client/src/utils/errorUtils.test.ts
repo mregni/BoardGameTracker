@@ -5,6 +5,7 @@ import { apiErrorMessage, translateApiError, translateUrlError } from "./errorUt
 const translations: Record<string, string> = {
 	"error:auth.username-already-exists": "Username already exists",
 	"error:something-went-wrong": "Something went wrong",
+	"error:not-found": "This item no longer exists",
 	"settings:save.failed": "Saving failed",
 	"error:auth.oidc-failed": "Signing in failed",
 };
@@ -32,8 +33,19 @@ describe("translateApiError", () => {
 	});
 
 	it("returns plain messages untouched", () => {
-		expect(translateApiError("Invalid request.")).toBe("Invalid request.");
+		expect(translateApiError("'rules.txt' is not a PDF file.")).toBe("'rules.txt' is not a PDF file.");
 	});
+
+	it("translates the plain texts the server sends", () => {
+		expect(translateApiError("The requested resource was not found.")).toBe("This item no longer exists");
+	});
+
+	it.each(["An unexpected error occurred", "Bad Request", "One or more validation errors occurred."])(
+		"uses the fallback for %s, which gives no reason",
+		(message) => {
+			expect(translateApiError(message, "settings:save.failed")).toBe("Saving failed");
+		},
+	);
 
 	it("falls back when the message is empty", () => {
 		expect(translateApiError(undefined)).toBe("Something went wrong");

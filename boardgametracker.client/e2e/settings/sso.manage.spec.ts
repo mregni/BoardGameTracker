@@ -92,6 +92,7 @@ test("creates a provider, shows it on the login page and removes it", async ({ p
 	await fillForm(page);
 	await page.getByRole("button", { name: "Create provider" }).click();
 
+	await expect(page.getByText("Provider saved")).toBeVisible();
 	await expect(page.getByText(`Provider ${label} is configured. Changes apply to the next sign-in.`)).toBeVisible();
 	await expect(page.getByRole("button", { name: "Save provider" })).toBeVisible();
 	await expect(page.getByRole("switch", { name: "Enabled" })).toBeChecked();

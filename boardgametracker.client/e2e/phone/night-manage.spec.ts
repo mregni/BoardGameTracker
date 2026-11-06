@@ -211,6 +211,37 @@ test.describe("an active game night", () => {
 		}
 	});
 
+	test("an error toast leaves the buttons of the sheet free", async ({ page }) => {
+		const api = await apiFor(page);
+		const id = await createActiveNight(api, "Phone night toast");
+		try {
+			await page.route("**/api/session", (route) => route.abort());
+			await page.goto(`/game-nights/${id}`);
+			await settled(page);
+
+			await logButton(page).click();
+			const sheet = page.getByRole("dialog", { name: "Log session" });
+			await sheet.getByRole("combobox").first().click();
+			await page.getByRole("option", { name: new RegExp(`^${suggested}`) }).click();
+			const save = footerOf(sheet).getByRole("button", { name: "Save session" });
+			await save.scrollIntoViewIfNeeded();
+			await save.click();
+
+			const toast = page.getByRole("region", { name: /Notifications/ }).getByRole("listitem");
+			await expect(toast).toBeVisible();
+			await expect(sheet).toBeVisible();
+			const saveTop = (await save.boundingBox())?.y ?? 0;
+			await expect
+				.poll(async () => {
+					const box = await toast.boundingBox();
+					return (box?.y ?? 0) + (box?.height ?? 0);
+				})
+				.toBeLessThanOrEqual(saveTop);
+		} finally {
+			await removeNight(api, id);
+		}
+	});
+
 	test("the start sheet can be finished on a small phone", async ({ page }) => {
 		const api = await apiFor(page);
 		const id = await createActiveNight(api, "Phone night small");

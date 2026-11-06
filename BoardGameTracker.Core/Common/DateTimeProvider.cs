@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using TimeZoneConverter;
 
 namespace BoardGameTracker.Core.Common;
 
@@ -14,7 +15,7 @@ public class DateTimeProvider : IDateTimeProvider
 
         try
         {
-            _timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            _timeZone = TZConvert.GetTimeZoneInfo(timeZoneId);
         }
         catch (TimeZoneNotFoundException)
         {

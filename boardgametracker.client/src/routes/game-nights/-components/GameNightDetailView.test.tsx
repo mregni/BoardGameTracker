@@ -288,6 +288,20 @@ describe("GameNightDetailView", () => {
 		expect(screen.queryByText("summary.games-played")).not.toBeInTheDocument();
 	});
 
+	it("points a reader at no buttons on an empty night", () => {
+		renderView(buildDetail(tonight(), [], false), false);
+
+		expect(screen.getByText("played.empty-reader")).toBeInTheDocument();
+		expect(screen.queryByText("played.empty")).not.toBeInTheDocument();
+	});
+
+	it("only states that nothing was logged for a reader after the night", () => {
+		renderView(buildDetail(addHours(new Date(), -30), [], false), false);
+
+		expect(screen.getByText("played.empty-ended")).toBeInTheDocument();
+		expect(screen.queryByText("played.empty-after")).not.toBeInTheDocument();
+	});
+
 	it("is read-only for readers", () => {
 		renderView(buildDetail(tonight(), played()), false);
 
@@ -326,7 +340,7 @@ describe("GameNightDetailView", () => {
 		renderView(buildDetail(tonight(), played()));
 
 		const endButton = screen.getByRole("button", { name: "end.button" });
-		expect(endButton).toBeDisabled();
+		expect(endButton).toHaveAttribute("aria-disabled", "true");
 		expect(endButton).toHaveAccessibleDescription("end.running-hint");
 		expect(endButton.parentElement).toHaveAttribute("title", "end.running-hint");
 	});

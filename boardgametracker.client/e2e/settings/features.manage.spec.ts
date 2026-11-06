@@ -114,8 +114,8 @@ test("explains the months threshold in plain words", async ({ page }) => {
 	await months.fill("0");
 
 	await expect(months).toHaveAttribute("aria-invalid", "true");
-	test.fail(true, "BUG: a too low months threshold shows the raw validator text instead of a translated message");
-	await expect(page.getByText(/expected number/)).toHaveCount(0, { timeout: 1000 });
+	await expect(page.getByText("Enter at least 1 month")).toBeVisible();
+	await expect(page.getByText(/expected number/)).toHaveCount(0);
 });
 
 test("asks a visitor to sign in for an rsvp when that is switched on", async ({ page, browser, baseURL }) => {

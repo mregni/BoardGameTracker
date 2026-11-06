@@ -33,6 +33,10 @@
     "time": "Tiempo"
   },
   "values": {
+    "wins-label_one": "Victoria",
+    "wins-label_other": "Victorias",
+    "sessions-label_one": "Partida",
+    "sessions-label_other": "Partidas",
     "wins_one": "{{count}} victoria",
     "wins_other": "{{count}} victorias",
     "sessions_one": "{{count}} partida",

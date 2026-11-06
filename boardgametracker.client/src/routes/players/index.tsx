@@ -152,7 +152,7 @@ function RouteComponent() {
 							{isLoading
 								? null
 								: q
-									? t("count-filtered", { count: visiblePlayers.length, total: players.length })
+									? t("count-filtered", { shown: visiblePlayers.length, count: players.length })
 									: t("count", { count: players.length })}
 						</p>
 					</div>

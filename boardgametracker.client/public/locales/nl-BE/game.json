@@ -236,7 +236,7 @@
     "hint": "Geldt enkel voor nieuwe sessies; gelogde sessies blijven zoals ze gespeeld zijn."
   },
   "first-play": {
-    "action": "Log het eerste spel"
+    "action": "Sessie registreren"
   },
   "load-error": {
     "not-found-description": "Misschien is het verwijderd, of is de link verouderd.",

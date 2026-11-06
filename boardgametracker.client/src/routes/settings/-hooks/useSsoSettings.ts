@@ -28,18 +28,12 @@ export const useSsoSettings = () => {
 	};
 
 	const saveMutation = useMutation({
-		mutationFn: async (request: OidcProviderRequest) => {
-			if (providerId === undefined) {
-				await createOidcProviderCall(request);
-				return true;
-			}
-			await updateOidcProviderCall(providerId, request, providerQuery.data);
-			return false;
-		},
-		onSuccess: async (created) => {
-			if (!created) {
-				successToast("settings:sso.notifications.saved");
-			}
+		mutationFn: (request: OidcProviderRequest) =>
+			providerId === undefined
+				? createOidcProviderCall(request)
+				: updateOidcProviderCall(providerId, request, providerQuery.data),
+		onSuccess: async () => {
+			successToast("settings:sso.notifications.saved");
 			await invalidate();
 		},
 		onError: (error) => errorToast(apiErrorMessage(error, "settings:sso.notifications.save-failed")),

@@ -60,14 +60,24 @@ describe("TogetherTiles", () => {
 	});
 
 	it("names the closest game's winner on either side or someone else", () => {
-		renderTiles({ closestGame: { gameId: 10, playerId: 2, scoringDifference: 2.5 } });
+		renderTiles({ closestGame: { gameId: 10, playerId: 2, bothWon: false, otherWon: false, scoringDifference: 2.5 } });
 		expect(screen.getByText("2.5 pts")).toBeInTheDocument();
 		expect(screen.getByText("Azul · Kathleen won")).toBeInTheDocument();
 	});
 
 	it("says someone else won the closest game when neither player did", () => {
-		renderTiles({ closestGame: { gameId: 10, playerId: null, scoringDifference: 0 } });
+		renderTiles({ closestGame: { gameId: 10, playerId: null, bothWon: false, otherWon: true, scoringDifference: 0 } });
 		expect(screen.getByText("Azul · someone else won")).toBeInTheDocument();
+	});
+
+	it("says both won when both players won the closest game", () => {
+		renderTiles({ closestGame: { gameId: 10, playerId: null, bothWon: true, otherWon: false, scoringDifference: 0 } });
+		expect(screen.getByText("Azul · both won")).toBeInTheDocument();
+	});
+
+	it("says there was no winner when nobody won the closest game", () => {
+		renderTiles({ closestGame: { gameId: 10, playerId: null, bothWon: false, otherWon: false, scoringDifference: 1 } });
+		expect(screen.getByText("Azul · no winner")).toBeInTheDocument();
 	});
 
 	it("gives no average for a single session together", () => {

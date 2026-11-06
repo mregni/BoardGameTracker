@@ -157,6 +157,7 @@ export const GamesTableView = (props: Props) => {
 				header: t("games:columns.language"),
 				cell: ({ row, table }) => (
 					<EditableSelectCell
+						label={t("games:columns.language")}
 						readOnly={!canWrite}
 						value={row.original.language ?? LANGUAGE_NONE}
 						emptyValue={LANGUAGE_NONE}
@@ -177,6 +178,7 @@ export const GamesTableView = (props: Props) => {
 				header: t("games:columns.state"),
 				cell: ({ row, table }) => (
 					<EditableSelectCell
+						label={t("games:columns.state")}
 						readOnly={!canWrite}
 						value={row.original.state}
 						items={stateEditItems}

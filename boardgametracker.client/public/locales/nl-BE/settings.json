@@ -56,7 +56,8 @@
       "description": "Hou spellen bij die al een tijd niet meer gespeeld zijn."
     },
     "months": {
-      "label": "Drempel in maanden"
+      "label": "Drempel in maanden",
+      "invalid": "Vul minstens 1 maand in"
     }
   },
   "game-nights": {
@@ -427,6 +428,7 @@
     },
     "validation": {
       "display-name": "Een knoptekst is verplicht",
+      "display-name-length": "Gebruik maximaal 200 tekens",
       "authority": "Geef de https-URL van de provider op",
       "client-id": "De client-ID is verplicht",
       "scopes": "Minstens de scope openid is verplicht"

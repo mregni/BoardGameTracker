@@ -224,6 +224,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             })
             .OrderByDescending(x => x.PlayCount)
             .ThenBy(x => x.Title)
+            .ThenBy(x => x.GameId)
             .Take(count)
             .ToListAsync(cancellationToken);
 

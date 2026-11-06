@@ -102,6 +102,7 @@ export const GameTableCards = (props: Props) => {
 							<Row label={t("games:columns.rating")}>{formatDecimal(game.rating, uiLanguage)}</Row>
 							<Row label={t("games:columns.language")}>
 								<EditableSelectCell
+									label={t("games:columns.language")}
 									readOnly={readOnly}
 									value={game.language ?? LANGUAGE_NONE}
 									emptyValue={LANGUAGE_NONE}
@@ -119,6 +120,7 @@ export const GameTableCards = (props: Props) => {
 							</Row>
 							<Row label={t("games:columns.state")}>
 								<EditableSelectCell
+									label={t("games:columns.state")}
 									readOnly={readOnly}
 									value={game.state}
 									items={stateItems}

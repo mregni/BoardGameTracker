@@ -30,6 +30,15 @@ export const TogetherTiles = ({ compare, playerOne, playerTwo, dateFormat, uiLan
 	const closestGame = closest?.gameId ? gameById(closest.gameId) : null;
 	const closestWinner =
 		closest?.playerId === playerOne.id ? playerOne : closest?.playerId === playerTwo.id ? playerTwo : null;
+	const closestCaption = (game: string) => {
+		if (closestWinner) {
+			return t("tiles.closest-winner", { game, player: closestWinner.name });
+		}
+		if (closest?.bothWon) {
+			return t("tiles.closest-both", { game });
+		}
+		return closest?.otherWon ? t("tiles.closest-other", { game }) : t("tiles.closest-none", { game });
+	};
 
 	return (
 		<section aria-labelledby="tiles-title" className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
@@ -66,11 +75,7 @@ export const TogetherTiles = ({ compare, playerOne, playerTwo, dateFormat, uiLan
 					title={t("tiles.closest")}
 					icon={<Target />}
 					content={t("tiles.points", { count: closest.scoringDifference, value: number(closest.scoringDifference) })}
-					caption={
-						closestWinner
-							? t("tiles.closest-winner", { game: closestGame.title, player: closestWinner.name })
-							: t("tiles.closest-other", { game: closestGame.title })
-					}
+					caption={closestCaption(closestGame.title)}
 				/>
 			)}
 		</section>

@@ -18,6 +18,8 @@ public class GameStatisticsRepositoryTests : IAsyncLifetime
     private int _ownedGameId;
     private int _aliceId;
     private int _bobId;
+    private int[] _alphaIds = [];
+    private int _zetaId;
 
     public GameStatisticsRepositoryTests(IntegrationFixture fixture)
     {
@@ -149,6 +151,38 @@ public class GameStatisticsRepositoryTests : IAsyncLifetime
         starts.Should().HaveCount(3);
         starts.Should().OnlyContain(s => s.Kind == DateTimeKind.Utc);
         starts.Should().Contain(Monday);
+    }
+
+    [Fact]
+    public async Task MostPlayedGames_ShouldBreakTiesByTitle_ThenById()
+    {
+        await using (var seedScope = _fixture.CreateScope())
+        {
+            var db = seedScope.ServiceProvider.GetRequiredService<MainDbContext>();
+            var zeta = new Game("Zeta", true, GameState.Owned);
+            var alpha = new Game("Alpha", true, GameState.Owned);
+            var alphaAgain = new Game("Alpha", true, GameState.Owned);
+            db.AddRange(zeta, alpha, alphaAgain);
+            await db.SaveChangesAsync();
+
+            foreach (var game in new[] { zeta, alphaAgain, alpha })
+            {
+                var session = new Session(game.Id, Monday.AddDays(9), Monday.AddDays(9).AddHours(1), string.Empty);
+                session.AddPlayerSession(_bobId, 10, false, false);
+                db.Add(session);
+            }
+
+            await db.SaveChangesAsync();
+            _alphaIds = [alpha.Id, alphaAgain.Id];
+            _zetaId = zeta.Id;
+        }
+
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+
+        var games = await repository.GetMostPlayedGames(_bobId, 5);
+
+        games.Select(x => x.Id).Should().Equal(_ownedGameId, _alphaIds[0], _alphaIds[1], _zetaId);
     }
 
     [Fact]

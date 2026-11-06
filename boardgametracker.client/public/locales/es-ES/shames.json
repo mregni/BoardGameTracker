@@ -34,8 +34,8 @@
     "game": "Juego",
     "last-played": "Última partida",
     "paid": "Pagado",
-    "count_one": "{{count}} de {{total}} juegos",
-    "count_other": "{{count}} de {{total}} juegos"
+    "count_one": "{{shown}} de {{count}} juego",
+    "count_other": "{{shown}} de {{count}} juegos"
   },
   "row": {
     "owned-since": "en propiedad desde {{date}}",
@@ -84,7 +84,8 @@
     "planned-across_other": "{{count}} juegos salen de la estantería en {{nights}} noches de juego."
   },
   "summary": {
-    "on-shelf": "{{count}} de {{total}} juegos en propiedad en la estantería",
+    "on-shelf_one": "{{shelved}} de {{total}} juego en propiedad en la estantería",
+    "on-shelf_other": "{{shelved}} de {{total}} juegos en propiedad en la estantería",
     "never-played_one": "{{count}} nunca jugado",
     "never-played_other": "{{count}} nunca jugados",
     "oldest": "el más antiguo: {{title}}",

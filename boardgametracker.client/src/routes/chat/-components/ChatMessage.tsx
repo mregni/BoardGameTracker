@@ -3,6 +3,7 @@ import { BgtButton } from "@/components/BgtButton/BgtButton";
 import { BgtSpinner } from "@/components/BgtLoadingSpinner/BgtSpinner";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { ApiError } from "@/models";
+import { translateApiError } from "@/utils/errorUtils";
 import type { ChatExchange } from "../-hooks/useRagChat";
 import { CitationList } from "./CitationList";
 
@@ -32,9 +33,7 @@ export const ChatMessage = ({ exchange, onRetry, onSelectSource, activeSourceInd
 				if (error.status === 429) {
 					return t("rate-limited");
 				}
-				return error.message.startsWith("error.")
-					? t(`error:${error.message.slice("error.".length)}`, { defaultValue: t("error:something-went-wrong") })
-					: error.message;
+				return translateApiError(error.message);
 			default:
 				return t("error:something-went-wrong");
 		}

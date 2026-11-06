@@ -22,7 +22,7 @@ export interface BgtDateTimePickerProps {
 export const BgtDateTimePicker = (props: BgtDateTimePickerProps) => {
 	const { field, label, disabled = false } = props;
 	const { t } = useTranslation();
-	const { data: settings } = useQuery(getSettings());
+	const { data: settings, isLoading: isLoadingSettings } = useQuery(getSettings());
 
 	const hasErrors = field.state.meta.errors.length > 0;
 	const hourCycle = getHourCycle(settings?.timeFormat);
@@ -68,7 +68,7 @@ export const BgtDateTimePicker = (props: BgtDateTimePickerProps) => {
 			value={timeValue}
 			onChange={handleTimeChange}
 			onBlur={field.handleBlur}
-			isDisabled={disabled}
+			isDisabled={disabled || isLoadingSettings}
 			isInvalid={hasErrors}
 			hourCycle={hourCycle}
 			shouldForceLeadingZeros

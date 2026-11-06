@@ -38,12 +38,6 @@ const places = [
 	},
 ] as const;
 
-const metricLabel: Record<LeaderboardRankBy, string> = {
-	wins: "columns.wins",
-	winRate: "columns.win-rate",
-	sessions: "columns.sessions",
-};
-
 export const podiumPlayers = (players: LeaderboardEntry[]) => {
 	const top = players.filter((entry) => entry.isRanked).slice(0, places.length);
 	return top.length < 2 ? [] : top;
@@ -60,6 +54,12 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 		if (rankBy === "winRate") return format.percent(entry.winPercentage / 100);
 		if (rankBy === "sessions") return format.integer(entry.playCount);
 		return format.integer(entry.winCount);
+	};
+
+	const metricLabel = (entry: LeaderboardEntry) => {
+		if (rankBy === "winRate") return t("columns.win-rate");
+		if (rankBy === "sessions") return t("values.sessions-label", { count: entry.playCount });
+		return t("values.wins-label", { count: entry.winCount });
 	};
 
 	const details = (entry: LeaderboardEntry) => {
@@ -91,7 +91,7 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 							<Link
 								to="/players/$playerId"
 								params={{ playerId: entry.playerId }}
-								aria-label={`${t("ranking.place")} ${entry.rank}, ${entry.name}, ${metric(entry)} ${t(metricLabel[rankBy])}, ${details(entry)}`}
+								aria-label={`${t("ranking.place")} ${entry.rank}, ${entry.name}, ${metric(entry)} ${metricLabel(entry)}, ${details(entry)}`}
 								className="group flex min-w-0 flex-col items-center text-center"
 							>
 								<CrownIcon
@@ -116,7 +116,7 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 									<span className={cx("mt-1 font-bold leading-none text-card-value", place.value)}>
 										{metric(entry)}
 									</span>
-									<span className="mt-0.5 text-xs text-white/80">{t(metricLabel[rankBy])}</span>
+									<span className="mt-0.5 text-xs text-white/80">{metricLabel(entry)}</span>
 									<small className="max-w-full truncate text-xs text-white/60">{details(entry)}</small>
 								</span>
 							</Link>

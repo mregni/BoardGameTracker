@@ -23,10 +23,9 @@ export const ExpansionSelectorModal = (props: Props) => {
 
 	const { expansions, isLoading, isPending, saveExpansions } = useExpansionSelectorModal({ gameId });
 
-	const saveModal = () => {
-		saveExpansions({ gameId, expansionBggIds: selectedIds }).finally(() => {
-			close();
-		});
+	const saveModal = async () => {
+		await saveExpansions({ gameId, expansionBggIds: selectedIds });
+		close();
 	};
 
 	return (

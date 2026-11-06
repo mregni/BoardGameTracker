@@ -63,10 +63,11 @@ export const getLoanStatus = (loan: Loan, now: Date = new Date()): LoanStatus =>
 };
 
 export const getLoanStats = (activeLoans: Loan[], now: Date = new Date()) => {
-	const statuses = activeLoans.map((loan) => getLoanStatus(loan, now));
+	const started = activeLoans.filter((loan) => loan.isActive);
+	const statuses = started.map((loan) => getLoanStatus(loan, now));
 	const kinds = statuses.map((status) => status.kind);
 	return {
-		onLoan: activeLoans.filter((loan) => loan.isActive).length,
+		onLoan: started.length,
 		overdue: kinds.filter((kind) => kind === "overdue").length,
 		longOverdue: statuses.filter((status) => getLoanStatusTone(status) === "red").length,
 		dueThisWeek: kinds.filter((kind) => kind === "due-today" || kind === "due-soon").length,
@@ -118,6 +119,9 @@ export type LoanFilter = "all" | "overdue" | "due-this-week";
 export const matchesLoanFilter = (loan: Loan, filter: LoanFilter, now: Date = new Date()): boolean => {
 	if (filter === "all") {
 		return true;
+	}
+	if (!loan.isActive) {
+		return false;
 	}
 	const kind = getLoanStatus(loan, now).kind;
 	return filter === "overdue" ? kind === "overdue" : kind === "due-today" || kind === "due-soon";

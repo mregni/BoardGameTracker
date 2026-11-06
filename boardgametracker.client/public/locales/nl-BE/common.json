@@ -94,8 +94,7 @@
   },
   "no-sessions": {
     "title": "Nog geen sessies geregistreerd",
-    "content": "Registreer je eerste spelsessie om statistieken te bekijken",
-    "button": ""
+    "content": "Registreer je eerste spelsessie om statistieken te bekijken"
   },
   "days": {
     "sunday": "Zondag",

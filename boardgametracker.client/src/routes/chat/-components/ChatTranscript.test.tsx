@@ -11,6 +11,10 @@ const buildExchange = (overrides: Partial<ChatExchange> = {}): ChatExchange => (
 	...overrides,
 });
 
+vi.mock("@/utils/i18n", () => ({
+	default: { t: (key: string) => key },
+}));
+
 describe("ChatTranscript", () => {
 	beforeAll(() => {
 		Element.prototype.scrollIntoView = vi.fn();

@@ -365,12 +365,34 @@ public class HeadToHeadCalculatorTests
     }
 
     [Fact]
-    public void Closest_ShouldHaveNoWinner_WhenSomeoneElseWon()
+    public void Closest_ShouldSayOthersWon_WhenSomeoneElseWon()
     {
-        var closest = HeadToHeadCalculator.Closest([Session(1, 0, oneScore: 20, twoScore: 20)], PlayerOne, PlayerTwo);
+        var closest = HeadToHeadCalculator.Closest([Session(1, 0, oneScore: 20, twoScore: 20, otherWinner: 3)], PlayerOne, PlayerTwo);
 
         closest!.PlayerId.Should().BeNull();
+        closest.OtherWon.Should().BeTrue();
+        closest.BothWon.Should().BeFalse();
         closest.ScoringDifference.Should().Be(0);
+    }
+
+    [Fact]
+    public void Closest_ShouldNameNobody_WhenNobodyWon()
+    {
+        var closest = HeadToHeadCalculator.Closest([Session(1, 0, oneScore: 20, twoScore: 21)], PlayerOne, PlayerTwo);
+
+        closest!.PlayerId.Should().BeNull();
+        closest.OtherWon.Should().BeFalse();
+        closest.BothWon.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Closest_ShouldSayBothWon_WhenBothPlayersWon()
+    {
+        var closest = HeadToHeadCalculator.Closest([Session(1, 0, oneWon: true, twoWon: true, oneScore: 5, twoScore: 5)], PlayerOne, PlayerTwo);
+
+        closest!.PlayerId.Should().BeNull();
+        closest.BothWon.Should().BeTrue();
+        closest.OtherWon.Should().BeFalse();
     }
 
     [Fact]

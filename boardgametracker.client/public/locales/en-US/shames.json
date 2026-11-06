@@ -34,8 +34,8 @@
     "game": "Game",
     "last-played": "Last played",
     "paid": "Paid",
-    "count_one": "{{count}} of {{total}} games",
-    "count_other": "{{count}} of {{total}} games"
+    "count_one": "{{shown}} of {{count}} game",
+    "count_other": "{{shown}} of {{count}} games"
   },
   "row": {
     "owned-since": "owned since {{date}}",
@@ -84,7 +84,8 @@
     "planned-across_other": "{{count}} games are coming off the shelf across {{nights}} game nights."
   },
   "summary": {
-    "on-shelf": "{{count}} of {{total}} owned games on the shelf",
+    "on-shelf_one": "{{shelved}} of {{total}} owned game on the shelf",
+    "on-shelf_other": "{{shelved}} of {{total}} owned games on the shelf",
     "never-played_one": "{{count}} never played",
     "never-played_other": "{{count}} never played",
     "oldest": "oldest: {{title}}",
