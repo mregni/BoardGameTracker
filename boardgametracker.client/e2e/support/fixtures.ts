@@ -1,5 +1,4 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import path from "node:path";
 import { type Browser, type BrowserContext, test as base, expect, type Page, type TestInfo } from "@playwright/test";
 
@@ -11,7 +10,7 @@ export const writerCredentials = { username: "writer", password: "writer-passwor
 
 const REFRESH_REUSE_MS = 5 * 60_000;
 const LOGIN_SPACING_MS = 8_000;
-const loginTurnFile = path.join(tmpdir(), `bgt-e2e-login-turn-${process.env.E2E_CLIENT_PORT ?? 5543}`);
+const loginTurnFile = path.join("node_modules", `.e2e-login-turn-${process.env.E2E_CLIENT_PORT ?? 5543}`);
 
 export const paceLogin = async () => {
 	const lastTurn = await readFile(loginTurnFile, "utf8").then(Number, () => 0);
