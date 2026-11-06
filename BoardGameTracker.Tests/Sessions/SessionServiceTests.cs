@@ -15,6 +15,7 @@ using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions;
 using BoardGameTracker.Core.Sessions.Interfaces;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -24,6 +25,11 @@ namespace BoardGameTracker.Tests.Sessions;
 
 public class SessionServiceTests
 {
+    private const int NightId = 7;
+    private static readonly DateTime Now = new(2026, 3, 2, 19, 0, 0, DateTimeKind.Utc);
+    private static readonly GameNight LinkedNight = NightAt(Now, NightId);
+    private static readonly GameNight OtherNight = NightAt(Now, NightId + 1);
+
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IBadgeService> _badgeServiceMock;
     private readonly Mock<IGameService> _gameServiceMock;
@@ -45,7 +51,7 @@ public class SessionServiceTests
         _gameNightRepositoryMock = new Mock<IReadRepository<GameNight>>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _dateTimeProviderMock = new Mock<IDateTimeProvider>();
-        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(Now);
         _loggerMock = new Mock<ILogger<SessionService>>();
 
         _sessionService = new SessionService(
@@ -58,11 +64,6 @@ public class SessionServiceTests
             _unitOfWorkMock.Object,
             _dateTimeProviderMock.Object,
             _loggerMock.Object);
-
-        _gameServiceMock.Setup(x => x.ExistsAsync(It.IsAny<int>())).ReturnsAsync(true);
-        _playerServiceMock
-            .Setup(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()))
-            .ReturnsAsync((IEnumerable<int> ids) => ids.ToList());
     }
 
     private void VerifyNoOtherCalls()
@@ -74,21 +75,227 @@ public class SessionServiceTests
         _playerServiceMock.VerifyNoOtherCalls();
         _gameNightRepositoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
+        _dateTimeProviderMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
     }
+
+    #region Helpers
+
+    private static GameNight NightAt(DateTime start, int id = NightId)
+    {
+        var gameNight = GameNight.Create("Night", "", start, 1, 1);
+        gameNight.Id = id;
+        return gameNight;
+    }
+
+    private static bool Matches(Session session, CreateSessionCommand command)
+    {
+        return session.GameId == command.GameId
+            && session.Start == command.Start
+            && session.End == command.Start.AddMinutes(command.Minutes)
+            && session.Comment == (command.Comment ?? string.Empty)
+            && session.PlayerSessions.Select(ps => ps.PlayerId).SequenceEqual(PlayerIds(command));
+    }
+
+    private static int[] PlayerIds(CreateSessionCommand command)
+    {
+        return command.PlayerSessions.Select(ps => ps.PlayerId).Distinct().ToArray();
+    }
+
+    private void SetupExistingPlayers(CreateSessionCommand command)
+    {
+        var ids = PlayerIds(command);
+        if (ids.Length > 0)
+        {
+            _playerServiceMock
+                .Setup(x => x.GetExistingIdsAsync(It.Is<IEnumerable<int>>(requested => requested.SequenceEqual(ids))))
+                .ReturnsAsync(ids.ToList());
+        }
+    }
+
+    private void SetupNoExistingPlayers(params int[] requestedIds)
+    {
+        _playerServiceMock
+            .Setup(x => x.GetExistingIdsAsync(It.Is<IEnumerable<int>>(requested => requested.SequenceEqual(requestedIds))))
+            .ReturnsAsync([]);
+    }
+
+    private void SetupCreateChecks(CreateSessionCommand command)
+    {
+        _gameServiceMock.Setup(x => x.ExistsAsync(command.GameId)).ReturnsAsync(true);
+        SetupExistingPlayers(command);
+    }
+
+    private void SetupCreate(CreateSessionCommand command)
+    {
+        SetupCreateChecks(command);
+        _sessionRepositoryMock
+            .Setup(x => x.CreateAsync(It.Is<Session>(s => Matches(s, command))))
+            .ReturnsAsync((Session s) => s);
+        _badgeServiceMock
+            .Setup(x => x.AwardBadgesAsync(It.Is<Session>(s => Matches(s, command))))
+            .Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+    }
+
+    private void SetupUpdate(Session session, CreateSessionCommand command)
+    {
+        SetupExistingPlayers(command);
+        _sessionRepositoryMock.Setup(x => x.GetByIdAsync(session.Id)).ReturnsAsync(session);
+        _badgeServiceMock.Setup(x => x.AwardBadgesAsync(session)).Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+    }
+
+    private void VerifyClockReads(int reads)
+    {
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Exactly(reads));
+    }
+
+    private void VerifyPlayerLookup(params int[] ids)
+    {
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.Is<IEnumerable<int>>(requested => requested.SequenceEqual(ids))), Times.Once);
+    }
+
+    private void VerifyGameLookup(int gameId)
+    {
+        _gameServiceMock.Verify(x => x.ExistsAsync(gameId), Times.Once);
+    }
+
+    private void VerifyCreateChecks(CreateSessionCommand command, int clockReads = 1)
+    {
+        VerifyClockReads(clockReads);
+        VerifyCommandCreateLog(command.GameId);
+        VerifyGameLookup(command.GameId);
+        if (command.PlayerSessions.Count > 0)
+        {
+            VerifyPlayerLookup(PlayerIds(command));
+        }
+    }
+
+    private void VerifyCreated(CreateSessionCommand command, int clockReads = 1)
+    {
+        VerifyCreateChecks(command, clockReads);
+        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.Is<Session>(s => Matches(s, command))), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.Is<Session>(s => Matches(s, command))), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyCreateLogs(0, command.GameId);
+    }
+
+    private void VerifyUpdateChecks(int sessionId, CreateSessionCommand command)
+    {
+        VerifyClockReads(1);
+        VerifyCommandUpdateLog(sessionId);
+        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
+        if (command.PlayerSessions.Count > 0)
+        {
+            VerifyPlayerLookup(PlayerIds(command));
+        }
+    }
+
+    private void VerifyUpdated(Session session, CreateSessionCommand command)
+    {
+        VerifyUpdateChecks(session.Id, command);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdateLogs(session.Id);
+    }
+
+    private void VerifyCommandCreateLog(int gameId)
+    {
+        _loggerMock.VerifyLog(LogLevel.Debug, $"Creating session from command for game {gameId}");
+    }
+
+    private void VerifyCommandUpdateLog(int sessionId)
+    {
+        _loggerMock.VerifyLog(LogLevel.Debug, $"Updating session {sessionId} from command");
+    }
+
+    private void VerifyCreateLogs(int sessionId, int gameId)
+    {
+        _loggerMock.VerifyLog(LogLevel.Debug, $"Creating session for game {gameId}");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Session {sessionId} created for game {gameId}");
+    }
+
+    private void VerifyUpdateLogs(int sessionId)
+    {
+        _loggerMock.VerifyLog(LogLevel.Debug, $"Updating session {sessionId}");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Session {sessionId} updated");
+    }
+
+    private void VerifyBadgeFailureLog(int sessionId, Exception exception)
+    {
+        _loggerMock.VerifyLog(LogLevel.Warning, $"Session {sessionId} was saved, but awarding badges failed; they are evaluated again on the next save", exception);
+    }
+
+    private void VerifyGameNightRead(Times times)
+    {
+        _gameNightRepositoryMock.Verify(
+            x => x.SingleOrDefaultAsync(It.Is<GameNightByIdSpec>(s => s.IsSatisfiedBy(LinkedNight) && !s.IsSatisfiedBy(OtherNight)), CancellationToken.None),
+            times);
+    }
+
+    private void SetupGameNightRead(GameNight? gameNight)
+    {
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameNightByIdSpec>(s => s.IsSatisfiedBy(LinkedNight) && !s.IsSatisfiedBy(OtherNight)), CancellationToken.None))
+            .ReturnsAsync(gameNight);
+    }
+
+    private static CreateSessionCommand CreateCommand(params CreatePlayerSessionCommand[] players)
+    {
+        return new CreateSessionCommand
+        {
+            GameId = 1,
+            Start = Now.AddHours(-2),
+            Minutes = 120,
+            PlayerSessions = [.. players]
+        };
+    }
+
+    private static UpdateSessionCommand UpdateCommand(params CreatePlayerSessionCommand[] players)
+    {
+        return new UpdateSessionCommand
+        {
+            Id = 1,
+            GameId = 1,
+            Start = Now.AddHours(-2),
+            Minutes = 120,
+            PlayerSessions = [.. players]
+        };
+    }
+
+    private static CreatePlayerSessionCommand Player(int id, bool won = false, double? score = null, bool firstPlay = false)
+    {
+        return new CreatePlayerSessionCommand { PlayerId = id, Won = won, Score = score, FirstPlay = firstPlay };
+    }
+
+    private static Session StoredSession(params int[] playerIds)
+    {
+        var session = new Session(1, Now.AddHours(-3), Now.AddHours(-1), "Old comment") { Id = 1 };
+        foreach (var playerId in playerIds)
+        {
+            session.AddPlayerSession(playerId, null, false, false);
+        }
+
+        return session;
+    }
+
+    #endregion
 
     #region Create Tests
 
     [Fact]
     public async Task Create_ShouldCreateSession_AndAwardBadges()
     {
-        var session = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Test session");
+        var session = new Session(1, Now.AddHours(-2), Now, "Test session");
+        var created = new Session(1, Now.AddHours(-2), Now, "Test session") { Id = 12 };
 
         _sessionRepositoryMock
             .Setup(x => x.CreateAsync(session))
-            .ReturnsAsync(session);
+            .ReturnsAsync(created);
 
         _badgeServiceMock
-            .Setup(x => x.AwardBadgesAsync(session))
+            .Setup(x => x.AwardBadgesAsync(created))
             .Returns(Task.CompletedTask);
 
         _unitOfWorkMock
@@ -97,23 +304,54 @@ public class SessionServiceTests
 
         var result = await _sessionService.Create(session);
 
-        result.Should().NotBeNull();
+        result.Should().BeSameAs(created);
 
+        _sessionRepositoryMock.Verify(x => x.CreateAsync(session), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(created), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyCreateLogs(12, 1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Create_ShouldSaveTheSession_BeforeAwardingBadges_AndSaveTheBadgesAfterwards()
+    {
+        var session = new Session(1, Now.AddHours(-2), Now, "Test session");
+        var steps = new List<string>();
+
+        _sessionRepositoryMock
+            .Setup(x => x.CreateAsync(session))
+            .Callback(() => steps.Add("create"))
+            .ReturnsAsync(session);
+        _badgeServiceMock
+            .Setup(x => x.AwardBadgesAsync(session))
+            .Callback(() => steps.Add("award"))
+            .Returns(Task.CompletedTask);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .Callback(() => steps.Add("save"))
+            .ReturnsAsync(1);
+
+        await _sessionService.Create(session);
+
+        steps.Should().Equal("create", "save", "award", "save");
         _sessionRepositoryMock.Verify(x => x.CreateAsync(session), Times.Once);
         _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyCreateLogs(0, 1);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Create_ShouldStillReturnTheSavedSession_WhenAwardingBadgesFails()
     {
-        var session = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Test session");
+        var session = new Session(1, Now.AddHours(-2), Now, "Test session") { Id = 3 };
+        var failure = new Microsoft.EntityFrameworkCore.DbUpdateException("duplicate badge");
         _sessionRepositoryMock.Setup(x => x.CreateAsync(session)).ReturnsAsync(session);
         _unitOfWorkMock
             .SetupSequence(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1)
-            .ThrowsAsync(new Microsoft.EntityFrameworkCore.DbUpdateException("duplicate badge"));
+            .ThrowsAsync(failure);
         _badgeServiceMock.Setup(x => x.AwardBadgesAsync(session)).Returns(Task.CompletedTask);
 
         var result = await _sessionService.Create(session);
@@ -123,6 +361,50 @@ public class SessionServiceTests
         _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
         _unitOfWorkMock.Verify(x => x.DiscardPendingInserts(), Times.Once);
+        VerifyBadgeFailureLog(3, failure);
+        VerifyCreateLogs(3, 1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Create_ShouldSkipTheSecondSave_WhenTheBadgeServiceFails()
+    {
+        var session = new Session(1, Now.AddHours(-2), Now, "Test session") { Id = 3 };
+        var failure = new InvalidOperationException("evaluator failed");
+        _sessionRepositoryMock.Setup(x => x.CreateAsync(session)).ReturnsAsync(session);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+        _badgeServiceMock.Setup(x => x.AwardBadgesAsync(session)).ThrowsAsync(failure);
+
+        var result = await _sessionService.Create(session);
+
+        result.Should().BeSameAs(session);
+        _sessionRepositoryMock.Verify(x => x.CreateAsync(session), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _unitOfWorkMock.Verify(x => x.DiscardPendingInserts(), Times.Once);
+        VerifyBadgeFailureLog(3, failure);
+        VerifyCreateLogs(3, 1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Create_ShouldPropagateCancellation_WhileAwardingBadges()
+    {
+        var session = new Session(1, Now.AddHours(-2), Now, "Test session");
+        var cancellation = new OperationCanceledException();
+        _sessionRepositoryMock.Setup(x => x.CreateAsync(session)).ReturnsAsync(session);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+        _badgeServiceMock.Setup(x => x.AwardBadgesAsync(session)).ThrowsAsync(cancellation);
+
+        var action = async () => await _sessionService.Create(session);
+
+        (await action.Should().ThrowAsync<OperationCanceledException>()).Which.Should().BeSameAs(cancellation);
+
+        _sessionRepositoryMock.Verify(x => x.CreateAsync(session), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _unitOfWorkMock.Verify(x => x.DiscardPendingInserts(), Times.Never);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Creating session for game 1");
         VerifyNoOtherCalls();
     }
 
@@ -134,7 +416,7 @@ public class SessionServiceTests
     public async Task Get_ShouldReturnSession_WhenSessionExists()
     {
         var sessionId = 1;
-        var session = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Test session") { Id = sessionId };
+        var session = new Session(1, Now.AddHours(-2), Now, "Test session") { Id = sessionId };
 
         _sessionRepositoryMock
             .Setup(x => x.GetByIdAsync(sessionId))
@@ -142,10 +424,10 @@ public class SessionServiceTests
 
         var result = await _sessionService.Get(sessionId);
 
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(sessionId);
+        result.Should().BeSameAs(session);
 
         _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Fetching session 1");
         VerifyNoOtherCalls();
     }
 
@@ -163,6 +445,7 @@ public class SessionServiceTests
         result.Should().BeNull();
 
         _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Fetching session 999");
         VerifyNoOtherCalls();
     }
 
@@ -187,6 +470,8 @@ public class SessionServiceTests
 
         _sessionRepositoryMock.Verify(x => x.DeleteAsync(sessionId), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Deleting session 1");
+        _loggerMock.VerifyLog(LogLevel.Information, "Session 1 deleted");
         VerifyNoOtherCalls();
     }
 
@@ -197,7 +482,7 @@ public class SessionServiceTests
     [Fact]
     public async Task Update_ShouldUpdateSession_AndAwardBadges()
     {
-        var session = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Updated session") { Id = 1 };
+        var session = new Session(1, Now.AddHours(-2), Now, "Updated session") { Id = 1 };
 
         _badgeServiceMock
             .Setup(x => x.AwardBadgesAsync(session))
@@ -209,11 +494,54 @@ public class SessionServiceTests
 
         var result = await _sessionService.Update(session);
 
-        result.Should().NotBeNull();
-        result.Comment.Should().Be("Updated session");
+        result.Should().BeSameAs(session);
 
         _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdateLogs(1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldSaveTheChanges_BeforeAwardingBadges()
+    {
+        var session = new Session(1, Now.AddHours(-2), Now, "Updated session") { Id = 1 };
+        var steps = new List<string>();
+
+        _badgeServiceMock
+            .Setup(x => x.AwardBadgesAsync(session))
+            .Callback(() => steps.Add("award"))
+            .Returns(Task.CompletedTask);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .Callback(() => steps.Add("save"))
+            .ReturnsAsync(1);
+
+        await _sessionService.Update(session);
+
+        steps.Should().Equal("save", "award", "save");
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdateLogs(1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldStillReturnTheSavedSession_WhenAwardingBadgesFails()
+    {
+        var session = new Session(1, Now.AddHours(-2), Now, "Updated session") { Id = 1 };
+        var failure = new InvalidOperationException("evaluator failed");
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+        _badgeServiceMock.Setup(x => x.AwardBadgesAsync(session)).ThrowsAsync(failure);
+
+        var result = await _sessionService.Update(session);
+
+        result.Should().BeSameAs(session);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _unitOfWorkMock.Verify(x => x.DiscardPendingInserts(), Times.Once);
+        VerifyBadgeFailureLog(1, failure);
+        VerifyUpdateLogs(1);
         VerifyNoOtherCalls();
     }
 
@@ -224,39 +552,36 @@ public class SessionServiceTests
     [Fact]
     public async Task CreateFromCommand_ShouldCreateSession_WithBasicData()
     {
-        var command = new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            Comment = "Great game",
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true, Score = 100}]
-        };
-
-        _sessionRepositoryMock
-            .Setup(x => x.CreateAsync(It.IsAny<Session>()))
-            .ReturnsAsync((Session s) => s);
-
-        _badgeServiceMock
-            .Setup(x => x.AwardBadgesAsync(It.IsAny<Session>()))
-            .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
+        var command = CreateCommand(Player(1, won: true, score: 100, firstPlay: true));
+        command.Comment = "Great game";
+        SetupCreate(command);
 
         var result = await _sessionService.CreateFromCommand(command);
 
-        result.Should().NotBeNull();
         result.GameId.Should().Be(1);
         result.Comment.Should().Be("Great game");
-        result.PlayerSessions.Should().ContainSingle(ps => ps.PlayerId == 1 && ps.Score == 100 && ps.Won);
+        result.Start.Should().Be(command.Start);
+        result.End.Should().Be(Now);
+        result.PlayerSessions.Should().ContainSingle(ps => ps.PlayerId == 1 && ps.Score == 100 && ps.Won && ps.FirstPlay);
+        result.GameNightId.Should().BeNull();
+        result.LocationId.Should().BeNull();
+        result.IsCoop.Should().BeFalse();
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyCreated(command);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldStoreAnEmptyComment_WhenNoCommentIsGiven()
+    {
+        var command = CreateCommand(Player(1));
+        SetupCreate(command);
+
+        var result = await _sessionService.CreateFromCommand(command);
+
+        result.Comment.Should().BeEmpty();
+
+        VerifyCreated(command);
         VerifyNoOtherCalls();
     }
 
@@ -269,41 +594,20 @@ public class SessionServiceTests
             new Expansion("Expansion 2", 101, 1) { Id = 2 }
         };
 
-        var command = new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            ExpansionIds = [1, 2],
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
-        };
+        var command = CreateCommand(Player(1, won: true));
+        command.ExpansionIds = [1, 2];
+        SetupCreate(command);
 
         _gameServiceMock
-            .Setup(x => x.GetGameExpansions(1, It.Is<List<int>>(ids => ids.Contains(1) && ids.Contains(2))))
+            .Setup(x => x.GetGameExpansions(1, It.Is<List<int>>(ids => ids.SequenceEqual(new[] { 1, 2 }))))
             .ReturnsAsync(expansions);
-
-        _sessionRepositoryMock
-            .Setup(x => x.CreateAsync(It.IsAny<Session>()))
-            .ReturnsAsync((Session s) => s);
-
-        _badgeServiceMock
-            .Setup(x => x.AwardBadgesAsync(It.IsAny<Session>()))
-            .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
 
         var result = await _sessionService.CreateFromCommand(command);
 
-        result.Expansions.Should().HaveCount(2);
+        result.Expansions.Should().Equal(expansions);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
-        _gameServiceMock.Verify(x => x.GetGameExpansions(It.IsAny<int>(), It.IsAny<List<int>>()), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        _gameServiceMock.Verify(x => x.GetGameExpansions(1, It.Is<List<int>>(ids => ids.SequenceEqual(new[] { 1, 2 }))), Times.Once);
+        VerifyCreated(command);
         VerifyNoOtherCalls();
     }
 
@@ -312,139 +616,121 @@ public class SessionServiceTests
     {
         var location = new Location("Game Store") { Id = 5 };
 
-        var command = new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            LocationId = 5,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
-        };
+        var command = CreateCommand(Player(1, won: true));
+        command.LocationId = 5;
+        SetupCreate(command);
 
         _locationServiceMock
             .Setup(x => x.GetByIdAsync(5))
             .ReturnsAsync(location);
 
-        _sessionRepositoryMock
-            .Setup(x => x.CreateAsync(It.IsAny<Session>()))
-            .ReturnsAsync((Session s) => s);
-
-        _badgeServiceMock
-            .Setup(x => x.AwardBadgesAsync(It.IsAny<Session>()))
-            .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
-
         var result = await _sessionService.CreateFromCommand(command);
 
         result.LocationId.Should().Be(5);
+        result.Location.Should().BeSameAs(location);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
         _locationServiceMock.Verify(x => x.GetByIdAsync(5), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyCreated(command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromCommand_ShouldAddMultiplePlayers()
     {
-        var command = new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            PlayerSessions =
-            [
-                new CreatePlayerSessionCommand {PlayerId = 1, Won = true, Score = 100},
-                new CreatePlayerSessionCommand {PlayerId = 2, Won = false, Score = 80},
-                new CreatePlayerSessionCommand {PlayerId = 3, Won = false, Score = 60}
-            ]
-        };
-
-        _sessionRepositoryMock
-            .Setup(x => x.CreateAsync(It.IsAny<Session>()))
-            .ReturnsAsync((Session s) => s);
-
-        _badgeServiceMock
-            .Setup(x => x.AwardBadgesAsync(It.IsAny<Session>()))
-            .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
+        var command = CreateCommand(Player(1, won: true, score: 100), Player(2, score: 80), Player(3, score: 60));
+        SetupCreate(command);
 
         var result = await _sessionService.CreateFromCommand(command);
 
-        result.PlayerSessions.Should().HaveCount(3);
+        result.PlayerSessions.Select(ps => (ps.PlayerId, ps.Score, ps.Won)).Should().Equal((1, 100, true), (2, 80, false), (3, 60, false));
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyCreated(command);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldLookUpEachPlayerOnce_WhenAPlayerIsListedTwice()
+    {
+        var command = CreateCommand(Player(1, won: true, score: 100), Player(1, score: 80));
+        SetupCreate(command);
+
+        var result = await _sessionService.CreateFromCommand(command);
+
+        result.PlayerSessions.Should().ContainSingle(ps => ps.PlayerId == 1 && ps.Score == 100 && ps.Won);
+
+        VerifyCreated(command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromCommand_ShouldThrowValidationException_WhenStartIsMoreThanADayAhead()
     {
-        var command = new CreateSessionCommand
-        {
-            GameId = 10,
-            Start = DateTime.UtcNow.AddDays(2),
-            Minutes = 60,
-            PlayerSessions = []
-        };
+        var command = CreateCommand();
+        command.GameId = 10;
+        command.Start = Now.AddDays(2);
+
+        var action = async () => await _sessionService.CreateFromCommand(command);
+
+        var error = await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.SessionStartInFuture);
+        error.Which.Errors[nameof(CreateSessionCommand.Start)].Should().Equal(Constants.Errors.SessionStartInFuture);
+
+        VerifyClockReads(1);
+        VerifyCommandCreateLog(10);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldThrowValidationException_WhenStartIsJustPastADayAhead()
+    {
+        var command = CreateCommand();
+        command.Start = Now.AddDays(1).AddTicks(1);
 
         var action = async () => await _sessionService.CreateFromCommand(command);
 
         await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.SessionStartInFuture);
 
+        VerifyClockReads(1);
+        VerifyCommandCreateLog(1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldAllowStart_ExactlyADayAhead()
+    {
+        var command = CreateCommand();
+        command.Start = Now.AddDays(1);
+        SetupCreate(command);
+
+        var result = await _sessionService.CreateFromCommand(command);
+
+        result.Start.Should().Be(command.Start);
+
+        VerifyCreated(command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromCommand_ShouldAllowStart_WithinTheClockSkewWindow()
     {
-        var command = new CreateSessionCommand
-        {
-            GameId = 10,
-            Start = DateTime.UtcNow.AddHours(3),
-            Minutes = 60,
-            PlayerSessions = []
-        };
-
-        _sessionRepositoryMock
-            .Setup(x => x.CreateAsync(It.IsAny<Session>()))
-            .ReturnsAsync((Session s) => s);
+        var command = CreateCommand();
+        command.GameId = 10;
+        command.Start = Now.AddHours(3);
+        command.Minutes = 60;
+        SetupCreate(command);
 
         var result = await _sessionService.CreateFromCommand(command);
 
         result.Start.Should().Be(command.Start);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(10), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.AtMostOnce);
-        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyCreated(command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromCommand_ShouldThrowEntityNotFound_WhenGameDoesNotExist()
     {
-        var command = new CreateSessionCommand
-        {
-            GameId = 10,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            PlayerSessions = []
-        };
+        var command = CreateCommand();
+        command.GameId = 10;
 
         _gameServiceMock
             .Setup(x => x.ExistsAsync(10))
@@ -452,23 +738,20 @@ public class SessionServiceTests
 
         var action = async () => await _sessionService.CreateFromCommand(command);
 
-        await action.Should().ThrowAsync<EntityNotFoundException>();
+        var error = await action.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(Game));
+        error.Which.EntityId.Should().Be(10);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(10), Times.Once);
+        VerifyCreateChecks(command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromCommand_ShouldThrowEntityNotFound_WhenLocationDoesNotExist()
     {
-        var command = new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            LocationId = 99,
-            PlayerSessions = []
-        };
+        var command = CreateCommand();
+        command.LocationId = 99;
+        SetupCreateChecks(command);
 
         _locationServiceMock
             .Setup(x => x.GetByIdAsync(99))
@@ -476,9 +759,11 @@ public class SessionServiceTests
 
         var action = async () => await _sessionService.CreateFromCommand(command);
 
-        await action.Should().ThrowAsync<EntityNotFoundException>();
+        var error = await action.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(Location));
+        error.Which.EntityId.Should().Be(99);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
+        VerifyCreateChecks(command);
         _locationServiceMock.Verify(x => x.GetByIdAsync(99), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -486,24 +771,34 @@ public class SessionServiceTests
     [Fact]
     public async Task CreateFromCommand_ShouldThrowEntityNotFound_WhenPlayerDoesNotExist()
     {
-        var command = new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 5, Won = true}]
-        };
-
-        _playerServiceMock
-            .Setup(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()))
-            .ReturnsAsync(new List<int>());
+        var command = CreateCommand(Player(5, won: true));
+        _gameServiceMock.Setup(x => x.ExistsAsync(1)).ReturnsAsync(true);
+        SetupNoExistingPlayers(5);
 
         var action = async () => await _sessionService.CreateFromCommand(command);
 
-        await action.Should().ThrowAsync<EntityNotFoundException>();
+        var error = await action.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(Player));
+        error.Which.EntityId.Should().Be(5);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        VerifyCreateChecks(command);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldNameTheMissingPlayer_WhenOtherPlayersExist()
+    {
+        var command = CreateCommand(Player(1), Player(5), Player(6));
+        _gameServiceMock.Setup(x => x.ExistsAsync(1)).ReturnsAsync(true);
+        _playerServiceMock
+            .Setup(x => x.GetExistingIdsAsync(It.Is<IEnumerable<int>>(requested => requested.SequenceEqual(new[] { 1, 5, 6 }))))
+            .ReturnsAsync([1, 6]);
+
+        var action = async () => await _sessionService.CreateFromCommand(command);
+
+        (await action.Should().ThrowAsync<EntityNotFoundException>()).Which.EntityId.Should().Be(5);
+
+        VerifyCreateChecks(command);
         VerifyNoOtherCalls();
     }
 
@@ -512,118 +807,74 @@ public class SessionServiceTests
     [Fact]
     public async Task CreateFromCommand_ShouldLinkTheGameNight_WhenGameNightIdProvided()
     {
-        var command = new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 45,
-            GameNightId = 7,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
-        };
-
-        _gameNightRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None))
-            .ReturnsAsync(GameNight.Create("Night", "", DateTime.UtcNow.AddHours(-3), 1, 1));
-        _sessionRepositoryMock
-            .Setup(x => x.CreateAsync(It.IsAny<Session>()))
-            .ReturnsAsync((Session s) => s);
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
+        var command = CreateCommand(Player(1, won: true));
+        command.GameNightId = NightId;
+        SetupCreate(command);
+        SetupGameNightRead(NightAt(Now.AddHours(-3)));
 
         var result = await _sessionService.CreateFromCommand(command);
 
-        result.GameNightId.Should().Be(7);
+        result.GameNightId.Should().Be(NightId);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyGameNightRead(Times.Once());
+        VerifyCreated(command, clockReads: 2);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromCommand_ShouldThrowEntityNotFound_WhenGameNightDoesNotExist()
     {
-        var command = new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 45,
-            GameNightId = 7,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1}]
-        };
-
-        _gameNightRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None))
-            .ReturnsAsync((GameNight?)null);
+        var command = CreateCommand(Player(1));
+        command.GameNightId = NightId;
+        SetupCreateChecks(command);
+        SetupGameNightRead(null);
 
         var action = () => _sessionService.CreateFromCommand(command);
 
-        await action.Should().ThrowAsync<EntityNotFoundException>();
+        var error = await action.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(GameNight));
+        error.Which.EntityId.Should().Be(NightId);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None), Times.Once);
+        VerifyGameNightRead(Times.Once());
+        VerifyCreateChecks(command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromCommand_ShouldBeRefused_WhenTheGameNightHasEnded()
     {
-        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow.AddHours(-5), 1, 1);
-        gameNight.End(DateTime.UtcNow.AddHours(-1));
-        var command = new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 45,
-            GameNightId = 7,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1}]
-        };
-
-        _gameNightRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None))
-            .ReturnsAsync(gameNight);
+        var gameNight = NightAt(Now.AddHours(-5));
+        gameNight.End(Now.AddHours(-1));
+        var command = CreateCommand(Player(1));
+        command.GameNightId = NightId;
+        SetupCreateChecks(command);
+        SetupGameNightRead(gameNight);
 
         var action = () => _sessionService.CreateFromCommand(command);
 
         var error = await action.Should().ThrowAsync<ValidationException>();
-        error.Which.Errors.Should().ContainKey(nameof(CreateSessionCommand.GameNightId));
+        error.Which.Errors[nameof(CreateSessionCommand.GameNightId)].Should().Equal(Constants.Errors.GameNightEnded);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None), Times.Once);
+        VerifyGameNightRead(Times.Once());
+        VerifyCreateChecks(command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromCommand_ShouldBeRefused_WhenTheGameNightIsMoreThanTwelveHoursAway()
     {
-        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow.AddDays(7), 1, 1);
-        var command = new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 45,
-            GameNightId = 7,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1}]
-        };
-
-        _gameNightRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None))
-            .ReturnsAsync(gameNight);
+        var command = CreateCommand(Player(1));
+        command.GameNightId = NightId;
+        SetupCreateChecks(command);
+        SetupGameNightRead(NightAt(Now.AddDays(7)));
 
         var action = () => _sessionService.CreateFromCommand(command);
 
         var error = await action.Should().ThrowAsync<ValidationException>();
-        error.Which.Errors[nameof(CreateSessionCommand.GameNightId)].Should().Contain(Constants.Errors.GameNightNotStarted);
+        error.Which.Errors[nameof(CreateSessionCommand.GameNightId)].Should().Equal(Constants.Errors.GameNightNotStarted);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None), Times.Once);
+        VerifyGameNightRead(Times.Once());
+        VerifyCreateChecks(command, clockReads: 2);
         VerifyNoOtherCalls();
     }
 
@@ -632,146 +883,207 @@ public class SessionServiceTests
     [Fact]
     public async Task UpdateFromCommand_ShouldUpdateSession_WhenSessionExists()
     {
-        var sessionId = 1;
-        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-3), DateTime.UtcNow.AddHours(-1), "Old comment") { Id = sessionId };
+        var existingSession = StoredSession();
         existingSession.AddPlayerSession(1, 50, false, false);
 
-        var command = new UpdateSessionCommand
-        {
-            Id = sessionId,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            Comment = "Updated comment",
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true, Score = 100}]
-        };
-
-        _sessionRepositoryMock
-            .Setup(x => x.GetByIdAsync(sessionId))
-            .ReturnsAsync(existingSession);
-
-        _badgeServiceMock
-            .Setup(x => x.AwardBadgesAsync(existingSession))
-            .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
+        var command = UpdateCommand(Player(1, won: true, score: 100, firstPlay: true));
+        command.Comment = "Updated comment";
+        SetupUpdate(existingSession, command);
 
         var result = await _sessionService.UpdateFromCommand(command);
 
-        result.Should().NotBeNull();
+        result.Should().BeSameAs(existingSession);
         result.Comment.Should().Be("Updated comment");
-        result.PlayerSessions.Should().ContainSingle(ps => ps.PlayerId == 1 && ps.Score == 100 && ps.Won);
+        result.Start.Should().Be(command.Start);
+        result.End.Should().Be(Now);
+        result.PlayerSessions.Should().ContainSingle(ps => ps.PlayerId == 1 && ps.Score == 100 && ps.Won && ps.FirstPlay);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdated(existingSession, command);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldClearTheComment_WhenNoCommentIsGiven()
+    {
+        var existingSession = StoredSession(1);
+        var command = UpdateCommand(Player(1));
+        SetupUpdate(existingSession, command);
+
+        var result = await _sessionService.UpdateFromCommand(command);
+
+        result.Comment.Should().BeEmpty();
+
+        VerifyUpdated(existingSession, command);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldUpdateTheResultsOfExistingPlayers()
+    {
+        var existingSession = StoredSession();
+        existingSession.AddPlayerSession(1, 50, true, true);
+        existingSession.AddPlayerSession(2, 40, false, false);
+        var command = UpdateCommand(Player(1, score: 60), Player(2, won: true, score: 70, firstPlay: true));
+        SetupUpdate(existingSession, command);
+
+        var result = await _sessionService.UpdateFromCommand(command);
+
+        result.PlayerSessions.Select(ps => (ps.PlayerId, ps.Score, ps.Won, ps.FirstPlay))
+            .Should().Equal((1, 60, false, false), (2, 70, true, true));
+
+        VerifyUpdated(existingSession, command);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldAddPlayers_NewInTheCommand()
+    {
+        var existingSession = StoredSession(1);
+        var command = UpdateCommand(Player(1), Player(2, won: true, score: 30, firstPlay: true));
+        SetupUpdate(existingSession, command);
+
+        var result = await _sessionService.UpdateFromCommand(command);
+
+        result.PlayerSessions.Should().HaveCount(2);
+        result.PlayerSessions.Should().ContainSingle(ps => ps.PlayerId == 2 && ps.Score == 30 && ps.Won && ps.FirstPlay);
+
+        VerifyUpdated(existingSession, command);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact(Skip = "BUG: UpdateFromCommand ignores command.GameId, so changing the game in the edit form is silently dropped")]
+    public async Task UpdateFromCommand_ShouldMoveTheSessionToTheGameInTheCommand()
+    {
+        var existingSession = StoredSession(1);
+        var command = UpdateCommand(Player(1));
+        command.GameId = 2;
+        SetupUpdate(existingSession, command);
+
+        var result = await _sessionService.UpdateFromCommand(command);
+
+        result.GameId.Should().Be(2);
+
+        VerifyUpdated(existingSession, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldKeepTheGameNightLink_WhenGameNightIdProvided()
     {
-        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-3), DateTime.UtcNow.AddHours(-1), "") { Id = 1 };
-        existingSession.SetGameNight(7);
+        var existingSession = StoredSession();
+        existingSession.SetGameNight(NightId);
 
-        var command = new UpdateSessionCommand
-        {
-            Id = 1,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 60,
-            GameNightId = 7,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
-        };
+        var command = UpdateCommand(Player(1, won: true));
+        command.GameNightId = NightId;
+        SetupUpdate(existingSession, command);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetByIdAsync(1))
-            .ReturnsAsync(existingSession);
         _gameNightRepositoryMock
-            .Setup(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None))
+            .Setup(x => x.AnyAsync(It.Is<GameNightByIdSpec>(s => s.IsSatisfiedBy(LinkedNight) && !s.IsSatisfiedBy(OtherNight)), CancellationToken.None))
             .ReturnsAsync(true);
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
 
         var result = await _sessionService.UpdateFromCommand(command);
 
-        result.GameNightId.Should().Be(7);
+        result.GameNightId.Should().Be(NightId);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.Is<GameNightByIdSpec>(s => s.IsSatisfiedBy(LinkedNight) && !s.IsSatisfiedBy(OtherNight)), CancellationToken.None), Times.Once);
+        VerifyUpdated(existingSession, command);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldThrowEntityNotFound_WhenGameNightDoesNotExist()
+    {
+        var existingSession = StoredSession();
+        var command = UpdateCommand(Player(1));
+        command.GameNightId = NightId;
+        SetupUpdate(existingSession, command);
+
+        _gameNightRepositoryMock
+            .Setup(x => x.AnyAsync(It.Is<GameNightByIdSpec>(s => s.IsSatisfiedBy(LinkedNight) && !s.IsSatisfiedBy(OtherNight)), CancellationToken.None))
+            .ReturnsAsync(false);
+
+        var action = async () => await _sessionService.UpdateFromCommand(command);
+
+        var error = await action.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(GameNight));
+        error.Which.EntityId.Should().Be(NightId);
+        existingSession.Comment.Should().Be("Old comment");
+
+        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.Is<GameNightByIdSpec>(s => s.IsSatisfiedBy(LinkedNight) && !s.IsSatisfiedBy(OtherNight)), CancellationToken.None), Times.Once);
+        VerifyUpdateChecks(1, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldUnlinkTheGameNight_WhenGameNightIdMissing()
     {
-        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-3), DateTime.UtcNow.AddHours(-1), "") { Id = 1 };
-        existingSession.SetGameNight(7);
+        var existingSession = StoredSession();
+        existingSession.SetGameNight(NightId);
 
-        var command = new UpdateSessionCommand
-        {
-            Id = 1,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 60,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
-        };
-
-        _sessionRepositoryMock
-            .Setup(x => x.GetByIdAsync(1))
-            .ReturnsAsync(existingSession);
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
+        var command = UpdateCommand(Player(1, won: true));
+        SetupUpdate(existingSession, command);
 
         var result = await _sessionService.UpdateFromCommand(command);
 
         result.GameNightId.Should().BeNull();
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdated(existingSession, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldThrowValidationException_WhenStartIsMoreThanADayAhead()
     {
-        var command = new UpdateSessionCommand
-        {
-            Id = 3,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddYears(1),
-            Minutes = 60,
-            PlayerSessions = []
-        };
+        var command = UpdateCommand();
+        command.Id = 3;
+        command.Start = Now.AddYears(1);
+
+        var action = async () => await _sessionService.UpdateFromCommand(command);
+
+        var error = await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.SessionStartInFuture);
+        error.Which.Errors[nameof(CreateSessionCommand.Start)].Should().Equal(Constants.Errors.SessionStartInFuture);
+
+        VerifyClockReads(1);
+        VerifyCommandUpdateLog(3);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldThrowValidationException_WhenStartIsJustPastADayAhead()
+    {
+        var command = UpdateCommand();
+        command.Start = Now.AddDays(1).AddTicks(1);
 
         var action = async () => await _sessionService.UpdateFromCommand(command);
 
         await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.SessionStartInFuture);
 
+        VerifyClockReads(1);
+        VerifyCommandUpdateLog(1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldAllowStart_ExactlyADayAhead()
+    {
+        var existingSession = StoredSession();
+        var command = UpdateCommand();
+        command.Start = Now.AddDays(1);
+        SetupUpdate(existingSession, command);
+
+        var result = await _sessionService.UpdateFromCommand(command);
+
+        result.Start.Should().Be(command.Start);
+
+        VerifyUpdated(existingSession, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldThrowException_WhenSessionNotFound()
     {
-        var command = new UpdateSessionCommand
-        {
-            Id = 999,
-            GameId = 1,
-            Start = DateTime.UtcNow,
-            Minutes = 60,
-            PlayerSessions = []
-        };
+        var command = UpdateCommand();
+        command.Id = 999;
 
         _sessionRepositoryMock
             .Setup(x => x.GetByIdAsync(command.Id))
@@ -779,247 +1091,148 @@ public class SessionServiceTests
 
         var action = async () => await _sessionService.UpdateFromCommand(command);
 
-        await action.Should().ThrowAsync<EntityNotFoundException>();
+        var error = await action.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(Session));
+        error.Which.EntityId.Should().Be(999);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(command.Id), Times.Once);
+        VerifyUpdateChecks(999, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldAddNewExpansions()
     {
-        var sessionId = 1;
-        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Comment") { Id = sessionId };
-        existingSession.AddPlayerSession(1, null, false, false);
-
+        var existingSession = StoredSession(1);
         var newExpansion = new Expansion("New Expansion", 100, 1) { Id = 5 };
 
-        var command = new UpdateSessionCommand
-        {
-            Id = sessionId,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            ExpansionIds = [5],
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
-        };
-
-        _sessionRepositoryMock
-            .Setup(x => x.GetByIdAsync(sessionId))
-            .ReturnsAsync(existingSession);
+        var command = UpdateCommand(Player(1, won: true));
+        command.ExpansionIds = [5];
+        SetupUpdate(existingSession, command);
 
         _gameServiceMock
-            .Setup(x => x.GetGameExpansions(It.IsAny<int>(), It.Is<List<int>>(ids => ids.Contains(5))))
+            .Setup(x => x.GetGameExpansions(1, It.Is<List<int>>(ids => ids.SequenceEqual(new[] { 5 }))))
             .ReturnsAsync([newExpansion]);
-
-        _badgeServiceMock
-            .Setup(x => x.AwardBadgesAsync(existingSession))
-            .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
 
         var result = await _sessionService.UpdateFromCommand(command);
 
-        result.Expansions.Should().Contain(e => e.Id == 5);
+        result.Expansions.Should().Equal(newExpansion);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _gameServiceMock.Verify(x => x.GetGameExpansions(It.IsAny<int>(), It.IsAny<List<int>>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        _gameServiceMock.Verify(x => x.GetGameExpansions(1, It.Is<List<int>>(ids => ids.SequenceEqual(new[] { 5 }))), Times.Once);
+        VerifyUpdated(existingSession, command);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldOnlyLoadTheExpansionsThatAreNew()
+    {
+        var existingSession = StoredSession(1);
+        var keptExpansion = new Expansion("Kept Expansion", 100, 1) { Id = 5 };
+        var droppedExpansion = new Expansion("Dropped Expansion", 101, 1) { Id = 6 };
+        var newExpansion = new Expansion("New Expansion", 102, 1) { Id = 7 };
+        existingSession.AddExpansion(keptExpansion);
+        existingSession.AddExpansion(droppedExpansion);
+
+        var command = UpdateCommand(Player(1));
+        command.ExpansionIds = [5, 7];
+        SetupUpdate(existingSession, command);
+
+        _gameServiceMock
+            .Setup(x => x.GetGameExpansions(1, It.Is<List<int>>(ids => ids.SequenceEqual(new[] { 7 }))))
+            .ReturnsAsync([newExpansion]);
+
+        var result = await _sessionService.UpdateFromCommand(command);
+
+        result.Expansions.Should().Equal(keptExpansion, newExpansion);
+
+        _gameServiceMock.Verify(x => x.GetGameExpansions(1, It.Is<List<int>>(ids => ids.SequenceEqual(new[] { 7 }))), Times.Once);
+        VerifyUpdated(existingSession, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldRemoveExpansions_NotInCommand()
     {
-        var sessionId = 1;
-        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Comment") { Id = sessionId };
-        existingSession.AddPlayerSession(1, null, false, false);
+        var existingSession = StoredSession(1);
         existingSession.AddExpansion(new Expansion("Old Expansion", 100, 1) { Id = 5 });
 
-        var command = new UpdateSessionCommand
-        {
-            Id = sessionId,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            ExpansionIds = [],
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
-        };
-
-        _sessionRepositoryMock
-            .Setup(x => x.GetByIdAsync(sessionId))
-            .ReturnsAsync(existingSession);
-
-        _badgeServiceMock
-            .Setup(x => x.AwardBadgesAsync(existingSession))
-            .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
+        var command = UpdateCommand(Player(1, won: true));
+        SetupUpdate(existingSession, command);
 
         var result = await _sessionService.UpdateFromCommand(command);
 
         result.Expansions.Should().BeEmpty();
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdated(existingSession, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldRemovePlayers_NotInCommand()
     {
-        var sessionId = 1;
-        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Comment") { Id = sessionId };
-        existingSession.AddPlayerSession(1, null, false, false);
-        existingSession.AddPlayerSession(2, null, false, false);
+        var existingSession = StoredSession(1, 2);
 
-        var command = new UpdateSessionCommand
-        {
-            Id = sessionId,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
-        };
-
-        _sessionRepositoryMock
-            .Setup(x => x.GetByIdAsync(sessionId))
-            .ReturnsAsync(existingSession);
-
-        _badgeServiceMock
-            .Setup(x => x.AwardBadgesAsync(existingSession))
-            .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
+        var command = UpdateCommand(Player(1, won: true));
+        SetupUpdate(existingSession, command);
 
         var result = await _sessionService.UpdateFromCommand(command);
 
-        result.PlayerSessions.Should().HaveCount(1);
-        result.PlayerSessions.Should().NotContain(ps => ps.PlayerId == 2);
+        result.PlayerSessions.Select(ps => ps.PlayerId).Should().Equal(1);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdated(existingSession, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldClearLocation_WhenLocationIdNull()
     {
-        var sessionId = 1;
-        var location = new Location("Old Location") { Id = 1 };
-        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Comment") { Id = sessionId };
-        existingSession.SetLocation(location);
-        existingSession.AddPlayerSession(1, null, false, false);
+        var existingSession = StoredSession(1);
+        existingSession.SetLocation(new Location("Old Location") { Id = 1 });
 
-        var command = new UpdateSessionCommand
-        {
-            Id = sessionId,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            LocationId = null,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
-        };
-
-        _sessionRepositoryMock
-            .Setup(x => x.GetByIdAsync(sessionId))
-            .ReturnsAsync(existingSession);
-
-        _badgeServiceMock
-            .Setup(x => x.AwardBadgesAsync(existingSession))
-            .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
+        var command = UpdateCommand(Player(1, won: true));
+        SetupUpdate(existingSession, command);
 
         var result = await _sessionService.UpdateFromCommand(command);
 
         result.LocationId.Should().BeNull();
+        result.Location.Should().BeNull();
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdated(existingSession, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldSetLocation_WhenLocationIdProvided()
     {
-        var sessionId = 1;
         var location = new Location("New Location") { Id = 5 };
-        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Comment") { Id = sessionId };
-        existingSession.AddPlayerSession(1, null, false, false);
+        var existingSession = StoredSession(1);
 
-        var command = new UpdateSessionCommand
-        {
-            Id = sessionId,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            LocationId = 5,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
-        };
-
-        _sessionRepositoryMock
-            .Setup(x => x.GetByIdAsync(sessionId))
-            .ReturnsAsync(existingSession);
+        var command = UpdateCommand(Player(1, won: true));
+        command.LocationId = 5;
+        SetupUpdate(existingSession, command);
 
         _locationServiceMock
             .Setup(x => x.GetByIdAsync(5))
             .ReturnsAsync(location);
 
-        _badgeServiceMock
-            .Setup(x => x.AwardBadgesAsync(existingSession))
-            .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
-
         var result = await _sessionService.UpdateFromCommand(command);
 
         result.LocationId.Should().Be(5);
+        result.Location.Should().BeSameAs(location);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
         _locationServiceMock.Verify(x => x.GetByIdAsync(5), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdated(existingSession, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldThrowEntityNotFound_WhenLocationDoesNotExist()
     {
-        var sessionId = 1;
-        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Comment") { Id = sessionId };
-
-        var command = new UpdateSessionCommand
-        {
-            Id = sessionId,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            LocationId = 99,
-            PlayerSessions = []
-        };
+        var existingSession = StoredSession();
+        var command = UpdateCommand();
+        command.LocationId = 99;
 
         _sessionRepositoryMock
-            .Setup(x => x.GetByIdAsync(sessionId))
+            .Setup(x => x.GetByIdAsync(1))
             .ReturnsAsync(existingSession);
 
         _locationServiceMock
@@ -1028,42 +1241,34 @@ public class SessionServiceTests
 
         var action = async () => await _sessionService.UpdateFromCommand(command);
 
-        await action.Should().ThrowAsync<EntityNotFoundException>();
+        var error = await action.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(Location));
+        error.Which.EntityId.Should().Be(99);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
         _locationServiceMock.Verify(x => x.GetByIdAsync(99), Times.Once);
+        VerifyUpdateChecks(1, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldThrowEntityNotFound_WhenPlayerDoesNotExist()
     {
-        var sessionId = 1;
-        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Comment") { Id = sessionId };
-
-        var command = new UpdateSessionCommand
-        {
-            Id = sessionId,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 120,
-            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 5, Won = true}]
-        };
+        var existingSession = StoredSession();
+        var command = UpdateCommand(Player(5, won: true));
 
         _sessionRepositoryMock
-            .Setup(x => x.GetByIdAsync(sessionId))
+            .Setup(x => x.GetByIdAsync(1))
             .ReturnsAsync(existingSession);
 
-        _playerServiceMock
-            .Setup(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()))
-            .ReturnsAsync(new List<int>());
+        SetupNoExistingPlayers(5);
 
         var action = async () => await _sessionService.UpdateFromCommand(command);
 
-        await action.Should().ThrowAsync<EntityNotFoundException>();
+        var error = await action.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(Player));
+        error.Which.EntityId.Should().Be(5);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        VerifyUpdateChecks(1, command);
         VerifyNoOtherCalls();
     }
 
@@ -1071,38 +1276,24 @@ public class SessionServiceTests
 
     #region Co-op Tests
 
-    private void SetupSave()
-    {
-        _sessionRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<Session>())).ReturnsAsync((Session s) => s);
-        _badgeServiceMock.Setup(x => x.AwardBadgesAsync(It.IsAny<Session>())).Returns(Task.CompletedTask);
-        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
-    }
-
     private static CreateSessionCommand CoopCommand(bool? teamWon, double? teamScore = null)
     {
-        return new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 60,
-            IsCoop = true,
-            TeamWon = teamWon,
-            TeamScore = teamScore,
-            PlayerSessions =
-            [
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = false, Score = 12, FirstPlay = true },
-                new CreatePlayerSessionCommand { PlayerId = 2, Won = false, Score = 8 },
-            ]
-        };
+        var command = CreateCommand(Player(1, score: 12, firstPlay: true), Player(2, score: 8));
+        command.Minutes = 60;
+        command.IsCoop = true;
+        command.TeamWon = teamWon;
+        command.TeamScore = teamScore;
+        return command;
     }
 
     [Fact]
     public async Task CreateFromCommand_ShouldStoreTheTeamResultOnEveryPlayer_WhenCoop()
     {
+        var command = CoopCommand(true, 42);
+        SetupCreate(command);
         _gameServiceMock.Setup(x => x.HasCoopModeAsync(1)).ReturnsAsync(true);
-        SetupSave();
 
-        var result = await _sessionService.CreateFromCommand(CoopCommand(true, 42));
+        var result = await _sessionService.CreateFromCommand(command);
 
         result.IsCoop.Should().BeTrue();
         result.TeamWon.Should().BeTrue();
@@ -1111,49 +1302,45 @@ public class SessionServiceTests
         result.PlayerSessions.Single(ps => ps.PlayerId == 1).FirstPlay.Should().BeTrue();
         result.PlayerSessions.Single(ps => ps.PlayerId == 2).FirstPlay.Should().BeFalse();
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
         _gameServiceMock.Verify(x => x.HasCoopModeAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyCreated(command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromCommand_ShouldMarkEveryPlayerAsLoser_WhenTheTeamLost()
     {
+        var command = CoopCommand(false);
+        SetupCreate(command);
         _gameServiceMock.Setup(x => x.HasCoopModeAsync(1)).ReturnsAsync(true);
-        SetupSave();
 
-        var result = await _sessionService.CreateFromCommand(CoopCommand(false));
+        var result = await _sessionService.CreateFromCommand(command);
 
         result.TeamWon.Should().BeFalse();
         result.TeamScore.Should().BeNull();
-        result.PlayerSessions.Should().OnlyContain(ps => !ps.Won);
+        result.PlayerSessions.Should().HaveCount(2).And.OnlyContain(ps => !ps.Won);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
         _gameServiceMock.Verify(x => x.HasCoopModeAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyCreated(command);
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task CreateFromCommand_ShouldRefuseCoop_WhenTheGameHasNoCoopMode()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(null)]
+    public async Task CreateFromCommand_ShouldRefuseCoop_WhenTheGameHasNoCoopMode(bool? hasCoopMode)
     {
-        _gameServiceMock.Setup(x => x.HasCoopModeAsync(1)).ReturnsAsync(false);
+        var command = CoopCommand(true);
+        SetupCreateChecks(command);
+        _gameServiceMock.Setup(x => x.HasCoopModeAsync(1)).ReturnsAsync(hasCoopMode);
 
-        var action = async () => await _sessionService.CreateFromCommand(CoopCommand(true));
+        var action = async () => await _sessionService.CreateFromCommand(command);
 
         var exception = await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.CoopNotSupported);
-        exception.Which.Errors.Should().ContainKey(nameof(CreateSessionCommand.IsCoop));
+        exception.Which.Errors[nameof(CreateSessionCommand.IsCoop)].Should().Equal(Constants.Errors.CoopNotSupported);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
         _gameServiceMock.Verify(x => x.HasCoopModeAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        VerifyCreateChecks(command);
         VerifyNoOtherCalls();
     }
 
@@ -1163,18 +1350,20 @@ public class SessionServiceTests
         var action = async () => await _sessionService.CreateFromCommand(CoopCommand(null));
 
         var exception = await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.CoopResultRequired);
-        exception.Which.Errors.Should().ContainKey(nameof(CreateSessionCommand.TeamWon));
+        exception.Which.Errors[nameof(CreateSessionCommand.TeamWon)].Should().Equal(Constants.Errors.CoopResultRequired);
 
+        VerifyClockReads(1);
+        VerifyCommandCreateLog(1);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromCommand_ShouldIgnoreTheTeamResult_WhenNotCoop()
     {
-        SetupSave();
         var command = CoopCommand(true, 42);
         command.IsCoop = false;
         command.PlayerSessions[1].Won = true;
+        SetupCreate(command);
 
         var result = await _sessionService.CreateFromCommand(command);
 
@@ -1183,45 +1372,27 @@ public class SessionServiceTests
         result.TeamScore.Should().BeNull();
         result.PlayerSessions.Should().ContainSingle(ps => ps.Won && ps.PlayerId == 2 && ps.Score == 8);
 
-        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyCreated(command);
         VerifyNoOtherCalls();
     }
 
     private static UpdateSessionCommand CoopUpdateCommand(bool isCoop, bool? teamWon)
     {
-        return new UpdateSessionCommand
-        {
-            Id = 1,
-            GameId = 1,
-            Start = DateTime.UtcNow.AddHours(-2),
-            Minutes = 60,
-            IsCoop = isCoop,
-            TeamWon = teamWon,
-            PlayerSessions =
-            [
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true, Score = 10 },
-                new CreatePlayerSessionCommand { PlayerId = 2, Won = false, Score = 5 },
-            ]
-        };
+        var command = UpdateCommand(Player(1, won: true, score: 10), Player(2, score: 5));
+        command.Minutes = 60;
+        command.IsCoop = isCoop;
+        command.TeamWon = teamWon;
+        return command;
     }
 
-    private Session ExistingSession(bool isCoop)
+    private static Session ExistingSession(bool isCoop)
     {
-        var session = new Session(1, DateTime.UtcNow.AddHours(-3), DateTime.UtcNow.AddHours(-1), "") { Id = 1 };
-        session.AddPlayerSession(1, null, false, false);
-        session.AddPlayerSession(2, null, false, false);
+        var session = StoredSession(1, 2);
         if (isCoop)
         {
             session.MarkAsCoop(false, null);
         }
 
-        _sessionRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(session);
-        _badgeServiceMock.Setup(x => x.AwardBadgesAsync(session)).Returns(Task.CompletedTask);
-        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
         return session;
     }
 
@@ -1229,33 +1400,33 @@ public class SessionServiceTests
     public async Task UpdateFromCommand_ShouldKeepCoop_WhenTheGameNoLongerHasCoopMode()
     {
         var session = ExistingSession(true);
+        var command = CoopUpdateCommand(true, true);
+        SetupUpdate(session, command);
 
-        var result = await _sessionService.UpdateFromCommand(CoopUpdateCommand(true, true));
+        var result = await _sessionService.UpdateFromCommand(command);
 
         result.IsCoop.Should().BeTrue();
         result.TeamWon.Should().BeTrue();
-        result.PlayerSessions.Should().OnlyContain(ps => ps.Won && ps.Score == null);
+        result.PlayerSessions.Should().HaveCount(2).And.OnlyContain(ps => ps.Won && ps.Score == null);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdated(session, command);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateFromCommand_ShouldCheckTheGame_WhenSwitchingToCoop()
     {
-        ExistingSession(false);
+        var session = ExistingSession(false);
+        var command = CoopUpdateCommand(true, false);
+        SetupUpdate(session, command);
         _gameServiceMock.Setup(x => x.HasCoopModeAsync(1)).ReturnsAsync(false);
 
-        var action = async () => await _sessionService.UpdateFromCommand(CoopUpdateCommand(true, false));
+        var action = async () => await _sessionService.UpdateFromCommand(command);
 
         await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.CoopNotSupported);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
         _gameServiceMock.Verify(x => x.HasCoopModeAsync(1), Times.Once);
+        VerifyUpdateChecks(1, command);
         VerifyNoOtherCalls();
     }
 
@@ -1263,18 +1434,17 @@ public class SessionServiceTests
     public async Task UpdateFromCommand_ShouldSwitchToCoop_WhenTheGameHasCoopMode()
     {
         var session = ExistingSession(false);
+        var command = CoopUpdateCommand(true, false);
+        SetupUpdate(session, command);
         _gameServiceMock.Setup(x => x.HasCoopModeAsync(1)).ReturnsAsync(true);
 
-        var result = await _sessionService.UpdateFromCommand(CoopUpdateCommand(true, false));
+        var result = await _sessionService.UpdateFromCommand(command);
 
         result.IsCoop.Should().BeTrue();
-        result.PlayerSessions.Should().OnlyContain(ps => !ps.Won && ps.Score == null);
+        result.PlayerSessions.Should().HaveCount(2).And.OnlyContain(ps => !ps.Won && ps.Score == null);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
         _gameServiceMock.Verify(x => x.HasCoopModeAsync(1), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdated(session, command);
         VerifyNoOtherCalls();
     }
 
@@ -1282,17 +1452,16 @@ public class SessionServiceTests
     public async Task UpdateFromCommand_ShouldBringBackPlayerResults_WhenSwitchingCoopOff()
     {
         var session = ExistingSession(true);
+        var command = CoopUpdateCommand(false, null);
+        SetupUpdate(session, command);
 
-        var result = await _sessionService.UpdateFromCommand(CoopUpdateCommand(false, null));
+        var result = await _sessionService.UpdateFromCommand(command);
 
         result.IsCoop.Should().BeFalse();
         result.TeamWon.Should().BeNull();
         result.PlayerSessions.Should().ContainSingle(ps => ps.Won && ps.PlayerId == 1 && ps.Score == 10);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdated(session, command);
         VerifyNoOtherCalls();
     }
 
@@ -1302,17 +1471,15 @@ public class SessionServiceTests
         var session = ExistingSession(true);
         session.MarkAsCoop(true, null);
         var command = CoopUpdateCommand(false, null);
-        command.PlayerSessions.Add(new CreatePlayerSessionCommand { PlayerId = 3, Won = false, Score = 12 });
+        command.PlayerSessions.Add(Player(3, score: 12));
+        SetupUpdate(session, command);
 
         var result = await _sessionService.UpdateFromCommand(command);
 
         result.IsCoop.Should().BeFalse();
         result.PlayerSessions.Should().ContainSingle(ps => ps.PlayerId == 3 && !ps.Won && ps.Score == 12);
 
-        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyUpdated(session, command);
         VerifyNoOtherCalls();
     }
 
@@ -1323,6 +1490,8 @@ public class SessionServiceTests
 
         await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.CoopResultRequired);
 
+        VerifyClockReads(1);
+        VerifyCommandUpdateLog(1);
         VerifyNoOtherCalls();
     }
 
