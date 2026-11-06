@@ -139,6 +139,10 @@ export const CreateUserSchema = z.object({
 	password: passwordString,
 });
 
+export const ForgotPasswordSchema = z.object({
+	username: z.string().trim().min(1, { message: "common:required" }),
+});
+
 export const ResetPasswordSchema = z.object({
 	newPassword: passwordString,
 	confirmPassword: z.string(),
