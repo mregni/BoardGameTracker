@@ -33,6 +33,7 @@ export const DisabledActionHint = ({ label, hint }: Props) => {
 				<Tooltip.Portal>
 					<Tooltip.Content
 						sideOffset={5}
+						collisionPadding={8}
 						className="max-w-xs select-none rounded-md border-2 border-card-border bg-card-black px-3 py-2 text-xs text-white shadow-lg"
 					>
 						{hint}
