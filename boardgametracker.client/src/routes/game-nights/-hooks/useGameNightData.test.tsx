@@ -4,10 +4,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type GameNight, GameNightRsvpState, QUERY_KEYS, type UpdateGameNight } from "@/models";
 import { act, renderHook, waitFor } from "@/test/test-utils";
 
-const { updateRsvpCall, updateCall, invalidateGameNights, successToast, errorToast } = vi.hoisted(() => ({
+const {
+	updateRsvpCall,
+	updateCall,
+	deleteCall,
+	invalidateGameNights,
+	invalidateGameNightDeleted,
+	successToast,
+	errorToast,
+} = vi.hoisted(() => ({
 	updateRsvpCall: vi.fn(),
 	updateCall: vi.fn(),
+	deleteCall: vi.fn(),
 	invalidateGameNights: vi.fn(),
+	invalidateGameNightDeleted: vi.fn(),
 	successToast: vi.fn(),
 	errorToast: vi.fn(),
 }));
@@ -17,7 +27,7 @@ vi.mock("@/services/gameNightService", () => ({
 	getGameNightCall: vi.fn(),
 	createGameNightCall: vi.fn(),
 	updateGameNightCall: updateCall,
-	deleteGameNightCall: vi.fn(),
+	deleteGameNightCall: deleteCall,
 	updateGameNightRsvpCall: updateRsvpCall,
 }));
 
@@ -38,7 +48,7 @@ vi.mock("@/services/queries/locations", () => ({
 }));
 
 vi.mock("@/hooks/useQueryInvalidator", () => ({
-	useQueryInvalidator: () => ({ invalidateGameNights }),
+	useQueryInvalidator: () => ({ invalidateGameNights, invalidateGameNightDeleted }),
 }));
 
 vi.mock("@/routes/-hooks/useToasts", () => ({
@@ -169,5 +179,15 @@ describe("useGameNightData game night updates", () => {
 		await waitFor(() => expect(errorToast).toHaveBeenCalled());
 		expect(successToast).not.toHaveBeenCalled();
 		expect(errorToast).toHaveBeenCalledWith("game-nights:notifications.update-failed");
+	});
+
+	it("does not refresh the night it just deleted", async () => {
+		deleteCall.mockResolvedValue(undefined);
+		const { result } = setup();
+
+		await act(() => result.current.deleteGameNight(4));
+
+		expect(invalidateGameNightDeleted).toHaveBeenCalledWith(4);
+		expect(invalidateGameNights).not.toHaveBeenCalled();
 	});
 });
