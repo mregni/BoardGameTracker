@@ -142,4 +142,51 @@ public class GameSpecsTests
         new GameByIdSpec(6).IsSatisfiedBy(game).Should().BeFalse();
         new GameByIdSpec(5).AsNoTracking.Should().BeTrue();
     }
+
+    [Fact]
+    public void TrackedGamesSpec_ShouldOnlyMatchGamesWithAWatch_AndNotTrack()
+    {
+        var tracked = new Game("Tracked");
+        tracked.UpdateChangeDetectionWatchId("e0808154-28da-4b85-9a71-24a409e694f1");
+        var spec = new TrackedGamesSpec();
+
+        spec.IsSatisfiedBy(tracked).Should().BeTrue();
+        spec.IsSatisfiedBy(new Game("Not tracked")).Should().BeFalse();
+        spec.AsNoTracking.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GameWithExpansionsSpec_ShouldMatchTheRequestedGame_IncludeExpansions_AndTrack()
+    {
+        var spec = new GameWithExpansionsSpec(5);
+
+        spec.IsSatisfiedBy(new Game("Five") { Id = 5 }).Should().BeTrue();
+        spec.IsSatisfiedBy(new Game("Six") { Id = 6 }).Should().BeFalse();
+        spec.ShouldIncludeExactly(nameof(Game.Expansions));
+        spec.AsNoTracking.Should().BeFalse();
+    }
+
+    [Fact]
+    public void GameWithLoansSpec_ShouldMatchTheRequestedGame_IncludeLoans_AndTrack()
+    {
+        var spec = new GameWithLoansSpec(5);
+
+        spec.IsSatisfiedBy(new Game("Five") { Id = 5 }).Should().BeTrue();
+        spec.IsSatisfiedBy(new Game("Six") { Id = 6 }).Should().BeFalse();
+        spec.ShouldIncludeExactly(nameof(Game.Loans));
+        spec.AsNoTracking.Should().BeFalse();
+    }
+
+    [Fact]
+    public void GameHasCoopModeSpec_ShouldProjectTheCoopModeForTheRequestedId_AndNotTrack()
+    {
+        var coop = new Game("Coop") { Id = 5 };
+        coop.UpdateCoopMode(true, false);
+        var games = new[] { coop, new Game("Competitive") { Id = 6 } };
+
+        new GameHasCoopModeSpec(5).Evaluate(games).Should().ContainSingle().Which.Should().BeTrue();
+        new GameHasCoopModeSpec(6).Evaluate(games).Should().ContainSingle().Which.Should().BeFalse();
+        new GameHasCoopModeSpec(999).Evaluate(games).Should().BeEmpty();
+        new GameHasCoopModeSpec(5).AsNoTracking.Should().BeTrue();
+    }
 }
