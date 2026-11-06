@@ -139,12 +139,13 @@ describe("QueryInvalidator", () => {
 		expect(predicate?.({ queryKey: [QUERY_KEYS.game, 3, QUERY_KEYS.sessions] } as never)).toBe(false);
 	});
 
-	it("invalidateGameNights refreshes the game nights, the menu counts and the dashboard", async () => {
+	it("invalidateGameNights refreshes the game nights, the locations, the menu counts and the dashboard", async () => {
 		await invalidator.invalidateGameNights();
 
 		expect(invalidatedKeys(spy)).toEqual(
 			expect.arrayContaining([
 				[QUERY_KEYS.gameNights],
+				[QUERY_KEYS.locations],
 				[QUERY_KEYS.counts],
 				[QUERY_KEYS.dashboard, QUERY_KEYS.statistics],
 			]),

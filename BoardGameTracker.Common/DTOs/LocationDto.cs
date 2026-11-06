@@ -5,5 +5,6 @@ public class LocationDto
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public int PlayCount { get; set; }
+    public int GameNightCount { get; set; }
     public DateTime? LastPlayed { get; set; }
 }

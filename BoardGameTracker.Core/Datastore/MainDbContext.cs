@@ -161,7 +161,7 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
 
         builder.Entity<GameNight>()
             .HasOne(x => x.Location)
-            .WithMany()
+            .WithMany(x => x.GameNights)
             .HasForeignKey(x => x.LocationId)
             .OnDelete(DeleteBehavior.Restrict);
 

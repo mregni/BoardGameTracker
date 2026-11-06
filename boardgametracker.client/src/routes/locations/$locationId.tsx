@@ -7,6 +7,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { usePermissions } from "@/hooks/usePermissions";
+import type { Location } from "@/models";
 import { getGames } from "@/services/queries/games";
 import { getLocation, getLocationSessions, getLocationStatistics } from "@/services/queries/locations";
 import { getPlayers } from "@/services/queries/players";
@@ -64,6 +65,16 @@ function RouteComponent() {
 		modals.deleteModal.hide();
 	};
 
+	const isInUse = ({ playCount, gameNightCount }: Location) => playCount > 0 || gameNightCount > 0;
+	const inUseDescription = ({ playCount, gameNightCount }: Location) =>
+		[
+			playCount > 0 && t("delete.in-use.sessions", { count: playCount }),
+			gameNightCount > 0 && t("delete.in-use.game-nights", { count: gameNightCount }),
+			t("delete.in-use.hint"),
+		]
+			.filter(Boolean)
+			.join(" ");
+
 	return (
 		<BgtPage>
 			<BgtPageHeader backAction={goBack} backText={t("detail.back")} />
@@ -91,11 +102,10 @@ function RouteComponent() {
 							title={location.name}
 							open={modals.deleteModal.isOpen}
 							close={modals.deleteModal.hide}
-							onDelete={handleDelete}
+							onDelete={isInUse(location) ? undefined : handleDelete}
+							heading={isInUse(location) ? t("delete.in-use.title") : undefined}
 							description={
-								location.playCount > 0
-									? t("delete.description-with-sessions", { name: location.name, count: location.playCount })
-									: t("delete.description", { name: location.name })
+								isInUse(location) ? inUseDescription(location) : t("delete.description", { name: location.name })
 							}
 						/>
 						{modals.editModal.isOpen && (

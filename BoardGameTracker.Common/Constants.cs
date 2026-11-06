@@ -113,6 +113,7 @@ public static class Constants
         public const string LoanAlreadyReturned = "error.loan.already-returned";
         public const string LoanNotReturned = "error.loan.not-returned";
         public const string LocationUsedByGameNights = "error.location.used-by-game-nights";
+        public const string LocationUsedBySessions = "error.location.used-by-sessions";
         public const string PlayerHostsGameNights = "error.player.hosts-game-nights";
         public const string CompareSamePlayer = "error.compare.same-player";
         public const string PlayerNameRequired = "error.player.name-required";

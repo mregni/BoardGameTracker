@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Session } from "@/models";
-import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
+import { renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
 
 interface CapturedRoute {
 	component: FC;
@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
 	captured: {} as { config: CapturedRoute },
 	sessions: [] as Session[],
 	locationError: null as unknown,
+	usage: { playCount: 12, gameNightCount: 0 },
 	navigate: vi.fn(),
 	deleteLocationCall: vi.fn(),
 }));
@@ -55,7 +56,7 @@ vi.mock("@/services/queries/locations", () => ({
 				: Promise.resolve({
 						id,
 						name: "Café De Spelerij Gent-Sint-Pieters",
-						playCount: 12,
+						...mocks.usage,
 						lastPlayed: "2026-10-20T20:00:00",
 					}),
 	}),
@@ -123,6 +124,7 @@ describe("Location detail page", () => {
 		mocks.navigate.mockReset().mockResolvedValue(undefined);
 		mocks.deleteLocationCall.mockReset().mockResolvedValue(undefined);
 		mocks.locationError = null;
+		mocks.usage = { playCount: 12, gameNightCount: 0 };
 	});
 
 	it("prefetches the location, its statistics, sessions, games and players in the loader", () => {
@@ -160,12 +162,38 @@ describe("Location detail page", () => {
 		expect(await screen.findByDisplayValue("Café De Spelerij Gent-Sint-Pieters")).toBeInTheDocument();
 	});
 
-	it("warns about the linked sessions and deletes the location after confirming", async () => {
+	it("explains that a location in use cannot be deleted and offers no delete", async () => {
 		const user = userEvent.setup();
 		renderPage();
 
 		await user.click(await screen.findByRole("button", { name: "delete.named" }));
-		expect(await screen.findByText(/delete.description-with-sessions/)).toBeInTheDocument();
+
+		const dialog = await screen.findByRole("dialog");
+		expect(within(dialog).getByText("delete.in-use.title")).toBeInTheDocument();
+		expect(within(dialog).getByText("delete.in-use.sessions delete.in-use.hint")).toBeInTheDocument();
+		expect(within(dialog).queryByRole("button", { name: "delete.button" })).not.toBeInTheDocument();
+		await user.click(within(dialog).getAllByRole("button", { name: "close" }).at(-1) as HTMLElement);
+
+		expect(mocks.deleteLocationCall).not.toHaveBeenCalled();
+	});
+
+	it("also counts the game nights of a location", async () => {
+		const user = userEvent.setup();
+		mocks.usage = { playCount: 0, gameNightCount: 2 };
+		renderPage();
+
+		await user.click(await screen.findByRole("button", { name: "delete.named" }));
+
+		expect(await screen.findByText("delete.in-use.game-nights delete.in-use.hint")).toBeInTheDocument();
+	});
+
+	it("deletes an unused location after confirming", async () => {
+		const user = userEvent.setup();
+		mocks.usage = { playCount: 0, gameNightCount: 0 };
+		renderPage();
+
+		await user.click(await screen.findByRole("button", { name: "delete.named" }));
+		expect(await screen.findByText("delete.description")).toBeInTheDocument();
 
 		const confirm = screen.getAllByRole("button", { name: "delete.button" }).at(-1);
 		await user.click(confirm as HTMLElement);

@@ -27,8 +27,14 @@
   },
   "delete": {
     "description": "Delete location '{{name}}'?",
-    "description-with-sessions_one": "Delete location '{{name}}'? Its {{count}} session is kept, but no longer linked to a location.",
-    "description-with-sessions_other": "Delete location '{{name}}'? Its {{count}} sessions are kept, but no longer linked to a location."
+    "in-use": {
+      "title": "This location is in use",
+      "sessions_one": "{{count}} session is linked to it.",
+      "sessions_other": "{{count}} sessions are linked to it.",
+      "game-nights_one": "{{count}} game night is linked to it.",
+      "game-nights_other": "{{count}} game nights are linked to it.",
+      "hint": "Move them to another location before deleting it."
+    }
   },
   "detail": {
     "back": "Back to locations",

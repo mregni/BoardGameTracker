@@ -15,6 +15,7 @@ public class LocationDetailsSpecTests
         var home = new Location("Home") { Id = 1 };
         var office = new Location("Office") { Id = 2 };
         home.Sessions.Add(new Session(1, new DateTime(2030, 1, 1), new DateTime(2030, 1, 1, 2, 0, 0), string.Empty));
+        home.GameNights.Add(GameNight.Create("Night", string.Empty, new DateTime(2030, 1, 1), 1, 1));
 
         var spec = new LocationDetailsSpec(1);
         var result = spec.Evaluate([home, office]).ToList();
@@ -23,6 +24,7 @@ public class LocationDetailsSpecTests
         result[0].Id.Should().Be(1);
         result[0].Name.Should().Be("Home");
         result[0].PlayCount.Should().Be(1);
+        result[0].GameNightCount.Should().Be(1);
         result[0].LastPlayed.Should().Be(new DateTime(2030, 1, 1));
         spec.AsNoTracking.Should().BeTrue();
     }

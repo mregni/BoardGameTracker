@@ -87,8 +87,8 @@ const cases: DialogCase[] = [
 		name: "delete location",
 		path: "/locations/1",
 		opener: `Delete ${clubhouse}`,
-		title: `Delete ${clubhouse}`,
-		footer: ["Cancel", "Delete"],
+		title: "This location is in use",
+		footer: ["Close"],
 	},
 	{ name: "lend a game", path: "/loans", opener: "Lend a game", title: "Lend a game", footer: ["Cancel", "Lend"] },
 	{
