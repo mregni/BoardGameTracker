@@ -1,6 +1,7 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 import { differenceInCalendarDays } from "date-fns";
-import { credentials, expect, paceLogin } from "./fixtures";
+import { api } from "./api";
+import { expect } from "./fixtures";
 import { displayDate } from "./format";
 import { gameNights, games, linkedPlayer, locations, pastGameNight, players, seedTime, sessions } from "./seedData";
 
@@ -107,32 +108,7 @@ export const scoreLine = (session: (typeof sessions)[number]) =>
 		.map(({ player, score }) => `${player} ${score}`)
 		.join(" · ");
 
-let token: Promise<string> | null = null;
-
-const authorization = async (request: APIRequestContext) => {
-	token ??= paceLogin()
-		.then(() => request.post("/api/auth/login", { data: credentials }))
-		.then((response) => response.json())
-		.then((body) => body.accessToken as string);
-	return { Authorization: `Bearer ${await token}` };
-};
-
-export const api = async (
-	request: APIRequestContext,
-	method: "get" | "post" | "put" | "delete",
-	path: string,
-	data?: unknown,
-) => {
-	const send = async () => request[method](path, { data, headers: await authorization(request) });
-	let response = await send();
-	if (response.status() === 401) {
-		token = null;
-		response = await send();
-	}
-	const body = await response.text();
-	expect(response.ok(), `${method} ${path}: ${body}`).toBe(true);
-	return body ? JSON.parse(body) : null;
-};
+export { api } from "./api";
 
 interface NightOptions {
 	title: string;

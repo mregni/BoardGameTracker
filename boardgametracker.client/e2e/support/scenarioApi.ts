@@ -1,5 +1,5 @@
-import { expect, request as playwrightRequest } from "@playwright/test";
-import { credentials, paceLogin } from "./fixtures";
+import { request as playwrightRequest } from "@playwright/test";
+import { api } from "./api";
 
 const SEEDED_LOCATION = 1;
 
@@ -11,21 +11,11 @@ interface Seat {
 
 export const signedInApi = async (baseURL?: string) => {
 	const request = await playwrightRequest.newContext({ baseURL });
-	await paceLogin();
-	const login = await request.post("/api/auth/login", { data: credentials });
-	expect(login.ok()).toBe(true);
-	const { accessToken } = await login.json();
-	const headers = { Authorization: `Bearer ${accessToken}` };
 
-	const post = async (path: string, data: unknown): Promise<{ id: number }> => {
-		const response = await request.post(path, { data, headers });
-		expect(response.ok(), `${path}: ${await response.text()}`).toBe(true);
-		return response.json();
-	};
+	const post = (path: string, data: unknown): Promise<{ id: number }> => api(request, "post", path, data);
 
 	const remove = async (path: string) => {
-		const response = await request.delete(path, { headers });
-		expect(response.ok(), `${path}: ${await response.text()}`).toBe(true);
+		await api(request, "delete", path);
 	};
 
 	return {

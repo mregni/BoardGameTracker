@@ -1,5 +1,5 @@
 import { addDays } from "date-fns";
-import { apiFor } from "../support/api";
+import { api, apiFor } from "../support/api";
 import { expect, test } from "../support/fixtures";
 import { removeCreatedData } from "../support/gameNights";
 import { openGames, pick } from "../support/gamesPage";
@@ -155,15 +155,17 @@ test("edits a game, marks it as sold and keeps the sold price", async ({ page })
 	await expect(page.getByRole("textbox", { name: "Sold price" })).toHaveValue("15");
 });
 
-test("deletes a session and updates the game", async ({ page }) => {
+test("deletes a session and updates the game", async ({ page, request }) => {
 	const played = sessions.filter((session) => session.game === coopGame.title).length;
 	const gameId = games.indexOf(coopGame) + 1;
 	const { post } = await apiFor(page);
+	const allLocations: { id: number; name: string }[] = await api(request, "get", "/api/location");
+	const location = allLocations.find((x) => x.name === locations[0]) ?? allLocations[0];
 	await post("/api/session", {
 		gameId,
 		start: new Date().toISOString(),
 		minutes: 10,
-		locationId: 1,
+		locationId: location.id,
 		expansionIds: [],
 		isCoop: true,
 		teamWon: true,
