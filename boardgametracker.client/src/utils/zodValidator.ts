@@ -12,6 +12,17 @@ export function zodValidator<TSchema extends z.ZodObject>(schema: TSchema, name:
 	};
 }
 
+export function changedValueValidator<TSchema extends z.ZodObject>(
+	schema: TSchema,
+	name: keyof z.infer<TSchema> & string,
+	storedValue: unknown,
+) {
+	const { onChange } = zodValidator(schema, name);
+	return {
+		onChange: ({ value }: { value: unknown }) => (value === storedValue ? undefined : onChange({ value })),
+	};
+}
+
 const hasValue = (value: unknown) => value !== undefined && value !== null && value !== "";
 
 export function notBeforeValidator<TSchema extends z.ZodObject>(

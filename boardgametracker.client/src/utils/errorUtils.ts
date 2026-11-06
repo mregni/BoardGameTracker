@@ -12,6 +12,7 @@ const SERVER_TEXT_KEYS: Record<string, string> = {
 
 const NO_REASON_TEXTS = new Set([
 	"An unexpected error occurred",
+	"An unexpected error occurred. Please try again later.",
 	"Bad Request",
 	"Conflict",
 	"Forbidden",

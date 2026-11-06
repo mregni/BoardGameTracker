@@ -6,7 +6,7 @@ import { useAppForm } from "@/hooks/form";
 import { type BgtSelectItem, EditUserSchema, isApiError, type Player, type UserDto } from "@/models";
 import { translateApiError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
-import { zodValidator } from "@/utils/zodValidator";
+import { changedValueValidator, zodValidator } from "@/utils/zodValidator";
 import { buildPlayerLinkItems } from "../-utils/playerLinkOptions";
 
 interface Props {
@@ -83,7 +83,7 @@ export const EditUserModal = ({ open, close, user, players, users, onSubmit, isL
 						<form.Field name="username" validators={zodValidator(EditUserSchema, "username")}>
 							{(field) => <BgtInputField field={field} type="text" label={t("auth:username")} disabled={isLoading} />}
 						</form.Field>
-						<form.Field name="email" validators={zodValidator(EditUserSchema, "email")}>
+						<form.Field name="email" validators={changedValueValidator(EditUserSchema, "email", user.email ?? "")}>
 							{(field) => (
 								<BgtInputField
 									field={field}

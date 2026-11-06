@@ -167,7 +167,7 @@ function RouteComponent() {
 										<ShameFilters filters={filters} counts={counts} onFiltersChange={setFilters} />
 									</div>
 									<p aria-live="polite" className="hidden text-sm text-white/60 md:block">
-										{t("list.count", { count: visible.length, total: shames.length })}
+										{t("list.count", { shown: visible.length, count: shames.length })}
 									</p>
 								</div>
 							)}

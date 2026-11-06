@@ -34,7 +34,7 @@ import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
 import { getSettings } from "@/services/queries/settings";
 import { toDisplayDateTime } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
-import { zodValidator } from "@/utils/zodValidator";
+import { changedValueValidator } from "@/utils/zodValidator";
 import { useAccountData } from "../-hooks/useAccountData";
 import { useExternalLogins } from "../-hooks/useExternalLogins";
 import { ChangePasswordModal } from "../-modals/ChangePasswordModal";
@@ -337,7 +337,7 @@ const ProfileSection = ({
 						/>
 					)}
 				</form.Field>
-				<form.Field name="email" validators={zodValidator(EditUserSchema, "email")}>
+				<form.Field name="email" validators={changedValueValidator(EditUserSchema, "email", profile.email ?? "")}>
 					{(field) => (
 						<BgtInputField
 							field={field}
