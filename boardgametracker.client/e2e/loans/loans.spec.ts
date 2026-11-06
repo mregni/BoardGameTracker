@@ -319,6 +319,20 @@ test.describe("other data", () => {
 		await expect(main.getByText("No loans match this filter.")).toBeVisible();
 	});
 
+	test("leaves a loan that starts later out of the loans due this week", async ({ page }) => {
+		await patchLoans(page, () => [
+			fakeLoan(101, "Tend", "Rowlf", dayFromNow(3)),
+			{ ...fakeLoan(102, "Iliad", "Beaker", dayFromNow(5)), loanDate: dayFromNow(2), isActive: false },
+		]);
+		await openLoans(page);
+		const main = page.getByRole("main");
+
+		await expect(main.getByRole("button", { name: "On loan 1" })).toBeVisible();
+		await main.getByRole("button", { name: "Due this week 1" }).click();
+
+		await expect(borrowers(page)).toHaveText(["Rowlf"]);
+	});
+
 	test("turns red after thirty days overdue", async ({ page }) => {
 		await patchLoans(page, () => [
 			fakeLoan(101, "Tend", "Rowlf", dayFromNow(-30)),

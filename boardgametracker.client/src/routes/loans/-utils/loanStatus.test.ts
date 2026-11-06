@@ -102,6 +102,17 @@ describe("getLoanStats", () => {
 		expect(getLoanStats([loan({ id: 1 }), loan({ id: 2, isActive: false })], now).onLoan).toBe(1);
 	});
 
+	it("does not count a loan that has not started as due this week", () => {
+		const future = loan({
+			id: 1,
+			loanDate: new Date(2026, 9, 13),
+			dueDate: new Date(2026, 9, 15),
+			isActive: false,
+		});
+
+		expect(getLoanStats([future], now)).toEqual({ onLoan: 0, overdue: 0, longOverdue: 0, dueThisWeek: 0 });
+	});
+
 	it("returns zeros without loans", () => {
 		expect(getLoanStats([], now)).toEqual({ onLoan: 0, overdue: 0, longOverdue: 0, dueThisWeek: 0 });
 	});
@@ -115,6 +126,14 @@ describe("matchesLoanFilter", () => {
 
 	it("keeps every loan without a filter", () => {
 		expect([overdue, today, later, open].every((x) => matchesLoanFilter(x, "all", now))).toBe(true);
+	});
+
+	it("leaves a loan that has not started out of the due filters", () => {
+		const future = loan({ dueDate: new Date(2026, 9, 15), isActive: false });
+
+		expect(matchesLoanFilter(future, "all", now)).toBe(true);
+		expect(matchesLoanFilter(future, "due-this-week", now)).toBe(false);
+		expect(matchesLoanFilter(future, "overdue", now)).toBe(false);
 	});
 
 	it("keeps only overdue loans for the overdue filter", () => {
