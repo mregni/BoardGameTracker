@@ -67,7 +67,7 @@ export const GameNightDetailView = (props: Props) => {
 		.map((id) => players.find((player) => player.id === id))
 		.filter((player): player is Player => player !== undefined);
 	const playAgain = latestPlays(sessions);
-	const startWithAttendees = () => onStart(null, freePlayerIds(table.playerIds, runningGames));
+	const startWithAttendees = (gameId: number | null) => onStart(gameId, freePlayerIds(table.playerIds, runningGames));
 
 	return (
 		<div className={cx("flex flex-col gap-3 xl:gap-6", canPlay && !isOver && "pb-16 md:pb-0")}>
@@ -82,7 +82,7 @@ export const GameNightDetailView = (props: Props) => {
 				onDelete={onDelete}
 				onEnd={onEnd}
 				onReopen={onReopen}
-				onStart={startWithAttendees}
+				onStart={() => startWithAttendees(null)}
 				onLog={onLog}
 			/>
 
@@ -150,6 +150,7 @@ export const GameNightDetailView = (props: Props) => {
 						playingGameIds={runningGames.map((x) => x.gameId)}
 						canWrite={canWrite}
 						onEditAttendees={onEditAttendees}
+						onStartGame={canPlay && !isOver ? startWithAttendees : undefined}
 					/>
 				</div>
 			)}
