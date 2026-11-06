@@ -195,6 +195,7 @@ test("validates the password dialog and closes on cancel", async ({ page }) => {
 
 	await save.click();
 	await expect(dialog.getByText("Required", { exact: false })).toHaveCount(2);
+	await expect(field(page, "Current password")).toBeFocused();
 
 	await field(page, "New password").fill("abc");
 	await expect(dialog.getByText(/^Password must be at least/)).toBeVisible();
