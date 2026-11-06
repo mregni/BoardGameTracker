@@ -14,6 +14,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Moq;
 using Xunit;
 
@@ -357,6 +358,43 @@ public class GameNightControllerTests
         method.GetCustomAttributes<AuthorizeAttribute>().Should().ContainSingle(x => x.Roles == Constants.AuthRoles.UserOrAdmin);
         method.GetCustomAttributes<AllowAnonymousAttribute>().Should().BeEmpty();
         method.GetCustomAttributes<RouteAttribute>().Should().ContainSingle(x => x.Template == "{id:int}/suggestions/{gameId:int}");
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(nameof(GameNightController.End))]
+    [InlineData(nameof(GameNightController.Reopen))]
+    [InlineData(nameof(GameNightController.UpdateAttendance))]
+    [InlineData(nameof(GameNightController.Create))]
+    [InlineData(nameof(GameNightController.Update))]
+    [InlineData(nameof(GameNightController.SendInvites))]
+    [InlineData(nameof(GameNightController.Delete))]
+    public void WriteEndpoints_ShouldOnlyAllowUsersAndAdmins(string action)
+    {
+        var method = typeof(GameNightController).GetMethod(action)!;
+
+        method.GetCustomAttributes<AuthorizeAttribute>().Should().ContainSingle(x => x.Roles == Constants.AuthRoles.UserOrAdmin);
+        method.GetCustomAttributes<AllowAnonymousAttribute>().Should().BeEmpty();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(nameof(GameNightController.GetByLink))]
+    [InlineData(nameof(GameNightController.UpdateRsvpByLink))]
+    public void LinkEndpoints_ShouldBeAnonymousButRateLimited(string action)
+    {
+        var method = typeof(GameNightController).GetMethod(action)!;
+
+        method.GetCustomAttributes<AllowAnonymousAttribute>().Should().ContainSingle();
+        method.GetCustomAttributes<EnableRateLimitingAttribute>().Should().ContainSingle(x => x.PolicyName == "gamenight-link");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void Controller_ShouldRequireASignedInUser_ByDefault()
+    {
+        typeof(GameNightController).GetCustomAttributes<AuthorizeAttribute>().Should().ContainSingle().Which.Roles.Should().BeNull();
+        VerifyNoOtherCalls();
     }
 
     public static TheoryData<UpdateRsvpCommand> UpdateRsvpCommands => new()
@@ -398,6 +436,7 @@ public class GameNightControllerTests
         byAccount.GetCustomAttributes<AllowAnonymousAttribute>().Should().BeEmpty();
         byLink.GetCustomAttributes<AllowAnonymousAttribute>().Should().ContainSingle();
         byLink.GetCustomAttributes<RouteAttribute>().Should().ContainSingle(x => x.Template == "link/{linkId:guid}/rsvp");
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -456,7 +495,6 @@ public class GameNightControllerTests
 
         await act.Should().ThrowAsync<ArgumentNullException>();
 
-        _gameNightServiceMock.Verify(x => x.UpdateRsvp(It.IsAny<UpdateRsvpCommand>()), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -473,7 +511,129 @@ public class GameNightControllerTests
 
         await act.Should().ThrowAsync<ArgumentNullException>();
 
-        _gameNightServiceMock.Verify(x => x.UpdateRsvpByLink(It.IsAny<Guid>(), It.IsAny<UpdateRsvpCommand>(), It.IsAny<bool>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateRsvp_ShouldThrowArgumentNullException_WhenOnlyThePlayerIdIsMissing()
+    {
+        var command = new UpdateRsvpCommand { GameNightId = 10, State = GameNightRsvpState.Accepted };
+
+        var act = () => _controller.UpdateRsvp(command);
+
+        await act.Should().ThrowAsync<ArgumentNullException>();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateRsvpByLink_ShouldThrowArgumentNullException_WhenOnlyTheGameNightIdIsMissing()
+    {
+        var command = new UpdateRsvpCommand { PlayerId = 3, State = GameNightRsvpState.Accepted };
+
+        var act = () => _controller.UpdateRsvpByLink(Guid.NewGuid(), command);
+
+        await act.Should().ThrowAsync<ArgumentNullException>();
+        VerifyNoOtherCalls();
+    }
+
+    public static TheoryData<ClaimsPrincipal> AnonymousUsers => new()
+    {
+        new ClaimsPrincipal(),
+        new ClaimsPrincipal(new ClaimsIdentity())
+    };
+
+    [Theory]
+    [MemberData(nameof(AnonymousUsers))]
+    public async Task UpdateRsvpByLink_ShouldTreatAnUnverifiedUserAsAnonymous(ClaimsPrincipal user)
+    {
+        var linkId = Guid.NewGuid();
+        var command = new UpdateRsvpCommand { Id = 5, State = GameNightRsvpState.Accepted };
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = user } };
+        _gameNightServiceMock
+            .Setup(x => x.UpdateRsvpByLink(linkId, command, false))
+            .ReturnsAsync(new RsvpUpdateResult(GameNightRsvp.Create(3, command.State), false));
+
+        var result = await _controller.UpdateRsvpByLink(linkId, command);
+
+        result.Should().BeOfType<OkObjectResult>();
+        _gameNightServiceMock.Verify(x => x.UpdateRsvpByLink(linkId, command, false), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [MemberData(nameof(AnonymousUsers))]
+    public async Task GetByLink_ShouldTreatAnUnverifiedUserAsAnonymous(ClaimsPrincipal user)
+    {
+        var linkId = Guid.NewGuid();
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = user } };
+        _gameNightServiceMock.Setup(x => x.GetByLinkId(linkId, false)).ReturnsAsync((GameNight?)null);
+
+        var result = await _controller.GetByLink(linkId);
+
+        result.Should().BeOfType<NotFoundResult>();
+        _gameNightServiceMock.Verify(x => x.GetByLinkId(linkId, false), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetByLink_ShouldTellTheService_WhenTheCallerIsSignedIn()
+    {
+        var linkId = Guid.NewGuid();
+        SetAuthenticatedUser();
+        _gameNightServiceMock.Setup(x => x.GetByLinkId(linkId, true)).ReturnsAsync((GameNight?)null);
+
+        var result = await _controller.GetByLink(linkId);
+
+        result.Should().BeOfType<NotFoundResult>();
+        _gameNightServiceMock.Verify(x => x.GetByLinkId(linkId, true), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetByLink_ShouldNotExposeWhatTheGamesCost()
+    {
+        var linkId = Guid.NewGuid();
+        var game = new Game("Root") { Id = 9 };
+        game.UpdateBuyingPrice(49.99m);
+        var gameNight = GameNight.Create("Link Night", "", new DateTime(2026, 10, 23, 19, 0, 0, DateTimeKind.Utc), 1, 1);
+        gameNight.AddSuggestedGame(game);
+        _gameNightServiceMock.Setup(x => x.GetByLinkId(linkId, false)).ReturnsAsync(gameNight);
+
+        var result = await _controller.GetByLink(linkId);
+
+        var dto = result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeOfType<GameNightDto>().Subject;
+        var suggested = dto.SuggestedGames.Should().ContainSingle().Subject;
+        suggested.Id.Should().Be(9);
+        suggested.BuyingPrice.Should().BeNull();
+        _gameNightServiceMock.Verify(x => x.GetByLinkId(linkId, false), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGameNight_ShouldListRunningGamesOldestFirst_AndReportRecordedAttendance()
+    {
+        var startDate = new DateTime(2026, 10, 16, 18, 0, 0, DateTimeKind.Utc);
+        var gameNight = GameNight.Create("Night", "", startDate, 1, 1);
+        var later = RunningGame.Create(4, 8, startDate.AddMinutes(30), [2]);
+        later.Id = 2;
+        var earlier = RunningGame.Create(4, 7, startDate, [3]);
+        earlier.Id = 1;
+        gameNight.RunningGames.Add(later);
+        gameNight.RunningGames.Add(earlier);
+        gameNight.SetAttendance([5]);
+        gameNight.End(startDate.AddHours(3));
+        _gameNightServiceMock.Setup(x => x.GetDetail(4)).ReturnsAsync(gameNight);
+
+        var result = await _controller.GetGameNight(4);
+
+        var detail = result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeOfType<GameNightDetailDto>().Subject;
+        detail.RunningGames.Select(x => x.Id).Should().Equal(1, 2);
+        detail.RunningGames[0].PlayerIds.Should().Equal(3);
+        detail.GameNight.EndedAt.Should().Be(startDate.AddHours(3));
+        detail.GameNight.Summary.RunningGames.Should().Be(2);
+        detail.GameNight.Summary.AttendanceRecorded.Should().BeTrue();
+        detail.GameNight.Summary.AttendeeIds.Should().Equal(2, 3, 5);
+        _gameNightServiceMock.Verify(x => x.GetDetail(4), Times.Once);
         VerifyNoOtherCalls();
     }
 
