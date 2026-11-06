@@ -395,6 +395,34 @@ test("refuses a bad email address and an empty username when editing a user", as
 	expect(await sent).toBeNull();
 });
 
+test("offers to retry when the users fail to load", async ({ page }) => {
+	let failing = true;
+	await page.route("**/api/admin/users", (route) =>
+		failing ? route.fulfill({ status: 400, json: {} }) : route.fallback(),
+	);
+	await openSection(page, "account");
+	const main = page.getByRole("main");
+
+	await expect(main.getByText("Couldn't load this page")).toBeVisible();
+	await expect(main.getByText("No users yet")).toHaveCount(0);
+
+	failing = false;
+	await main.getByRole("button", { name: "Try again" }).click();
+
+	await expect(page.getByRole("row")).toHaveCount(4);
+});
+
+test("names the failed action when the server gives no reason", async ({ page }) => {
+	const dialog = await openAddUser(page);
+	await fillNewUser(page);
+	await page.route("**/api/auth/register", (route) => route.fulfill({ status: 400, json: {} }));
+
+	await dialog.getByRole("button", { name: "Add", exact: true }).click();
+
+	await expect(dialog.getByText("Failed to create user")).toBeVisible();
+	await expect(dialog.getByText("An unexpected error occurred")).toHaveCount(0);
+});
+
 test("tells the password rule of the server when adding a user", async ({ page }) => {
 	await openAddUser(page);
 

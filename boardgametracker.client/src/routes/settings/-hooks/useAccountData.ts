@@ -139,7 +139,7 @@ export const useAccountData = () => {
 		isProfileLoading: profileQuery.isLoading,
 		users: usersQuery.data ?? [],
 		isLoadingUsers: usersQuery.isLoading,
-		usersError: usersQuery.isLoadError ? usersQuery.error : null,
+		usersError: usersQuery.isLoadingError ? usersQuery.error : null,
 		retryUsers: () => usersQuery.refetch(),
 		linkablePlayers: linkablePlayersQuery.data ?? [],
 		players: playersQuery.data ?? [],
