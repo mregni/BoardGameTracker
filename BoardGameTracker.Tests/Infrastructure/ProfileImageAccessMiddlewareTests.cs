@@ -12,6 +12,7 @@ public class ProfileImageAccessMiddlewareTests
 {
     private readonly Mock<IProfileImageTicketService> _tickets = new();
     private readonly Mock<IUserAccessCheck> _accessCheck = new();
+    private readonly CancellationToken _aborted = new CancellationTokenSource().Token;
     private bool _nextCalled;
     private readonly ProfileImageAccessMiddleware _middleware;
 
@@ -38,39 +39,44 @@ public class ProfileImageAccessMiddlewareTests
         await _middleware.InvokeAsync(context, _tickets.Object, _accessCheck.Object);
 
         _nextCalled.Should().BeTrue();
+        context.Response.StatusCode.Should().Be(StatusCodes.Status200OK);
+        context.Response.Headers.CacheControl.ToString().Should().BeEmpty();
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task InvokeAsync_ShouldPass_WhenTheImageCookieBelongsToAnActiveUser()
     {
-        var context = new DefaultHttpContext();
+        var context = new DefaultHttpContext { RequestAborted = _aborted };
         context.Request.Headers.Cookie = $"{ProfileImageCookie.Name}=ticket-1";
         _tickets.Setup(x => x.ReadUserId("ticket-1")).Returns("u1");
-        _accessCheck.Setup(x => x.CanSignInAsync("u1", CancellationToken.None)).ReturnsAsync(true);
+        _accessCheck.Setup(x => x.CanSignInAsync("u1", _aborted)).ReturnsAsync(true);
 
         await _middleware.InvokeAsync(context, _tickets.Object, _accessCheck.Object);
 
         _nextCalled.Should().BeTrue();
+        context.Response.StatusCode.Should().Be(StatusCodes.Status200OK);
+        context.Response.Headers.CacheControl.ToString().Should().BeEmpty();
         _tickets.Verify(x => x.ReadUserId("ticket-1"), Times.Once);
-        _accessCheck.Verify(x => x.CanSignInAsync("u1", CancellationToken.None), Times.Once);
+        _accessCheck.Verify(x => x.CanSignInAsync("u1", _aborted), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task InvokeAsync_ShouldAnswer401_WhenTheImageCookieBelongsToADisabledUser()
     {
-        var context = new DefaultHttpContext();
+        var context = new DefaultHttpContext { RequestAborted = _aborted };
         context.Request.Headers.Cookie = $"{ProfileImageCookie.Name}=ticket-1";
         _tickets.Setup(x => x.ReadUserId("ticket-1")).Returns("u1");
-        _accessCheck.Setup(x => x.CanSignInAsync("u1", CancellationToken.None)).ReturnsAsync(false);
+        _accessCheck.Setup(x => x.CanSignInAsync("u1", _aborted)).ReturnsAsync(false);
 
         await _middleware.InvokeAsync(context, _tickets.Object, _accessCheck.Object);
 
         _nextCalled.Should().BeFalse();
         context.Response.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
+        context.Response.Headers.CacheControl.ToString().Should().Be("no-store");
         _tickets.Verify(x => x.ReadUserId("ticket-1"), Times.Once);
-        _accessCheck.Verify(x => x.CanSignInAsync("u1", CancellationToken.None), Times.Once);
+        _accessCheck.Verify(x => x.CanSignInAsync("u1", _aborted), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -85,6 +91,36 @@ public class ProfileImageAccessMiddlewareTests
         _nextCalled.Should().BeFalse();
         context.Response.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
         context.Response.Headers.CacheControl.ToString().Should().Be("no-store");
+        _tickets.Verify(x => x.ReadUserId(null), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task InvokeAsync_ShouldAnswer401_WhenTheTicketIsUnreadable()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Cookie = $"{ProfileImageCookie.Name}=forged";
+        _tickets.Setup(x => x.ReadUserId("forged")).Returns((string?)null);
+
+        await _middleware.InvokeAsync(context, _tickets.Object, _accessCheck.Object);
+
+        _nextCalled.Should().BeFalse();
+        context.Response.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
+        context.Response.Headers.CacheControl.ToString().Should().Be("no-store");
+        _tickets.Verify(x => x.ReadUserId("forged"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task InvokeAsync_ShouldAnswer401_WhenThePrincipalHasNoIdentity()
+    {
+        var context = new DefaultHttpContext { User = new ClaimsPrincipal() };
+        _tickets.Setup(x => x.ReadUserId(null)).Returns((string?)null);
+
+        await _middleware.InvokeAsync(context, _tickets.Object, _accessCheck.Object);
+
+        _nextCalled.Should().BeFalse();
+        context.Response.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
         _tickets.Verify(x => x.ReadUserId(null), Times.Once);
         VerifyNoOtherCalls();
     }
