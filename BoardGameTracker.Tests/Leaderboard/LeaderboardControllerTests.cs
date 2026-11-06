@@ -65,7 +65,28 @@ public class LeaderboardControllerTests
 
         result.Should().BeOfType<BadRequestObjectResult>()
             .Which.Value.Should().BeOfType<ProblemDetails>()
-            .Which.Status.Should().Be(400);
+            .Which.Should().Match<ProblemDetails>(x => x.Status == 400 && x.Title == "The start date must be on or before the end date.");
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task GetLeaderboard_ShouldAcceptTheRange_WhenTheDatesAreEqualOrOneIsOpen(bool withFrom, bool withTo)
+    {
+        DateOnly? from = withFrom ? new DateOnly(2026, 5, 1) : null;
+        DateOnly? to = withTo ? new DateOnly(2026, 5, 1) : null;
+        var leaderboard = new LeaderboardDto();
+        var expectedFilter = new LeaderboardFilter(from, to);
+        _leaderboardServiceMock
+            .Setup(x => x.GetLeaderboardAsync(expectedFilter, TestContext.Current.CancellationToken))
+            .ReturnsAsync(leaderboard);
+
+        var result = await _controller.GetLeaderboard(from, to, null, cancellationToken: TestContext.Current.CancellationToken);
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(leaderboard);
+        _leaderboardServiceMock.Verify(x => x.GetLeaderboardAsync(expectedFilter, TestContext.Current.CancellationToken), Times.Once);
         VerifyNoOtherCalls();
     }
 }
