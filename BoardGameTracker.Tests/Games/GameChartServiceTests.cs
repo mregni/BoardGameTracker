@@ -160,7 +160,7 @@ public class GameChartServiceTests
         var gameId = 1;
 
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None))
             .ReturnsAsync((bool?)false);
 
         var result = await _gameChartService.GetPlayerScoringChart(gameId);
@@ -168,7 +168,7 @@ public class GameChartServiceTests
         result.Should().BeNull();
 
         _gameRepositoryMock.Verify(
-            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()),
+            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None),
             Times.Once);
         VerifyNoOtherCalls();
     }
@@ -179,7 +179,7 @@ public class GameChartServiceTests
         var gameId = 999;
 
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None))
             .ReturnsAsync((bool?)null);
 
         var result = await _gameChartService.GetPlayerScoringChart(gameId);
@@ -187,7 +187,7 @@ public class GameChartServiceTests
         result.Should().BeNull();
 
         _gameRepositoryMock.Verify(
-            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()),
+            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None),
             Times.Once);
         VerifyNoOtherCalls();
     }
@@ -205,11 +205,11 @@ public class GameChartServiceTests
         var secondSession = CreateSessionWithPlayers(gameId, secondStart, (1, 70, true));
 
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None))
             .ReturnsAsync((bool?)true);
 
         _sessionRepositoryMock
-            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSinceSpec), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSinceSpec), CancellationToken.None))
             .ReturnsAsync([firstSession, secondSession]);
 
         var result = await _gameChartService.GetPlayerScoringChart(gameId);
@@ -226,10 +226,10 @@ public class GameChartServiceTests
         second.Should().Contain(x => x.Id == 2 && x.Value == null);
 
         _gameRepositoryMock.Verify(
-            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()),
+            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None),
             Times.Once);
         _sessionRepositoryMock.Verify(
-            x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSinceSpec), It.IsAny<CancellationToken>()),
+            x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSinceSpec), CancellationToken.None),
             Times.Once);
         VerifyNoOtherCalls();
     }
@@ -246,11 +246,11 @@ public class GameChartServiceTests
         var duplicateStartSession = CreateSessionWithPlayers(gameId, start, (1, 99, true));
 
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None))
             .ReturnsAsync((bool?)true);
 
         _sessionRepositoryMock
-            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSinceSpec), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSinceSpec), CancellationToken.None))
             .ReturnsAsync([firstSession, duplicateStartSession]);
 
         var result = await _gameChartService.GetPlayerScoringChart(gameId);
@@ -261,10 +261,10 @@ public class GameChartServiceTests
         result.Select(x => x.Series.Single().Value).Should().BeEquivalentTo(new double?[] { 10, 99 });
 
         _gameRepositoryMock.Verify(
-            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()),
+            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None),
             Times.Once);
         _sessionRepositoryMock.Verify(
-            x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSinceSpec), It.IsAny<CancellationToken>()),
+            x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSinceSpec), CancellationToken.None),
             Times.Once);
         VerifyNoOtherCalls();
     }
@@ -278,14 +278,14 @@ public class GameChartServiceTests
     {
         var gameId = 1;
         _sessionRepositoryMock
-            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), CancellationToken.None))
             .ReturnsAsync([]);
 
         var result = await _gameChartService.GetTopPlayers(gameId);
 
         result.Should().BeEmpty();
 
-        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -306,7 +306,7 @@ public class GameChartServiceTests
         sessions.Add(CreateSessionWithPlayers(gameId, baseDate.AddDays(10), (7, null, false)));
 
         _sessionRepositoryMock
-            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), CancellationToken.None))
             .ReturnsAsync(sessions);
 
         var result = await _gameChartService.GetTopPlayers(gameId);
@@ -317,7 +317,7 @@ public class GameChartServiceTests
         result.Should().NotContain(x => x.PlayerId == 1);
         result.Should().NotContain(x => x.PlayerId == 7);
 
-        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -335,7 +335,7 @@ public class GameChartServiceTests
         };
 
         _sessionRepositoryMock
-            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), CancellationToken.None))
             .ReturnsAsync(sessions);
 
         var result = await _gameChartService.GetTopPlayers(gameId);
@@ -344,7 +344,7 @@ public class GameChartServiceTests
         result.Select(x => x.Wins).Should().ContainInOrder(2, 1, 0, 0);
         result.Select(x => x.PlayCount).Should().ContainInOrder(3, 2, 3, 1);
 
-        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -468,28 +468,28 @@ public class GameChartServiceTests
     private void SetupHasScoring(bool? hasScoring)
     {
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None))
             .ReturnsAsync(hasScoring);
     }
 
     private void SetupScoredSessions(int count)
     {
         _sessionRepositoryMock
-            .Setup(x => x.CountAsync(It.IsAny<ScoredSessionsByGameSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.CountAsync(It.IsAny<ScoredSessionsByGameSpec>(), CancellationToken.None))
             .ReturnsAsync(count);
     }
 
     private void VerifyScoredSessionsCounted()
     {
         _sessionRepositoryMock.Verify(
-            x => x.CountAsync(It.IsAny<ScoredSessionsByGameSpec>(), It.IsAny<CancellationToken>()),
+            x => x.CountAsync(It.IsAny<ScoredSessionsByGameSpec>(), CancellationToken.None),
             Times.Once);
     }
 
     private void VerifyHasScoringChecked()
     {
         _gameRepositoryMock.Verify(
-            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()),
+            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None),
             Times.Once);
     }
 

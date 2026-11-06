@@ -38,12 +38,12 @@ public class ChangeDetectionConnectionTesterTests
     [InlineData(ChangeDetectionStatus.ParseError, IntegrationConnectionStatus.Unreachable, IntegrationMessageKeys.Unreachable)]
     public async Task TestAsync_ShouldMapTheConnectionTest(ChangeDetectionStatus status, IntegrationConnectionStatus expected, string messageKey)
     {
-        _clientMock.Setup(x => x.TestConnectionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(status);
+        _clientMock.Setup(x => x.TestConnectionAsync(CancellationToken.None)).ReturnsAsync(status);
 
         var result = await _tester.TestAsync();
 
         result.Should().Be(new IntegrationTestResult(expected, messageKey));
-        _clientMock.Verify(x => x.TestConnectionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _clientMock.Verify(x => x.TestConnectionAsync(CancellationToken.None), Times.Once);
         _clientMock.VerifyNoOtherCalls();
     }
 }

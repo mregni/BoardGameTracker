@@ -49,7 +49,7 @@ public class PlayerAccountImageServiceTests
     {
         var player = new Player("Jane", image) { Id = id };
         _playerRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None))
             .ReturnsAsync(player);
         return player;
     }
@@ -57,7 +57,7 @@ public class PlayerAccountImageServiceTests
     private void VerifyPlayerLoaded(int times = 1)
     {
         _playerRepositoryMock.Verify(
-            x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()),
+            x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None),
             Times.Exactly(times));
     }
 
@@ -85,7 +85,7 @@ public class PlayerAccountImageServiceTests
         player.ImageSource.Should().Be(PlayerImageSource.Account);
         VerifyPlayerLoaded();
         _imageServiceMock.Verify(x => x.CopyProfileImage(AccountImage), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage(null), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -101,7 +101,7 @@ public class PlayerAccountImageServiceTests
         player.Image.Should().Be(CopiedImage);
         VerifyPlayerLoaded();
         _imageServiceMock.Verify(x => x.CopyProfileImage(AccountImage), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/old_copy.webp"), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -132,7 +132,7 @@ public class PlayerAccountImageServiceTests
         player.Image.Should().BeNull();
         player.ImageSource.Should().Be(PlayerImageSource.None);
         VerifyPlayerLoaded();
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/old_copy.webp"), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -162,7 +162,7 @@ public class PlayerAccountImageServiceTests
     public async Task ApplyAccountImageAsync_ShouldDoNothing_WhenThePlayerIsGone()
     {
         _playerRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None))
             .ReturnsAsync((Player?)null);
 
         var applied = await _service.ApplyAccountImageAsync(LinkedUser(4));
@@ -192,7 +192,7 @@ public class PlayerAccountImageServiceTests
     {
         SetupPlayer(4);
         _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.SaveChangesAsync(CancellationToken.None))
             .ThrowsAsync(new InvalidOperationException("db down"));
 
         var act = () => _service.ApplyAccountImageAsync(LinkedUser(4));
@@ -200,7 +200,7 @@ public class PlayerAccountImageServiceTests
         await act.Should().ThrowAsync<InvalidOperationException>();
         VerifyPlayerLoaded();
         _imageServiceMock.Verify(x => x.CopyProfileImage(AccountImage), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage(CopiedImage), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -216,7 +216,7 @@ public class PlayerAccountImageServiceTests
         player.Image.Should().BeNull();
         player.ImageSource.Should().Be(PlayerImageSource.None);
         VerifyPlayerLoaded();
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/old_copy.webp"), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -248,7 +248,7 @@ public class PlayerAccountImageServiceTests
         oldPlayer.UseAccountImage("/images/profile/old_copy.webp");
         var newPlayer = new Player("New") { Id = 2 };
         _playerRepositoryMock
-            .SetupSequence(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
+            .SetupSequence(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None))
             .ReturnsAsync(oldPlayer)
             .ReturnsAsync(newPlayer);
 
@@ -260,7 +260,7 @@ public class PlayerAccountImageServiceTests
         newPlayer.ImageSource.Should().Be(PlayerImageSource.Account);
         VerifyPlayerLoaded(2);
         _imageServiceMock.Verify(x => x.CopyProfileImage(AccountImage), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Exactly(2));
         _imageServiceMock.Verify(x => x.DeleteImage(null), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage("/images/profile/old_copy.webp"), Times.Once);
         VerifyNoOtherCalls();
@@ -278,13 +278,13 @@ public class PlayerAccountImageServiceTests
     public async Task CopyLinkedAccountImageAsync_ShouldCopyTheLinkedAccountPicture()
     {
         _userRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LinkedAccountByPlayerIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LinkedAccountByPlayerIdSpec>(), CancellationToken.None))
             .ReturnsAsync(new PlayerLinkedAccountDto { Id = "u1", Username = "jane", ProfileImage = AccountImage });
 
         var result = await _service.CopyLinkedAccountImageAsync(4);
 
         result.Should().Be(CopiedImage);
-        _userRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<LinkedAccountByPlayerIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _userRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<LinkedAccountByPlayerIdSpec>(), CancellationToken.None), Times.Once);
         _imageServiceMock.Verify(x => x.CopyProfileImage(AccountImage), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -293,13 +293,13 @@ public class PlayerAccountImageServiceTests
     public async Task CopyLinkedAccountImageAsync_ShouldReturnNull_WhenNoAccountPictureExists()
     {
         _userRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LinkedAccountByPlayerIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LinkedAccountByPlayerIdSpec>(), CancellationToken.None))
             .ReturnsAsync((PlayerLinkedAccountDto?)null);
 
         var result = await _service.CopyLinkedAccountImageAsync(4);
 
         result.Should().BeNull();
-        _userRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<LinkedAccountByPlayerIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _userRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<LinkedAccountByPlayerIdSpec>(), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -308,7 +308,7 @@ public class PlayerAccountImageServiceTests
     {
         var player = SetupPlayer(4);
         _userRepositoryMock
-            .Setup(x => x.ListAsync(It.IsAny<AccountsAwaitingPlayerImageSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.IsAny<AccountsAwaitingPlayerImageSpec>(), CancellationToken.None))
             .ReturnsAsync([LinkedUser(4)]);
 
         var applied = await _service.BackfillAsync();
@@ -316,10 +316,10 @@ public class PlayerAccountImageServiceTests
         applied.Should().Be(1);
         player.Image.Should().Be(CopiedImage);
         player.ImageSource.Should().Be(PlayerImageSource.Account);
-        _userRepositoryMock.Verify(x => x.ListAsync(It.IsAny<AccountsAwaitingPlayerImageSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _userRepositoryMock.Verify(x => x.ListAsync(It.IsAny<AccountsAwaitingPlayerImageSpec>(), CancellationToken.None), Times.Once);
         VerifyPlayerLoaded();
         _imageServiceMock.Verify(x => x.CopyProfileImage(AccountImage), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage(null), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -328,13 +328,13 @@ public class PlayerAccountImageServiceTests
     public async Task BackfillAsync_ShouldReturnZero_WhenNothingWaits()
     {
         _userRepositoryMock
-            .Setup(x => x.ListAsync(It.IsAny<AccountsAwaitingPlayerImageSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.IsAny<AccountsAwaitingPlayerImageSpec>(), CancellationToken.None))
             .ReturnsAsync([]);
 
         var applied = await _service.BackfillAsync();
 
         applied.Should().Be(0);
-        _userRepositoryMock.Verify(x => x.ListAsync(It.IsAny<AccountsAwaitingPlayerImageSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _userRepositoryMock.Verify(x => x.ListAsync(It.IsAny<AccountsAwaitingPlayerImageSpec>(), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 }

@@ -74,14 +74,14 @@ public class UpdateServiceTests
             new RefitSettings());
 
         _dockerHubApiMock
-            .Setup(x => x.GetTags("uping", "boardgametracker", page, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetTags("uping", "boardgametracker", page, CancellationToken.None))
             .ReturnsAsync(response);
     }
 
     private void VerifyCheckPreamble()
     {
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track), Times.Once);
-        _dockerHubApiMock.Verify(x => x.GetTags("uping", "boardgametracker", 1, It.IsAny<CancellationToken>()), Times.Once);
+        _dockerHubApiMock.Verify(x => x.GetTags("uping", "boardgametracker", 1, CancellationToken.None), Times.Once);
     }
 
     private void VerifyLastRunPersisted()
@@ -224,7 +224,7 @@ public class UpdateServiceTests
         await _updateService.CheckForUpdatesAsync();
 
         VerifyCheckPreamble();
-        _dockerHubApiMock.Verify(x => x.GetTags("uping", "boardgametracker", 2, It.IsAny<CancellationToken>()), Times.Once);
+        _dockerHubApiMock.Verify(x => x.GetTags("uping", "boardgametracker", 2, CancellationToken.None), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.AvailableVersion, "999.2.0"), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.Available, true), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.CheckError, string.Empty), Times.Once);
@@ -244,7 +244,7 @@ public class UpdateServiceTests
         await _updateService.CheckForUpdatesAsync();
 
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track), Times.Once);
-        _dockerHubApiMock.Verify(x => x.GetTags("uping", "boardgametracker", It.IsInRange(1, 10, Moq.Range.Inclusive), It.IsAny<CancellationToken>()), Times.Exactly(10));
+        _dockerHubApiMock.Verify(x => x.GetTags("uping", "boardgametracker", It.IsInRange(1, 10, Moq.Range.Inclusive), CancellationToken.None), Times.Exactly(10));
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.AvailableVersion, "10.0.0"), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.Available, true), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.CheckError, string.Empty), Times.Once);
@@ -325,7 +325,7 @@ public class UpdateServiceTests
             new RefitSettings());
 
         _dockerHubApiMock
-            .Setup(x => x.GetTags("uping", "boardgametracker", 1, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetTags("uping", "boardgametracker", 1, CancellationToken.None))
             .ReturnsAsync(response);
 
         await _updateService.CheckForUpdatesAsync();
@@ -347,7 +347,7 @@ public class UpdateServiceTests
             new RefitSettings());
 
         _dockerHubApiMock
-            .Setup(x => x.GetTags("uping", "boardgametracker", 1, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetTags("uping", "boardgametracker", 1, CancellationToken.None))
             .ThrowsAsync(apiException);
 
         await _updateService.CheckForUpdatesAsync();

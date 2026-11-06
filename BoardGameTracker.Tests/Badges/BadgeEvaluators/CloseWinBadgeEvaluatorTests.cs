@@ -84,7 +84,7 @@ public class CloseWinBadgeEvaluatorTests
     {
         var badge = TestBadges.Create(BadgeType.CloseWin, BadgeLevel.Green);
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None))
             .ReturnsAsync(false);
 
         var session = new SessionBuilder().ForGame(GameId)
@@ -105,7 +105,7 @@ public class CloseWinBadgeEvaluatorTests
     {
         var badge = TestBadges.Create(BadgeType.CloseWin, BadgeLevel.Green);
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None))
             .ReturnsAsync((bool?)null);
 
         var session = new SessionBuilder().ForGame(GameId)
@@ -272,13 +272,13 @@ public class CloseWinBadgeEvaluatorTests
     private void SetupGameWithScoring()
     {
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None))
             .ReturnsAsync(true);
     }
 
     private void VerifyGameLookup()
     {
-        _gameRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), CancellationToken.None), Times.Once);
     }
 
     private void VerifyNoOtherCalls()

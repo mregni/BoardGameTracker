@@ -69,7 +69,7 @@ public class GameNightStatisticsServiceTests
     private void SetupNights(params GameNightStatisticsNight[] nights)
     {
         _gameNightRepositoryMock
-            .Setup(x => x.ListAsync(It.IsAny<ISpecification<GameNight, GameNightStatisticsNight>>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.IsAny<ISpecification<GameNight, GameNightStatisticsNight>>(), CancellationToken.None))
             .Callback<ISpecification<GameNight, GameNightStatisticsNight>, CancellationToken>((spec, _) => _capturedSpec = (GameNightStatisticsSpec)spec)
             .ReturnsAsync(nights.ToList());
     }
@@ -78,7 +78,7 @@ public class GameNightStatisticsServiceTests
     {
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.GameNightsEnabled, true), Times.Once);
         _gameNightRepositoryMock.Verify(
-            x => x.ListAsync(It.IsAny<ISpecification<GameNight, GameNightStatisticsNight>>(), It.IsAny<CancellationToken>()),
+            x => x.ListAsync(It.IsAny<ISpecification<GameNight, GameNightStatisticsNight>>(), CancellationToken.None),
             Times.Once);
     }
 

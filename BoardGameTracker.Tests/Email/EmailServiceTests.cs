@@ -76,7 +76,7 @@ public class EmailServiceTests
 
         MimeMessage? captured = null;
         _smtpSenderMock
-            .Setup(x => x.SendAsync(It.IsAny<MimeMessage>(), "smtp.test.com", 587, true, "user", "pass", It.IsAny<CancellationToken>()))
+            .Setup(x => x.SendAsync(It.IsAny<MimeMessage>(), "smtp.test.com", 587, true, "user", "pass", CancellationToken.None))
             .Callback<MimeMessage, string, int, bool, string?, string?, CancellationToken>((m, _, _, _, _, _, _) => captured = m)
             .Returns(Task.CompletedTask);
 
@@ -92,7 +92,7 @@ public class EmailServiceTests
         from.Name.Should().Be("BGT");
 
         _smtpSenderMock.Verify(
-            x => x.SendAsync(It.IsAny<MimeMessage>(), "smtp.test.com", 587, true, "user", "pass", It.IsAny<CancellationToken>()),
+            x => x.SendAsync(It.IsAny<MimeMessage>(), "smtp.test.com", 587, true, "user", "pass", CancellationToken.None),
             Times.Once);
         VerifyNoOtherCalls();
     }
@@ -104,7 +104,7 @@ public class EmailServiceTests
 
         MimeMessage? captured = null;
         _smtpSenderMock
-            .Setup(x => x.SendAsync(It.IsAny<MimeMessage>(), "smtp.test.com", 587, true, "user", "pass", It.IsAny<CancellationToken>()))
+            .Setup(x => x.SendAsync(It.IsAny<MimeMessage>(), "smtp.test.com", 587, true, "user", "pass", CancellationToken.None))
             .Callback<MimeMessage, string, int, bool, string?, string?, CancellationToken>((m, _, _, _, _, _, _) => captured = m)
             .Returns(Task.CompletedTask);
 
@@ -116,7 +116,7 @@ public class EmailServiceTests
         from.Name.Should().Be("from@test.com");
 
         _smtpSenderMock.Verify(
-            x => x.SendAsync(It.IsAny<MimeMessage>(), "smtp.test.com", 587, true, "user", "pass", It.IsAny<CancellationToken>()),
+            x => x.SendAsync(It.IsAny<MimeMessage>(), "smtp.test.com", 587, true, "user", "pass", CancellationToken.None),
             Times.Once);
         VerifyNoOtherCalls();
     }

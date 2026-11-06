@@ -29,12 +29,12 @@ public class ChangeDetectionControllerTests
     public async Task GetWatch_ShouldReturnTheWatch_WhenItExists()
     {
         var info = new ChangeDetectionWatchInfo("https://shop.example.com/brass", "Brass", new DateTime(2026, 8, 28, 12, 0, 0, DateTimeKind.Utc));
-        _clientMock.Setup(x => x.GetWatchInfoAsync(WatchId, It.IsAny<CancellationToken>())).ReturnsAsync((ChangeDetectionStatus.Ok, info));
+        _clientMock.Setup(x => x.GetWatchInfoAsync(WatchId, CancellationToken.None)).ReturnsAsync((ChangeDetectionStatus.Ok, info));
 
         var result = await _controller.GetWatch(WatchId, CancellationToken.None);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(info);
-        _clientMock.Verify(x => x.GetWatchInfoAsync(WatchId, It.IsAny<CancellationToken>()), Times.Once);
+        _clientMock.Verify(x => x.GetWatchInfoAsync(WatchId, CancellationToken.None), Times.Once);
         _clientMock.VerifyNoOtherCalls();
     }
 
@@ -58,12 +58,12 @@ public class ChangeDetectionControllerTests
     [InlineData(ChangeDetectionStatus.Ok, StatusCodes.Status502BadGateway)]
     public async Task GetWatch_ShouldMapTheInstanceStatus_ToAnHttpStatus(ChangeDetectionStatus status, int expected)
     {
-        _clientMock.Setup(x => x.GetWatchInfoAsync(WatchId, It.IsAny<CancellationToken>())).ReturnsAsync((status, (ChangeDetectionWatchInfo?)null));
+        _clientMock.Setup(x => x.GetWatchInfoAsync(WatchId, CancellationToken.None)).ReturnsAsync((status, (ChangeDetectionWatchInfo?)null));
 
         var result = await _controller.GetWatch(WatchId, CancellationToken.None);
 
         result.Should().BeAssignableTo<IStatusCodeActionResult>().Which.StatusCode.Should().Be(expected);
-        _clientMock.Verify(x => x.GetWatchInfoAsync(WatchId, It.IsAny<CancellationToken>()), Times.Once);
+        _clientMock.Verify(x => x.GetWatchInfoAsync(WatchId, CancellationToken.None), Times.Once);
         _clientMock.VerifyNoOtherCalls();
     }
 }

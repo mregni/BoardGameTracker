@@ -47,13 +47,13 @@ public class ProfileImageAccessMiddlewareTests
         var context = new DefaultHttpContext();
         context.Request.Headers.Cookie = $"{ProfileImageCookie.Name}=ticket-1";
         _tickets.Setup(x => x.ReadUserId("ticket-1")).Returns("u1");
-        _accessCheck.Setup(x => x.CanSignInAsync("u1", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _accessCheck.Setup(x => x.CanSignInAsync("u1", CancellationToken.None)).ReturnsAsync(true);
 
         await _middleware.InvokeAsync(context, _tickets.Object, _accessCheck.Object);
 
         _nextCalled.Should().BeTrue();
         _tickets.Verify(x => x.ReadUserId("ticket-1"), Times.Once);
-        _accessCheck.Verify(x => x.CanSignInAsync("u1", It.IsAny<CancellationToken>()), Times.Once);
+        _accessCheck.Verify(x => x.CanSignInAsync("u1", CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -63,14 +63,14 @@ public class ProfileImageAccessMiddlewareTests
         var context = new DefaultHttpContext();
         context.Request.Headers.Cookie = $"{ProfileImageCookie.Name}=ticket-1";
         _tickets.Setup(x => x.ReadUserId("ticket-1")).Returns("u1");
-        _accessCheck.Setup(x => x.CanSignInAsync("u1", It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        _accessCheck.Setup(x => x.CanSignInAsync("u1", CancellationToken.None)).ReturnsAsync(false);
 
         await _middleware.InvokeAsync(context, _tickets.Object, _accessCheck.Object);
 
         _nextCalled.Should().BeFalse();
         context.Response.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
         _tickets.Verify(x => x.ReadUserId("ticket-1"), Times.Once);
-        _accessCheck.Verify(x => x.CanSignInAsync("u1", It.IsAny<CancellationToken>()), Times.Once);
+        _accessCheck.Verify(x => x.CanSignInAsync("u1", CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 

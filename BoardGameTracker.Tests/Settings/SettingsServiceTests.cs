@@ -57,7 +57,7 @@ public class SettingsServiceTests : IDisposable
         _transactionMock = new Mock<IDbContextTransaction>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _unitOfWorkMock
-            .Setup(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.BeginTransactionAsync(CancellationToken.None))
             .ReturnsAsync(_transactionMock.Object);
         _loggerMock = new Mock<ILogger<SettingsService>>();
         _protectorLoggerMock = new Mock<ILogger<IntegrationKeyProtector>>();
@@ -80,8 +80,8 @@ public class SettingsServiceTests : IDisposable
 
     private void VerifyTransactionCommitted()
     {
-        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(CancellationToken.None), Times.Once);
+        _transactionMock.Verify(x => x.CommitAsync(CancellationToken.None), Times.Once);
     }
 
     private string StoredAs(string plaintext) =>
@@ -107,7 +107,7 @@ public class SettingsServiceTests : IDisposable
 
     private void VerifyNothingWritten()
     {
-        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(CancellationToken.None), Times.Never);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);

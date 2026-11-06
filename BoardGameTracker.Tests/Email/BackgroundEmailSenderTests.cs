@@ -34,13 +34,13 @@ public class BackgroundEmailSenderTests
         var disposed = new TaskCompletionSource();
         _scopeMock.Setup(x => x.Dispose()).Callback(() => disposed.TrySetResult());
         _emailServiceMock
-            .Setup(x => x.SendAsync("to@test.com", "Subject", "<p>Body</p>", null, It.IsAny<CancellationToken>()))
+            .Setup(x => x.SendAsync("to@test.com", "Subject", "<p>Body</p>", null, CancellationToken.None))
             .Returns(Task.CompletedTask);
 
         _sender.Queue("to@test.com", "Subject", "<p>Body</p>");
 
         await disposed.Task.WaitAsync(SignalTimeout);
-        _emailServiceMock.Verify(x => x.SendAsync("to@test.com", "Subject", "<p>Body</p>", null, It.IsAny<CancellationToken>()), Times.Once);
+        _emailServiceMock.Verify(x => x.SendAsync("to@test.com", "Subject", "<p>Body</p>", null, CancellationToken.None), Times.Once);
         _scopeFactoryMock.Verify(x => x.CreateScope(), Times.Once);
     }
 
@@ -49,7 +49,7 @@ public class BackgroundEmailSenderTests
     {
         var logged = new TaskCompletionSource();
         _emailServiceMock
-            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), CancellationToken.None))
             .ThrowsAsync(new InvalidOperationException("smtp down"));
         _loggerMock
             .Setup(x => x.Log(
@@ -83,7 +83,7 @@ public class BackgroundEmailSenderTests
         var gate = new object();
         var allSent = new TaskCompletionSource();
         _emailServiceMock
-            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), CancellationToken.None))
             .Returns(async () =>
             {
                 var now = Interlocked.Increment(ref active);

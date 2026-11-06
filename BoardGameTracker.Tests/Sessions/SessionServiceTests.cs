@@ -522,7 +522,7 @@ public class SessionServiceTests
         };
 
         _gameNightRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None))
             .ReturnsAsync(GameNight.Create("Night", "", DateTime.UtcNow.AddHours(-3), 1, 1));
         _sessionRepositoryMock
             .Setup(x => x.CreateAsync(It.IsAny<Session>()))
@@ -537,7 +537,7 @@ public class SessionServiceTests
 
         _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
         _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None), Times.Once);
         _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
         _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
@@ -557,7 +557,7 @@ public class SessionServiceTests
         };
 
         _gameNightRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None))
             .ReturnsAsync((GameNight?)null);
 
         var action = () => _sessionService.CreateFromCommand(command);
@@ -566,7 +566,7 @@ public class SessionServiceTests
 
         _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
         _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -585,7 +585,7 @@ public class SessionServiceTests
         };
 
         _gameNightRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None))
             .ReturnsAsync(gameNight);
 
         var action = () => _sessionService.CreateFromCommand(command);
@@ -595,7 +595,7 @@ public class SessionServiceTests
 
         _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
         _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -613,7 +613,7 @@ public class SessionServiceTests
         };
 
         _gameNightRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None))
             .ReturnsAsync(gameNight);
 
         var action = () => _sessionService.CreateFromCommand(command);
@@ -623,7 +623,7 @@ public class SessionServiceTests
 
         _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
         _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -691,7 +691,7 @@ public class SessionServiceTests
             .Setup(x => x.GetByIdAsync(1))
             .ReturnsAsync(existingSession);
         _gameNightRepositoryMock
-            .Setup(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None))
             .ReturnsAsync(true);
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -703,7 +703,7 @@ public class SessionServiceTests
 
         _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
         _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), CancellationToken.None), Times.Once);
         _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
         VerifyNoOtherCalls();

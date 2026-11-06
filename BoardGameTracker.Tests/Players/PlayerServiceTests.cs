@@ -71,7 +71,7 @@ public class PlayerServiceTests
     private void VerifyNameChecked()
     {
         _playerRepositoryMock.Verify(
-            x => x.AnyAsync(It.IsAny<PlayerWithNameSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+            x => x.AnyAsync(It.IsAny<PlayerWithNameSpec>(), CancellationToken.None), Times.Once);
     }
 
     #region GetList Tests
@@ -194,7 +194,7 @@ public class PlayerServiceTests
         var command = new CreatePlayerCommand { Name = "JOHN" };
 
         _playerRepositoryMock
-            .Setup(x => x.AnyAsync(It.IsAny<PlayerWithNameSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.AnyAsync(It.IsAny<PlayerWithNameSpec>(), CancellationToken.None))
             .ReturnsAsync(true);
 
         var action = async () => await _playerService.Create(command);
@@ -271,7 +271,7 @@ public class PlayerServiceTests
         };
 
         _playerRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None))
             .ReturnsAsync(existingPlayer);
 
 
@@ -288,7 +288,7 @@ public class PlayerServiceTests
         result.Image.Should().Be("new.png");
         result.Email.Should().Be("new@example.com");
 
-        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None), Times.Once);
         VerifyNameChecked();
         _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("old.png"), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
@@ -298,7 +298,7 @@ public class PlayerServiceTests
     private void SetupPlayerForUpdate(Player player)
     {
         _playerRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None))
             .ReturnsAsync(player);
     }
 
@@ -313,7 +313,7 @@ public class PlayerServiceTests
 
         result.Image.Should().Be("/images/profile/own.webp");
         result.ImageSource.Should().Be(PlayerImageSource.Upload);
-        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None), Times.Once);
         VerifyNameChecked();
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("/images/profile/account_copy.webp"), Times.Once);
@@ -331,7 +331,7 @@ public class PlayerServiceTests
 
         result.ImageSource.Should().Be(PlayerImageSource.Account);
         result.Name.Should().Be("Jane B");
-        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None), Times.Once);
         VerifyNameChecked();
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
@@ -348,7 +348,7 @@ public class PlayerServiceTests
 
         result.Image.Should().Be("/images/profile/account_copy.webp");
         result.ImageSource.Should().Be(PlayerImageSource.Account);
-        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None), Times.Once);
         VerifyNameChecked();
         _accountImageServiceMock.Verify(x => x.CopyLinkedAccountImageAsync(1), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
@@ -367,7 +367,7 @@ public class PlayerServiceTests
 
         result.Image.Should().BeNull();
         result.ImageSource.Should().Be(PlayerImageSource.None);
-        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None), Times.Once);
         VerifyNameChecked();
         _accountImageServiceMock.Verify(x => x.CopyLinkedAccountImageAsync(1), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
@@ -386,7 +386,7 @@ public class PlayerServiceTests
         var act = () => _playerService.Update(new UpdatePlayerCommand { Id = 1, Name = "Jane", Image = null });
 
         await act.Should().ThrowAsync<InvalidOperationException>();
-        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None), Times.Once);
         VerifyNameChecked();
         _accountImageServiceMock.Verify(x => x.CopyLinkedAccountImageAsync(1), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
@@ -404,7 +404,7 @@ public class PlayerServiceTests
         var act = () => _playerService.Update(new UpdatePlayerCommand { Id = 1, Name = "Jane", Image = "/images/profile/new.webp" });
 
         await act.Should().ThrowAsync<InvalidOperationException>();
-        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None), Times.Once);
         VerifyNameChecked();
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage(null), Times.Once);
@@ -453,7 +453,7 @@ public class PlayerServiceTests
         };
 
         _playerRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None))
             .ReturnsAsync((Player?)null);
 
         // Act
@@ -462,7 +462,7 @@ public class PlayerServiceTests
         // Assert
         await action.Should().ThrowAsync<EntityNotFoundException>();
 
-        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -481,7 +481,7 @@ public class PlayerServiceTests
         };
 
         _playerRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None))
             .ReturnsAsync(existingPlayer);
 
 
@@ -496,7 +496,7 @@ public class PlayerServiceTests
         result.Should().NotBeNull();
         result.Image.Should().Be(existingImage);
 
-        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None), Times.Once);
         VerifyNameChecked();
         _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync(It.IsAny<string>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
@@ -512,10 +512,10 @@ public class PlayerServiceTests
         var command = new UpdatePlayerCommand { Id = 1, Name = "Jane", Image = "new.png" };
 
         _playerRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None))
             .ReturnsAsync(existingPlayer);
         _playerRepositoryMock
-            .Setup(x => x.AnyAsync(It.IsAny<PlayerWithNameSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.AnyAsync(It.IsAny<PlayerWithNameSpec>(), CancellationToken.None))
             .ReturnsAsync(true);
 
         var action = async () => await _playerService.Update(command);
@@ -524,7 +524,7 @@ public class PlayerServiceTests
         existingPlayer.Name.Should().Be("Old Name");
         existingPlayer.Image.Should().Be("old.png");
 
-        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), CancellationToken.None), Times.Once);
         VerifyNameChecked();
         VerifyNoOtherCalls();
     }
@@ -533,14 +533,14 @@ public class PlayerServiceTests
     public async Task ExistsAsync_ShouldReturnRepositoryResult()
     {
         _playerRepositoryMock
-            .Setup(x => x.AnyAsync(It.IsAny<PlayerByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.AnyAsync(It.IsAny<PlayerByIdSpec>(), CancellationToken.None))
             .ReturnsAsync(true);
 
         var result = await _playerService.ExistsAsync(4);
 
         result.Should().BeTrue();
 
-        _playerRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<PlayerByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<PlayerByIdSpec>(), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -581,7 +581,7 @@ public class PlayerServiceTests
         };
 
         _sessionRepositoryMock
-            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByPlayerRecentFirstSpec), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByPlayerRecentFirstSpec), CancellationToken.None))
             .ReturnsAsync(sessions);
 
         // Act
@@ -590,7 +590,7 @@ public class PlayerServiceTests
         // Assert
         result.Should().HaveCount(2);
 
-        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByPlayerRecentFirstSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByPlayerRecentFirstSpec), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -610,7 +610,7 @@ public class PlayerServiceTests
             .ReturnsAsync(player);
 
         _gameNightRepositoryMock
-            .Setup(x => x.AnyAsync(It.IsAny<GameNightsHostedByPlayerSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.AnyAsync(It.IsAny<GameNightsHostedByPlayerSpec>(), CancellationToken.None))
             .ReturnsAsync(false);
 
         _sessionRepositoryMock
@@ -631,7 +631,7 @@ public class PlayerServiceTests
         // Assert
         _playerRepositoryMock.Verify(x => x.GetByIdAsync(playerId), Times.Once);
         _gameNightRepositoryMock.Verify(
-            x => x.AnyAsync(It.IsAny<GameNightsHostedByPlayerSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+            x => x.AnyAsync(It.IsAny<GameNightsHostedByPlayerSpec>(), CancellationToken.None), Times.Once);
         _sessionRepositoryMock.Verify(x => x.DeleteByPlayerIdAsync(playerId), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("john.png"), Times.Once);
         _playerRepositoryMock.Verify(x => x.DeleteAsync(playerId), Times.Once);
@@ -667,7 +667,7 @@ public class PlayerServiceTests
             .Setup(x => x.GetByIdAsync(1))
             .ReturnsAsync(player);
         _gameNightRepositoryMock
-            .Setup(x => x.AnyAsync(It.IsAny<GameNightsHostedByPlayerSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.AnyAsync(It.IsAny<GameNightsHostedByPlayerSpec>(), CancellationToken.None))
             .ReturnsAsync(true);
 
         var action = async () => await _playerService.Delete(1);
@@ -676,7 +676,7 @@ public class PlayerServiceTests
 
         _playerRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
         _gameNightRepositoryMock.Verify(
-            x => x.AnyAsync(It.IsAny<GameNightsHostedByPlayerSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+            x => x.AnyAsync(It.IsAny<GameNightsHostedByPlayerSpec>(), CancellationToken.None), Times.Once);
         _sessionRepositoryMock.Verify(x => x.DeleteByPlayerIdAsync(It.IsAny<int>()), Times.Never);
         _playerRepositoryMock.Verify(x => x.DeleteAsync(It.IsAny<int>()), Times.Never);
         VerifyNoOtherCalls();
@@ -748,13 +748,13 @@ public class PlayerServiceTests
     public async Task GetExistingIdsAsync_ShouldReturnTheIdsTheRepositoryFinds()
     {
         _playerRepositoryMock
-            .Setup(x => x.ListAsync(It.IsAny<PlayerIdsSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.IsAny<PlayerIdsSpec>(), CancellationToken.None))
             .ReturnsAsync(new List<int> { 1, 3 });
 
         var result = await _playerService.GetExistingIdsAsync(new[] { 1, 3, 9 });
 
         result.Should().Equal(1, 3);
-        _playerRepositoryMock.Verify(x => x.ListAsync(It.IsAny<PlayerIdsSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.ListAsync(It.IsAny<PlayerIdsSpec>(), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -766,13 +766,13 @@ public class PlayerServiceTests
             new() { Id = 1, Name = "Alice", PlayCount = 4, WinCount = 2 }
         };
         _playerRepositoryMock
-            .Setup(x => x.ListAsync(It.IsAny<PlayersOverviewSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.IsAny<PlayersOverviewSpec>(), CancellationToken.None))
             .ReturnsAsync(overview);
 
         var result = await _playerService.GetOverview();
 
         result.Should().BeSameAs(overview);
-        _playerRepositoryMock.Verify(x => x.ListAsync(It.IsAny<PlayersOverviewSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _playerRepositoryMock.Verify(x => x.ListAsync(It.IsAny<PlayersOverviewSpec>(), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 }

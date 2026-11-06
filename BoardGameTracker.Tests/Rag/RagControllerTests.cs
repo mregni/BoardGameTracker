@@ -41,7 +41,7 @@ public class RagControllerTests
         result.Should().BeOfType<NotFoundResult>();
 
         _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
-        _ragServiceMock.Verify(x => x.AskAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never);
+        _ragServiceMock.Verify(x => x.AskAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int?>(), CancellationToken.None), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -54,7 +54,7 @@ public class RagControllerTests
         var command = new AskRagCommand { Question = "How does scoring work?", ManualId = manualId };
         var answer = new RagAnswerDto { Answer = "Count the points.", HasContext = true };
         _ragServiceMock
-            .Setup(x => x.AskAsync(5, "How does scoring work?", manualId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.AskAsync(5, "How does scoring work?", manualId, CancellationToken.None))
             .ReturnsAsync(answer);
 
         var result = await _controller.Ask(5, command, CancellationToken.None);
@@ -62,7 +62,7 @@ public class RagControllerTests
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(answer);
 
         _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
-        _ragServiceMock.Verify(x => x.AskAsync(5, "How does scoring work?", manualId, It.IsAny<CancellationToken>()), Times.Once);
+        _ragServiceMock.Verify(x => x.AskAsync(5, "How does scoring work?", manualId, CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 }

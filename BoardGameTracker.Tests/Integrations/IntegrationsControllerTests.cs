@@ -44,12 +44,12 @@ public class IntegrationsControllerTests
             Status(IntegrationKind.Bgg, IntegrationConnectionStatus.Ok),
             Status(IntegrationKind.ChangeDetection, IntegrationConnectionStatus.NotConfigured)
         };
-        _serviceMock.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(statuses);
+        _serviceMock.Setup(x => x.GetAllAsync(CancellationToken.None)).ReturnsAsync(statuses);
 
         var result = await _controller.GetStatus(CancellationToken.None);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(statuses);
-        _serviceMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _serviceMock.Verify(x => x.GetAllAsync(CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -61,12 +61,12 @@ public class IntegrationsControllerTests
     public async Task Test_ShouldTestTheRequestedIntegration(string integration, IntegrationKind expected)
     {
         var status = Status(expected, IntegrationConnectionStatus.Unauthorized);
-        _serviceMock.Setup(x => x.TestAsync(expected, It.IsAny<CancellationToken>())).ReturnsAsync(status);
+        _serviceMock.Setup(x => x.TestAsync(expected, CancellationToken.None)).ReturnsAsync(status);
 
         var result = await _controller.Test(integration, CancellationToken.None);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(status);
-        _serviceMock.Verify(x => x.TestAsync(expected, It.IsAny<CancellationToken>()), Times.Once);
+        _serviceMock.Verify(x => x.TestAsync(expected, CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 

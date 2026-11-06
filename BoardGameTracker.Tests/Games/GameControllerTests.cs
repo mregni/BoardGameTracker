@@ -661,13 +661,13 @@ public class GameControllerTests
     public async Task GetGamePrice_ShouldReturnNotFound_WhenTheGameDoesNotExist()
     {
         _gameServiceMock
-            .Setup(x => x.GetGamePriceAsync(9, false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetGamePriceAsync(9, false, CancellationToken.None))
             .ReturnsAsync((GamePriceDto?)null);
 
         var result = await _controller.GetGamePrice(9, false, CancellationToken.None);
 
         result.Should().BeOfType<NotFoundResult>();
-        _gameServiceMock.Verify(x => x.GetGamePriceAsync(9, false, It.IsAny<CancellationToken>()), Times.Once);
+        _gameServiceMock.Verify(x => x.GetGamePriceAsync(9, false, CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -676,13 +676,13 @@ public class GameControllerTests
     {
         var price = new GamePriceDto { GameId = 3, Available = true, Status = ChangeDetectionStatus.Ok, Price = 19.99m };
         _gameServiceMock
-            .Setup(x => x.GetGamePriceAsync(3, true, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetGamePriceAsync(3, true, CancellationToken.None))
             .ReturnsAsync(price);
 
         var result = await _controller.GetGamePrice(3, true, CancellationToken.None);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(price);
-        _gameServiceMock.Verify(x => x.GetGamePriceAsync(3, true, It.IsAny<CancellationToken>()), Times.Once);
+        _gameServiceMock.Verify(x => x.GetGamePriceAsync(3, true, CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -695,13 +695,13 @@ public class GameControllerTests
             new() { GameId = 2, Available = false, Status = ChangeDetectionStatus.Unreachable }
         };
         _gameServiceMock
-            .Setup(x => x.GetTrackedPricesAsync(true, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetTrackedPricesAsync(true, CancellationToken.None))
             .ReturnsAsync(prices);
 
         var result = await _controller.GetTrackedPrices(true, CancellationToken.None);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(prices);
-        _gameServiceMock.Verify(x => x.GetTrackedPricesAsync(true, It.IsAny<CancellationToken>()), Times.Once);
+        _gameServiceMock.Verify(x => x.GetTrackedPricesAsync(true, CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -712,7 +712,7 @@ public class GameControllerTests
         var game = new Game("Brass") { Id = 4 };
         game.UpdateChangeDetectionWatchId(watchId);
         _gameServiceMock
-            .Setup(x => x.CreateWatchForGame(4, "https://shop.example.com/brass", It.IsAny<CancellationToken>()))
+            .Setup(x => x.CreateWatchForGame(4, "https://shop.example.com/brass", CancellationToken.None))
             .ReturnsAsync(game);
 
         var result = await _controller.CreateWatch(4, new CreateWatchCommand { Url = "https://shop.example.com/brass" }, CancellationToken.None);
@@ -720,7 +720,7 @@ public class GameControllerTests
         var dto = result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeOfType<GameDto>().Subject;
         dto.Id.Should().Be(4);
         dto.ChangeDetectionWatchId.Should().Be(watchId);
-        _gameServiceMock.Verify(x => x.CreateWatchForGame(4, "https://shop.example.com/brass", It.IsAny<CancellationToken>()), Times.Once);
+        _gameServiceMock.Verify(x => x.CreateWatchForGame(4, "https://shop.example.com/brass", CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 

@@ -42,13 +42,13 @@ public class ResetServiceTests
         _transactionMock = new Mock<IDbContextTransaction>();
         _loggerMock = new Mock<ILogger<ResetService>>();
 
-        _transactionMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        _transactionMock.Setup(x => x.CommitAsync(CancellationToken.None)).Returns(Task.CompletedTask);
         _transactionMock.Setup(x => x.DisposeAsync()).Returns(ValueTask.CompletedTask);
         _unitOfWorkMock
-            .Setup(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.BeginTransactionAsync(CancellationToken.None))
             .ReturnsAsync(_transactionMock.Object);
         _maintenanceRepositoryMock
-            .Setup(x => x.GetChangeDetectionWatchIdsAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetChangeDetectionWatchIdsAsync(CancellationToken.None))
             .ReturnsAsync([]);
 
         _resetService = new ResetService(
@@ -79,10 +79,10 @@ public class ResetServiceTests
     {
         await _resetService.ResetDataAsync();
 
-        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(CancellationToken.None), Times.Once);
+        _transactionMock.Verify(x => x.CommitAsync(CancellationToken.None), Times.Once);
         _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
         _imageServiceMock.Verify(x => x.ClearAllImages(), Times.Once);
         _manualServiceMock.Verify(x => x.ClearAllManuals(), Times.Once);
@@ -93,17 +93,17 @@ public class ResetServiceTests
     public async Task ResetDataAsync_ShouldNotCommitOrClearImages_WhenClearThrows()
     {
         _maintenanceRepositoryMock
-            .Setup(x => x.ClearUserDataAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.ClearUserDataAsync(CancellationToken.None))
             .ThrowsAsync(new InvalidOperationException("boom"));
 
         var act = async () => await _resetService.ResetDataAsync();
 
         await act.Should().ThrowAsync<InvalidOperationException>();
 
-        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(CancellationToken.None), Times.Once);
+        _transactionMock.Verify(x => x.CommitAsync(CancellationToken.None), Times.Never);
         _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
         _imageServiceMock.Verify(x => x.ClearAllImages(), Times.Never);
         _manualServiceMock.Verify(x => x.ClearAllManuals(), Times.Never);
@@ -115,16 +115,16 @@ public class ResetServiceTests
     {
         await _resetService.FactoryResetAsync();
 
-        _maintenanceSeederMock.Verify(x => x.EnsureAdminPasswordAcceptedAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.ClearSettingsAndAuthAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _maintenanceSeederMock.Verify(x => x.EnsureAdminPasswordAcceptedAsync(CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.ClearSettingsAndAuthAsync(CancellationToken.None), Times.Once);
+        _transactionMock.Verify(x => x.CommitAsync(CancellationToken.None), Times.Once);
         _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
         _imageServiceMock.Verify(x => x.ClearAllImages(), Times.Once);
         _manualServiceMock.Verify(x => x.ClearAllManuals(), Times.Once);
-        _maintenanceSeederMock.Verify(x => x.ReseedDefaultsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _maintenanceSeederMock.Verify(x => x.ReseedDefaultsAsync(CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -132,23 +132,23 @@ public class ResetServiceTests
     public async Task FactoryResetAsync_ShouldNotCommitClearImagesOrReseed_WhenClearThrows()
     {
         _maintenanceRepositoryMock
-            .Setup(x => x.ClearSettingsAndAuthAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.ClearSettingsAndAuthAsync(CancellationToken.None))
             .ThrowsAsync(new InvalidOperationException("boom"));
 
         var act = async () => await _resetService.FactoryResetAsync();
 
         await act.Should().ThrowAsync<InvalidOperationException>();
 
-        _maintenanceSeederMock.Verify(x => x.EnsureAdminPasswordAcceptedAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.ClearSettingsAndAuthAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _maintenanceSeederMock.Verify(x => x.EnsureAdminPasswordAcceptedAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.ClearSettingsAndAuthAsync(CancellationToken.None), Times.Once);
+        _transactionMock.Verify(x => x.CommitAsync(CancellationToken.None), Times.Never);
         _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
         _imageServiceMock.Verify(x => x.ClearAllImages(), Times.Never);
         _manualServiceMock.Verify(x => x.ClearAllManuals(), Times.Never);
-        _maintenanceSeederMock.Verify(x => x.ReseedDefaultsAsync(It.IsAny<CancellationToken>()), Times.Never);
-        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _maintenanceSeederMock.Verify(x => x.ReseedDefaultsAsync(CancellationToken.None), Times.Never);
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -156,13 +156,13 @@ public class ResetServiceTests
     public async Task FactoryResetAsync_ShouldNotTouchAnyData_WhenTheAdminPasswordIsRejected()
     {
         _maintenanceSeederMock
-            .Setup(x => x.EnsureAdminPasswordAcceptedAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.EnsureAdminPasswordAcceptedAsync(CancellationToken.None))
             .ThrowsAsync(new ValidationException(Constants.Errors.AdminPasswordRejected));
 
         var act = async () => await _resetService.FactoryResetAsync();
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.AdminPasswordRejected);
-        _maintenanceSeederMock.Verify(x => x.EnsureAdminPasswordAcceptedAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _maintenanceSeederMock.Verify(x => x.EnsureAdminPasswordAcceptedAsync(CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -171,32 +171,32 @@ public class ResetServiceTests
     {
         var calls = new List<string>();
         _maintenanceRepositoryMock
-            .Setup(x => x.GetChangeDetectionWatchIdsAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetChangeDetectionWatchIdsAsync(CancellationToken.None))
             .ReturnsAsync(["w1", "w2", "w3"]);
         _settingsServiceMock.Setup(x => x.GetChangeDetectionSettingsAsync()).ReturnsAsync(("http://cd", "key"));
-        _transactionMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).Callback(() => calls.Add("commit")).Returns(Task.CompletedTask);
+        _transactionMock.Setup(x => x.CommitAsync(CancellationToken.None)).Callback(() => calls.Add("commit")).Returns(Task.CompletedTask);
         _changeDetectionClientMock
-            .Setup(x => x.DeleteWatchAsync(It.IsAny<string>(), "http://cd", "key", It.IsAny<CancellationToken>()))
+            .Setup(x => x.DeleteWatchAsync(It.IsAny<string>(), "http://cd", "key", CancellationToken.None))
             .Callback((string id, string? _, string? _, CancellationToken _) => calls.Add(id))
             .ReturnsAsync(ChangeDetectionStatus.Ok);
         _changeDetectionClientMock
-            .Setup(x => x.DeleteWatchAsync("w2", "http://cd", "key", It.IsAny<CancellationToken>()))
+            .Setup(x => x.DeleteWatchAsync("w2", "http://cd", "key", CancellationToken.None))
             .Callback(() => calls.Add("w2"))
             .ThrowsAsync(new InvalidOperationException("down"));
         _changeDetectionClientMock
-            .Setup(x => x.DeleteWatchAsync("w3", "http://cd", "key", It.IsAny<CancellationToken>()))
+            .Setup(x => x.DeleteWatchAsync("w3", "http://cd", "key", CancellationToken.None))
             .Callback(() => calls.Add("w3"))
             .ReturnsAsync(ChangeDetectionStatus.Unreachable);
 
         await _resetService.ResetDataAsync();
 
         calls.Should().Equal("commit", "w1", "w2", "w3");
-        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(CancellationToken.None), Times.Once);
         _settingsServiceMock.Verify(x => x.GetChangeDetectionSettingsAsync(), Times.Once);
-        _changeDetectionClientMock.Verify(x => x.DeleteWatchAsync(It.IsAny<string>(), "http://cd", "key", It.IsAny<CancellationToken>()), Times.Exactly(3));
-        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.DeleteWatchAsync(It.IsAny<string>(), "http://cd", "key", CancellationToken.None), Times.Exactly(3));
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(CancellationToken.None), Times.Once);
+        _transactionMock.Verify(x => x.CommitAsync(CancellationToken.None), Times.Once);
         _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
         _imageServiceMock.Verify(x => x.ClearAllImages(), Times.Once);
         _manualServiceMock.Verify(x => x.ClearAllManuals(), Times.Once);
@@ -208,36 +208,36 @@ public class ResetServiceTests
     {
         var calls = new List<string>();
         _maintenanceRepositoryMock
-            .Setup(x => x.GetChangeDetectionWatchIdsAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetChangeDetectionWatchIdsAsync(CancellationToken.None))
             .ReturnsAsync(["w1"]);
         _settingsServiceMock
             .Setup(x => x.GetChangeDetectionSettingsAsync())
             .Callback(() => calls.Add("settings"))
             .ReturnsAsync(("http://cd", "key"));
         _maintenanceRepositoryMock
-            .Setup(x => x.ClearSettingsAndAuthAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.ClearSettingsAndAuthAsync(CancellationToken.None))
             .Callback(() => calls.Add("wipe"))
             .Returns(Task.CompletedTask);
         _changeDetectionClientMock
-            .Setup(x => x.DeleteWatchAsync("w1", "http://cd", "key", It.IsAny<CancellationToken>()))
+            .Setup(x => x.DeleteWatchAsync("w1", "http://cd", "key", CancellationToken.None))
             .Callback(() => calls.Add("w1"))
             .ReturnsAsync(ChangeDetectionStatus.Ok);
 
         await _resetService.FactoryResetAsync();
 
         calls.Should().Equal("settings", "wipe", "w1");
-        _maintenanceSeederMock.Verify(x => x.EnsureAdminPasswordAcceptedAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _maintenanceSeederMock.Verify(x => x.EnsureAdminPasswordAcceptedAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.GetChangeDetectionWatchIdsAsync(CancellationToken.None), Times.Once);
         _settingsServiceMock.Verify(x => x.GetChangeDetectionSettingsAsync(), Times.Once);
-        _changeDetectionClientMock.Verify(x => x.DeleteWatchAsync("w1", "http://cd", "key", It.IsAny<CancellationToken>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _maintenanceRepositoryMock.Verify(x => x.ClearSettingsAndAuthAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.DeleteWatchAsync("w1", "http://cd", "key", CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(CancellationToken.None), Times.Once);
+        _maintenanceRepositoryMock.Verify(x => x.ClearSettingsAndAuthAsync(CancellationToken.None), Times.Once);
+        _transactionMock.Verify(x => x.CommitAsync(CancellationToken.None), Times.Once);
         _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
         _imageServiceMock.Verify(x => x.ClearAllImages(), Times.Once);
         _manualServiceMock.Verify(x => x.ClearAllManuals(), Times.Once);
-        _maintenanceSeederMock.Verify(x => x.ReseedDefaultsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _maintenanceSeederMock.Verify(x => x.ReseedDefaultsAsync(CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 }

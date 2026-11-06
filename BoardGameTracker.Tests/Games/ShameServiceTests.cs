@@ -66,7 +66,7 @@ public class ShameServiceTests
             .Setup(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.GameNightsEnabled, true))
             .ReturnsAsync(gameNightsEnabled);
         _gameNightRepositoryMock
-            .Setup(x => x.ListAsync(It.IsAny<UpcomingGameNightsSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.IsAny<UpcomingGameNightsSpec>(), CancellationToken.None))
             .ReturnsAsync(nights ?? []);
     }
 
@@ -81,7 +81,7 @@ public class ShameServiceTests
     private void SetupOwnedSummary(int count, decimal value)
     {
         _gameRepositoryMock
-            .Setup(x => x.GetOwnedCollectionSummary(It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetOwnedCollectionSummary(CancellationToken.None))
             .ReturnsAsync(new OwnedCollectionSummary(count, value));
     }
 
@@ -93,14 +93,14 @@ public class ShameServiceTests
         _gameRepositoryMock.Verify(x => x.GetShameGames(FixedUtcNow.AddMonths(-effectiveMonths)), Times.Once);
         if (gameNightsEnabled)
         {
-            _gameNightRepositoryMock.Verify(x => x.ListAsync(It.Is<UpcomingGameNightsSpec>(s => s != null), It.IsAny<CancellationToken>()), Times.Once);
+            _gameNightRepositoryMock.Verify(x => x.ListAsync(It.Is<UpcomingGameNightsSpec>(s => s != null), CancellationToken.None), Times.Once);
         }
     }
 
     private void VerifyStatisticsCalls(int effectiveMonths, bool gameNightsEnabled = true)
     {
         VerifyShameGamesCalls(effectiveMonths, gameNightsEnabled);
-        _gameRepositoryMock.Verify(x => x.GetOwnedCollectionSummary(It.IsAny<CancellationToken>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetOwnedCollectionSummary(CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -129,7 +129,7 @@ public class ShameServiceTests
             .ReturnsAsync(configuredMonths);
 
         _gameRepositoryMock
-            .Setup(x => x.CountGamesWithNoRecentSessions(FixedUtcNow.AddMonths(-configuredMonths), It.IsAny<CancellationToken>()))
+            .Setup(x => x.CountGamesWithNoRecentSessions(FixedUtcNow.AddMonths(-configuredMonths), CancellationToken.None))
             .ReturnsAsync(expectedCount);
 
         var result = await _shameService.CountShelfOfShameGames();
@@ -138,7 +138,7 @@ public class ShameServiceTests
 
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false), Times.Once);
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameMonths, Constants.AppConfig.DefaultShelfOfShameMonths), Times.Once);
-        _gameRepositoryMock.Verify(x => x.CountGamesWithNoRecentSessions(FixedUtcNow.AddMonths(-configuredMonths), It.IsAny<CancellationToken>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.CountGamesWithNoRecentSessions(FixedUtcNow.AddMonths(-configuredMonths), CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 

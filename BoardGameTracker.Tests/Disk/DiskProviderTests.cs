@@ -130,7 +130,7 @@ public class DiskProviderTests: IDisposable
             var stream = new Mock<Stream>();
             stream.SetupGet(x => x.CanRead).Returns(true);
             stream
-                .Setup(x => x.CopyToAsync(It.IsAny<Stream>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.CopyToAsync(It.IsAny<Stream>(), It.IsAny<int>(), CancellationToken.None))
                 .ThrowsAsync(new IOException("connection reset"));
 
             var action = async () => await _diskProvider.WriteFile(stream.Object, "data.bin", _testDirectory);
