@@ -67,7 +67,7 @@
     "never-played": "Nooit gespeeld",
     "not-played_one": "Niet gespeeld in {{count}}+ maand",
     "not-played_other": "Niet gespeeld in {{count}}+ maanden",
-    "rest": "Onlangs gespeeld",
+    "rest": "Rest van de collectie",
     "label": "Van {{total}} betaald voor spellen in bezit: {{parts}}",
     "unpriced-one": "{{title}} heeft geen prijs en telt dus niet mee.",
     "unpriced_one": "{{count}} spel op de plank heeft geen prijs en telt dus niet mee.",
