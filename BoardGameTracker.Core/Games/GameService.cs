@@ -105,6 +105,27 @@ public class GameService : IGameService
         _logger.LogInformation("Game {GameId} deleted", id);
     }
 
+    private async Task RestoreWatchUrlQuietlyAsync(string watchId, string? shopUrl, string title)
+    {
+        if (shopUrl == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var status = await _changeDetectionClient.UpdateWatchAsync(watchId, shopUrl, title);
+            if (status != ChangeDetectionStatus.Ok)
+            {
+                _logger.LogWarning("Could not point price watch {WatchId} back to its previous URL: {Status}", watchId, status);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not point price watch {WatchId} back to its previous URL", watchId);
+        }
+    }
+
     private async Task DeleteWatchQuietlyAsync(string? watchId)
     {
         if (string.IsNullOrWhiteSpace(watchId))
@@ -465,6 +486,7 @@ public class GameService : IGameService
         }
 
         var previousWatchId = game.ChangeDetectionWatchId;
+        var previousShopUrl = game.ShopUrl;
         var watchId = await ReuseOrCreateWatchAsync(game, shopUrl, cancellationToken);
         game.UpdateChangeDetectionWatchId(watchId);
         game.UpdateShopUrl(shopUrl);
@@ -477,6 +499,10 @@ public class GameService : IGameService
             if (watchId != previousWatchId)
             {
                 await DeleteWatchQuietlyAsync(watchId);
+            }
+            else
+            {
+                await RestoreWatchUrlQuietlyAsync(watchId, previousShopUrl, game.Title);
             }
 
             throw;
