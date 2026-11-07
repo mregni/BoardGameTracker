@@ -1,5 +1,8 @@
+using System.Linq;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers.Admin;
+using BoardGameTracker.Api.Infrastructure;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Common.Entities;
@@ -7,6 +10,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -54,9 +58,22 @@ public class PlayerAccountControllerTests
 
         var act = () => _controller.LinkAccount(4, new LinkPlayerAccountRequest());
 
-        await act.Should().ThrowAsync<EntityNotFoundException>();
+        await act.Should().ThrowAsync<EntityNotFoundException>().Where(e => e.EntityType == nameof(Player) && e.EntityId.Equals(4));
         _userAdminServiceMock.Verify(x => x.LinkPlayerAccountAsync(4, null), Times.Once);
         _playerServiceMock.Verify(x => x.Get(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void Controller_ShouldOnlyBeOpenToAdmins_AndClosedWhileAuthIsDisabled()
+    {
+        var authorize = typeof(PlayerAccountController).GetCustomAttributes(typeof(AuthorizeAttribute), false).Cast<AuthorizeAttribute>().Single();
+        var filter = typeof(PlayerAccountController).GetCustomAttributes(typeof(ServiceFilterAttribute), false).Cast<ServiceFilterAttribute>().Single();
+
+        authorize.Roles.Should().Be(Constants.AuthRoles.Admin);
+        filter.ServiceType.Should().Be<AuthDisabledFilter>();
+        typeof(PlayerAccountController).GetMethods().Should()
+            .NotContain(m => m.IsDefined(typeof(AllowAnonymousAttribute), false));
         VerifyNoOtherCalls();
     }
 }

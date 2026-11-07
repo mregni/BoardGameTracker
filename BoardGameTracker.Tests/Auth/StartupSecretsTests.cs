@@ -57,6 +57,7 @@ public class StartupSecretsTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void ResolveJwtSecret_ShouldReturnTheInternalKey_WhenTheSecretIsNotSetAndAuthIsDisabled(string? secret)
     {
         StartupSecrets.ResolveJwtSecret(secret, authEnabled: false).Should().Be(StartupSecrets.AuthDisabledJwtSecret);
@@ -79,6 +80,43 @@ public class StartupSecretsTests
         var act = () => StartupSecrets.ResolveJwtSecret("too-short", authEnabled: true);
 
         act.Should().Throw<InvalidOperationException>().WithMessage("JWT_SECRET must be at least 32 characters long, but was 9.*");
+    }
+
+    [Fact]
+    public void ResolveJwtSecret_ShouldAcceptASecretOfExactlyTheMinimumLength()
+    {
+        var secret = new string('k', 32);
+
+        StartupSecrets.ResolveJwtSecret(secret, authEnabled: true).Should().Be(secret);
+    }
+
+    [Fact]
+    public void ResolveJwtSecret_ShouldRefuseASecretOneCharacterBelowTheMinimumLength()
+    {
+        var act = () => StartupSecrets.ResolveJwtSecret(new string('k', 31), authEnabled: true);
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("JWT_SECRET must be at least 32 characters long, but was 31.*");
+    }
+
+    [Fact]
+    public void DataProtectionKeyProblem_ShouldAcceptAKeyOfExactlyTheMinimumLength()
+    {
+        StartupSecrets.DataProtectionKeyProblem(new string('k', 32)).Should().BeNull();
+    }
+
+    [Fact]
+    public void DataProtectionKeyProblem_ShouldRefuseAKeyOneCharacterBelowTheMinimumLength()
+    {
+        StartupSecrets.DataProtectionKeyProblem(new string('k', 31))
+            .Should().Be("DATA_PROTECTION_KEY must be at least 32 characters long, but was 31.");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("   ")]
+    public void FindProblem_ShouldIgnoreAMissingDataProtectionKey(string? dataProtectionKey)
+    {
+        StartupSecrets.FindProblem(null, dataProtectionKey, authEnabled: false).Should().BeNull();
     }
 
     [Theory]

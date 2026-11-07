@@ -7,6 +7,7 @@ using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using BoardGameTracker.Tests.Support;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -47,7 +48,7 @@ public class DataProtectionKeyReEncryptorTests : IDisposable
     {
         foreach (var value in xml)
         {
-            _context.DataProtectionKeys.Add(new DataProtectionKey { FriendlyName = $"key-{Guid.NewGuid():N}", Xml = value });
+            _context.DataProtectionKeys.Add(new DataProtectionKey { FriendlyName = $"key-{_context.ChangeTracker.Entries<DataProtectionKey>().Count()}", Xml = value });
         }
 
         await _context.SaveChangesAsync();
@@ -56,15 +57,6 @@ public class DataProtectionKeyReEncryptorTests : IDisposable
 
     private async Task<string[]> StoredXmlAsync() =>
         await _context.DataProtectionKeys.AsNoTracking().OrderBy(key => key.Id).Select(key => key.Xml!).ToArrayAsync();
-
-    private void VerifyLogged(LogLevel level, string text, Times times) =>
-        _loggerMock.Verify(x => x.Log(
-                level,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains(text)),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            times);
 
     [Fact]
     public async Task EncryptPlaintextKeysAsync_ShouldDoNothing_WhenTheSecretIsNotSet()
@@ -95,7 +87,7 @@ public class DataProtectionKeyReEncryptorTests : IDisposable
         var stored = await StoredXmlAsync();
         stored[0].Should().NotContain(MasterKey).And.NotContain("<masterKey").And.Contain("encryptedSecret");
         stored[1].Should().Be(alreadyEncrypted);
-        VerifyLogged(LogLevel.Information, "Encrypted 1 existing data protection keys", Times.Once());
+        _loggerMock.VerifyLog(LogLevel.Information, "Encrypted 1 existing data protection keys with DATA_PROTECTION_KEY");
         VerifyNoOtherCalls();
     }
 
@@ -114,11 +106,52 @@ public class DataProtectionKeyReEncryptorTests : IDisposable
         _loggerMock.Verify(x => x.Log(
                 LogLevel.Warning,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("left unencrypted")),
+                It.Is<It.IsAnyType>((state, _) => state.ToString() == "Data protection key key-0 was left unencrypted because it could not be re-encrypted"),
                 It.IsAny<XmlException>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
-        VerifyLogged(LogLevel.Information, "Encrypted 1 existing data protection keys", Times.Once());
+        _loggerMock.VerifyLog(LogLevel.Information, "Encrypted 1 existing data protection keys with DATA_PROTECTION_KEY");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EncryptPlaintextKeysAsync_ShouldSkipKeysWithoutXml()
+    {
+        await SeedAsync("", PlaintextKey);
+        var reEncryptor = new DataProtectionKeyReEncryptor(_context, _loggerMock.Object, new DataProtectionKeyMaterial(Secret));
+
+        var count = await reEncryptor.EncryptPlaintextKeysAsync();
+
+        count.Should().Be(1);
+        (await StoredXmlAsync())[0].Should().BeEmpty();
+        _loggerMock.VerifyLog(LogLevel.Information, "Encrypted 1 existing data protection keys with DATA_PROTECTION_KEY");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EncryptPlaintextKeysAsync_ShouldCountEveryEncryptedKey()
+    {
+        await SeedAsync(PlaintextKey, PlaintextKey);
+        var reEncryptor = new DataProtectionKeyReEncryptor(_context, _loggerMock.Object, new DataProtectionKeyMaterial(Secret));
+
+        var count = await reEncryptor.EncryptPlaintextKeysAsync();
+
+        count.Should().Be(2);
+        (await StoredXmlAsync()).Should().AllSatisfy(xml => xml.Should().NotContain(MasterKey));
+        _loggerMock.VerifyLog(LogLevel.Information, "Encrypted 2 existing data protection keys with DATA_PROTECTION_KEY");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EncryptPlaintextKeysAsync_ShouldStaySilent_WhenNothingNeedsEncrypting()
+    {
+        await SeedAsync("<key><descriptor /></key>");
+        var reEncryptor = new DataProtectionKeyReEncryptor(_context, _loggerMock.Object, new DataProtectionKeyMaterial(Secret));
+
+        var count = await reEncryptor.EncryptPlaintextKeysAsync();
+
+        count.Should().Be(0);
+        (await StoredXmlAsync()).Should().Equal("<key><descriptor /></key>");
         VerifyNoOtherCalls();
     }
 
@@ -130,7 +163,7 @@ public class DataProtectionKeyReEncryptorTests : IDisposable
 
         await reEncryptor.EncryptPlaintextKeysAsync();
 
-        VerifyLogged(LogLevel.Information, "Encrypted 1 existing data protection keys", Times.Once());
+        _loggerMock.VerifyLog(LogLevel.Information, "Encrypted 1 existing data protection keys with DATA_PROTECTION_KEY");
         _loggerMock.Verify(x => x.Log(
                 It.IsAny<LogLevel>(),
                 It.IsAny<EventId>(),
