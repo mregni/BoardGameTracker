@@ -1,5 +1,5 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { useId } from "react";
+import { useId, useState } from "react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 
 interface Props {
@@ -9,11 +9,18 @@ interface Props {
 
 export const DisabledActionHint = ({ label, hint }: Props) => {
 	const hintId = useId();
+	const [open, setOpen] = useState(false);
 
 	return (
 		<Tooltip.Provider delayDuration={150}>
-			<Tooltip.Root>
-				<Tooltip.Trigger asChild>
+			<Tooltip.Root open={open} onOpenChange={setOpen}>
+				<Tooltip.Trigger
+					asChild
+					onClick={(event) => {
+						event.preventDefault();
+						setOpen(true);
+					}}
+				>
 					<span className="inline-flex cursor-not-allowed" title={hint}>
 						<BgtButton variant="cancel" size="1" disabled aria-describedby={hintId} className="pointer-events-none">
 							{label}
@@ -26,6 +33,7 @@ export const DisabledActionHint = ({ label, hint }: Props) => {
 				<Tooltip.Portal>
 					<Tooltip.Content
 						sideOffset={5}
+						collisionPadding={8}
 						className="max-w-xs select-none rounded-md border-2 border-card-border bg-card-black px-3 py-2 text-xs text-white shadow-lg"
 					>
 						{hint}

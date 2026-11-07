@@ -246,10 +246,8 @@ test.describe("an active game night", () => {
 
 			await touchPage.getByText("End night", { exact: true }).tap({ force: true });
 
-			test.fail(true, "BUG: the hint on the disabled End night button is a hover tooltip, a tap shows nothing");
-			await expect(touchPage.getByRole("tooltip")).toContainText("Finish or discard the running games first", {
-				timeout: 1500,
-			});
+			await expect(touchPage.getByRole("tooltip")).toContainText("Finish or discard the running games first");
+			await expect(touchPage.locator("[data-radix-popper-content-wrapper]")).toBeInViewport({ ratio: 1 });
 		} finally {
 			await context.close();
 			await removeNight(api, id);

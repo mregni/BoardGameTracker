@@ -56,9 +56,9 @@ export const useGameNightData = () => {
 
 	const deleteMutation = useMutation({
 		mutationFn: deleteGameNightCall,
-		onSuccess() {
+		onSuccess(_data, id) {
 			successToast("game-nights:notifications.deleted");
-			invalidateQueries();
+			void invalidator.invalidateGameNightDeleted(id);
 		},
 		onError: () => {
 			errorToast("game-nights:notifications.delete-failed");

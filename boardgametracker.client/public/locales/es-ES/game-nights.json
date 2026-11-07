@@ -220,6 +220,7 @@
     "after": "Jugado",
     "empty": "Aún no se ha jugado nada. Toca «Empezar un juego» cuando empiece una partida; la fecha, la hora, el lugar y los jugadores se rellenan solos.",
     "empty-after": "No se registró nada para esta noche. Usa «Registrar partida» para añadir lo que se jugó.",
+    "empty-ended": "No se registró nada para esta noche.",
     "won": "ganó"
   },
   "table": {

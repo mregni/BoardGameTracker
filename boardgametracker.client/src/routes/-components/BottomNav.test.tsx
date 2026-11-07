@@ -7,8 +7,25 @@ import { BottomNav } from "./BottomNav";
 const Icon = () => <svg />;
 
 vi.mock("@tanstack/react-router", () => ({
-	Link: ({ to, className, children }: { to: string; className?: string; children: ReactNode }) => (
-		<a href={to} className={className}>
+	Link: ({
+		to,
+		className,
+		onClick,
+		children,
+	}: {
+		to: string;
+		className?: string;
+		onClick?: () => void;
+		children: ReactNode;
+	}) => (
+		<a
+			href={to}
+			className={className}
+			onClick={(event) => {
+				event.preventDefault();
+				onClick?.();
+			}}
+		>
 			{children}
 		</a>
 	),
@@ -99,6 +116,17 @@ describe("BottomNav", () => {
 
 		const sheet = screen.getByTestId("more-item").closest(".fixed") as HTMLElement;
 		expect(sheet).toHaveClass("bottom-(--bottom-nav-h)");
+	});
+
+	it("closes the More menu when a bar entry is tapped", async () => {
+		const user = userEvent.setup();
+		renderWithTheme(<BottomNav />);
+		await user.click(screen.getByRole("button", { name: "common:more" }));
+		expect(screen.getByTestId("more-item")).toBeInTheDocument();
+
+		await user.click(screen.getByRole("link", { name: "games" }));
+
+		expect(screen.queryByTestId("more-item")).not.toBeInTheDocument();
 	});
 
 	it("disappears while a form asks to hide it and comes back afterwards", () => {

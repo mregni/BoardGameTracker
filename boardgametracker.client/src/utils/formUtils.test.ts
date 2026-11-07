@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 import { handleFormSubmit, ignoreApiError } from "./formUtils";
 
 const refused = { kind: "client", status: 400, message: "error.test.unknown", url: "/settings" };
-const event = () => ({ preventDefault: vi.fn(), stopPropagation: vi.fn() }) as unknown as React.FormEvent;
+const event = () =>
+	({
+		preventDefault: vi.fn(),
+		stopPropagation: vi.fn(),
+		currentTarget: document.createElement("form"),
+	}) as unknown as React.FormEvent;
 
 describe("handleFormSubmit", () => {
 	it("stops the browser submit and runs the form", async () => {

@@ -220,6 +220,7 @@
     "after": "Gespeeld",
     "empty": "Nog niets gespeeld. Tik op “Start een spel” zodra een spel begint; datum, tijd, locatie en spelers worden voor je ingevuld.",
     "empty-after": "Er werd niets gespeeld genoteerd voor deze avond. Gebruik “Sessie registreren” om toe te voegen wat er gespeeld werd.",
+    "empty-ended": "Er werd niets genoteerd voor deze avond.",
     "won": "gewonnen"
   },
   "table": {

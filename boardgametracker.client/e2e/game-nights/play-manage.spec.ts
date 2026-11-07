@@ -807,11 +807,9 @@ test.describe("ending and reopening", () => {
 
 		await expect(page.getByText("Game night ended")).toBeVisible();
 		await expect(main(page).getByRole("button", { name: "Start a game" })).toHaveCount(0);
-		test.fail(true, "BUG: an ended night without sessions still says: Tap “Start a game” when a game begins");
-		await expect(page.getByRole("region", { name: "Played", exact: true })).not.toContainText(
-			/Start a game|Log session/,
-			{ timeout: 3_000 },
-		);
+		const played = page.getByRole("region", { name: "Played", exact: true });
+		await expect(played).toContainText("Nothing was logged for this night.");
+		await expect(played).not.toContainText(/Start a game|Log session/);
 	});
 
 	test("lists an empty ended night as nothing logged", async ({ page, request }) => {
@@ -883,8 +881,6 @@ test.describe("a night that ran out of time with a game still running", () => {
 });
 
 test.describe("deleting a night in use", () => {
-	test.use({ allowedApiStatuses: [401, 404] });
-
 	test("warns about running games and removes them", async ({ page, request }) => {
 		await openLive(page, request);
 		await startGame(page, planned);
