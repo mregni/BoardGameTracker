@@ -111,8 +111,9 @@ public class TokenServiceTests : IDisposable
         refreshToken.IsExpired.Should().BeFalse();
         refreshToken.IsRevoked.Should().BeFalse();
 
-        var stored = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == refreshToken.Token, TestContext.Current.CancellationToken);
-        stored.Should().NotBeNull();
+        var stored = await _context.RefreshTokens.AsNoTracking().SingleAsync(t => t.Token == refreshToken.Token, TestContext.Current.CancellationToken);
+        stored.UserId.Should().Be(userId);
+        stored.ExpiresAt.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromMinutes(1));
     }
 
     [Fact]
@@ -170,8 +171,11 @@ public class TokenServiceTests : IDisposable
         storedSecond.IsSuperseded.Should().BeTrue();
         storedSecond.ReplacedByToken.Should().Be(third.Token);
         storedSecond.RevokedReason.Should().Be(RefreshToken.SupersededReason);
-        stored.Single(t => t.Token == third.Token).IsActive.Should().BeTrue();
-        third.PlainTextToken.Should().NotBeNullOrEmpty();
+        var storedThird = stored.Single(t => t.Token == third.Token);
+        storedThird.IsActive.Should().BeTrue();
+        storedThird.UserId.Should().Be("test-user-id");
+        storedThird.ExpiresAt.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromMinutes(1));
+        RefreshToken.Hash(third.PlainTextToken!).Should().Be(third.Token);
     }
 
     [Fact]
@@ -432,6 +436,19 @@ public class TokenServiceTests : IDisposable
         var expiry = _tokenService.GetAccessTokenExpiry();
 
         expiry.Should().BeCloseTo(DateTime.UtcNow.AddMinutes(60), TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task CleanupExpiredTokensAsync_ShouldNotSave_WhenNothingIsDue()
+    {
+        _context.RefreshTokens.Add(RefreshToken.Create("test-user-id", 7));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var saves = 0;
+        _context.SavingChanges += (_, _) => saves++;
+
+        await _tokenService.CleanupExpiredTokensAsync();
+
+        saves.Should().Be(0);
     }
 
     [Fact]
