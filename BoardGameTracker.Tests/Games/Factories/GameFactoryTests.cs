@@ -17,6 +17,12 @@ namespace BoardGameTracker.Tests.Games.Factories;
 
 public class GameFactoryTests
 {
+    private const string BggId = "12345";
+    private const string StoredImage = "downloaded-image.jpg";
+
+    private string[] _categories = [];
+    private string[] _mechanics = [];
+    private PersonKey[] _people = [];
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly Mock<IImageService> _imageServiceMock;
     private readonly GameFactory _factory;
@@ -26,19 +32,36 @@ public class GameFactoryTests
         _gameRepositoryMock = new Mock<IGameRepository>();
         _imageServiceMock = new Mock<IImageService>();
         _factory = new GameFactory(_gameRepositoryMock.Object, _imageServiceMock.Object);
+    }
 
-        _gameRepositoryMock
-            .Setup(x => x.GetOrCreateCategoriesAsync(It.IsAny<IEnumerable<string>>()))
-            .ReturnsAsync((IEnumerable<string> names) => names.Select(n => new GameCategory(n)).ToList());
-        _gameRepositoryMock
-            .Setup(x => x.GetOrCreateMechanicsAsync(It.IsAny<IEnumerable<string>>()))
-            .ReturnsAsync((IEnumerable<string> names) => names.Select(n => new GameMechanic(n)).ToList());
-        _gameRepositoryMock
-            .Setup(x => x.GetOrCreatePeopleAsync(It.IsAny<IEnumerable<PersonKey>>()))
-            .ReturnsAsync((IEnumerable<PersonKey> keys) => keys.Select(k => new Person(k.Name, k.Type)).ToList());
+    private void VerifyNoOtherCalls()
+    {
+        _gameRepositoryMock.VerifyNoOtherCalls();
+        _imageServiceMock.VerifyNoOtherCalls();
+    }
+
+    private void SetupCalls(ThingResponse.Item item, string storedImage = StoredImage)
+    {
         _imageServiceMock
-            .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync("downloaded-image.jpg");
+            .Setup(x => x.DownloadImage(item.Image ?? string.Empty, BggId))
+            .ReturnsAsync(storedImage);
+        _gameRepositoryMock
+            .Setup(x => x.GetOrCreateCategoriesAsync(It.Is<IEnumerable<string>>(n => n.SequenceEqual(_categories))))
+            .ReturnsAsync(() => _categories.Select(n => new GameCategory(n)).ToList());
+        _gameRepositoryMock
+            .Setup(x => x.GetOrCreateMechanicsAsync(It.Is<IEnumerable<string>>(n => n.SequenceEqual(_mechanics))))
+            .ReturnsAsync(() => _mechanics.Select(n => new GameMechanic(n)).ToList());
+        _gameRepositoryMock
+            .Setup(x => x.GetOrCreatePeopleAsync(It.Is<IEnumerable<PersonKey>>(k => k.SequenceEqual(_people))))
+            .ReturnsAsync(() => _people.Select(k => new Person(k.Name, k.Type)).ToList());
+    }
+
+    private void VerifyCalls(ThingResponse.Item item)
+    {
+        _imageServiceMock.Verify(x => x.DownloadImage(item.Image ?? string.Empty, BggId), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetOrCreateCategoriesAsync(It.Is<IEnumerable<string>>(n => n.SequenceEqual(_categories))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetOrCreateMechanicsAsync(It.Is<IEnumerable<string>>(n => n.SequenceEqual(_mechanics))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetOrCreatePeopleAsync(It.Is<IEnumerable<PersonKey>>(k => k.SequenceEqual(_people))), Times.Once);
     }
 
     #region CreateFromBggAsync Tests
@@ -49,6 +72,7 @@ public class GameFactoryTests
     public async Task CreateFromBggAsync_ShouldCreateGameWithBasicProperties(bool hasScoring)
     {
         var item = CreateBasicItem();
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, hasScoring, GameState.Owned, null, null);
 
@@ -56,6 +80,8 @@ public class GameFactoryTests
         result.Title.Should().Be("Test Game");
         result.HasScoring.Should().Be(hasScoring);
         result.State.Should().Be(GameState.Owned);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -63,11 +89,13 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         item.Image = "https://example.com/game.jpg";
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        result.Image.Should().Be("downloaded-image.jpg");
-        _imageServiceMock.Verify(x => x.DownloadImage("https://example.com/game.jpg", item.Id.ToString()), Times.Once);
+        result.Image.Should().Be(StoredImage);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -75,10 +103,13 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         item.Description = "A wonderful strategy game";
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.Description.Should().Be("A wonderful strategy game");
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -86,10 +117,13 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         item.YearPublished = 2023;
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.YearPublished.Should().Be(2023);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -97,10 +131,13 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         item.YearPublished = null;
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.YearPublished.Should().BeNull();
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -111,10 +148,13 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         item.MinAge = minAge;
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.MinAge.Should().Be(expected);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -123,12 +163,15 @@ public class GameFactoryTests
         var item = CreateBasicItem();
         item.MinPlayers = 2;
         item.MaxPlayers = 6;
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.PlayerCount.Should().NotBeNull();
         result.PlayerCount!.Min.Should().Be(2);
         result.PlayerCount!.Max.Should().Be(6);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -140,10 +183,13 @@ public class GameFactoryTests
         var item = CreateBasicItem();
         item.MinPlayers = minPlayers;
         item.MaxPlayers = maxPlayers;
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.PlayerCount.Should().BeNull();
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -152,12 +198,15 @@ public class GameFactoryTests
         var item = CreateBasicItem();
         item.MinPlayingTime = 45;
         item.MaxPlayingTime = 90;
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.PlayTime.Should().NotBeNull();
         result.PlayTime!.MinMinutes.Should().Be(45);
         result.PlayTime!.MaxMinutes.Should().Be(90);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -166,10 +215,13 @@ public class GameFactoryTests
         var item = CreateBasicItem();
         item.MinPlayingTime = null;
         item.MaxPlayingTime = null;
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.PlayTime.Should().BeNull();
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -182,12 +234,15 @@ public class GameFactoryTests
         var item = CreateBasicItem();
         item.MinPlayingTime = min;
         item.MaxPlayingTime = max;
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.PlayTime.Should().NotBeNull();
         result.PlayTime!.MinMinutes.Should().Be(expectedMin);
         result.PlayTime!.MaxMinutes.Should().Be(expectedMax);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -202,6 +257,7 @@ public class GameFactoryTests
                 AverageWeight = 3.5
             }
         };
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
@@ -209,6 +265,8 @@ public class GameFactoryTests
         result.Rating!.Value.Should().Be(8.7);
         result.Weight.Should().NotBeNull();
         result.Weight!.Value.Should().Be(3.5);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -225,11 +283,14 @@ public class GameFactoryTests
                 AverageWeight = averageWeight
             }
         };
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.Weight.Should().BeNull();
         result.Rating!.Value.Should().Be(7.1);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -237,11 +298,14 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         item.Statistics = null;
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.Rating.Should().BeNull();
         result.Weight.Should().BeNull();
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -249,10 +313,13 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         item.Image = null;
+        SetupCalls(item);
 
-        await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        _imageServiceMock.Verify(x => x.DownloadImage(string.Empty, item.Id.ToString()), Times.Once);
+        result.Image.Should().Be(StoredImage);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -260,13 +327,13 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         item.Image = "https://example.com/broken.jpg";
-        _imageServiceMock
-            .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(string.Empty);
+        SetupCalls(item, storedImage: string.Empty);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.Image.Should().BeNull();
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -274,31 +341,40 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         item.Id = 12345;
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.BggId.Should().Be(12345);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromBggAsync_ShouldSetBuyingPrice()
     {
         var item = CreateBasicItem();
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, 49.99m, null);
 
         result.BuyingPrice.Should().NotBeNull();
         result.BuyingPrice!.Amount.Should().Be(49.99m);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromBggAsync_ShouldNotSetBuyingPrice_WhenNull()
     {
         var item = CreateBasicItem();
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.BuyingPrice.Should().BeNull();
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -307,10 +383,13 @@ public class GameFactoryTests
     public async Task CreateFromBggAsync_ShouldSetShopUrl_WhenProvided(string? shopUrl, string? expected)
     {
         var item = CreateBasicItem();
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null, shopUrl);
 
         result.ShopUrl.Should().Be(expected);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -318,10 +397,13 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         var additionDate = new DateTime(2023, 6, 15);
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, additionDate);
 
         result.AdditionDate.Should().Be(additionDate);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -333,10 +415,13 @@ public class GameFactoryTests
     public async Task CreateFromBggAsync_ShouldSupportAllGameStates(GameState state)
     {
         var item = CreateBasicItem();
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, state, null, null);
 
         result.State.Should().Be(state);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -348,7 +433,8 @@ public class GameFactoryTests
         var act = () => _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*valid name*");
+            .WithMessage("Game must have a valid name from BGG");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -361,7 +447,8 @@ public class GameFactoryTests
         var act = () => _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*player count*");
+            .WithMessage("Invalid player count range from BGG: 5-2");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -374,7 +461,8 @@ public class GameFactoryTests
         var act = () => _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*play time*");
+            .WithMessage("Invalid play time range from BGG: 90-30");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -382,11 +470,14 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         item.YearPublished = DateTime.UtcNow.Year + 50;
+        SetupCalls(item);
 
         var act = () => _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        await act.Should().ThrowAsync<ArgumentException>();
-        _imageServiceMock.Verify(x => x.DeleteImage("downloaded-image.jpg"), Times.Once);
+        await act.Should().ThrowAsync<ArgumentException>().WithParameterName("year");
+        _imageServiceMock.Verify(x => x.DeleteImage(StoredImage), Times.Once);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -394,24 +485,31 @@ public class GameFactoryTests
     {
         var item = CreateBasicItem();
         item.Links = [new ThingResponse.Link { Type = Constants.Bgg.Category, Id = 1, Value = "Strategy" }];
+        _imageServiceMock.Setup(x => x.DownloadImage(item.Image!, BggId)).ReturnsAsync(StoredImage);
         _gameRepositoryMock
-            .Setup(x => x.GetOrCreateCategoriesAsync(It.IsAny<IEnumerable<string>>()))
+            .Setup(x => x.GetOrCreateCategoriesAsync(It.Is<IEnumerable<string>>(n => n.SequenceEqual(new[] { "Strategy" }))))
             .ThrowsAsync(new InvalidOperationException("connection lost"));
 
         var act = () => _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        await act.Should().ThrowAsync<InvalidOperationException>();
-        _imageServiceMock.Verify(x => x.DeleteImage("downloaded-image.jpg"), Times.Once);
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("connection lost");
+        _imageServiceMock.Verify(x => x.DownloadImage(item.Image!, BggId), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetOrCreateCategoriesAsync(It.Is<IEnumerable<string>>(n => n.SequenceEqual(new[] { "Strategy" }))), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage(StoredImage), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CreateFromBggAsync_ShouldKeepTheImage_WhenTheGameIsBuilt()
     {
         var item = CreateBasicItem();
+        SetupCalls(item);
 
-        await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        _imageServiceMock.Verify(x => x.DeleteImage(It.IsAny<string?>()), Times.Never);
+        result.Image.Should().Be(StoredImage);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -424,13 +522,14 @@ public class GameFactoryTests
             new ThingResponse.Link { Type = Constants.Bgg.Category, Id = 2, Value = "Economic" }
         ];
 
+        _categories = ["Strategy", "Economic"];
+        SetupCalls(item);
+
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        _gameRepositoryMock.Verify(x => x.GetOrCreateCategoriesAsync(
-            It.Is<IEnumerable<string>>(n => n.SequenceEqual(new[] { "Strategy", "Economic" }))), Times.Once);
-        result.Categories.Should().HaveCount(2);
-        result.Categories.Should().Contain(c => c.Name == "Strategy");
-        result.Categories.Should().Contain(c => c.Name == "Economic");
+        result.Categories.Select(c => c.Name).Should().Equal("Strategy", "Economic");
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -443,13 +542,14 @@ public class GameFactoryTests
             new ThingResponse.Link { Type = Constants.Bgg.Mechanic, Id = 2, Value = "Deck Building" }
         ];
 
+        _mechanics = ["Worker Placement", "Deck Building"];
+        SetupCalls(item);
+
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        _gameRepositoryMock.Verify(x => x.GetOrCreateMechanicsAsync(
-            It.Is<IEnumerable<string>>(n => n.SequenceEqual(new[] { "Worker Placement", "Deck Building" }))), Times.Once);
-        result.Mechanics.Should().HaveCount(2);
-        result.Mechanics.Should().Contain(m => m.Name == "Worker Placement");
-        result.Mechanics.Should().Contain(m => m.Name == "Deck Building");
+        result.Mechanics.Select(m => m.Name).Should().Equal("Worker Placement", "Deck Building");
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -462,20 +562,22 @@ public class GameFactoryTests
             new ThingResponse.Link { Type = Constants.Bgg.Artist, Id = 2, Value = "Artist One" },
             new ThingResponse.Link { Type = Constants.Bgg.Publisher, Id = 3, Value = "Publisher One" }
         ];
+        _people =
+        [
+            new PersonKey("Designer One", PersonType.Designer),
+            new PersonKey("Artist One", PersonType.Artist),
+            new PersonKey("Publisher One", PersonType.Publisher)
+        ];
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        _gameRepositoryMock.Verify(x => x.GetOrCreatePeopleAsync(
-            It.Is<IEnumerable<PersonKey>>(k => k.SequenceEqual(new[]
-            {
-                new PersonKey("Designer One", PersonType.Designer),
-                new PersonKey("Artist One", PersonType.Artist),
-                new PersonKey("Publisher One", PersonType.Publisher)
-            }))), Times.Once);
-        result.People.Should().HaveCount(3);
-        result.People.Should().Contain(p => p.Name == "Designer One" && p.Type == PersonType.Designer);
-        result.People.Should().Contain(p => p.Name == "Artist One" && p.Type == PersonType.Artist);
-        result.People.Should().Contain(p => p.Name == "Publisher One" && p.Type == PersonType.Publisher);
+        result.People.Select(p => (p.Name, p.Type)).Should().Equal(
+            ("Designer One", PersonType.Designer),
+            ("Artist One", PersonType.Artist),
+            ("Publisher One", PersonType.Publisher));
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -488,12 +590,109 @@ public class GameFactoryTests
             new ThingResponse.Link { Type = Constants.Bgg.Category, Id = 2, Value = "" },
             new ThingResponse.Link { Type = Constants.Bgg.Category, Id = 3, Value = " " }
         ];
+        _categories = ["Strategy"];
+        SetupCalls(item);
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        _gameRepositoryMock.Verify(x => x.GetOrCreateCategoriesAsync(
-            It.Is<IEnumerable<string>>(n => n.SequenceEqual(new[] { "Strategy" }))), Times.Once);
-        result.Categories.Should().ContainSingle(c => c.Name == "Strategy");
+        result.Categories.Should().ContainSingle().Which.Name.Should().Be("Strategy");
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(3, 3)]
+    [InlineData(1, 2)]
+    public async Task CreateFromBggAsync_ShouldAcceptAPlayerRange_WhenMinIsNotAboveMax(int min, int max)
+    {
+        var item = CreateBasicItem();
+        item.MinPlayers = min;
+        item.MaxPlayers = max;
+        SetupCalls(item);
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.PlayerCount!.Min.Should().Be(min);
+        result.PlayerCount!.Max.Should().Be(max);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldAcceptAPlayTime_WhenMinEqualsMax()
+    {
+        var item = CreateBasicItem();
+        item.MinPlayingTime = 60;
+        item.MaxPlayingTime = 60;
+        SetupCalls(item);
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.PlayTime!.MinMinutes.Should().Be(60);
+        result.PlayTime!.MaxMinutes.Should().Be(60);
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldNotSetRatingAndWeight_WhenRatingsAreNull()
+    {
+        var item = CreateBasicItem();
+        item.Statistics = new ThingResponse.Statistics { Ratings = null };
+        SetupCalls(item);
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.Rating.Should().BeNull();
+        result.Weight.Should().BeNull();
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldLookUpNothing_WhenBggSendsNoLinks()
+    {
+        var item = CreateBasicItem();
+        item.Links = null;
+        SetupCalls(item);
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.Categories.Should().BeEmpty();
+        result.Mechanics.Should().BeEmpty();
+        result.People.Should().BeEmpty();
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldIgnoreLinksOfAnotherType()
+    {
+        var item = CreateBasicItem();
+        item.Links = [new ThingResponse.Link { Type = "boardgameexpansion", Id = 1, Value = "Some Expansion" }];
+        SetupCalls(item);
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.Categories.Should().BeEmpty();
+        result.Mechanics.Should().BeEmpty();
+        result.People.Should().BeEmpty();
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldLeaveTheDescriptionEmpty_WhenBggSendsNone()
+    {
+        var item = CreateBasicItem();
+        item.Description = null;
+        SetupCalls(item);
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.Description.Should().BeEmpty();
+        VerifyCalls(item);
+        VerifyNoOtherCalls();
     }
 
     #endregion

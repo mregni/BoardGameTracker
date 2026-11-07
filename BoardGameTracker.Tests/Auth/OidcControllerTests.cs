@@ -9,6 +9,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Email.Interfaces;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -38,12 +39,15 @@ public class OidcControllerTests
     public void ErrorKey_ShouldOnlyForwardTranslationKeysFromExpectedExceptions(Exception exception, string expected)
     {
         OidcController.ErrorKey(exception).Should().Be(expected);
+        VerifyNoOtherCalls();
     }
 
     private readonly Mock<IOidcService> _oidcServiceMock = new();
     private readonly Mock<IPublicUrlBuilder> _publicUrlBuilderMock = new();
+    private readonly Mock<IProfileImageTicketService> _imageTicketsMock = new();
+    private readonly Mock<ILogger<OidcController>> _loggerMock = new();
 
-    private OidcController CreateController(string? sessionCookie = null, string scheme = "https", string host = "games.example.com")
+    private OidcController CreateController(string? sessionCookie = null, string scheme = "https", string host = "games.example.com", string? stateCookie = null)
     {
         var context = new DefaultHttpContext();
         context.Request.Scheme = scheme;
@@ -54,8 +58,13 @@ public class OidcControllerTests
             context.Request.Headers.Cookie = $"{OidcController.SessionCookieName}={sessionCookie}";
         }
 
-        return new OidcController(_oidcServiceMock.Object, _publicUrlBuilderMock.Object, new AuthSessionCookies(Mock.Of<IProfileImageTicketService>(), Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 })),
-            Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }), Mock.Of<ILogger<OidcController>>())
+        if (stateCookie != null)
+        {
+            context.Request.Headers.Cookie = $"{OidcController.StateCookieName}={stateCookie}";
+        }
+
+        return new OidcController(_oidcServiceMock.Object, _publicUrlBuilderMock.Object, new AuthSessionCookies(_imageTicketsMock.Object, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 })),
+            Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }), _loggerMock.Object)
         {
             ControllerContext = new ControllerContext { HttpContext = context },
         };
@@ -65,6 +74,8 @@ public class OidcControllerTests
     {
         _oidcServiceMock.VerifyNoOtherCalls();
         _publicUrlBuilderMock.VerifyNoOtherCalls();
+        _imageTicketsMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -118,7 +129,7 @@ public class OidcControllerTests
         }
         else
         {
-            cookies.Should().NotContain($"{OidcController.SessionCookieName}=session-key");
+            cookies.Should().Contain($"{OidcController.SessionCookieName}=;");
         }
 
         _oidcServiceMock.Verify(x => x.CompleteLoginAsync("code", "state", null, "https://sso.example.com"), Times.Once);
@@ -140,9 +151,10 @@ public class OidcControllerTests
 
         result.Should().BeOfType<RedirectResult>().Which.Url.Should().Be("https://sso.example.com/authorize?x=1");
         SetCookies(controller).Should().ContainSingle(c => c.StartsWith($"{OidcController.StateCookieName}=state-1", StringComparison.Ordinal))
-            .Which.Should().Contain("secure").And.Contain("httponly");
+            .Which.Should().Contain("secure").And.Contain("httponly").And.Contain("max-age=600").And.Contain("path=/api/auth/oidc").And.Contain("samesite=lax");
         _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
         _oidcServiceMock.Verify(x => x.StartLoginAsync("https://games.example.com", "/games"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC login initiated");
         VerifyNoOtherCalls();
     }
 
@@ -159,11 +171,12 @@ public class OidcControllerTests
 
         var result = await controller.Login(null);
 
-        result.Should().BeOfType<RedirectResult>();
+        result.Should().BeOfType<RedirectResult>().Which.Url.Should().Be("https://sso.example.com/authorize");
         SetCookies(controller).Should().ContainSingle(c => c.StartsWith($"{OidcController.StateCookieName}=", StringComparison.Ordinal))
             .Which.Should().Contain("secure");
         _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
         _oidcServiceMock.Verify(x => x.StartLoginAsync($"http://{host}", null), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC login initiated");
         VerifyNoOtherCalls();
     }
 
@@ -171,8 +184,8 @@ public class OidcControllerTests
     public async Task Login_ShouldSendTheBrowserToTheErrorPage_WhenNoProviderIsEnabled()
     {
         _publicUrlBuilderMock.Setup(x => x.GetConfiguredBaseUrlAsync()).ReturnsAsync((string?)null);
-        _oidcServiceMock.Setup(x => x.StartLoginAsync("https://games.example.com", null))
-            .ThrowsAsync(new EntityNotFoundException("OidcProvider", "enabled"));
+        var failure = new EntityNotFoundException("OidcProvider", "enabled");
+        _oidcServiceMock.Setup(x => x.StartLoginAsync("https://games.example.com", null)).ThrowsAsync(failure);
         var controller = CreateController();
 
         var result = await controller.Login(null);
@@ -180,6 +193,8 @@ public class OidcControllerTests
         result.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcProviderUnavailable)}");
         _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
         _oidcServiceMock.Verify(x => x.StartLoginAsync("https://games.example.com", null), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC login initiated");
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC login at the identity provider could not start", failure);
         VerifyNoOtherCalls();
     }
 
@@ -196,16 +211,18 @@ public class OidcControllerTests
 
         login.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be(expected);
         link.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be(expected);
+        _loggerMock.VerifyLog(LogLevel.Warning, $"The identity provider returned to the callback with error {error ?? "missing code"}");
+        _loggerMock.VerifyLog(LogLevel.Warning, $"The identity provider returned to the link callback with error {error ?? "missing code"}");
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Callbacks_ShouldReportTheErrorKey_WhenCompletingTheFlowFails()
     {
-        _oidcServiceMock.Setup(x => x.CompleteLoginAsync("code", "state", null, null))
-            .ThrowsAsync(new DomainException(Constants.Errors.AccountDisabled));
-        _oidcServiceMock.Setup(x => x.CompleteLinkAsync("code", "state", null, null))
-            .ThrowsAsync(new DomainException(Constants.Errors.OidcAlreadyLinked));
+        var loginFailure = new DomainException(Constants.Errors.AccountDisabled);
+        var linkFailure = new DomainException(Constants.Errors.OidcAlreadyLinked);
+        _oidcServiceMock.Setup(x => x.CompleteLoginAsync("code", "state", null, null)).ThrowsAsync(loginFailure);
+        _oidcServiceMock.Setup(x => x.CompleteLinkAsync("code", "state", null, null)).ThrowsAsync(linkFailure);
         var controller = CreateController();
 
         var login = await controller.Callback("code", "state", null, null);
@@ -215,6 +232,8 @@ public class OidcControllerTests
         link.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcAlreadyLinked)}");
         _oidcServiceMock.Verify(x => x.CompleteLoginAsync("code", "state", null, null), Times.Once);
         _oidcServiceMock.Verify(x => x.CompleteLinkAsync("code", "state", null, null), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Completing the OIDC login failed", loginFailure);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Completing the OIDC link failed", linkFailure);
         VerifyNoOtherCalls();
     }
 
@@ -240,6 +259,7 @@ public class OidcControllerTests
     {
         typeof(OidcController).GetMethod(action)!.GetCustomAttributes(typeof(HttpGetAttribute), false)
             .Should().ContainSingle().Which.Should().BeOfType<HttpGetAttribute>().Which.Template.Should().Be(template);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -253,6 +273,7 @@ public class OidcControllerTests
             .Should().ContainSingle().Which.Should().BeOfType<RequireOidcHttpsAttribute>().Subject;
 
         attribute.Arguments.Should().Equal(refusal);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -285,6 +306,7 @@ public class OidcControllerTests
             .Which.Should().Contain("secure");
         _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
         _oidcServiceMock.Verify(x => x.StartLinkAsync("user-1", "https://games.example.com"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC link initiated by user user-1");
         VerifyNoOtherCalls();
     }
 
@@ -304,7 +326,7 @@ public class OidcControllerTests
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().Be(new OidcProviderInfo("Keycloak", null, null, expected));
         _oidcServiceMock.Verify(x => x.GetEnabledProviderAsync(), Times.Once);
-        _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.AtMostOnce);
+        _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Exactly(scheme == "https" || host.StartsWith("localhost", StringComparison.Ordinal) ? 1 : 0));
         VerifyNoOtherCalls();
     }
 
@@ -334,10 +356,151 @@ public class OidcControllerTests
 
         var cookies = SetCookies(controller);
         cookies.Should().HaveCount(3).And.OnlyContain(c => c.Contains("secure") && c.Contains("httponly") && c.Contains("path=/api/auth/oidc"));
-        cookies.Should().Contain(c => c.StartsWith($"{OidcController.HandoffCookieName}=handoff", StringComparison.Ordinal));
-        cookies.Should().Contain(c => c.StartsWith($"{OidcController.SessionCookieName}=session-key", StringComparison.Ordinal));
+        cookies.Should().ContainSingle(c => c.StartsWith($"{OidcController.HandoffCookieName}=handoff", StringComparison.Ordinal)).Which.Should().Contain("max-age=60;");
+        cookies.Should().ContainSingle(c => c.StartsWith($"{OidcController.SessionCookieName}=session-key", StringComparison.Ordinal)).Which.Should().Contain("max-age=604800");
         _oidcServiceMock.Verify(x => x.CompleteLoginAsync("code", "state", null, null), Times.Once);
         _oidcServiceMock.Verify(x => x.CreateHandoff(login), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Callback_ShouldPassTheBrowserState_AndDeleteItsCookie()
+    {
+        var login = new LoginResponse("a", "r", DateTime.UtcNow, new UserInfo("1", "jane", null, ["User"]));
+        _oidcServiceMock.Setup(x => x.CompleteLoginAsync("code", "state", "browser-state", null)).ReturnsAsync(new OidcLoginResult(login, "/", null));
+        _oidcServiceMock.Setup(x => x.CreateHandoff(login)).Returns("handoff");
+        var controller = CreateController(stateCookie: "browser-state");
+
+        await controller.Callback("code", "state", null, null);
+
+        SetCookies(controller).Should().ContainSingle(c => c.StartsWith($"{OidcController.StateCookieName}=;", StringComparison.Ordinal));
+        _oidcServiceMock.Verify(x => x.CompleteLoginAsync("code", "state", "browser-state", null), Times.Once);
+        _oidcServiceMock.Verify(x => x.CreateHandoff(login), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkCallback_ShouldPassTheBrowserStateAndIssuer_AndDeleteTheStateCookie()
+    {
+        _oidcServiceMock.Setup(x => x.CompleteLinkAsync("code", "state", "browser-state", "https://sso.example.com")).ReturnsAsync(new OidcLinkResult("user-1"));
+        var controller = CreateController(stateCookie: "browser-state");
+
+        await controller.LinkCallback("code", "state", null, "https://sso.example.com");
+
+        SetCookies(controller).Should().ContainSingle(c => c.StartsWith($"{OidcController.StateCookieName}=;", StringComparison.Ordinal));
+        _oidcServiceMock.Verify(x => x.CompleteLinkAsync("code", "state", "browser-state", "https://sso.example.com"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("access_denied")]
+    public async Task Callbacks_ShouldDeleteTheStateCookie_AndNotCallTheService_WhenTheProviderRefuses(string error)
+    {
+        var controller = CreateController(stateCookie: "browser-state");
+
+        var result = await controller.Callback(string.IsNullOrEmpty(error) ? "" : "code", "state", error, null);
+
+        result.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcProviderRejected)}");
+        SetCookies(controller).Should().ContainSingle(c => c.StartsWith($"{OidcController.StateCookieName}=;", StringComparison.Ordinal));
+        _loggerMock.VerifyLog(LogLevel.Warning, $"The identity provider returned to the callback with error {error}");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Login_ShouldReportTheGenericError_ForAnUnexpectedFailure()
+    {
+        var failure = new InvalidOperationException("error.looks-like-a-key");
+        _publicUrlBuilderMock.Setup(x => x.GetConfiguredBaseUrlAsync()).ReturnsAsync((string?)null);
+        _oidcServiceMock.Setup(x => x.StartLoginAsync("https://games.example.com", null)).ThrowsAsync(failure);
+        var controller = CreateController();
+
+        var result = await controller.Login(null);
+
+        result.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcFailed)}");
+        SetCookies(controller).Should().BeEmpty();
+        _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
+        _oidcServiceMock.Verify(x => x.StartLoginAsync("https://games.example.com", null), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC login initiated");
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC login at the identity provider could not start", failure);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Login_ShouldReportAFailure_WhenACancellationDidNotComeFromTheBrowser()
+    {
+        var failure = new OperationCanceledException();
+        _publicUrlBuilderMock.Setup(x => x.GetConfiguredBaseUrlAsync()).ReturnsAsync((string?)null);
+        _oidcServiceMock.Setup(x => x.StartLoginAsync("https://games.example.com", null)).ThrowsAsync(failure);
+        var controller = CreateController();
+
+        var result = await controller.Login(null);
+
+        result.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcFailed)}");
+        _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
+        _oidcServiceMock.Verify(x => x.StartLoginAsync("https://games.example.com", null), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC login initiated");
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC login at the identity provider could not start", failure);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Callbacks_ShouldReportAFailure_WhenACancellationDidNotComeFromTheBrowser()
+    {
+        var loginFailure = new OperationCanceledException();
+        var linkFailure = new TaskCanceledException();
+        _oidcServiceMock.Setup(x => x.CompleteLoginAsync("code", "state", null, null)).ThrowsAsync(loginFailure);
+        _oidcServiceMock.Setup(x => x.CompleteLinkAsync("code", "state", null, null)).ThrowsAsync(linkFailure);
+        var controller = CreateController();
+
+        var login = await controller.Callback("code", "state", null, null);
+        var link = await controller.LinkCallback("code", "state", null, null);
+
+        login.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcFailed)}");
+        link.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcFailed)}");
+        _oidcServiceMock.Verify(x => x.CompleteLoginAsync("code", "state", null, null), Times.Once);
+        _oidcServiceMock.Verify(x => x.CompleteLinkAsync("code", "state", null, null), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Completing the OIDC login failed", loginFailure);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Completing the OIDC link failed", linkFailure);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Flows_ShouldPassOnCancellation_WhenTheBrowserWentAway()
+    {
+        using var aborted = new CancellationTokenSource();
+        await aborted.CancelAsync();
+        _publicUrlBuilderMock.Setup(x => x.GetConfiguredBaseUrlAsync()).ReturnsAsync((string?)null);
+        _oidcServiceMock.Setup(x => x.StartLoginAsync("https://games.example.com", null)).ThrowsAsync(new OperationCanceledException());
+        _oidcServiceMock.Setup(x => x.CompleteLoginAsync("code", "state", null, null)).ThrowsAsync(new OperationCanceledException());
+        _oidcServiceMock.Setup(x => x.CompleteLinkAsync("code", "state", null, null)).ThrowsAsync(new OperationCanceledException());
+        var controller = CreateController();
+        controller.HttpContext.RequestAborted = aborted.Token;
+
+        var login = () => controller.Login(null);
+        var callback = () => controller.Callback("code", "state", null, null);
+        var link = () => controller.LinkCallback("code", "state", null, null);
+
+        await login.Should().ThrowAsync<OperationCanceledException>();
+        await callback.Should().ThrowAsync<OperationCanceledException>();
+        await link.Should().ThrowAsync<OperationCanceledException>();
+        _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
+        _oidcServiceMock.Verify(x => x.StartLoginAsync("https://games.example.com", null), Times.Once);
+        _oidcServiceMock.Verify(x => x.CompleteLoginAsync("code", "state", null, null), Times.Once);
+        _oidcServiceMock.Verify(x => x.CompleteLinkAsync("code", "state", null, null), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "OIDC login initiated");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkLogin_ShouldRefuse_WithoutAUserId()
+    {
+        var controller = CreateController();
+        controller.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
+
+        var act = () => controller.LinkLogin();
+
+        await act.Should().ThrowAsync<AuthenticationFailedException>().WithMessage(Constants.Errors.NotAuthenticated);
         VerifyNoOtherCalls();
     }
 }

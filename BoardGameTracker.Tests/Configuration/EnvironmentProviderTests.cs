@@ -16,7 +16,7 @@ public class EnvironmentProviderTests : IDisposable
     [
         "ASPNETCORE_ENVIRONMENT", "ENVIRONMENT", "RAG_ENABLED", "ADMIN_PASSWORD", "TRUSTED_PROXIES", "CORS_ORIGINS",
         "SWAGGER_ENABLED", "SMTP_HOST", "SMTP_PORT", "SMTP_USERNAME", "SMTP_PASSWORD", "SMTP_USE_SSL",
-        "SMTP_FROM_ADDRESS", "SMTP_FROM_NAME", "EF_SENSITIVE_LOGGING"
+        "SMTP_FROM_ADDRESS", "SMTP_FROM_NAME", "EF_SENSITIVE_LOGGING", "DATA_PROTECTION_KEY"
     ];
 
     public EnvironmentProviderTests()
@@ -390,5 +390,28 @@ public class EnvironmentProviderTests : IDisposable
         Environment.SetEnvironmentVariable("TRUSTED_PROXIES", value);
 
         _environmentProvider.TrustedProxies.Should().Equal("172.16.0.0/12", "10.0.0.0/8");
+    }
+
+    [Theory]
+    [InlineData("key-material", "key-material")]
+    [InlineData("", null)]
+    [InlineData("   ", null)]
+    [InlineData(null, null)]
+    public void DataProtectionKey_ShouldReturnValue_OrNullWhenBlank(string? value, string? expected)
+    {
+        Environment.SetEnvironmentVariable("DATA_PROTECTION_KEY", value);
+
+        _environmentProvider.DataProtectionKey.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("debug", Serilog.Events.LogEventLevel.Debug)]
+    [InlineData("error", Serilog.Events.LogEventLevel.Error)]
+    [InlineData(null, Serilog.Events.LogEventLevel.Warning)]
+    public void LogLevel_ShouldFollowTheEnvironmentVariable(string? value, Serilog.Events.LogEventLevel expected)
+    {
+        Environment.SetEnvironmentVariable("LOGLEVEL", value);
+
+        _environmentProvider.LogLevel.Should().Be(expected);
     }
 }

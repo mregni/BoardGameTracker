@@ -42,7 +42,6 @@ public class DifferentGameBadgeEvaluatorTests
     public async Task CanAwardBadge_ShouldCountDistinctGamesOnly()
     {
         var badge = TestBadges.Create(BadgeType.DifferentGames, BadgeLevel.Green);
-        // Create 10 sessions but only 2 different games
         var sessions = new List<Session>();
         for (var i = 0; i < 10; i++)
         {

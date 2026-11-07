@@ -10,7 +10,7 @@ using BoardGameTracker.Core.Email.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -28,10 +28,10 @@ public class OidcAdoptTests
 
     public OidcAdoptTests()
     {
-        _imageTicketsMock.Setup(x => x.Issue(It.IsAny<string>())).Returns("image-ticket");
+        _imageTicketsMock.Setup(x => x.Issue("id")).Returns("image-ticket");
         _imageTicketsMock.Setup(x => x.Lifetime).Returns(TimeSpan.FromDays(7));
         var sessionCookies = new AuthSessionCookies(_imageTicketsMock.Object, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }));
-        _controller = new OidcController(_oidcServiceMock.Object, _publicUrlBuilderMock.Object, sessionCookies, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }), Mock.Of<ILogger<OidcController>>());
+        _controller = new OidcController(_oidcServiceMock.Object, _publicUrlBuilderMock.Object, sessionCookies, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }), NullLogger<OidcController>.Instance);
         var context = new DefaultHttpContext();
         context.Request.Headers.Cookie = $"{OidcController.HandoffCookieName}=handoff-key";
         _controller.ControllerContext = new ControllerContext { HttpContext = context };
@@ -41,6 +41,7 @@ public class OidcAdoptTests
     {
         _oidcServiceMock.VerifyNoOtherCalls();
         _publicUrlBuilderMock.VerifyNoOtherCalls();
+        _imageTicketsMock.VerifyNoOtherCalls();
     }
 
     private string[] SetCookies => _controller.HttpContext.Response.Headers.SetCookie.Select(c => c!).ToArray();
@@ -58,11 +59,13 @@ public class OidcAdoptTests
         var body = JsonSerializer.Serialize(ok.Value, WebJson);
         body.Should().Contain("\"accessToken\":\"access\"").And.NotContain("refresh-secret").And.NotContainEquivalentOf("refreshToken");
         SetCookies.Should().Contain(c => c.StartsWith($"{AuthSessionCookies.RefreshCookieName}=refresh-secret;", StringComparison.Ordinal)
-                                          && c.Contains("path=/api/auth;") && c.Contains("httponly") && c.Contains("samesite=lax"));
+                                          && c.Contains("max-age=604800") && c.Contains("path=/api/auth;") && c.Contains("httponly") && c.Contains("samesite=lax"));
         SetCookies.Should().Contain(c => c.StartsWith($"{OidcController.HandoffCookieName}=;", StringComparison.Ordinal));
         SetCookies.Should().Contain(c => c.StartsWith($"{ProfileImageCookie.Name}=image-ticket", StringComparison.Ordinal));
 
         _oidcServiceMock.Verify(x => x.TakeHandoff("handoff-key"), Times.Once);
+        _imageTicketsMock.Verify(x => x.Issue("id"), Times.Once);
+        _imageTicketsMock.Verify(x => x.Lifetime, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -75,6 +78,7 @@ public class OidcAdoptTests
 
         act.Should().Throw<AuthenticationFailedException>().WithMessage(Constants.Errors.OidcHandoffExpired);
         SetCookies.Should().NotContain(c => c.StartsWith($"{AuthSessionCookies.RefreshCookieName}=", StringComparison.Ordinal));
+        SetCookies.Should().ContainSingle(c => c.StartsWith($"{OidcController.HandoffCookieName}=;", StringComparison.Ordinal));
 
         _oidcServiceMock.Verify(x => x.TakeHandoff("handoff-key"), Times.Once);
         VerifyNoOtherCalls();

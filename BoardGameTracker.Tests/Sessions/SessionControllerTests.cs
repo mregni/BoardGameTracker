@@ -32,7 +32,6 @@ public class SessionControllerTests
     [Fact]
     public async Task GetSession_ShouldReturnOkWithSession_WhenSessionExists()
     {
-        // Arrange
         var sessionId = 1;
         var session = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Fun game night") { Id = sessionId };
 
@@ -40,14 +39,13 @@ public class SessionControllerTests
             .Setup(x => x.Get(sessionId))
             .ReturnsAsync(session);
 
-        // Act
         var result = await _controller.GetSession(sessionId);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var sessionDto = okResult.Value.Should().BeAssignableTo<SessionDto>().Subject;
 
         sessionDto.Id.Should().Be(sessionId);
+        sessionDto.GameId.Should().Be(1);
         sessionDto.Comment.Should().Be("Fun game night");
 
         _sessionServiceMock.Verify(x => x.Get(sessionId), Times.Once);
@@ -57,17 +55,14 @@ public class SessionControllerTests
     [Fact]
     public async Task GetSession_ShouldReturnNotFound_WhenSessionDoesNotExist()
     {
-        // Arrange
         var sessionId = 999;
 
         _sessionServiceMock
             .Setup(x => x.Get(sessionId))
             .ReturnsAsync((Session?)null);
 
-        // Act
         var result = await _controller.GetSession(sessionId);
 
-        // Assert
         result.Should().BeOfType<NotFoundResult>();
 
         _sessionServiceMock.Verify(x => x.Get(sessionId), Times.Once);
@@ -81,7 +76,6 @@ public class SessionControllerTests
     [Fact]
     public async Task CreateSession_ShouldReturnCreatedWithSession_WhenCommandIsValid()
     {
-        // Arrange
         var command = new CreateSessionCommand
         {
             GameId = 1,
@@ -101,11 +95,11 @@ public class SessionControllerTests
             .Setup(x => x.CreateFromCommand(command))
             .ReturnsAsync(createdSession);
 
-        // Act
         var result = await _controller.CreateSession(command);
 
-        // Assert
         var okResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
+        okResult.ActionName.Should().Be(nameof(SessionController.GetSession));
+        okResult.RouteValues!["id"].Should().Be(1);
         var sessionDto = okResult.Value.Should().BeAssignableTo<SessionDto>().Subject;
 
         sessionDto.Id.Should().Be(1);
@@ -162,7 +156,6 @@ public class SessionControllerTests
     [Fact]
     public async Task UpdateSession_ShouldReturnOkWithSession_WhenCommandIsValid()
     {
-        // Arrange
         var command = new UpdateSessionCommand
         {
             Id = 1,
@@ -179,10 +172,8 @@ public class SessionControllerTests
             .Setup(x => x.UpdateFromCommand(command))
             .ReturnsAsync(updatedSession);
 
-        // Act
         var result = await _controller.UpdateSession(command);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var sessionDto = okResult.Value.Should().BeAssignableTo<SessionDto>().Subject;
 
@@ -200,7 +191,6 @@ public class SessionControllerTests
     [Fact]
     public async Task DeleteSession_ShouldReturnNoContent_WhenSessionIsDeleted()
     {
-        // Arrange
         var sessionId = 1;
         var session = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Test") { Id = sessionId };
 
@@ -212,10 +202,8 @@ public class SessionControllerTests
             .Setup(x => x.Delete(sessionId))
             .Returns(Task.CompletedTask);
 
-        // Act
         var result = await _controller.DeleteSession(sessionId);
 
-        // Assert
         result.Should().BeOfType<NoContentResult>();
 
         _sessionServiceMock.Verify(x => x.Get(sessionId), Times.Once);
@@ -226,17 +214,14 @@ public class SessionControllerTests
     [Fact]
     public async Task DeleteSession_ShouldReturnNotFound_WhenSessionDoesNotExist()
     {
-        // Arrange
         var sessionId = 999;
 
         _sessionServiceMock
             .Setup(x => x.Get(sessionId))
             .ReturnsAsync((Session?)null);
 
-        // Act
         var result = await _controller.DeleteSession(sessionId);
 
-        // Assert
         result.Should().BeOfType<NotFoundResult>();
 
         _sessionServiceMock.Verify(x => x.Get(sessionId), Times.Once);

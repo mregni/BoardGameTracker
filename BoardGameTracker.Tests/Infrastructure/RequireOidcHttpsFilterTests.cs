@@ -2,6 +2,7 @@ using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Email.Interfaces;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,10 +18,17 @@ namespace BoardGameTracker.Tests.Infrastructure;
 public class RequireOidcHttpsFilterTests
 {
     private readonly Mock<IPublicUrlBuilder> _publicUrlBuilderMock = new();
+    private readonly Mock<ILogger<RequireOidcHttpsFilter>> _loggerMock = new();
 
     private void VerifyNoOtherCalls()
     {
         _publicUrlBuilderMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
+    }
+
+    private void VerifyRefusalLogged()
+    {
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC Login refused because the connection or the public URL is not HTTPS");
     }
 
     private static ActionExecutingContext Context(string scheme, string host, params (string Name, string Value)[] headers)
@@ -33,13 +41,13 @@ public class RequireOidcHttpsFilterTests
             httpContext.Request.Headers[name] = value;
         }
 
-        var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+        var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor { DisplayName = "Login" });
         return new ActionExecutingContext(actionContext, [], new Dictionary<string, object?>(), new object());
     }
 
     private async Task<(ActionExecutingContext Context, bool ActionRan)> RunAsync(OidcHttpsRefusal refusal, ActionExecutingContext context)
     {
-        var filter = new RequireOidcHttpsFilter(refusal, _publicUrlBuilderMock.Object, Mock.Of<ILogger<RequireOidcHttpsFilter>>());
+        var filter = new RequireOidcHttpsFilter(refusal, _publicUrlBuilderMock.Object, _loggerMock.Object);
         var actionRan = false;
 
         await filter.OnActionExecutionAsync(context, () =>
@@ -78,6 +86,7 @@ public class RequireOidcHttpsFilterTests
 
         actionRan.Should().BeFalse();
         context.Result.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be(expected);
+        VerifyRefusalLogged();
         VerifyNoOtherCalls();
     }
 
@@ -87,6 +96,7 @@ public class RequireOidcHttpsFilterTests
         var act = () => RunAsync(OidcHttpsRefusal.BadRequest, Context("http", "192.168.1.20:5444"));
 
         (await act.Should().ThrowAsync<ValidationException>()).Which.Message.Should().Be(Constants.Errors.OidcHttpsRequired);
+        VerifyRefusalLogged();
         VerifyNoOtherCalls();
     }
 
@@ -100,8 +110,9 @@ public class RequireOidcHttpsFilterTests
         var (context, actionRan) = await RunAsync(OidcHttpsRefusal.CallbackPage, Context("https", "games.example.com"));
 
         actionRan.Should().BeFalse();
-        context.Result.Should().BeOfType<LocalRedirectResult>();
+        context.Result.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be(RequireOidcHttpsFilter.CallbackPageRefusal);
         _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
+        VerifyRefusalLogged();
         VerifyNoOtherCalls();
     }
 
@@ -113,7 +124,8 @@ public class RequireOidcHttpsFilterTests
         var (_, actionRan) = await RunAsync(OidcHttpsRefusal.LoginPage, context);
 
         actionRan.Should().BeFalse();
-        context.Result.Should().BeOfType<LocalRedirectResult>();
+        context.Result.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be(RequireOidcHttpsFilter.LoginPageRefusal);
+        VerifyRefusalLogged();
         VerifyNoOtherCalls();
     }
 }

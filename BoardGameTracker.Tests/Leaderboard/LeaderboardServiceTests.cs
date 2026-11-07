@@ -34,7 +34,6 @@ public class LeaderboardServiceTests
     private void VerifyRowsLoaded(LeaderboardFilter filter)
     {
         _playerRepositoryMock.Verify(x => x.GetLeaderboardRows(filter, TestContext.Current.CancellationToken), Times.Once);
-        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -46,6 +45,8 @@ public class LeaderboardServiceTests
         var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
 
         result.Players[0].WinPercentage.Should().BeApproximately(63.4615, 0.0001);
+        VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -76,6 +77,7 @@ public class LeaderboardServiceTests
         result.RankBy.Should().Be(LeaderboardRankBy.Wins);
         result.RankedCount.Should().Be(4);
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -95,6 +97,7 @@ public class LeaderboardServiceTests
         result.Players.Select(x => (x.Rank, x.Name)).Should().Equal((1, "Cara"), (2, "Bob"), (3, "Alice"), (4, "Dan"));
         result.RankBy.Should().Be(LeaderboardRankBy.WinRate);
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -112,6 +115,7 @@ public class LeaderboardServiceTests
 
         result.Players.Select(x => (x.Rank, x.Name)).Should().Equal((1, "Bob"), (2, "Alice"), (3, "Cara"));
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -129,6 +133,7 @@ public class LeaderboardServiceTests
 
         result.Players.Select(x => (x.Rank, x.Name)).Should().Equal((1, "Adam"), (1, "Zoe"), (3, "Mia"));
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -147,6 +152,7 @@ public class LeaderboardServiceTests
 
         result.Players.Select(x => (x.Rank, x.Name)).Should().Equal((1, "Mia"), (2, "Adam"), (2, "Zoe"), (4, "Lou"));
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -164,6 +170,7 @@ public class LeaderboardServiceTests
 
         result.Players.Select(x => (x.Rank, x.Name)).Should().Equal((1, "Eve"), (2, "Aaron"), (2, "finn"));
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -189,6 +196,7 @@ public class LeaderboardServiceTests
         result.BestWinRate!.Name.Should().Be("Alice");
         result.MostWins!.Name.Should().Be("Bob");
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -202,6 +210,7 @@ public class LeaderboardServiceTests
         result.MinimumSessions.Should().Be(1);
         result.Players.Single().IsRanked.Should().BeTrue();
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -222,6 +231,7 @@ public class LeaderboardServiceTests
         result.ShowPodium.Should().Be(expected);
         result.RankedCount.Should().Be(rankedPlayers);
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -235,6 +245,7 @@ public class LeaderboardServiceTests
         result.MinimumSessions.Should().Be(10);
         result.RankBy.Should().Be(LeaderboardRankBy.Sessions);
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -253,6 +264,7 @@ public class LeaderboardServiceTests
         result.WinCount.Should().Be(10);
         result.CoopWinCount.Should().Be(4);
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -271,6 +283,7 @@ public class LeaderboardServiceTests
         result.ShowPodium.Should().BeFalse();
         result.RankedCount.Should().Be(0);
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -287,5 +300,141 @@ public class LeaderboardServiceTests
         result.MostPlays!.Name.Should().Be("Alice");
         result.MostTimePlayed!.Name.Should().Be("Alice");
         VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLeaderboardAsync_ShouldReportZeroPercent_AndNeedOneSession_WhenAPlayerHasNoSessions()
+    {
+        var filter = new LeaderboardFilter(MinSessions: 0);
+        SetupRows(filter, [new LeaderboardRow(1, "Alice", null, 0, 0, 0, 0)]);
+
+        var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
+
+        var player = result.Players.Single();
+        player.WinPercentage.Should().Be(0);
+        player.IsRanked.Should().BeFalse();
+        player.Rank.Should().BeNull();
+        player.SessionsToRank.Should().Be(1);
+        result.RankedCount.Should().Be(0);
+        result.MostPlays!.Name.Should().Be("Alice");
+        result.MostTimePlayed.Should().BeNull();
+        VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLeaderboardAsync_ShouldMapEveryFieldOfARow()
+    {
+        var filter = new LeaderboardFilter(MinSessions: 1);
+        SetupRows(filter, [new LeaderboardRow(8, "Alice", "alice.webp", 4, 1, 3, 75.4)]);
+
+        var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
+
+        var player = result.Players.Single();
+        player.PlayerId.Should().Be(8);
+        player.Name.Should().Be("Alice");
+        player.Image.Should().Be("alice.webp");
+        player.PlayCount.Should().Be(4);
+        player.WinCount.Should().Be(1);
+        player.PodiumCount.Should().Be(3);
+        player.WinPercentage.Should().Be(25);
+        player.MinutesPlayed.Should().Be(75);
+        VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLeaderboardAsync_ShouldOrderUnrankedPlayers_ByPlaysThenWinsThenName()
+    {
+        var filter = new LeaderboardFilter(MinSessions: 5);
+        SetupRows(filter,
+        [
+            new LeaderboardRow(1, "zoe", null, 2, 1, 0, 60),
+            new LeaderboardRow(2, "Adam", null, 2, 1, 0, 60),
+            new LeaderboardRow(3, "Bram", null, 2, 2, 0, 60),
+            new LeaderboardRow(4, "Cara", null, 4, 0, 0, 60),
+        ]);
+
+        var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
+
+        result.Players.Select(x => (x.Name, x.SessionsToRank)).Should().Equal(("Cara", 1), ("Bram", 3), ("Adam", 3), ("zoe", 3));
+        VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLeaderboardAsync_ShouldBreakCardTies_ByTheNextStatistic()
+    {
+        var filter = new LeaderboardFilter(MinSessions: 1);
+        SetupRows(filter,
+        [
+            new LeaderboardRow(1, "Alice", null, 10, 5, 0, 300),
+            new LeaderboardRow(2, "Bob", null, 8, 5, 0, 200),
+            new LeaderboardRow(3, "Cara", null, 10, 6, 0, 100),
+        ]);
+
+        var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
+
+        result.MostWins!.Name.Should().Be("Cara");
+        result.MostPlays!.Name.Should().Be("Cara");
+        result.BestWinRate!.Name.Should().Be("Bob");
+        result.MostTimePlayed!.Name.Should().Be("Alice");
+        VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLeaderboardAsync_ShouldBreakEqualWins_ByWinRateForTheMostWinsCard()
+    {
+        var filter = new LeaderboardFilter(MinSessions: 1);
+        SetupRows(filter,
+        [
+            new LeaderboardRow(1, "Alice", null, 10, 5, 0, 300),
+            new LeaderboardRow(2, "Bob", null, 8, 5, 0, 200),
+        ]);
+
+        var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
+
+        result.MostWins!.Name.Should().Be("Bob");
+        VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLeaderboardAsync_ShouldBreakCompleteCardTies_ByNameIgnoringCase()
+    {
+        var filter = new LeaderboardFilter(MinSessions: 1);
+        SetupRows(filter,
+        [
+            new LeaderboardRow(1, "zoe", null, 4, 2, 0, 100),
+            new LeaderboardRow(2, "Adam", null, 4, 2, 0, 100),
+        ]);
+
+        var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
+
+        result.MostWins!.Name.Should().Be("Adam");
+        result.MostPlays!.Name.Should().Be("Adam");
+        result.BestWinRate!.Name.Should().Be("Adam");
+        result.MostTimePlayed!.Name.Should().Be("Adam");
+        VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLeaderboardAsync_ShouldPreferMoreWins_ForTheBestWinRateCard_WhenTheRateIsEqual()
+    {
+        var filter = new LeaderboardFilter(MinSessions: 1);
+        SetupRows(filter,
+        [
+            new LeaderboardRow(1, "Adam", null, 4, 2, 0, 100),
+            new LeaderboardRow(2, "Bob", null, 8, 4, 0, 100),
+        ]);
+
+        var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
+
+        result.BestWinRate!.Name.Should().Be("Bob");
+        VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
     }
 }

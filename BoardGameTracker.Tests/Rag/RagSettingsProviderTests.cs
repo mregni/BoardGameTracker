@@ -26,6 +26,10 @@ public class RagSettingsProviderTests
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AiConfig.EmbeddingBaseUrl), Times.Once);
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<int>(Constants.AiConfig.EmbeddingNumGpu), Times.Once);
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<int>(Constants.AiConfig.TopK), Times.Once);
+    }
+
+    private void VerifyNoOtherCalls()
+    {
         _configRepositoryMock.VerifyNoOtherCalls();
     }
 
@@ -52,6 +56,7 @@ public class RagSettingsProviderTests
         settings.EmbeddingDimensions.Should().Be(Constants.AiConfig.EmbeddingDimensions);
         settings.EmbeddingNumGpu.Should().Be(0);
         VerifyAllConfigValuesReadOnce();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -72,18 +77,25 @@ public class RagSettingsProviderTests
 
         settings.ChatApiKey.Should().BeNull();
         VerifyAllConfigValuesReadOnce();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task GetAsync_ShouldReadConfigOnce_WhenCalledTwice()
     {
-        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(It.IsAny<string>())).ReturnsAsync("value");
-        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<int>(It.IsAny<string>())).ReturnsAsync(1);
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.Provider)).ReturnsAsync("ollama");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.BaseUrl)).ReturnsAsync("http://ollama:11434");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ChatModel)).ReturnsAsync("qwen3:4b");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ApiKey)).ReturnsAsync("key");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.EmbeddingBaseUrl)).ReturnsAsync("http://ollama:11434");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<int>(Constants.AiConfig.EmbeddingNumGpu)).ReturnsAsync(1);
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<int>(Constants.AiConfig.TopK)).ReturnsAsync(1);
 
         var first = await _provider.GetAsync();
         var second = await _provider.GetAsync();
 
         second.Should().BeSameAs(first);
         VerifyAllConfigValuesReadOnce();
+        VerifyNoOtherCalls();
     }
 }

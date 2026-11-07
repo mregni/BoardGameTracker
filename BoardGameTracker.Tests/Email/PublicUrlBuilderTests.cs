@@ -26,10 +26,14 @@ public class PublicUrlBuilderTests
             .ReturnsAsync(url!);
     }
 
+    private void VerifyNoOtherCalls()
+    {
+        _configRepositoryMock.VerifyNoOtherCalls();
+    }
+
     private void VerifyBaseUrlReadOnce()
     {
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AppConfig.PublicUrl), Times.Once);
-        _configRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -42,6 +46,7 @@ public class PublicUrlBuilderTests
 
         result.Should().Be("https://games.example.com/rsvp?linkId=11111111-2222-3333-4444-555555555555");
         VerifyBaseUrlReadOnce();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -57,6 +62,7 @@ public class PublicUrlBuilderTests
 
         result.Should().Be($"{expectedBase}/rsvp?linkId={linkId}");
         VerifyBaseUrlReadOnce();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -72,6 +78,7 @@ public class PublicUrlBuilderTests
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.PublicUrlNotConfigured);
         VerifyBaseUrlReadOnce();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -83,6 +90,7 @@ public class PublicUrlBuilderTests
 
         result.Should().Be("http://localhost:5444");
         VerifyBaseUrlReadOnce();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -93,6 +101,7 @@ public class PublicUrlBuilderTests
     public void Normalize_ShouldTrimAndTreatBlankAsUnset(string? raw, string? expected)
     {
         PublicUrlBuilder.Normalize(raw).Should().Be(expected);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -104,6 +113,7 @@ public class PublicUrlBuilderTests
 
         result.Should().Be("https://games.example.com/reset-password?userId=user-1&token=token-1");
         VerifyBaseUrlReadOnce();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -115,6 +125,7 @@ public class PublicUrlBuilderTests
 
         result.Should().Be("https://games.example.com/reset-password?userId=user%20id%26x&token=a%2Bb%2Fc%3Dd");
         VerifyBaseUrlReadOnce();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -128,5 +139,6 @@ public class PublicUrlBuilderTests
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.PublicUrlNotConfigured);
         VerifyBaseUrlReadOnce();
+        VerifyNoOtherCalls();
     }
 }

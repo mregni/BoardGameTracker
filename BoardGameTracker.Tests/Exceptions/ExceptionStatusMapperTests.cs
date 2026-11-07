@@ -29,6 +29,8 @@ public class ExceptionStatusMapperTests
         { new BggFeatureDisabledException(), false },
         { new ConfigMissingException("BGG"), false },
         { new FeatureDisabledException("shelf_of_shame_enabled"), false },
+        { new BggCollectionPreparingException(), false },
+        { new BggRateLimitException(), false },
     };
 
     [Theory]

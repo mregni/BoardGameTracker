@@ -27,24 +27,24 @@ public class MaintenanceControllerTests
     [Fact]
     public async Task Reset_ShouldReturnNoContent()
     {
-        _resetServiceMock.Setup(x => x.ResetDataAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        _resetServiceMock.Setup(x => x.ResetDataAsync(CancellationToken.None)).Returns(Task.CompletedTask);
 
         var result = await _controller.Reset();
 
         result.Should().BeOfType<NoContentResult>();
-        _resetServiceMock.Verify(x => x.ResetDataAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _resetServiceMock.Verify(x => x.ResetDataAsync(CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task FactoryReset_ShouldReturnNoContent()
     {
-        _resetServiceMock.Setup(x => x.FactoryResetAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        _resetServiceMock.Setup(x => x.FactoryResetAsync(CancellationToken.None)).Returns(Task.CompletedTask);
 
         var result = await _controller.FactoryReset();
 
         result.Should().BeOfType<NoContentResult>();
-        _resetServiceMock.Verify(x => x.FactoryResetAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _resetServiceMock.Verify(x => x.FactoryResetAsync(CancellationToken.None), Times.Once);
         VerifyNoOtherCalls();
     }
 

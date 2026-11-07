@@ -62,6 +62,7 @@ public class ValidateIdFilterTests
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
         var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
+        problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be("Invalid id. Must be greater than 0.");
     }
 
@@ -100,6 +101,23 @@ public class ValidateIdFilterTests
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
         var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
+        problemDetails.Status.Should().Be(400);
+        problemDetails.Title.Should().Be("Invalid gameId. Must be greater than 0.");
+    }
+
+    [Fact]
+    public void OnActionExecuting_ShouldReportTheFirstInvalidParameter_WhenSeveralAreInvalid()
+    {
+        var context = CreateContext(new Dictionary<string, object?>
+        {
+            { "gameId", 0 },
+            { "playerId", -1 }
+        });
+
+        _filter.OnActionExecuting(context);
+
+        var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
+        var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
         problemDetails.Title.Should().Be("Invalid gameId. Must be greater than 0.");
     }
 
@@ -123,6 +141,7 @@ public class ValidateIdFilterTests
     [InlineData("badgeId", -100)]
     [InlineData("loanId", 0)]
     [InlineData("page", 0)]
+    [InlineData("page", -1)]
     public void OnActionExecuting_ShouldSetBadRequestResult_WhenVariousIdParametersAreInvalid(string parameterName, int value)
     {
         var context = CreateContext(new Dictionary<string, object?> { { parameterName, value } });
@@ -131,11 +150,13 @@ public class ValidateIdFilterTests
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
         var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
+        problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be($"Invalid {parameterName}. Must be greater than 0.");
     }
 
     [Theory]
     [InlineData("id", 1)]
+    [InlineData("page", 1)]
     [InlineData("gameNightId", 42)]
     [InlineData("sessionId", 1)]
     [InlineData("locationId", 50)]
@@ -163,6 +184,7 @@ public class ValidateIdFilterTests
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
         var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
+        problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be($"Invalid {parameterName}. Must be greater than 0.");
     }
 

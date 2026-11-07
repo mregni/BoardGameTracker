@@ -3,7 +3,7 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Languages;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -12,14 +12,17 @@ namespace BoardGameTracker.Tests.Languages;
 public class LanguageServiceTests
 {
     private readonly Mock<IRepository<Language>> _languageRepositoryMock;
-    private readonly Mock<ILogger<LanguageService>> _loggerMock;
     private readonly LanguageService _languageService;
 
     public LanguageServiceTests()
     {
         _languageRepositoryMock = new Mock<IRepository<Language>>();
-        _loggerMock = new Mock<ILogger<LanguageService>>();
-        _languageService = new LanguageService(_languageRepositoryMock.Object, _loggerMock.Object);
+        _languageService = new LanguageService(_languageRepositoryMock.Object, NullLogger<LanguageService>.Instance);
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _languageRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -37,11 +40,8 @@ public class LanguageServiceTests
 
         var result = await _languageService.GetAllAsync();
 
-        result.Should().NotBeNull();
-        result.Should().HaveCount(4);
-        result.Should().BeEquivalentTo(expectedLanguages);
+        result.Should().BeSameAs(expectedLanguages);
         _languageRepositoryMock.Verify(x => x.GetAllAsync(), Times.Once);
-        _languageRepositoryMock.VerifyNoOtherCalls();
+        VerifyNoOtherCalls();
     }
-
 }
