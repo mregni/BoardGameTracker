@@ -445,6 +445,27 @@ public class OidcControllerTests
     }
 
     [Fact]
+    public async Task Callbacks_ShouldReportAFailure_WhenACancellationDidNotComeFromTheBrowser()
+    {
+        var loginFailure = new OperationCanceledException();
+        var linkFailure = new TaskCanceledException();
+        _oidcServiceMock.Setup(x => x.CompleteLoginAsync("code", "state", null, null)).ThrowsAsync(loginFailure);
+        _oidcServiceMock.Setup(x => x.CompleteLinkAsync("code", "state", null, null)).ThrowsAsync(linkFailure);
+        var controller = CreateController();
+
+        var login = await controller.Callback("code", "state", null, null);
+        var link = await controller.LinkCallback("code", "state", null, null);
+
+        login.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcFailed)}");
+        link.Should().BeOfType<LocalRedirectResult>().Which.Url.Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcFailed)}");
+        _oidcServiceMock.Verify(x => x.CompleteLoginAsync("code", "state", null, null), Times.Once);
+        _oidcServiceMock.Verify(x => x.CompleteLinkAsync("code", "state", null, null), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Completing the OIDC login failed", loginFailure);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Completing the OIDC link failed", linkFailure);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task Flows_ShouldPassOnCancellation_WhenTheBrowserWentAway()
     {
         using var aborted = new CancellationTokenSource();

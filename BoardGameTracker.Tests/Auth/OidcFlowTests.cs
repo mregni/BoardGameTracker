@@ -147,8 +147,8 @@ public class OidcFlowTests : IDisposable
         query["scope"].Should().Be("openid profile email");
         query["redirect_uri"].Should().Be($"{PublicBase}/api/auth/oidc/callback");
         query["code_challenge_method"].Should().Be("S256");
-        query["code_challenge"].Should().NotBeNullOrEmpty();
-        query["nonce"].Should().NotBeNullOrEmpty();
+        query["code_challenge"].Should().MatchRegex("^[A-Za-z0-9_-]{43}$");
+        query["nonce"].Should().MatchRegex("^[A-Za-z0-9_-]{43}$").And.NotBe(request.State);
         query["state"].Should().Be(request.State);
         request.Url.Should().NotContain("/games/3");
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
@@ -244,6 +244,18 @@ public class OidcFlowTests : IDisposable
     }
 
     [Fact]
+    public async Task StartLoginAsync_ShouldRejectAnAuthorizationEndpoint_WhosePathChangesWhenTheQueryIsAdded()
+    {
+        _idp.AuthorizationEndpoint = "https://idp.example.com/%%2e";
+
+        var act = () => _service.StartLoginAsync(PublicBase, null);
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InsecureAuthority);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task StartLoginAsync_ShouldRejectADiscoveryDocument_WhoseIssuerDiffersFromTheAuthority()
     {
         _idp.Issuer = "https://other.example.com";
@@ -297,7 +309,9 @@ public class OidcFlowTests : IDisposable
         result.Login.User.Username.Should().Be(user.UserName);
         result.Login.User.NeedsPlayerLink.Should().BeFalse();
         _idp.TokenRequest!["redirect_uri"].Should().Be($"{PublicBase}/api/auth/oidc/callback");
-        _idp.TokenRequest["code_verifier"].Should().NotBeNullOrEmpty();
+        var verifierHash = SHA256.HashData(Encoding.ASCII.GetBytes(_idp.TokenRequest["code_verifier"]));
+        Convert.ToBase64String(verifierHash).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+            .Should().Be(HttpUtility.ParseQueryString(new Uri(request.Url).Query)["code_challenge"]);
         _idp.TokenRequest["grant_type"].Should().Be("authorization_code");
         _idp.TokenRequest["client_id"].Should().Be("bgt-client");
         _idp.TokenRequest.Should().NotContainKey("client_secret");
