@@ -14,12 +14,14 @@ using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Auth.Pictures;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -32,8 +34,14 @@ public class OidcFlowTests : IDisposable
     private const string PublicBase = "https://games.example.com";
 
     private readonly MainDbContext _context;
+    private const string LinkedUserId = "user-linked";
+    private const string SsoUserId = "user-sso";
+
+    private readonly Mock<IUserStore<ApplicationUser>> _userStoreMock = new();
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
     private readonly Mock<ITokenService> _tokenServiceMock;
+    private readonly Mock<ILogger<OidcService>> _loggerMock = new();
+    private ApplicationUser? _createdUser;
     private readonly MemoryCache _cache;
     private readonly FakeIdentityProviderHandler _idp;
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
@@ -48,23 +56,19 @@ public class OidcFlowTests : IDisposable
             .Options;
         _context = new MainDbContext(options);
 
-        var userStoreMock = new Mock<IUserStore<ApplicationUser>>();
         _userManagerMock = new Mock<UserManager<ApplicationUser>>(
-            userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        _userManagerMock.Setup(x => x.GetRolesAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(["User"]);
-        _userManagerMock.Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
+            _userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _ = _userManagerMock.Object;
+        _userManagerMock.Invocations.Clear();
 
         _tokenServiceMock = new Mock<ITokenService>();
-        _tokenServiceMock.Setup(x => x.GenerateAccessToken(It.IsAny<ApplicationUser>(), It.IsAny<IList<string>>(), It.IsAny<Guid>())).Returns("access-token");
-        _tokenServiceMock.Setup(x => x.GenerateRefreshTokenAsync(It.IsAny<string>())).ReturnsAsync((string userId) => RefreshToken.Create(userId, 7));
-        _tokenServiceMock.Setup(x => x.GetAccessTokenExpiry()).Returns(new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         _idp = new FakeIdentityProviderHandler(Authority);
         _httpClientFactoryMock = new Mock<IHttpClientFactory>();
         _httpClientFactoryMock.Setup(x => x.CreateClient(OidcService.HttpClientName)).Returns(() => new HttpClient(_idp, disposeHandler: false));
 
         _cache = new MemoryCache(new MemoryCacheOptions());
-        _secretProtector = new SecretProtector(new EphemeralDataProtectionProvider(), Mock.Of<ILogger<SecretProtector>>());
+        _secretProtector = new SecretProtector(new EphemeralDataProtectionProvider(), NullLogger<SecretProtector>.Instance);
         _service = CreateService(_cache);
 
         _context.OidcProviders.Add(new OidcProvider("Example IdP", Authority, "bgt-client"));
@@ -73,7 +77,7 @@ public class OidcFlowTests : IDisposable
 
     private OidcService CreateService(IMemoryCache cache)
     {
-        var configurations = new OidcConfigurationProvider(_httpClientFactoryMock.Object, Mock.Of<ILogger<OidcConfigurationProvider>>());
+        var configurations = new OidcConfigurationProvider(_httpClientFactoryMock.Object, NullLogger<OidcConfigurationProvider>.Instance);
         return new OidcService(
             _context,
             _userManagerMock.Object,
@@ -82,11 +86,44 @@ public class OidcFlowTests : IDisposable
             cache,
             _secretProtector,
             configurations,
-            new OidcIdTokenValidator(configurations, Mock.Of<ILogger<OidcIdTokenValidator>>()),
-            new OidcRoleReconciler(_userManagerMock.Object, Mock.Of<ILogger<OidcRoleReconciler>>()),
+            new OidcIdTokenValidator(configurations, NullLogger<OidcIdTokenValidator>.Instance),
+            new OidcRoleReconciler(_userManagerMock.Object, NullLogger<OidcRoleReconciler>.Instance),
             _pictureQueue,
             Options.Create(new JwtOptions { RefreshTokenExpiryDays = 7 }),
-            Mock.Of<ILogger<OidcService>>());
+            _loggerMock.Object);
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _userStoreMock.VerifyNoOtherCalls();
+        _httpClientFactoryMock.VerifyNoOtherCalls();
+        _userManagerMock.VerifyNoOtherCalls();
+        _tokenServiceMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
+    }
+
+    private void SetUpSignIn(string userName)
+    {
+        _userManagerMock.Setup(x => x.GetRolesAsync(It.Is<ApplicationUser>(u => u.UserName == userName))).ReturnsAsync(["User"]);
+        _userManagerMock.Setup(x => x.UpdateAsync(It.Is<ApplicationUser>(u => u.UserName == userName))).ReturnsAsync(IdentityResult.Success);
+        _tokenServiceMock.Setup(x => x.GenerateAccessToken(It.Is<ApplicationUser>(u => u.UserName == userName), It.Is<IList<string>>(r => r.SequenceEqual(new[] { "User" })), It.Is<Guid>(g => g != Guid.Empty))).Returns("access-token");
+        _tokenServiceMock.Setup(x => x.GenerateRefreshTokenAsync(It.IsAny<string>())).ReturnsAsync((string userId) => RefreshToken.Create(userId, 7));
+        _tokenServiceMock.Setup(x => x.GetAccessTokenExpiry()).Returns(new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+    }
+
+    private void VerifySignedIn(string userName, string userId, int times = 1, int roleReads = 1)
+    {
+        _userManagerMock.Verify(x => x.UpdateAsync(It.Is<ApplicationUser>(u => u.UserName == userName && u.LastLoginAt != null)), Times.Exactly(times));
+        _userManagerMock.Verify(x => x.GetRolesAsync(It.Is<ApplicationUser>(u => u.UserName == userName)), Times.Exactly(roleReads));
+        _tokenServiceMock.Verify(x => x.GenerateRefreshTokenAsync(userId), Times.Exactly(times));
+        _tokenServiceMock.Verify(x => x.GenerateAccessToken(It.Is<ApplicationUser>(u => u.UserName == userName), It.Is<IList<string>>(r => r.SequenceEqual(new[] { "User" })), It.Is<Guid>(g => g != Guid.Empty)), Times.Exactly(times));
+        _tokenServiceMock.Verify(x => x.GetAccessTokenExpiry(), Times.Exactly(times));
+    }
+
+    private void VerifyProvisioned(string userName, string role)
+    {
+        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == userName)), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.UserName == userName), role), Times.Once);
     }
 
     public void Dispose()
@@ -114,6 +151,9 @@ public class OidcFlowTests : IDisposable
         query["nonce"].Should().NotBeNullOrEmpty();
         query["state"].Should().Be(request.State);
         request.Url.Should().NotContain("/games/3");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -125,6 +165,9 @@ public class OidcFlowTests : IDisposable
         var request = await _service.StartLoginAsync(PublicBase, null);
 
         HttpUtility.ParseQueryString(new Uri(request.Url).Query)["scope"].Should().Be("openid profile email");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -143,6 +186,12 @@ public class OidcFlowTests : IDisposable
         var result = await _service.CompleteLoginAsync(await _idp.AuthorizeAsync(request.Url), request.State, request.State, Authority);
 
         result.RedirectPath.Should().Be("/");
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -158,6 +207,9 @@ public class OidcFlowTests : IDisposable
         uri.GetLeftPart(UriPartial.Path).Should().Be($"{Authority}/authorize");
         uri.Fragment.Should().BeEmpty();
         HttpUtility.ParseQueryString(uri.Query)["redirect_uri"].Should().Be($"{publicBaseUrl}/api/auth/oidc/callback");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -174,6 +226,9 @@ public class OidcFlowTests : IDisposable
         query["tenant"].Should().Be("games");
         query["client_id"].Should().Be("bgt-client");
         query["state"].Should().Be(request.State);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -184,6 +239,8 @@ public class OidcFlowTests : IDisposable
         var act = () => _service.StartLoginAsync(PublicBase, null);
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InsecureAuthority);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -194,6 +251,9 @@ public class OidcFlowTests : IDisposable
         var act = () => _service.StartLoginAsync(PublicBase, null);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIssuerMismatch);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Error, "OIDC discovery for Example IdP reports issuer https://other.example.com, which does not match the configured authority");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -204,6 +264,8 @@ public class OidcFlowTests : IDisposable
         var act = () => _service.StartLoginAsync(PublicBase, null);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -215,6 +277,7 @@ public class OidcFlowTests : IDisposable
         var act = () => _service.StartLoginAsync(PublicBase, null);
 
         await act.Should().ThrowAsync<EntityNotFoundException>();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -238,8 +301,14 @@ public class OidcFlowTests : IDisposable
         _idp.TokenRequest["grant_type"].Should().Be("authorization_code");
         _idp.TokenRequest["client_id"].Should().Be("bgt-client");
         _idp.TokenRequest.Should().NotContainKey("client_secret");
-        _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>()), Times.Never);
-        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).LastUsedAt.Should().NotBeNull();
+        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).LastUsedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
+        _context.ChangeTracker.HasChanges().Should().BeFalse();
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -255,6 +324,12 @@ public class OidcFlowTests : IDisposable
 
         _idp.TokenRequest!["client_id"].Should().Be("bgt-client");
         _idp.TokenRequest["client_secret"].Should().Be("client-s3cret");
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -269,7 +344,9 @@ public class OidcFlowTests : IDisposable
         var act = () => LoginAsync();
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
-        _tokenServiceMock.Verify(x => x.GenerateAccessToken(It.IsAny<ApplicationUser>(), It.IsAny<IList<string>>(), It.IsAny<Guid>()), Times.Never);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -281,6 +358,9 @@ public class OidcFlowTests : IDisposable
         var act = () => LoginAsync();
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -292,6 +372,10 @@ public class OidcFlowTests : IDisposable
         var act = () => LoginAsync();
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Error, "OIDC token response from Example IdP carried no id_token");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -303,6 +387,10 @@ public class OidcFlowTests : IDisposable
         var act = () => LoginAsync();
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Error, "User info from Example IdP describes a different subject than the id_token");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -314,6 +402,10 @@ public class OidcFlowTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIssuerMismatch);
         _idp.TokenRequest.Should().BeNull();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The callback for Example IdP carried the iss parameter https://evil.example.com, which is not the provider's issuer");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -326,6 +418,10 @@ public class OidcFlowTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIssuerMismatch);
         _idp.TokenRequest.Should().BeNull();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The callback from Example IdP carried no iss parameter although the provider advertises it");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -338,6 +434,12 @@ public class OidcFlowTests : IDisposable
         var result = await LoginAsync(issuer: null);
 
         result.Login.User.Username.Should().Be("jane-linked");
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -352,6 +454,16 @@ public class OidcFlowTests : IDisposable
         result.Login.User.Username.Should().Be("jane");
         _idp.UserInfoCalls.Should().Be(0);
         _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "jane" && u.Email == "jane@example.com" && u.DisplayName == "Jane Doe")), Times.Once);
+        VerifySignedIn("jane", _createdUser!.Id);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.UserName == "jane"), "User"), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [none]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -366,6 +478,16 @@ public class OidcFlowTests : IDisposable
 
         _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.DisplayName == "Jane From UserInfo")), Times.Once);
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderKey.Should().Be("sub-new");
+        VerifySignedIn("jane", _createdUser!.Id);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.UserName == "jane"), "User"), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -384,6 +506,15 @@ public class OidcFlowTests : IDisposable
         login.ProviderKey.Should().Be("sub-new");
         login.Issuer.Should().Be(Authority);
         login.Provider.Should().Be("Example IdP");
+        VerifySignedIn("jane", _createdUser!.Id);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -395,7 +526,16 @@ public class OidcFlowTests : IDisposable
 
         await LoginAsync();
 
-        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "Reader"), Times.Once);
+        VerifyProvisioned("jane", "Reader");
+        VerifySignedIn("jane", _createdUser!.Id);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -407,8 +547,16 @@ public class OidcFlowTests : IDisposable
     {
         await ProvisionWithGroups(groups);
 
-        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), expectAdmin ? "Admin" : "User"), Times.Once);
-        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), expectAdmin ? "User" : "Admin"), Times.Never);
+        VerifyProvisioned("jane", expectAdmin ? "Admin" : "User");
+        VerifySignedIn("jane", _createdUser!.Id);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, groups, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, groups, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -416,8 +564,16 @@ public class OidcFlowTests : IDisposable
     {
         await ProvisionWithGroups(new[] { "Domain Admins", "Staff" });
 
-        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "User"), Times.Once);
-        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "Admin"), Times.Never);
+        VerifyProvisioned("jane", "User");
+        VerifySignedIn("jane", _createdUser!.Id);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, groups, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, groups, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -430,13 +586,17 @@ public class OidcFlowTests : IDisposable
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _idp.User = KnownUser("sub-1");
         _idp.User["groups"] = new[] { "Admins" };
-        _userManagerMock.Setup(x => x.AddToRoleAsync(user, "Admin")).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.RemoveFromRolesAsync(user, It.IsAny<IEnumerable<string>>())).ReturnsAsync(IdentityResult.Success);
 
         await LoginAsync();
 
         _userManagerMock.Verify(x => x.AddToRoleAsync(user, "Admin"), Times.Once);
         _userManagerMock.Verify(x => x.RemoveFromRolesAsync(user, It.Is<IEnumerable<string>>(r => r.SequenceEqual(new[] { "User" }))), Times.Once);
+        VerifySignedIn("jane-linked", LinkedUserId, roleReads: 2);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, groups, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, groups, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -448,26 +608,38 @@ public class OidcFlowTests : IDisposable
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _idp.User = KnownUser("sub-1");
         _idp.User["groups"] = new[] { "bgt-admins" };
-        _userManagerMock.Setup(x => x.AddToRoleAsync(user, "Admin")).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.RemoveFromRolesAsync(user, It.IsAny<IEnumerable<string>>())).ReturnsAsync(IdentityResult.Success);
 
         await LoginAsync();
 
         _userManagerMock.Verify(x => x.AddToRoleAsync(user, "Admin"), Times.Once);
         _userManagerMock.Verify(x => x.RemoveFromRolesAsync(user, It.Is<IEnumerable<string>>(r => r.SequenceEqual(new[] { "User" }))), Times.Once);
+        VerifySignedIn("jane-linked", LinkedUserId, roleReads: 2);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, groups, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, groups, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CompleteLoginAsync_ShouldProvisionWithTheUsernameAsDisplayName_WhenTheProviderSendsNoNameOrEmail()
     {
         _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna", ["name"] = "", ["email"] = " " };
-        SetUpProvisioning();
+        SetUpProvisioning("anna", null);
 
         var result = await LoginAsync();
 
         result.Login.User.Username.Should().Be("anna");
         _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "anna" && u.DisplayName == "anna" && u.Email == "sub-anna" + OidcService.PlaceholderEmailDomain && !u.EmailConfirmed)), Times.Once);
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("anna");
+        VerifySignedIn("anna", _createdUser!.Id);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.UserName == "anna"), "User"), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("anna"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -481,6 +653,16 @@ public class OidcFlowTests : IDisposable
         await LoginAsync();
 
         _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "jane" && u.Email == "jane@example.com" && u.DisplayName == "Jane Doe")), Times.Once);
+        VerifySignedIn("jane", _createdUser!.Id);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.UserName == "jane"), "User"), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -490,7 +672,7 @@ public class OidcFlowTests : IDisposable
         _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-anna"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna", ["name"] = "Anna Smith", ["email"] = "anna@example.com" };
-        SetUpProvisioning();
+        SetUpEmailLookup("anna@example.com");
 
         var result = await LoginAsync();
 
@@ -500,6 +682,16 @@ public class OidcFlowTests : IDisposable
         user.EmailConfirmed.Should().BeTrue();
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("Anna Smith");
         _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
+        VerifySignedIn("anna", SsoUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.NormalizeEmail("anna@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Filled in the empty display name of user user-sso from Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Information, "Replaced the placeholder email of user user-sso with the email from Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-sso logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -515,6 +707,13 @@ public class OidcFlowTests : IDisposable
         user.DisplayName.Should().Be("anna");
         user.Email.Should().Be("sub-anna" + OidcService.PlaceholderEmailDomain);
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("anna");
+        VerifySignedIn("anna", SsoUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, exp, iat, iss, nbf, nonce, preferred_username, sub] and user info claim types [preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Filled in the empty display name of user user-sso from Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-sso logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -524,7 +723,7 @@ public class OidcFlowTests : IDisposable
         _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-anna", "Old name"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna", ["name"] = "Anna Smith", ["email"] = "anna@example.com" };
-        SetUpProvisioning();
+        SetUpEmailLookup("anna@example.com");
 
         await LoginAsync();
 
@@ -532,6 +731,12 @@ public class OidcFlowTests : IDisposable
         user.Email.Should().Be("anna@home.example.com");
         user.EmailConfirmed.Should().BeFalse();
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("Old name");
+        VerifySignedIn("anna", SsoUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-sso logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -546,12 +751,20 @@ public class OidcFlowTests : IDisposable
 
         user.Email.Should().Be("Anna@Example.com");
         user.EmailConfirmed.Should().BeTrue();
+        VerifySignedIn("anna", SsoUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, nbf, nonce, preferred_username, sub] and user info claim types [email, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Confirmed the email of user user-sso because Example IdP reports the same email");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-sso logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CompleteLoginAsync_ShouldNotFillTheProfileOfALinkedLocalAccount()
     {
         var user = new ApplicationUser("local-anna", "local@example.com") { PasswordHash = "hash" };
+        SetUpSignIn("local-anna");
         _context.Users.Add(user);
         _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-anna"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -561,6 +774,12 @@ public class OidcFlowTests : IDisposable
 
         user.DisplayName.Should().BeNull();
         user.Email.Should().Be("local@example.com");
+        VerifySignedIn("local-anna", user.Id);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Existing OIDC user {user.Id} logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -571,12 +790,21 @@ public class OidcFlowTests : IDisposable
         _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-anna"));
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna", ["email"] = "anna@example.com" };
-        SetUpProvisioning();
+        SetUpEmailLookup("anna@example.com");
 
         await LoginAsync();
 
         user.Email.Should().Be("sub-anna" + OidcService.PlaceholderEmailDomain);
         user.DisplayName.Should().Be("Anna");
+        VerifySignedIn("anna", SsoUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.NormalizeEmail("anna@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, nbf, nonce, preferred_username, sub] and user info claim types [email, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Warning, "User user-sso from Example IdP keeps a placeholder email because another account already uses the email from the provider");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-sso logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -592,6 +820,12 @@ public class OidcFlowTests : IDisposable
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderDisplayName.Should().Be("anna");
         user.DisplayName.Should().Be("Jane");
         user.Email.Should().Be("linked@example.com");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-linked"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Link flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, exp, iat, iss, nbf, nonce, preferred_username, sub] and user info claim types [preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Linked OIDC provider Example IdP to user user-linked");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -605,9 +839,12 @@ public class OidcFlowTests : IDisposable
         _idp.User["groups"] = new[] { "Admins" };
 
         await LoginAsync();
-
-        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Never);
-        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<IEnumerable<string>>()), Times.Never);
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, groups, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, groups, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -622,7 +859,13 @@ public class OidcFlowTests : IDisposable
 
         result.Login.User.Username.Should().Be(user.UserName);
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).Provider.Should().Be("Example IdP");
-        _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        _context.ChangeTracker.HasChanges().Should().BeFalse();
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -639,6 +882,16 @@ public class OidcFlowTests : IDisposable
         result.Login.User.Username.Should().Be("jane");
         result.Login.User.Id.Should().NotBe(victim.Id);
         (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(2);
+        VerifySignedIn("jane", _createdUser!.Id);
+        VerifyProvisioned("jane", "User");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -655,6 +908,14 @@ public class OidcFlowTests : IDisposable
 
         result.Login.User.Id.Should().Be(user.Id);
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).Issuer.Should().Be(Authority);
+        _context.ChangeTracker.HasChanges().Should().BeFalse();
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Re-keyed external login 1 on the issuer reported by Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -669,6 +930,16 @@ public class OidcFlowTests : IDisposable
         var result = await LoginAsync();
 
         result.Login.User.Id.Should().NotBe(victim.Id);
+        VerifySignedIn("jane", _createdUser!.Id);
+        VerifyProvisioned("jane", "User");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -683,7 +954,11 @@ public class OidcFlowTests : IDisposable
         var act = () => LoginAsync();
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.AccountDisabled);
-        _tokenServiceMock.Verify(x => x.GenerateRefreshTokenAsync(It.IsAny<string>()), Times.Never);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Warning, "Disabled user user-linked tried to sign in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -696,23 +971,34 @@ public class OidcFlowTests : IDisposable
         var act = () => LoginAsync();
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcUsernameTaken);
-        _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>()), Times.Never);
         (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Warning, "A new user from Example IdP has the username of an existing account that is not linked; manual linking required");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CompleteLoginAsync_ShouldRefuseToProvision_WhenALocalUserHasTheSameEmail()
     {
         _idp.User = KnownUser("sub-new");
-        _context.Users.Add(new ApplicationUser("local-jane", "jane@example.com") { NormalizedEmail = "JANE@EXAMPLE.COM" });
+        _context.Users.Add(new ApplicationUser("local-jane", "jane@example.com") { Id = "user-local", NormalizedEmail = "JANE@EXAMPLE.COM" });
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
-        _userManagerMock.Setup(x => x.NormalizeEmail(It.IsAny<string>())).Returns((string e) => e.ToUpperInvariant());
-        _userManagerMock.Setup(x => x.Users).Returns(_context.Users);
+        SetUpEmailLookup("jane@example.com");
 
         var act = () => LoginAsync();
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcEmailAlreadyRegistered);
-        _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Warning, $"A new user from Example IdP shares the email of existing user user-local; manual linking required");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -725,6 +1011,11 @@ public class OidcFlowTests : IDisposable
         var act = () => LoginAsync();
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcProvisioningDisabled);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC login failed at Example IdP: user not found and auto-provisioning is disabled");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -736,6 +1027,10 @@ public class OidcFlowTests : IDisposable
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
         _idp.TokenRequest.Should().BeNull();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC state for Example IdP did not match the pending Login flow");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -746,6 +1041,10 @@ public class OidcFlowTests : IDisposable
         var act = () => _service.CompleteLoginAsync("code", request.State, "someone-elses-state", Authority);
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC state for Example IdP did not match the pending Login flow");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -763,6 +1062,13 @@ public class OidcFlowTests : IDisposable
 
         await replay.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
         await unknown.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC state for Example IdP did not match the pending Login flow", Times.Exactly(2));
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -773,6 +1079,10 @@ public class OidcFlowTests : IDisposable
         var act = () => _service.CompleteLoginAsync("code", request.State, request.State, Authority);
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Link flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC state for Example IdP did not match the pending Login flow");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -783,6 +1093,10 @@ public class OidcFlowTests : IDisposable
         var act = () => LoginAsync();
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcExchangeFailed);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Error, "OIDC token exchange failed for Example IdP: BadRequest {\"error\":\"invalid_grant\"}");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -794,6 +1108,10 @@ public class OidcFlowTests : IDisposable
         var act = () => LoginAsync();
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcUserInfoFailed);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Error, "Failed to fetch user info from Example IdP: InternalServerError ");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -813,6 +1131,12 @@ public class OidcFlowTests : IDisposable
         session.IdToken.Should().NotBe(_idp.LastIdToken);
         _secretProtector.Unprotect(session.IdToken).Should().Be(_idp.LastIdToken);
         session.ExpiresAt.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromMinutes(1));
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -827,6 +1151,12 @@ public class OidcFlowTests : IDisposable
 
         result.SessionKey.Should().BeNull();
         (await _context.OidcSessions.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -848,6 +1178,13 @@ public class OidcFlowTests : IDisposable
         query["client_id"].Should().Be("bgt-client");
         again.Should().BeNull();
         (await _context.OidcSessions.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Information, "Ending the identity provider session of user user-linked at Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -868,6 +1205,12 @@ public class OidcFlowTests : IDisposable
         login.UserId.Should().Be(user.Id);
         login.ProviderKey.Should().Be("sub-9");
         login.Issuer.Should().Be(Authority);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-linked"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Link flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Linked OIDC provider Example IdP to user user-linked");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -886,6 +1229,11 @@ public class OidcFlowTests : IDisposable
         var act = () => _service.CompleteLinkAsync(code, request.State, request.State, Authority);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcAlreadyLinked);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-linked"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Link flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -903,6 +1251,10 @@ public class OidcFlowTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-linked"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Link flow at Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -916,6 +1268,8 @@ public class OidcFlowTests : IDisposable
         result.UserInfoEndpoint.Should().Be($"{Authority}/userinfo");
         result.EndSessionEndpoint.Should().Be($"{Authority}/logout");
         result.IssuerMatchesAuthority.Should().BeTrue();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -928,6 +1282,8 @@ public class OidcFlowTests : IDisposable
 
         result.UserInfoEndpoint.Should().BeNull();
         result.EndSessionEndpoint.Should().BeNull();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -939,6 +1295,8 @@ public class OidcFlowTests : IDisposable
 
         result.Issuer.Should().Be("https://other.example.com");
         result.IssuerMatchesAuthority.Should().BeFalse();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -947,6 +1305,7 @@ public class OidcFlowTests : IDisposable
         var act = () => _service.TestDiscoveryAsync("http://idp.example.com");
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InsecureAuthority);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -955,6 +1314,9 @@ public class OidcFlowTests : IDisposable
         var act = () => _service.TestDiscoveryAsync("https://nowhere.example.com");
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Error, "OIDC discovery at https://nowhere.example.com could not be reached");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -968,6 +1330,33 @@ public class OidcFlowTests : IDisposable
         _service.TakeHandoff(key).Should().BeNull();
         _service.TakeHandoff(null).Should().BeNull();
         _service.TakeHandoff("unknown").Should().BeNull();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void CreateHandoff_ShouldExpireAfterTheHandoffLifetime()
+    {
+        using var cache = new LockstepCache(_cache);
+        var service = CreateService(cache);
+
+        service.CreateHandoff(new LoginResponse("a", "r", DateTime.UtcNow, new UserInfo("1", "jane", null, ["User"])));
+
+        cache.LastEntry!.AbsoluteExpirationRelativeToNow.Should().Be(OidcService.HandoffLifetime);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task StartLoginAsync_ShouldExpireThePendingAuthorizationAfterItsLifetime()
+    {
+        using var cache = new LockstepCache(_cache);
+        var service = CreateService(cache);
+
+        await service.StartLoginAsync(PublicBase, null);
+
+        cache.LastEntry!.AbsoluteExpirationRelativeToNow.Should().Be(OidcService.PendingAuthorizationLifetime);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -984,6 +1373,7 @@ public class OidcFlowTests : IDisposable
             Task.Run(() => service.TakeHandoff(key), TestContext.Current.CancellationToken));
 
         results.Should().ContainSingle(x => x != null).Which.Should().Be(login);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -999,6 +1389,12 @@ public class OidcFlowTests : IDisposable
 
         var queued = await TakeQueuedPictureAsync();
         queued.Should().Be(new IdentityProviderPictureImport(user.Id, "https://idp.example.com/avatars/jane.png", Authority));
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, picture, preferred_username, sub] and user info claim types [email, name, picture, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -1014,6 +1410,16 @@ public class OidcFlowTests : IDisposable
         var queued = await TakeQueuedPictureAsync();
         queued.UserId.Should().Be(result.Login.User.Id);
         queued.PictureUrl.Should().Be("https://idp.example.com/avatars/userinfo.png");
+        VerifySignedIn("jane", _createdUser!.Id);
+        VerifyProvisioned("jane", "User");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, picture, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -1028,6 +1434,16 @@ public class OidcFlowTests : IDisposable
         await LoginAsync();
 
         (await TakeQueuedPictureAsync()).PictureUrl.Should().Be("https://idp.example.com/avatars/custom.png");
+        VerifySignedIn("jane", _createdUser!.Id);
+        VerifyProvisioned("jane", "User");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, avatar_url, email, exp, iat, iss, name, nbf, nonce, picture, preferred_username, sub] and user info claim types [avatar_url, email, name, picture, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -1038,7 +1454,19 @@ public class OidcFlowTests : IDisposable
 
         await LoginAsync();
 
-        _pictureQueue.DequeueAsync(CancellationToken.None).IsCompleted.Should().BeFalse();
+        using var nothingQueued = new CancellationTokenSource();
+        _pictureQueue.DequeueAsync(nothingQueued.Token).IsCompleted.Should().BeFalse();
+        await nothingQueued.CancelAsync();
+        VerifySignedIn("jane", _createdUser!.Id);
+        VerifyProvisioned("jane", "User");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -1056,6 +1484,16 @@ public class OidcFlowTests : IDisposable
         var result = await LoginAsync();
 
         result.Login.AccessToken.Should().Be("access-token");
+        VerifySignedIn("jane", _createdUser!.Id);
+        VerifyProvisioned("jane", "User");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, picture, preferred_username, sub] and user info claim types [email, name, picture, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -1070,6 +1508,200 @@ public class OidcFlowTests : IDisposable
         await _service.CompleteLinkAsync(await _idp.AuthorizeAsync(request.Url), request.State, request.State, Authority);
 
         (await TakeQueuedPictureAsync()).Should().Be(new IdentityProviderPictureImport(user.Id, "https://idp.example.com/avatars/linked.png", Authority));
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-linked"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Link flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, picture, preferred_username, sub] and user info claim types [email, name, picture, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Linked OIDC provider Example IdP to user user-linked");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void Constants_ShouldKeepTheirValues()
+    {
+        OidcService.HttpClientName.Should().Be("oidc");
+        OidcService.CallbackPath.Should().Be("/api/auth/oidc/callback");
+        OidcService.LinkCallbackPath.Should().Be("/api/auth/oidc/link-callback");
+        OidcService.PlaceholderEmailDomain.Should().Be("@sso.external");
+        OidcService.PendingAuthorizationLifetime.Should().Be(TimeSpan.FromMinutes(10));
+        OidcService.HandoffLifetime.Should().Be(TimeSpan.FromMinutes(1));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldReject_AnEmptyState()
+    {
+        var act = () => _service.CompleteLoginAsync("code", " ", " ", Authority);
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldUseTheEmailAsUsername_WhenTheProviderSendsNoUsername()
+    {
+        _idp.User = new Dictionary<string, object> { ["sub"] = "sub-new", ["email"] = "jane@example.com" };
+        SetUpProvisioning("jane@example.com");
+
+        var result = await LoginAsync();
+
+        result.Login.User.Username.Should().Be("jane@example.com");
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane@example.com"), Times.Once);
+        VerifySignedIn("jane@example.com", _createdUser!.Id);
+        VerifyProvisioned("jane@example.com", "User");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, nbf, nonce, sub] and user info claim types [email, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldGenerateAUsername_WhenTheProviderSendsNoUsernameOrEmail()
+    {
+        _idp.User = new Dictionary<string, object> { ["sub"] = "sub-new" };
+        SetUpProvisioning("sso_sub-new", null);
+
+        var result = await LoginAsync();
+
+        result.Login.User.Username.Should().Be("sso_sub-new");
+        _createdUser!.Email.Should().Be("sub-new@sso.external");
+        _createdUser.DisplayName.Should().Be("sso_sub-new");
+        _userManagerMock.Verify(x => x.FindByNameAsync("sso_sub-new"), Times.Once);
+        VerifySignedIn("sso_sub-new", _createdUser.Id);
+        VerifyProvisioned("sso_sub-new", "User");
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, exp, iat, iss, nbf, nonce, sub] and user info claim types [sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldFail_WhenCreatingTheUserFails()
+    {
+        _idp.User = KnownUser("sub-new");
+        SetUpEmailLookup("jane@example.com");
+        _userManagerMock.Setup(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "jane")))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Code = "DuplicateUserName" }));
+
+        var act = () => LoginAsync();
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcProvisioningFailed);
+        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == "jane")), Times.Once);
+        (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _userManagerMock.Verify(x => x.FindByNameAsync("jane"), Times.Once);
+        _userManagerMock.Verify(x => x.NormalizeEmail("jane@example.com"), Times.Once);
+        _userManagerMock.Verify(x => x.Users, Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Error, "Failed to auto-provision a user from Example IdP: DuplicateUserName");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldFail_WhenUserInfoCarriesNoSubject()
+    {
+        _idp.User = KnownUser("sub-1");
+        _idp.UserInfo = new Dictionary<string, object> { ["name"] = "Jane" };
+
+        var act = () => LoginAsync();
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcUserInfoFailed);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Error, "User info from Example IdP carried no sub claim");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldSkipUserInfo_WhenTheTokenResponseHasNoAccessToken()
+    {
+        _idp.OmitAccessToken = true;
+        _idp.User = KnownUser("sub-1");
+        _context.ExternalLogins.Add(new ExternalLogin(LinkedUser().Id, "idp", Authority, "sub-1"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await LoginAsync();
+
+        _idp.UserInfoCalls.Should().Be(0);
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [none]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldUseTheConfiguredEndpoints_InsteadOfTheDiscoveredOnes()
+    {
+        await UpdateProviderAsync(p => p.Update(p.DisplayName, p.Authority, p.ClientId, null, true, p.Scopes, true,
+            $"{Authority}/custom/authorize", $"{Authority}/custom/token", $"{Authority}/custom/userinfo", null, null, null, null, null, null, null));
+        _idp.User = KnownUser("sub-1");
+        _context.ExternalLogins.Add(new ExternalLogin(LinkedUser().Id, "idp", Authority, "sub-1"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var request = await _service.StartLoginAsync(PublicBase, null);
+        var result = await _service.CompleteLoginAsync(await _idp.AuthorizeAsync(request.Url), request.State, request.State, Authority);
+
+        new Uri(request.Url).AbsolutePath.Should().Be("/custom/authorize");
+        _idp.Paths.Should().Contain("/custom/token").And.Contain("/custom/userinfo");
+        result.RedirectPath.Should().Be("/");
+        VerifySignedIn("jane-linked", LinkedUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldRejectAnInsecureConfiguredTokenEndpoint()
+    {
+        await UpdateProviderAsync(p => p.Update(p.DisplayName, p.Authority, p.ClientId, null, true, p.Scopes, true,
+            null, "http://idp.example.com/token", null, null, null, null, null, null, null, null));
+        _idp.User = KnownUser("sub-1");
+
+        var act = () => LoginAsync();
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InsecureAuthority);
+        _idp.TokenRequest.Should().BeNull();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CompleteLinkAsync_ShouldThrow_WhenTheUserNoLongerExists()
+    {
+        var request = await _service.StartLinkAsync("gone", PublicBase);
+
+        var act = () => _service.CompleteLinkAsync("code", request.State, request.State, Authority);
+
+        await act.Should().ThrowAsync<EntityNotFoundException>();
+        _idp.TokenRequest.Should().BeNull();
+        _userManagerMock.Verify(x => x.FindByIdAsync("gone"), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Link flow at Example IdP");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CompleteLinkAsync_ShouldReject_AStateStartedForTheLoginFlow()
+    {
+        var request = await _service.StartLoginAsync(PublicBase, null);
+
+        var act = () => _service.CompleteLinkAsync("code", request.State, request.State, Authority);
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidAuthSession);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Warning, "OIDC state for Example IdP did not match the pending Link flow");
+        VerifyNoOtherCalls();
     }
 
     private async Task<IdentityProviderPictureImport> TakeQueuedPictureAsync()
@@ -1097,11 +1729,21 @@ public class OidcFlowTests : IDisposable
         UpdateProviderAsync(p => p.Update(p.DisplayName, p.Authority, p.ClientId, null, true, p.Scopes, true,
             null, null, null, null, null, null, "groups", "Admins", null, null));
 
-    private void SetUpProvisioning()
+    private void SetUpProvisioning(string userName = "jane", string? email = "jane@example.com")
     {
-        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.NormalizeEmail(It.IsAny<string>())).Returns((string e) => e.ToUpperInvariant());
+        _userManagerMock.Setup(x => x.CreateAsync(It.Is<ApplicationUser>(u => u.UserName == userName)))
+            .Callback((ApplicationUser user) => _createdUser = user)
+            .ReturnsAsync(IdentityResult.Success);
+        SetUpSignIn(userName);
+        if (email != null)
+        {
+            SetUpEmailLookup(email);
+        }
+    }
+
+    private void SetUpEmailLookup(string email)
+    {
+        _userManagerMock.Setup(x => x.NormalizeEmail(email)).Returns(email.ToUpperInvariant());
         _userManagerMock.Setup(x => x.Users).Returns(_context.Users);
     }
 
@@ -1118,17 +1760,19 @@ public class OidcFlowTests : IDisposable
 
     private ApplicationUser LinkedUser()
     {
-        var user = new ApplicationUser("jane-linked", "linked@example.com", "Jane");
+        var user = new ApplicationUser("jane-linked", "linked@example.com", "Jane") { Id = LinkedUserId };
         _context.Users.Add(user);
         _context.SaveChanges();
+        SetUpSignIn("jane-linked");
         return user;
     }
 
     private ApplicationUser SsoUser(string userName, string email, string? displayName)
     {
-        var user = new ApplicationUser(userName, email, displayName);
+        var user = new ApplicationUser(userName, email, displayName) { Id = SsoUserId };
         _context.Users.Add(user);
         _context.SaveChanges();
+        SetUpSignIn(userName);
         return user;
     }
 
@@ -1164,6 +1808,8 @@ public class OidcFlowTests : IDisposable
         public bool HasEndSession { get; set; } = true;
         public bool AdvertisesIssParameter { get; set; }
         public bool OmitIdToken { get; set; }
+        public bool OmitAccessToken { get; set; }
+        public List<string> Paths { get; } = [];
         public string? NonceOverride { get; set; }
         public Dictionary<string, object> User { get; set; } = new();
         public Dictionary<string, object>? UserInfo { get; set; }
@@ -1197,6 +1843,7 @@ public class OidcFlowTests : IDisposable
             }
 
             var path = request.RequestUri!.AbsolutePath;
+            Paths.Add(path);
             if (path.EndsWith("/.well-known/openid-configuration", StringComparison.Ordinal))
             {
                 if (DiscoveryStatus != HttpStatusCode.OK)
@@ -1254,6 +1901,11 @@ public class OidcFlowTests : IDisposable
                 }
 
                 LastIdToken = Signer.Sign(claims);
+                if (OmitAccessToken)
+                {
+                    return Json(new { token_type = "Bearer", id_token = LastIdToken });
+                }
+
                 return OmitIdToken
                     ? Json(new { access_token = "idp-access-token", token_type = "Bearer" })
                     : Json(new { access_token = "idp-access-token", token_type = "Bearer", id_token = LastIdToken });
@@ -1294,7 +1946,13 @@ public class OidcFlowTests : IDisposable
             return found;
         }
 
-        public ICacheEntry CreateEntry(object key) => inner.CreateEntry(key);
+        public ICacheEntry? LastEntry { get; private set; }
+
+        public ICacheEntry CreateEntry(object key)
+        {
+            LastEntry = inner.CreateEntry(key);
+            return LastEntry;
+        }
 
         public void Remove(object key) => inner.Remove(key);
 
