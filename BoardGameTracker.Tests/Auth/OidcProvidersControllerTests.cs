@@ -71,7 +71,10 @@ public class OidcProvidersControllerTests
         var result = await _controller.UpdateProvider(1, request);
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-        ok.Value.Should().BeEquivalentTo(provider.ToDto());
+        var dto = ok.Value.Should().BeOfType<OidcProviderDto>().Which;
+        dto.DisplayName.Should().Be("Keycloak SSO");
+        dto.Authority.Should().Be("https://idp.example.com/realms/bgt");
+        dto.ClientId.Should().Be("bgt");
         _providerServiceMock.Verify(x => x.UpdateAsync(1, "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null, true,
             "openid profile email", false, null, null, null, null, null, null, "groups", "bgt-admins", null, null), Times.Once);
         _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
@@ -118,7 +121,7 @@ public class OidcProvidersControllerTests
 
         var result = await controller.UpdateProvider(1, UpdateRequest(true));
 
-        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(provider.ToDto());
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(new { DisplayName = "Keycloak SSO", Authority = "https://idp.example.com/realms/bgt", ClientId = "bgt" });
         _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Once);
         _providerServiceMock.Verify(x => x.UpdateAsync(1, "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null, true,
             "openid profile email", false, null, null, null, null, null, null, "groups", "bgt-admins", null, null), Times.Once);
@@ -137,7 +140,7 @@ public class OidcProvidersControllerTests
 
         var result = await controller.UpdateProvider(1, UpdateRequest(false));
 
-        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(provider.ToDto());
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(new { DisplayName = "Keycloak SSO", Authority = "https://idp.example.com/realms/bgt", ClientId = "bgt" });
         _providerServiceMock.Verify(x => x.UpdateAsync(1, "Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null, false,
             "openid profile email", false, null, null, null, null, null, null, "groups", "bgt-admins", null, null), Times.Once);
         VerifyNoOtherCalls();
@@ -173,7 +176,10 @@ public class OidcProvidersControllerTests
         var created = result.Should().BeOfType<CreatedAtActionResult>().Subject;
         created.ActionName.Should().Be(nameof(OidcProvidersController.GetProvider));
         created.RouteValues.Should().ContainKey("id").WhoseValue.Should().Be(provider.Id);
-        created.Value.Should().BeEquivalentTo(provider.ToDto());
+        var dto = created.Value.Should().BeOfType<OidcProviderDto>().Which;
+        dto.DisplayName.Should().Be("Keycloak SSO");
+        dto.Authority.Should().Be("https://idp.example.com/realms/bgt");
+        dto.ClientId.Should().Be("bgt");
         _publicUrlBuilderMock.Verify(x => x.GetConfiguredBaseUrlAsync(), Times.Exactly(enabled ? 1 : 0));
         _providerServiceMock.Verify(x => x.CreateAsync("Keycloak SSO", "https://idp.example.com/realms/bgt", "bgt", null,
             "openid profile email", true, null, null, null, null, null, null, null, null, null, null, null, enabled), Times.Once);
@@ -306,7 +312,7 @@ public class OidcProvidersControllerTests
 
         var result = await _controller.GetProvider(5);
 
-        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(provider.ToDto());
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(new { DisplayName = "First", Authority = "https://first.example.com", ClientId = "one" });
         _providerServiceMock.Verify(x => x.GetByIdAsync(5), Times.Once);
         VerifyNoOtherCalls();
     }
