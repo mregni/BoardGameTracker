@@ -48,8 +48,8 @@ public class RateLimitPoliciesTests
         var context = new DefaultHttpContext();
         context.Connection.RemoteIpAddress = IPAddress.Parse("203.0.113.9");
 
-        (await DrainAsync(RateLimitPolicies.AuthPartition(context))).Should().Be(RateLimitPolicies.AuthPermitsPerMinute);
-        (await DrainAsync(RateLimitPolicies.OidcPartition(context))).Should().Be(RateLimitPolicies.OidcPermitsPerMinute);
+        (await DrainAsync(RateLimitPolicies.AuthPartition(context))).Should().Be(10);
+        (await DrainAsync(RateLimitPolicies.OidcPartition(context))).Should().Be(60);
         RateLimitPolicies.AuthPartition(context).PartitionKey.Should().Be(RateLimitPolicies.OidcPartition(context).PartitionKey);
     }
 

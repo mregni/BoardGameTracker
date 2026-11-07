@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Manuals.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -36,6 +38,17 @@ public class ManualControllerTests
     {
         _manualServiceMock.VerifyNoOtherCalls();
         _environmentProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void UploadManuals_ShouldAcceptARequestOfOneGibibyte()
+    {
+        var upload = typeof(ManualController).GetMethod(nameof(ManualController.UploadManuals))!;
+
+        upload.GetCustomAttribute<RequestSizeLimitAttribute>().Should().BeAssignableTo<IRequestSizeLimitMetadata>()
+            .Which.MaxRequestBodySize.Should().Be(1_073_741_824);
+        upload.GetCustomAttribute<RequestFormLimitsAttribute>()!.MultipartBodyLengthLimit.Should().Be(1_073_741_824);
+        VerifyNoOtherCalls();
     }
 
     private static Manual CreateManual(int id, int gameId)

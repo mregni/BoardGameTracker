@@ -153,6 +153,22 @@ public class OidcConfigurationProviderTests : IDisposable
     }
 
     [Fact]
+    public async Task GetAsync_ShouldReportADiscoveryFailure_WhenTheCallerCancelsWhileTheFetchFails()
+    {
+        var provider = CreateProvider();
+        using var caller = new CancellationTokenSource();
+        _handler.Fail = true;
+        _handler.OnRequest = caller.Cancel;
+
+        var act = () => provider.GetAsync(Authority, caller.Token);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
+        VerifyClients(1);
+        _loggerMock.VerifyLog(LogLevel.Error, $"The OIDC configuration of {Authority} could not be loaded");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task GetAsync_ShouldRefuseAnInsecureKeySetAddress()
     {
         var provider = CreateProvider();
@@ -299,10 +315,13 @@ public class OidcConfigurationProviderTests : IDisposable
 
         public bool Fail { get; set; }
 
+        public Action? OnRequest { get; set; }
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var address = request.RequestUri!.ToString();
             Requests.Add(address);
+            OnRequest?.Invoke();
             if (Fail || !Documents.TryGetValue(address, out var document))
             {
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));

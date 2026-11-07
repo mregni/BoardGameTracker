@@ -99,6 +99,16 @@ public class PlayerLinkMatcherTests
         result.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("Jo Peeters", "Jo Regni", 1)]
+    [InlineData("J Peeters", "J Regni", 0)]
+    public void Suggest_ShouldMatchOnASharedFirstName_OnlyFromTwoLetters(string playerName, string displayName, int expected)
+    {
+        var result = PlayerLinkMatcher.Suggest([Player(1, playerName)], null, displayName, null);
+
+        result.Should().HaveCount(expected).And.OnlyContain(x => x.Reason == PlayerLinkMatchReason.Partial);
+    }
+
     [Fact]
     public void Suggest_ShouldRankEmailBeforeNameBeforeUsernameBeforePartial()
     {

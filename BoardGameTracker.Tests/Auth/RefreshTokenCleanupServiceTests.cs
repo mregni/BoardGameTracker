@@ -97,6 +97,28 @@ public class RefreshTokenCleanupServiceTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_ShouldWaitForTheInterval_BeforeTheNextCleanup()
+    {
+        var cleanupStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _tokenServiceMock
+            .Setup(x => x.CleanupExpiredTokensAsync())
+            .Callback(() => cleanupStarted.TrySetResult())
+            .Returns(Task.CompletedTask);
+
+        await RunUntilAsync(Task.WhenAll(cleanupStarted.Task, Task.Delay(100, TestContext.Current.CancellationToken)), TimeSpan.FromHours(1));
+
+        VerifyAuthCheck();
+        VerifyScopes(2);
+        _scopeMock.Verify(x => x.ServiceProvider, Times.Exactly(3));
+        _scopedProviderMock.Verify(x => x.GetService(typeof(ITokenService)), Times.Once);
+        _scopedProviderMock.Verify(x => x.GetService(typeof(IOidcService)), Times.Once);
+        _tokenServiceMock.Verify(x => x.CleanupExpiredTokensAsync(), Times.Once);
+        _oidcServiceMock.Verify(x => x.CleanupExpiredSessionsAsync(), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, CompletedMessage);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_ShouldNeverCleanUp_WhenAuthIsDisabled()
     {
         _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(false);

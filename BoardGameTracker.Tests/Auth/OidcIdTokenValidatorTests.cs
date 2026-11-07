@@ -238,6 +238,19 @@ public class OidcIdTokenValidatorTests : IDisposable
     }
 
     [Fact]
+    public async Task ValidateAsync_ShouldReject_AnEmptyNonce_EvenWhenAnEmptyNonceIsExpected()
+    {
+        var claims = ValidClaims();
+        claims["nonce"] = string.Empty;
+
+        var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), string.Empty);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt did not carry the nonce of this sign-in");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task ValidateAsync_ShouldReject_AnExpiredToken()
     {
         var claims = ValidClaims();
