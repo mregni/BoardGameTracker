@@ -16,9 +16,9 @@ import { safeRedirectPath } from "@/utils/redirectUtils";
 import { announceSessionChange } from "@/utils/sessionSync";
 
 const callbackSearchSchema = z.object({
-	error: z.string().optional(),
-	redirect: z.string().optional(),
-	linked: z.union([z.boolean(), z.string()]).optional(),
+	error: z.string().optional().catch(undefined),
+	redirect: z.string().optional().catch(undefined),
+	linked: z.union([z.boolean(), z.string()]).optional().catch(undefined),
 });
 
 const SIGN_IN_WITH_PASSWORD_ERRORS = new Set(["error.auth.oidc-username-taken", "error.auth.oidc-email-exists"]);
