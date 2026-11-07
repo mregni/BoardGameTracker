@@ -96,6 +96,7 @@ export const useGameNightDetail = (gameNightId: number) => {
 
 	return {
 		detail: detailQuery.data,
+		error: detailQuery.error,
 		saveAttendance: attendanceMutation.mutateAsync,
 		endNight: endMutation.mutateAsync,
 		reopenNight: reopenMutation.mutateAsync,

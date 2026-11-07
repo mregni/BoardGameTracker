@@ -3,6 +3,8 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import AlertTriangle from "@/assets/icons/alert-triangle.svg?react";
+import { BgtEmptyState } from "@/components/BgtLayout/BgtEmptyState";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -83,6 +85,7 @@ function RouteComponent() {
 	const {
 		detail,
 		isLoading: isDetailLoading,
+		error: detailError,
 		startGame,
 		finishGame,
 		discardGame,
@@ -126,7 +129,18 @@ function RouteComponent() {
 	return (
 		<BgtPage>
 			<BgtPageHeader backAction={goBack} backText={t("detail.back")} />
-			<BgtPageContent isLoading={isLoading || isDetailLoading} data={{ detail, settings }}>
+			<BgtPageContent
+				isLoading={isLoading || isDetailLoading}
+				data={{ detail, settings }}
+				error={detailError}
+				notFound={
+					<BgtEmptyState
+						icon={AlertTriangle}
+						title={t("detail.not-found.title")}
+						description={t("detail.not-found.description")}
+					/>
+				}
+			>
 				{({ detail, settings }) => {
 					const attendees = nightTable(detail).playerIds;
 					const gameIds = nightGameIds(detail);

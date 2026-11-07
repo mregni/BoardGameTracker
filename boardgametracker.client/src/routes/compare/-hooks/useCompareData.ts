@@ -54,6 +54,12 @@ export const useCompareData = ({ left, right }: Props) => {
 		shownRightId,
 		isUpdating: compareQuery.isPlaceholderData && (shownLeftId !== leftId || shownRightId !== rightId),
 		settings: settingsQuery.data,
+		error: playersQuery.error ?? settingsQuery.error ?? compareQuery.error,
+		retry: () => {
+			playersQuery.refetch();
+			settingsQuery.refetch();
+			compareQuery.refetch();
+		},
 		isLoading:
 			playersQuery.isLoading ||
 			settingsQuery.isLoading ||

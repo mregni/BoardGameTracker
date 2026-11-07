@@ -147,7 +147,9 @@ function RouteComponent() {
 									<div className="@container">
 										<div
 											className={
-												rivals.length > 0 ? "grid items-start gap-3 xl:gap-6 @2xl:grid-cols-2" : "grid gap-3 xl:gap-6"
+												rivals.length > 0
+													? "grid grid-cols-1 items-start gap-3 xl:gap-6 @2xl:grid-cols-2"
+													: "grid grid-cols-1 gap-3 xl:gap-6"
 											}
 										>
 											<PlayerRivalsCard playerId={playerId} rivals={rivals} />

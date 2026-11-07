@@ -383,7 +383,6 @@ test.describe("other data", () => {
 			await page.route("**/api/loans", (route) => route.fulfill({ status: 400, json: {} }));
 			await page.goto("/loans");
 
-			test.fail(true, "BUG: a failed /api/loans request shows the empty page 'No loans yet' instead of an error");
 			await expect(page.getByRole("main").getByRole("button", { name: "Try again" })).toBeVisible({ timeout: 3_000 });
 		});
 	});

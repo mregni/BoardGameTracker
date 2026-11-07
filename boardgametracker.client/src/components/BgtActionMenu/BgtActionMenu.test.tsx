@@ -106,6 +106,32 @@ describe("BgtActionMenu", () => {
 		expect(screen.getByRole("separator")).toBeInTheDocument();
 	});
 
+	it("opens upward when the menu would run past the bottom of the screen", async () => {
+		const user = userEvent.setup();
+		const rect = vi
+			.spyOn(HTMLElement.prototype, "getBoundingClientRect")
+			.mockReturnValue({ top: 700, bottom: 900, height: 150 } as DOMRect);
+		renderMenu();
+
+		await user.click(screen.getByRole("button", { name: "Actions for jane" }));
+
+		expect(screen.getByRole("menu")).toHaveClass("bottom-full");
+		rect.mockRestore();
+	});
+
+	it("keeps opening downward when there is no room above", async () => {
+		const user = userEvent.setup();
+		const rect = vi
+			.spyOn(HTMLElement.prototype, "getBoundingClientRect")
+			.mockReturnValue({ top: 20, bottom: 900, height: 150 } as DOMRect);
+		renderMenu();
+
+		await user.click(screen.getByRole("button", { name: "Actions for jane" }));
+
+		expect(screen.getByRole("menu")).not.toHaveClass("bottom-full");
+		rect.mockRestore();
+	});
+
 	it("toggles closed from the trigger", async () => {
 		const user = userEvent.setup();
 		renderMenu();

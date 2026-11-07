@@ -157,7 +157,11 @@
     "played": "Played: {{games}}"
   },
   "detail": {
-    "back": "Game nights"
+    "back": "Game nights",
+    "not-found": {
+      "title": "Game night not found",
+      "description": "It may have been deleted, or the link is out of date."
+    }
   },
   "play": {
     "start": {

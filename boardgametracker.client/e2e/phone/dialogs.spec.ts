@@ -292,10 +292,6 @@ test("every action of the last user can be reached", async ({ page }) => {
 		.last()
 		.click();
 
-	test.fail(
-		true,
-		"BUG: the actions menu of the last row opens downward behind the bottom bar and Delete cannot be reached",
-	);
 	await page.getByRole("menuitem").last().click({ trial: true, timeout: 3000 });
 });
 

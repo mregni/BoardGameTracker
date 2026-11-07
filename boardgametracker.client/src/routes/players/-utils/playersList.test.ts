@@ -30,9 +30,15 @@ describe("filterPlayers", () => {
 });
 
 describe("parsePlayersSearch", () => {
+	it("clears an unknown sort and keeps a number as text", () => {
+		const search = parsePlayersSearch({ q: 3, sort: "wins" });
+
+		expect(search.q).toBe("3");
+		expect(search).toHaveProperty("sort", undefined);
+	});
+
 	it("keeps a known sort and a non-blank query, and drops the default sort", () => {
 		expect(parsePlayersSearch({ q: "an", sort: "sessions" })).toEqual({ q: "an", sort: "sessions" });
 		expect(parsePlayersSearch({ q: " ", sort: "recent" })).toEqual({});
-		expect(parsePlayersSearch({ sort: "wins", q: 3 })).toEqual({});
 	});
 });

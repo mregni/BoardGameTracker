@@ -206,14 +206,12 @@ test("a user cannot reach the BoardGameGeek pages without an API key", async ({ 
 test("a reader is sent home from a session editor link", async ({ readerPage: page }) => {
 	await page.goto("/sessions/update/1");
 
-	test.fail(true, "BUG: the session editor loader runs before the session is restored and crashes on a direct link");
 	await expect(page).toHaveURL("/", { timeout: 3_000 });
 });
 
 test("a user can open a session editor from a direct link", async ({ writerPage: page }) => {
 	await page.goto("/sessions/update/1");
 
-	test.fail(true, "BUG: the session editor loader runs before the session is restored and crashes on a direct link");
 	await expect(page.getByRole("main").getByRole("button", { name: "Try again" })).toHaveCount(0, { timeout: 3_000 });
 	await expect(page.getByRole("combobox", { name: "Game" })).toContainText(firstGame.title, { timeout: 3_000 });
 });
