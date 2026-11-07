@@ -301,7 +301,8 @@ public class OidcFlowTests : IDisposable
         _idp.TokenRequest["grant_type"].Should().Be("authorization_code");
         _idp.TokenRequest["client_id"].Should().Be("bgt-client");
         _idp.TokenRequest.Should().NotContainKey("client_secret");
-        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).LastUsedAt.Should().NotBeNull();
+        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).LastUsedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
+        _context.ChangeTracker.HasChanges().Should().BeFalse();
         VerifySignedIn("jane-linked", LinkedUserId);
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
         _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
@@ -858,6 +859,7 @@ public class OidcFlowTests : IDisposable
 
         result.Login.User.Username.Should().Be(user.UserName);
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).Provider.Should().Be("Example IdP");
+        _context.ChangeTracker.HasChanges().Should().BeFalse();
         VerifySignedIn("jane-linked", LinkedUserId);
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
         _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
@@ -906,6 +908,7 @@ public class OidcFlowTests : IDisposable
 
         result.Login.User.Id.Should().Be(user.Id);
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).Issuer.Should().Be(Authority);
+        _context.ChangeTracker.HasChanges().Should().BeFalse();
         VerifySignedIn("jane-linked", LinkedUserId);
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
         _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
@@ -1327,6 +1330,32 @@ public class OidcFlowTests : IDisposable
         _service.TakeHandoff(key).Should().BeNull();
         _service.TakeHandoff(null).Should().BeNull();
         _service.TakeHandoff("unknown").Should().BeNull();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void CreateHandoff_ShouldExpireAfterTheHandoffLifetime()
+    {
+        using var cache = new LockstepCache(_cache);
+        var service = CreateService(cache);
+
+        service.CreateHandoff(new LoginResponse("a", "r", DateTime.UtcNow, new UserInfo("1", "jane", null, ["User"])));
+
+        cache.LastEntry!.AbsoluteExpirationRelativeToNow.Should().Be(OidcService.HandoffLifetime);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task StartLoginAsync_ShouldExpireThePendingAuthorizationAfterItsLifetime()
+    {
+        using var cache = new LockstepCache(_cache);
+        var service = CreateService(cache);
+
+        await service.StartLoginAsync(PublicBase, null);
+
+        cache.LastEntry!.AbsoluteExpirationRelativeToNow.Should().Be(OidcService.PendingAuthorizationLifetime);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
         VerifyNoOtherCalls();
     }
 
@@ -1917,7 +1946,13 @@ public class OidcFlowTests : IDisposable
             return found;
         }
 
-        public ICacheEntry CreateEntry(object key) => inner.CreateEntry(key);
+        public ICacheEntry? LastEntry { get; private set; }
+
+        public ICacheEntry CreateEntry(object key)
+        {
+            LastEntry = inner.CreateEntry(key);
+            return LastEntry;
+        }
 
         public void Remove(object key) => inner.Remove(key);
 

@@ -466,9 +466,11 @@ public class OidcIdTokenValidatorTests : IDisposable
     [Fact]
     public async Task ValidateAsync_ShouldWarnAgain_AfterTheConfigurationWasRefreshed()
     {
-        await _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, _keys.Sign(ValidClaims()), Nonce);
-        await _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, _keys.Sign(ValidClaims()), Nonce);
+        var first = await _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, _keys.Sign(ValidClaims()), Nonce);
+        var second = await _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, _keys.Sign(ValidClaims()), Nonce);
 
+        first.Subject.Should().Be("user-sub");
+        second.Subject.Should().Be("user-sub");
         VerifyExpiredCertificateWarnings(Times.Exactly(2));
         VerifyNoOtherCalls();
     }

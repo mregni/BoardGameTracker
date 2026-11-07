@@ -341,6 +341,7 @@ public class OidcProviderServiceTests : IDisposable
         var stored = await _context.OidcProviders.FindAsync([provider.Id], TestContext.Current.CancellationToken);
         stored!.DisplayName.Should().Be("Google Updated");
         stored.ClientId.Should().Be("new-client-id");
+        _context.ChangeTracker.HasChanges().Should().BeFalse();
         _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
         _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com/v2"), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Warning, "OIDC provider Google now points at a different authority; 0 linked accounts must link it again");
@@ -513,6 +514,7 @@ public class OidcProviderServiceTests : IDisposable
 
         await _service.DeleteAsync(provider.Id);
 
+        _context.ChangeTracker.HasChanges().Should().BeFalse();
         var stored = await _context.OidcProviders.FindAsync([provider.Id], TestContext.Current.CancellationToken);
         stored.Should().BeNull();
         _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Once);
@@ -663,6 +665,7 @@ public class OidcProviderServiceTests : IDisposable
         var logins = await _context.ExternalLogins.OrderBy(x => x.UserId).ToListAsync(TestContext.Current.CancellationToken);
         logins.Select(x => x.Provider).Should().Equal("Company login", "google", "other");
         logins[0].Issuer.Should().Be("https://accounts.google.com");
+        _context.ChangeTracker.HasChanges().Should().BeFalse();
         _configurationsMock.Verify(x => x.Invalidate("https://accounts.google.com"), Times.Exactly(2));
         _loggerMock.VerifyLog(LogLevel.Information, "OIDC provider Company login updated");
         VerifyNoOtherCalls();

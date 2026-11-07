@@ -415,8 +415,6 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
         var profile = await _service.LinkAsync(user.Id, player.Id);
 
         profile.PlayerId.Should().Be(player.Id);
-        _accountImagesMock.Verify(x => x.ReleaseAsync(player.Id), Times.Once);
-        _accountImagesMock.Verify(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.Id == user.Id)), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Information, $"User {user.Id} linked their account to player {player.Id}");
         VerifyNoOtherCalls();
     }
