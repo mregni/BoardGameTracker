@@ -178,6 +178,25 @@ public class UpdateCheckBackgroundServiceTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_ShouldWaitTheStartupDelay_BeforeTheFirstCheck()
+    {
+        var service = new DelayedStartService(_serviceProvider, _loggerMock.Object);
+        using var stopping = new CancellationTokenSource();
+
+        var run = service.RunAsync(stopping.Token);
+
+        run.IsCompleted.Should().BeFalse();
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<bool>(UpdateConfig.CheckEnabled), Times.Never);
+
+        await stopping.CancelAsync();
+        var action = () => run;
+
+        await action.Should().ThrowAsync<OperationCanceledException>();
+        _loggerMock.VerifyLog(LogLevel.Information, StartedLog);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public void Delays_ShouldBeOneMinuteAfterStartup_AndOneHourAfterAnError()
     {
         var service = new DefaultDelaysService(_serviceProvider, _loggerMock.Object);
@@ -189,6 +208,18 @@ public class UpdateCheckBackgroundServiceTests
 
     private TestableUpdateCheckBackgroundService CreateService() =>
         new(_serviceProvider, _loggerMock.Object, TimeSpan.FromMilliseconds(10));
+
+    private sealed class DelayedStartService : UpdateCheckBackgroundService
+    {
+        public DelayedStartService(IServiceProvider serviceProvider, ILogger<UpdateCheckBackgroundService> logger)
+            : base(serviceProvider, logger)
+        {
+        }
+
+        protected override TimeSpan StartupDelay => TimeSpan.FromHours(1);
+
+        public Task RunAsync(CancellationToken stoppingToken) => ExecuteAsync(stoppingToken);
+    }
 
     private sealed class DefaultDelaysService : UpdateCheckBackgroundService
     {
