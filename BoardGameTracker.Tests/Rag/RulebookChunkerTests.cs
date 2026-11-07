@@ -22,9 +22,7 @@ public class RulebookChunkerTests
     {
         var result = _chunker.Chunk([new PdfPageText(1, "Setup\0 the board.\u0001\u0007 Each player\tdraws\nfive cards.")]);
 
-        var content = string.Join(" ", result.Select(c => c.Content));
-        content.Should().NotContain("\0").And.NotContain("\u0001").And.NotContain("\u0007");
-        content.Should().Contain("Setup the board.").And.Contain("five cards.");
+        result.Should().ContainSingle().Which.Content.Should().Be("Setup the board. Each player draws\nfive cards.");
     }
 
     [Theory]
@@ -41,10 +39,7 @@ public class RulebookChunkerTests
     {
         var result = _chunker.Chunk(new List<PdfPageText> { new(3, "Setup: each player takes 7 cards.") });
 
-        result.Should().HaveCount(1);
-        result[0].PageNumber.Should().Be(3);
-        result[0].Index.Should().Be(0);
-        result[0].Content.Should().Contain("7 cards");
+        result.Should().Equal(new TextChunk(0, "Setup: each player takes 7 cards.", 3));
     }
 
     [Fact]
@@ -53,10 +48,10 @@ public class RulebookChunkerTests
         var text = string.Join(" ", Enumerable.Repeat("word", 900));
         var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
 
-        result.Should().HaveCountGreaterThan(1);
+        result.Should().HaveCount(6);
         result.Should().OnlyContain(c => c.PageNumber == 1);
         result.Should().OnlyContain(c => c.Content.Length <= 1000);
-        result.Select(c => c.Index).Should().Equal(Enumerable.Range(0, result.Count));
+        result.Select(c => c.Index).Should().Equal(0, 1, 2, 3, 4, 5);
     }
 
     [Fact]
@@ -70,10 +65,8 @@ public class RulebookChunkerTests
 
         var result = _chunker.Chunk(pages);
 
-        result.Select(c => c.Index).Should().Equal(Enumerable.Range(0, result.Count));
-        result.Select(c => c.PageNumber).Should().BeInAscendingOrder();
-        result.Should().Contain(c => c.PageNumber == 1);
-        result.Should().Contain(c => c.PageNumber == 2);
+        result.Select(c => c.Index).Should().Equal(0, 1, 2, 3, 4, 5);
+        result.Select(c => c.PageNumber).Should().Equal(1, 1, 1, 2, 2, 2);
     }
 
     [Fact]
@@ -229,5 +222,62 @@ public class RulebookChunkerTests
         var result = _chunker.Chunk(new List<PdfPageText> { new(1, input) });
 
         result.Should().ContainSingle().Which.Content.Should().Be(expected);
+    }
+
+    [Fact]
+    public void Chunk_ShouldBreakAtANewline_OnTheFirstIndexOfTheOverlapWindow()
+    {
+        var text = new string('a', 800) + "\n" + new string('b', 600);
+
+        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+
+        result.Select(c => c.Content).Should().Equal(
+            new string('a', 800),
+            new string('a', 199) + "\n" + new string('b', 600));
+    }
+
+    [Fact]
+    public void Chunk_ShouldIgnoreANewline_JustBeforeTheOverlapWindow()
+    {
+        var text = new string('a', 799) + "\n" + new string('b', 600);
+
+        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+
+        result.Select(c => c.Content).Should().Equal(
+            new string('a', 799) + "\n" + new string('b', 200),
+            new string('b', 600));
+    }
+
+    [Fact]
+    public void Chunk_ShouldBreakAtANewline_OnTheLastIndexOfTheChunk()
+    {
+        var text = new string('a', 999) + "\n" + new string('b', 100);
+
+        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+
+        result.Select(c => c.Content).Should().Equal(
+            new string('a', 999),
+            new string('a', 199) + "\n" + new string('b', 100));
+    }
+
+    [Fact]
+    public void Chunk_ShouldSkipAWindowOfOnlyNewlines_AndKeepTheText()
+    {
+        var text = "a" + new string('\n', 3000) + "b";
+
+        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+
+        result.Select(c => c.Content).Should().Equal("a", "b");
+        result.Select(c => c.Index).Should().Equal(0, 1);
+    }
+
+    [Fact(Skip = "BUG: the overlap start can land inside a surrogate pair, so the next chunk begins with a lone low surrogate")]
+    public void Chunk_ShouldNotSplitSurrogatePair_WhenTheOverlapStartFallsMidCharacter()
+    {
+        var text = new string('a', 799) + "\U0001D11E" + new string('b', 500);
+
+        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+
+        result.Should().OnlyContain(c => !HasLoneSurrogate(c.Content));
     }
 }
