@@ -460,15 +460,14 @@ public class GameNightService : IGameNightService
         var body = $"<p>You're invited to <strong>{title}</strong>.</p><p><a href=\"{htmlUrl}\">Respond to the invitation</a></p>";
 
         var result = new SendInvitesResultDto();
-        foreach (var rsvp in gameNight.InvitedPlayers.Where(p => p.State == GameNightRsvpState.Pending).Take(MaxInviteRecipients))
+        var emails = gameNight.InvitedPlayers
+            .Where(p => p.State == GameNightRsvpState.Pending)
+            .Select(p => p.Player?.Email)
+            .Where(e => !string.IsNullOrWhiteSpace(e))
+            .Take(MaxInviteRecipients);
+        foreach (var email in emails)
         {
-            var email = rsvp.Player?.Email;
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                continue;
-            }
-
-            _backgroundEmailSender.Queue(email, subject, body);
+            _backgroundEmailSender.Queue(email!, subject, body);
             result.Sent++;
         }
 
