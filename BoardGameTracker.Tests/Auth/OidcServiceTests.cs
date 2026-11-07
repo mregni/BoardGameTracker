@@ -564,7 +564,7 @@ public class OidcServiceTests : IDisposable
         VerifyNoOtherCalls();
     }
 
-    [Fact(Skip = "BUG: a discovery document with a non-string issuer throws InvalidOperationException instead of OidcDiscoveryFailed")]
+    [Fact]
     public async Task TestDiscoveryAsync_ShouldFail_WhenTheIssuerIsNotAString()
     {
         SetupDiscovery(HttpStatusCode.OK, """{"issuer":42}""");

@@ -721,7 +721,7 @@ public class OidcService : IOidcService
                 throw new DomainException(Constants.Errors.OidcDiscoveryFailed);
             }
 
-            var issuer = doc.ValueKind == JsonValueKind.Object && doc.TryGetProperty("issuer", out var issuerElement) ? issuerElement.GetString() : null;
+            var issuer = doc.ValueKind == JsonValueKind.Object && doc.TryGetProperty("issuer", out var issuerElement) && issuerElement.ValueKind == JsonValueKind.String ? issuerElement.GetString() : null;
             if (string.IsNullOrWhiteSpace(issuer))
             {
                 throw new DomainException(Constants.Errors.OidcDiscoveryFailed);
