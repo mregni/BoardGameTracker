@@ -20,6 +20,7 @@ const items = [
 
 const renderCell = (overrides: Partial<Parameters<typeof EditableSelectCell>[0]> = {}) => {
 	const props = {
+		label: "State",
 		value: "owned",
 		items,
 		editing: false,
@@ -75,6 +76,7 @@ describe("EditableSelectCell", () => {
 	it("opens the select immediately when editing", () => {
 		renderCell({ editing: true });
 
+		expect(screen.getByRole("combobox", { name: "State", hidden: true })).toBeInTheDocument();
 		expect(screen.getByRole("listbox")).toBeInTheDocument();
 		expect(screen.getByRole("option", { name: "Wanted" })).toBeInTheDocument();
 	});

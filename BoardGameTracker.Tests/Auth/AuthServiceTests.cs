@@ -935,6 +935,78 @@ public class AuthServiceTests : IDisposable
         VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task UpdateProfileAsync_ShouldClearTheEmail_WhenItIsEmptied(string email)
+    {
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", "old@test.com", "Old Name");
+        user.ConfirmEmail();
+        var request = new UpdateProfileRequest("Old Name", email, null, "current-password");
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.HasPasswordAsync(user)).ReturnsAsync(true);
+        _userManagerMock.Setup(x => x.CheckPasswordAsync(user, "current-password")).ReturnsAsync(true);
+        _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+
+        var result = await _authService.UpdateProfileAsync(userId, request);
+
+        result.Email.Should().BeNull();
+        user.EmailConfirmed.Should().BeFalse();
+
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.CheckPasswordAsync(user, "current-password"), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        _backgroundEmailSenderMock.Verify(x => x.Queue("old@test.com", It.IsAny<string>(), It.Is<string>(b => b.Contains("was removed"))), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, user), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_ShouldRefuseToClearTheEmail_WithoutTheCurrentPassword()
+    {
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", "old@test.com", "Old Name");
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.HasPasswordAsync(user)).ReturnsAsync(true);
+
+        var act = () => _authService.UpdateProfileAsync(userId, new UpdateProfileRequest("Old Name", "", null));
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.CurrentPasswordRequired);
+        user.Email.Should().Be("old@test.com");
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_ShouldNotAskForThePassword_WhenAnAccountWithoutEmailStaysWithoutEmail()
+    {
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", null, "Old Name");
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+
+        var result = await _authService.UpdateProfileAsync(userId, new UpdateProfileRequest("New Name", "", null));
+
+        result.DisplayName.Should().Be("New Name");
+        result.Email.Should().BeNull();
+
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _playerAccountImageServiceMock.Verify(x => x.RelinkAsync(null, user), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task UpdateProfileAsync_ShouldReturnUpdatedProfile_WhenEmailIsNotProvided()
     {

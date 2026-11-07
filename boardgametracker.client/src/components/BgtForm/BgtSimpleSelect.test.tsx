@@ -62,6 +62,12 @@ describe("BgtSimpleSelect", () => {
 			await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
 		});
 
+		it("should name the search box", async () => {
+			renderWithTheme(<BgtSimpleSelect items={games} hasSearch defaultOpen />);
+
+			expect(await screen.findByRole("textbox", { name: "search" })).toBeInTheDocument();
+		});
+
 		it("should keep the list open on Enter when nothing matches", async () => {
 			const onValueChange = vi.fn();
 			const user = userEvent.setup();

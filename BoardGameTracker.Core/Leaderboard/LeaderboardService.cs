@@ -89,7 +89,7 @@ public class LeaderboardService : ILeaderboardService
         PlayCount = row.PlayCount,
         WinCount = row.WinCount,
         PodiumCount = row.PodiumCount,
-        WinPercentage = row.PlayCount == 0 ? 0 : Math.Round(100.0 * row.WinCount / row.PlayCount, 1),
+        WinPercentage = row.PlayCount == 0 ? 0 : 100.0 * row.WinCount / row.PlayCount,
         MinutesPlayed = Math.Round(row.MinutesPlayed),
     };
 }

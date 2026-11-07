@@ -144,4 +144,12 @@ test.describe("a game that does not exist", () => {
 		await page.getByRole("button", { name: "Back to games" }).click();
 		await expect(page).toHaveURL("/games");
 	});
+
+	test("logging a session for it explains it and leads back to the games", async ({ page }) => {
+		await page.goto("/sessions/new/abc");
+
+		await expect(page.getByText("Could not find game").first()).toBeVisible();
+		await page.getByRole("button", { name: "Back to games" }).click();
+		await expect(page).toHaveURL("/games");
+	});
 });

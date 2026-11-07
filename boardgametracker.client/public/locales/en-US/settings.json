@@ -56,7 +56,8 @@
       "description": "Track games that haven't been played in a while."
     },
     "months": {
-      "label": "Months threshold"
+      "label": "Months threshold",
+      "invalid": "Enter at least 1 month"
     }
   },
   "game-nights": {
@@ -427,6 +428,7 @@
     },
     "validation": {
       "display-name": "A button label is required",
+      "display-name-length": "Use at most 200 characters",
       "authority": "Enter the provider's https URL",
       "client-id": "The client ID is required",
       "scopes": "At least the openid scope is required"

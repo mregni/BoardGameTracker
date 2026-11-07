@@ -6,10 +6,21 @@ describe("DisabledActionHint", () => {
 	it("shows the reason after a touch on the disabled action", async () => {
 		const user = userEvent.setup();
 		render(<DisabledActionHint label="End night" hint="Finish the games first" />);
-		expect(screen.getByRole("button", { name: "End night" })).toBeDisabled();
+		const button = screen.getByRole("button", { name: "End night" });
+		expect(button).toHaveAttribute("aria-disabled", "true");
 
-		await user.pointer({ keys: "[TouchA]", target: screen.getByTitle("Finish the games first") });
+		await user.pointer({ keys: "[TouchA]", target: button });
 
+		expect(await screen.findByRole("tooltip")).toHaveTextContent("Finish the games first");
+	});
+
+	it("shows the reason when the keyboard reaches the disabled action", async () => {
+		const user = userEvent.setup();
+		render(<DisabledActionHint label="End night" hint="Finish the games first" />);
+
+		await user.tab();
+
+		expect(screen.getByRole("button", { name: "End night" })).toHaveFocus();
 		expect(await screen.findByRole("tooltip")).toHaveTextContent("Finish the games first");
 	});
 });

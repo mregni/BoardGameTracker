@@ -217,8 +217,8 @@ test("does not credit one player for a shared win on the closest tile", async ({
 
 	const tiles = page.getByRole("region", { name: "Together", exact: true });
 	await expect(tiles).toContainText("Closest0 pts");
-	test.fail(true, "BUG: the closest tile says only the left player won when both players won that session");
-	await expect(tiles).not.toContainText(`${LEFT} won`, { timeout: 3000 });
+	await expect(tiles).toContainText("both won");
+	await expect(tiles).not.toContainText(`${LEFT} won`);
 });
 
 test("does not claim someone won the closest session when nobody did", async ({ page }) => {
@@ -233,8 +233,8 @@ test("does not claim someone won the closest session when nobody did", async ({ 
 
 	const tiles = page.getByRole("region", { name: "Together", exact: true });
 	await expect(tiles).toContainText("Closest1 pt");
-	test.fail(true, "BUG: the closest tile says someone else won a session without a winner");
-	await expect(tiles).not.toContainText("someone else won", { timeout: 3000 });
+	await expect(tiles).toContainText("no winner");
+	await expect(tiles).not.toContainText("someone else won");
 });
 
 test("counts a lost co-op session as a team loss, not as a win for anyone", async ({ page }) => {

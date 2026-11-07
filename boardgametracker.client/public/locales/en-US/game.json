@@ -236,7 +236,7 @@
     "hint": "Only affects new sessions; logged sessions keep how they were played."
   },
   "first-play": {
-    "action": "Log the first play"
+    "action": "Log session"
   },
   "load-error": {
     "not-found-description": "It may have been deleted, or the link is out of date.",

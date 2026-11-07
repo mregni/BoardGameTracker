@@ -3,9 +3,31 @@ import i18n from "@/utils/i18n";
 
 const REASON_PREFIX = "error.";
 
+const SERVER_TEXT_KEYS: Record<string, string> = {
+	"Incorrect password.": "error:auth.incorrect-password",
+	"The requested resource was not found.": "error:not-found",
+	"The resource was modified by another request. Please retry.": "error:conflict",
+	"Invalid BGG API key. Please check your API key in settings.": "error:bgg.invalid-api-key",
+};
+
+const NO_REASON_TEXTS = new Set([
+	"An unexpected error occurred",
+	"An unexpected error occurred. Please try again later.",
+	"Bad Request",
+	"Conflict",
+	"Forbidden",
+	"Invalid request.",
+	"Not Found",
+	"One or more validation errors occurred.",
+	"The request contains invalid data.",
+	"The request references data that does not exist or conflicts with existing data.",
+	"Too Many Requests",
+	"Unauthorized",
+]);
+
 export const translateApiError = (message: string | undefined, fallbackKey = "error:something-went-wrong"): string => {
 	const fallback = i18n.t(fallbackKey);
-	if (!message) {
+	if (!message || NO_REASON_TEXTS.has(message)) {
 		return fallback;
 	}
 
@@ -13,7 +35,7 @@ export const translateApiError = (message: string | undefined, fallbackKey = "er
 		return i18n.t(`error:${message.slice(REASON_PREFIX.length)}`, { defaultValue: fallback });
 	}
 
-	return message;
+	return message in SERVER_TEXT_KEYS ? i18n.t(SERVER_TEXT_KEYS[message]) : message;
 };
 
 export const translateUrlError = (value: string | undefined, fallbackKey = "error:auth.oidc-failed"): string => {

@@ -94,8 +94,7 @@
   },
   "no-sessions": {
     "title": "Aún no hay partidas registradas",
-    "content": "Registra tu primera partida para ver las estadísticas",
-    "button": ""
+    "content": "Registra tu primera partida para ver las estadísticas"
   },
   "days": {
     "sunday": "Domingo",

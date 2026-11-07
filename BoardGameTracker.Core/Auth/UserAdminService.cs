@@ -124,7 +124,11 @@ public class UserAdminService : IUserAdminService
             .Select(g => new { UserId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.UserId, x => x.Count);
 
-        return usersWithRoles.Select(x => x.User.ToDto(x.Roles, linkCounts.GetValueOrDefault(x.User.Id))).ToList();
+        return usersWithRoles
+            .OrderBy(x => x.User.UserName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(x => x.User.Id, StringComparer.Ordinal)
+            .Select(x => x.User.ToDto(x.Roles, linkCounts.GetValueOrDefault(x.User.Id)))
+            .ToList();
     }
 
     public async Task<UserDto> GetByIdAsync(string userId)

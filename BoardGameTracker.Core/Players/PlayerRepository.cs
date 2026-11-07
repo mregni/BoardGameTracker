@@ -48,6 +48,8 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
             .Where(x => x.PlayerId == playerId)
             .GroupBy(x => new { x.Session.GameId, x.Session.Game.Title, x.Session.Game.Image })
             .OrderByDescending(x => x.Count())
+            .ThenBy(x => x.Key.Title)
+            .ThenBy(x => x.Key.GameId)
             .Take(count)
             .Select(x => new MostPlayedGame
             {

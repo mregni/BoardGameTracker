@@ -97,10 +97,24 @@ describe("MoneyOnTheShelf", () => {
 		expect(container).toBeEmptyDOMElement();
 	});
 
-	it("asks for prices when no game on the shelf has a price", () => {
-		render(
+	it("does not ask for prices when only the shelf games lack one", () => {
+		const { container } = render(
 			<MoneyOnTheShelf
 				statistics={{ ...statistics, totalValue: null, pricedGameCount: 0 }}
+				shames={[shame(1, "Root", null)]}
+				currency="€"
+				canAddPrices
+				onSortByPrice={vi.fn()}
+			/>,
+		);
+
+		expect(container).toBeEmptyDOMElement();
+	});
+
+	it("asks for prices when no game in the collection has a price", () => {
+		render(
+			<MoneyOnTheShelf
+				statistics={{ ...statistics, totalValue: null, collectionValue: 0, pricedGameCount: 0 }}
 				shames={[shame(1, "Root", null)]}
 				currency="€"
 				canAddPrices

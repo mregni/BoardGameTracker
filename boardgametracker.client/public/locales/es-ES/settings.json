@@ -56,7 +56,8 @@
       "description": "Sigue los juegos a los que no has jugado desde hace tiempo."
     },
     "months": {
-      "label": "Umbral de meses"
+      "label": "Umbral de meses",
+      "invalid": "Introduce al menos 1 mes"
     }
   },
   "game-nights": {
@@ -427,6 +428,7 @@
     },
     "validation": {
       "display-name": "El texto del botón es obligatorio",
+      "display-name-length": "Usa como máximo 200 caracteres",
       "authority": "Introduce la URL https del proveedor",
       "client-id": "El ID de cliente es obligatorio",
       "scopes": "Se necesita al menos el ámbito openid"

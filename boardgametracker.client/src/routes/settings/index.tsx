@@ -189,7 +189,6 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 					<BgtDeleteModal
 						open
 						close={() => setConfirmSsoStop(false)}
-						title={t("general.public-url.sso-confirm.title")}
 						heading={t("general.public-url.sso-confirm.title")}
 						description={t("general.public-url.sso-confirm.description")}
 						confirmLabel={t("general.public-url.sso-confirm.confirm")}

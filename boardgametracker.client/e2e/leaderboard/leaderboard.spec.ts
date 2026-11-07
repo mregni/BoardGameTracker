@@ -190,7 +190,6 @@ test("types a custom period into the date fields", async ({ page }) => {
 test("rounds a win rate only once", async ({ page }) => {
 	await page.goto(`/leaderboard?range=custom&from=${loneFrom}`);
 
-	test.fail(true, "BUG: the leaderboard rounds twice, so 33 wins of 52 sessions (63.46%) show as 64% instead of 63%");
 	await expectLeaderboard(page, leaderboard(between(loneFrom), 5, "wins"));
 });
 

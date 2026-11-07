@@ -68,6 +68,10 @@ export const GameNightDetailView = (props: Props) => {
 		.filter((player): player is Player => player !== undefined);
 	const playAgain = latestPlays(sessions);
 	const startWithAttendees = (gameId: number | null) => onStart(gameId, freePlayerIds(table.playerIds, runningGames));
+	const emptyPlayedText = () => {
+		if (isOver) return canWrite && isOverByTime ? t("played.empty-after") : t("played.empty-ended");
+		return canWrite ? t("played.empty") : t("played.empty-reader");
+	};
 
 	return (
 		<div className={cx("flex flex-col gap-3 xl:gap-6", canPlay && !isOver && "pb-16 md:pb-0")}>
@@ -139,7 +143,7 @@ export const GameNightDetailView = (props: Props) => {
 							players={players}
 							uiLanguage={settings.uiLanguage}
 							canOpen={canWrite}
-							emptyText={isOverByTime ? t("played.empty-after") : isOver ? t("played.empty-ended") : t("played.empty")}
+							emptyText={emptyPlayedText()}
 						/>
 					</section>
 					<NightSidePanel

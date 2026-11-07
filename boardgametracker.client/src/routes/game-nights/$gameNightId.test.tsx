@@ -104,7 +104,9 @@ vi.mock("./-hooks/useGameNightDetail", () => ({
 		finishGame: mocks.finishGame,
 		discardGame: mocks.discardGame,
 		endNight: mocks.endNight,
-		reopenNight: mocks.reopenNight,
+		reopenNight: async () => {
+			await mocks.reopenNight();
+		},
 		saveAttendance: mocks.saveAttendance,
 		isPending: false,
 	}),
@@ -331,6 +333,21 @@ describe("Game night detail page", () => {
 			await user.click(screen.getByRole("button", { name: "end.reopen" }));
 
 			expect(mocks.reopenNight).toHaveBeenCalled();
+		} finally {
+			mocks.detail = detail;
+		}
+	});
+
+	it("does not leave a refused reopen unhandled", async () => {
+		const user = userEvent.setup();
+		mocks.detail = { ...detail, runningGames: [], gameNight: { ...detail.gameNight, endedAt: new Date() } };
+		mocks.reopenNight.mockRejectedValueOnce({ kind: "client", status: 400, message: "Refused" });
+		try {
+			renderPage();
+
+			await user.click(screen.getByRole("button", { name: "end.reopen" }));
+
+			await waitFor(() => expect(mocks.reopenNight).toHaveBeenCalled());
 		} finally {
 			mocks.detail = detail;
 		}

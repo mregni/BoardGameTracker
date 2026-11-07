@@ -98,6 +98,7 @@ export const SettingsSidebar = ({ activeCategory, onCategoryChange, canManageSet
 							type="button"
 							key={category.id}
 							onClick={() => onCategoryChange(category.id)}
+							aria-current={isActive ? "page" : undefined}
 							className={cx(
 								"w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left cursor-pointer",
 								isActive

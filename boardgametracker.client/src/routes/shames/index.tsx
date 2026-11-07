@@ -151,7 +151,7 @@ function RouteComponent() {
 								<div className="flex flex-col gap-3">
 									<div className="flex items-center justify-between gap-3 md:hidden">
 										<p aria-live="polite" className="text-sm text-white/60">
-											{t("list.count", { count: visible.length, total: shames.length })}
+											{t("list.count", { shown: visible.length, count: shames.length })}
 										</p>
 										<button
 											type="button"
@@ -167,7 +167,7 @@ function RouteComponent() {
 										<ShameFilters filters={filters} counts={counts} onFiltersChange={setFilters} />
 									</div>
 									<p aria-live="polite" className="hidden text-sm text-white/60 md:block">
-										{t("list.count", { count: visible.length, total: shames.length })}
+										{t("list.count", { shown: visible.length, count: shames.length })}
 									</p>
 								</div>
 							)}

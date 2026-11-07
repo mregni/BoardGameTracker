@@ -78,7 +78,13 @@ function RouteComponent() {
 				data={{ player, settings, games, players }}
 				error={error}
 				onRetry={retry}
-				notFound={<BgtEmptyState icon={AlertTriangle} title={t("player:notifications.not-found")} />}
+				notFound={
+					<BgtEmptyState
+						icon={AlertTriangle}
+						title={t("player:notifications.not-found")}
+						action={{ label: t("player:back"), onClick: () => navigate({ to: "/players" }) }}
+					/>
+				}
 			>
 				{({ player, settings, games, players }) => {
 					return (
@@ -90,7 +96,7 @@ function RouteComponent() {
 									canWrite
 										? [
 												{
-													onClick: () => navigate({ to: "/sessions/new" }),
+													onClick: () => navigate({ to: "/sessions/new", search: { player: playerId } }),
 													variant: "primary",
 													content: "game:add",
 												},
@@ -124,7 +130,7 @@ function RouteComponent() {
 									open={sessionToDelete !== null}
 									close={() => setSessionToDelete(null)}
 									onDelete={() => sessionToDelete && deleteSession(sessionToDelete)}
-									title={t("sessions:delete.title")}
+									heading={t("sessions:delete.title")}
 									description={t("sessions:delete.description")}
 								/>
 							</BgtCard>

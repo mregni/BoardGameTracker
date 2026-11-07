@@ -133,11 +133,19 @@ public static class HeadToHeadCalculator
             return null;
         }
 
+        var outcome = Outcome(closest);
         return new ClosestGame
         {
             GameId = closest.GameId,
             ScoringDifference = Math.Abs(closest.PlayerOneScore!.Value - closest.PlayerTwoScore!.Value),
-            PlayerId = closest.PlayerOneWon ? playerOne : closest.PlayerTwoWon ? playerTwo : null
+            PlayerId = outcome switch
+            {
+                CompareOutcome.PlayerOne => playerOne,
+                CompareOutcome.PlayerTwo => playerTwo,
+                _ => null
+            },
+            BothWon = outcome == CompareOutcome.Both,
+            OtherWon = outcome == CompareOutcome.Other && closest.OtherWinnerId != null
         };
     }
 

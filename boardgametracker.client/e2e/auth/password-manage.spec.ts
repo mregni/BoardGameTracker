@@ -49,17 +49,15 @@ test("does not ask for a reset without a username", async ({ guestPage: page }) 
 	await page.goto("/forgot-password");
 	await page.route("**/api/auth/forgot-password", (route) => route.fulfill({ status: 204 }));
 
+	const sent = page
+		.waitForRequest((request) => request.url().endsWith("/api/auth/forgot-password"), { timeout: 1500 })
+		.catch(() => null);
 	await page.getByRole("button", { name: "Send reset link" }).click();
 
-	test.fail(true, "BUG: forgot password submits an empty username and confirms a reset link was sent");
-	const confirmed = await page
-		.getByText("a reset link has been sent")
-		.waitFor({ timeout: 3_000 })
-		.then(
-			() => true,
-			() => false,
-		);
-	expect(confirmed).toBe(false);
+	await expect(page.getByLabel("Username")).toBeFocused();
+	await expect(page.getByText("Required")).toBeVisible();
+	await expect(page.getByText("a reset link has been sent")).toHaveCount(0);
+	expect(await sent).toBeNull();
 });
 
 test("leaves the forgot password form", async ({ guestPage: page }) => {
@@ -69,6 +67,23 @@ test("leaves the forgot password form", async ({ guestPage: page }) => {
 	await page.getByRole("button", { name: "Back to sign in" }).click();
 
 	await expect(page).toHaveURL("/login");
+});
+
+test("keeps a numeric user id from the reset link", async ({ guestPage: page }) => {
+	const newPassword = "a-long-enough-password-1A";
+	let body: unknown = null;
+	await page.route("**/api/auth/reset-password", (route) => {
+		body = route.request().postDataJSON();
+		return route.fulfill({ status: 204 });
+	});
+	await page.goto("/reset-password?userId=1&token=abc");
+
+	await page.getByLabel("New password", { exact: true }).fill(newPassword);
+	await page.getByLabel("Confirm new password").fill(newPassword);
+	await page.getByRole("button", { name: "Reset password" }).click();
+
+	await expect(page).toHaveURL("/login");
+	expect(body).toEqual({ userId: "1", token: "abc", newPassword });
 });
 
 test("explains an incomplete reset link", async ({ guestPage: page }) => {

@@ -46,6 +46,8 @@
     "points_other": "{{value}} pts",
     "closest-winner": "{{game}} · {{player}} won",
     "closest-other": "{{game}} · someone else won",
+    "closest-both": "{{game}} · both won",
+    "closest-none": "{{game}} · no winner",
     "title": "Together"
   },
   "per-game": {

@@ -249,7 +249,7 @@ test("leads to the actions of a player", async ({ page }) => {
 	await open(page, linkedPlayer);
 	const main = page.getByRole("main");
 
-	await expect(main.getByRole("link", { name: "Log a session" })).toHaveAttribute("href", `/sessions/new?player=${id}`);
+	await expect(main.getByRole("link", { name: "Log session" })).toHaveAttribute("href", `/sessions/new?player=${id}`);
 	await expect(main.getByRole("link", { name: "Compare" })).toHaveAttribute("href", `/compare?left=${id}`);
 
 	await main.getByRole("button", { name: "View sessions" }).click();
@@ -259,7 +259,7 @@ test("leads to the actions of a player", async ({ page }) => {
 test("preselects the player when logging a session", async ({ page }) => {
 	await open(page, linkedPlayer);
 
-	await page.getByRole("link", { name: "Log a session" }).click();
+	await page.getByRole("main").getByRole("link", { name: "Log session" }).click();
 
 	await expect(page).toHaveURL(`/sessions/new?player=${playerId(linkedPlayer)}`);
 	await expect(page.getByRole("main").getByText(linkedPlayer, { exact: true })).toBeVisible();
@@ -281,7 +281,7 @@ test("offers a reader no changes", async ({ readerPage }) => {
 	await expect(main.getByRole("link", { name: "Compare" })).toBeVisible();
 	await expect(main.getByRole("button", { name: "Edit" })).toHaveCount(0);
 	await expect(main.getByRole("button", { name: "Delete" })).toHaveCount(0);
-	await expect(main.getByRole("link", { name: "Log a session" })).toHaveCount(0);
+	await expect(main.getByRole("link", { name: "Log session" })).toHaveCount(0);
 	await expect(recent(readerPage)).toHaveCount(0);
 	await expect(main.getByText(displayDate(sessionsOf(linkedPlayer)[0].start), { exact: false })).not.toHaveCount(0);
 });
@@ -292,7 +292,7 @@ test("offers a user changes", async ({ writerPage }) => {
 
 	await expect(main.getByRole("button", { name: "Edit" })).toBeVisible();
 	await expect(main.getByRole("button", { name: "Delete" })).toBeVisible();
-	await expect(main.getByRole("link", { name: "Log a session" })).toBeVisible();
+	await expect(main.getByRole("link", { name: "Log session" })).toBeVisible();
 	await expect(recent(writerPage)).toHaveCount(5);
 });
 

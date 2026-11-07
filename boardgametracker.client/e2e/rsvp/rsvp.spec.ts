@@ -219,30 +219,35 @@ for (const [name, linkId] of [
 
 test("explains that a link without an id does not work", async ({ guestPage: page }) => {
 	await page.goto("/rsvp");
-
-	test.fail(true, "BUG: /rsvp without linkId shows the generic crash page instead of the invalid invite message");
 	await expect(page.getByRole("heading", { name: "This invite link doesn't work", level: 1 })).toBeVisible({
 		timeout: 3_000,
 	});
 });
 
 test.describe("when the server fails", () => {
-	test.use({ allowedApiStatuses: [500] });
+	test.use({ allowedApiStatuses: [401, 429, 500] });
 
-	test("does not call a link broken when the server fails", async ({ guestPage: page }) => {
-		await page.route("**/api/gamenight/link/**", (route) => route.fulfill({ status: 500, json: {} }));
-		await page.goto(inviteUrl(linkIds.get(strategyNight.title) ?? ""));
-
-		test.fail(true, "BUG: a 500 or 429 on the invite is reported as an invalid invite link");
-		const calledBroken = await page
-			.getByRole("heading", { name: "This invite link doesn't work" })
-			.waitFor({ timeout: 3_000 })
-			.then(
-				() => true,
-				() => false,
+	for (const { status, message } of [
+		{ status: 500, message: "A server error occurred. Please try again later." },
+		{ status: 429, message: "Something went wrong, please try again later." },
+	]) {
+		test(`says a ${status} is a temporary problem and offers a retry`, async ({ guestPage: page }) => {
+			let failing = true;
+			await page.route("**/api/gamenight/link/*", (route) =>
+				failing ? route.fulfill({ status, json: {} }) : route.continue(),
 			);
-		expect(calledBroken).toBe(false);
-	});
+			await page.goto(inviteUrl(linkIds.get(strategyNight.title) ?? ""));
+
+			await expect(page.getByText("Couldn't load this page")).toBeVisible();
+			await expect(page.getByText(message)).toBeVisible();
+			await expect(page.getByRole("heading", { name: "This invite link doesn't work" })).toHaveCount(0);
+
+			failing = false;
+			await page.getByRole("button", { name: "Try again" }).click();
+
+			await expect(page.getByRole("heading", { name: strategyNight.title, level: 1 })).toBeVisible();
+		});
+	}
 });
 
 test("shows a signed in user the same invite, without the menu", async ({ page }) => {

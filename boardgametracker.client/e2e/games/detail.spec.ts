@@ -193,11 +193,11 @@ test("shows no statistics for a game that was never played", async ({ page }) =>
 
 	await expect(main.getByRole("heading", { name: neverPlayedGame.title, level: 1 })).toBeVisible();
 	await expect(main.getByRole("heading", { name: "Not on the table yet" })).toBeVisible();
-	await expect(main.getByRole("button", { name: "Log the first play" })).toBeVisible();
+	await expect(main.getByRole("button", { name: "Log session" })).toBeVisible();
 	await expect(main.getByRole("heading", { name: "Recent sessions" })).toHaveCount(0);
 	await expect(main.getByRole("heading", { name: "Scoring results" })).toHaveCount(0);
 
-	await main.getByRole("button", { name: "Log the first play" }).click();
+	await main.getByRole("button", { name: "Log session" }).click();
 	await expect(page).toHaveURL(/\/sessions\/new\/\d+$/);
 });
 

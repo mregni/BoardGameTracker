@@ -94,11 +94,11 @@ test("clears the email", async ({ page, writerPage }) => {
 
 	try {
 		await field(writerPage, "Email").fill("");
+		await field(writerPage, "Current password").fill(writerCredentials.password);
 		await saveProfile(writerPage);
 		await expect(writerPage.getByText("Profile saved")).toBeVisible();
 
 		await openSection(writerPage, "account");
-		test.fail(true, "BUG: clearing the email shows Profile saved but the old email stays");
 		await expect(field(writerPage, "Email")).toHaveValue("");
 	} finally {
 		await setEmail(page, writerCredentials.username, writerCredentials.role, original);

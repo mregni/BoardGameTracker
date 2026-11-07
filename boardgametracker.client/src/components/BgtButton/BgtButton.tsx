@@ -47,11 +47,12 @@ interface Props
 const BgtButton = (props: Props) => {
 	const { children, variant, size, type = "button", disabled, className, ...rest } = props;
 
+	const inactive = disabled || rest["aria-disabled"] === true;
 	const buttonClasses = buttonVariants({
-		variant: disabled ? null : variant,
+		variant: inactive ? null : variant,
 		size,
-		disabled: !!disabled,
-		className: cx(disabled && disabledVariantClasses[variant ?? "primary"], className),
+		disabled: inactive,
+		className: cx(inactive && disabledVariantClasses[variant ?? "primary"], className),
 	});
 
 	return (

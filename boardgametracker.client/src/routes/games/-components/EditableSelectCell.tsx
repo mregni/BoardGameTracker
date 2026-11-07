@@ -4,6 +4,7 @@ import type { BgtSelectItem } from "@/models";
 import { EditableCellButton } from "./EditableCellButton";
 
 interface Props {
+	label: string;
 	value: string;
 	items: BgtSelectItem[];
 	editing: boolean;
@@ -20,6 +21,7 @@ interface Props {
 
 export const EditableSelectCell = (props: Props) => {
 	const {
+		label,
 		value,
 		items,
 		editing,
@@ -44,6 +46,7 @@ export const EditableSelectCell = (props: Props) => {
 
 	return (
 		<BgtSimpleSelect
+			aria-label={label}
 			value={value}
 			items={items}
 			hasSearch={hasSearch}
