@@ -55,6 +55,39 @@ public class ChangeDetectionSnapshotParserTests
         var result = ChangeDetectionSnapshotParser.Parse("In Stock: True - Price: 22,5");
 
         result.Price.Should().Be(22.5m);
+        result.Available.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("in stock: true - price: 5", true)]
+    [InlineData("IN STOCK: FALSE - PRICE: 5", false)]
+    public void Parse_ShouldIgnoreCase(string content, bool expected)
+    {
+        var result = ChangeDetectionSnapshotParser.Parse(content);
+
+        result.Status.Should().Be(ChangeDetectionStatus.Ok);
+        result.InStock.Should().Be(expected);
+        result.Price.Should().Be(5m);
+    }
+
+    [Fact]
+    public void Parse_ShouldTreatLowercaseNoneAsUnknownStock()
+    {
+        var result = ChangeDetectionSnapshotParser.Parse("In Stock: none - Price: 5");
+
+        result.Status.Should().Be(ChangeDetectionStatus.Ok);
+        result.InStock.Should().BeNull();
+        result.Price.Should().Be(5m);
+    }
+
+    [Fact]
+    public void Parse_ShouldFindTheLineInsideASurroundingSnapshot_AndIgnoreTextAfterThePrice()
+    {
+        var result = ChangeDetectionSnapshotParser.Parse("Header\nIn Stock:True-Price:12.50 EUR\nFooter");
+
+        result.Status.Should().Be(ChangeDetectionStatus.Ok);
+        result.InStock.Should().BeTrue();
+        result.Price.Should().Be(12.5m);
     }
 
     [Theory]
@@ -86,6 +119,10 @@ public class ChangeDetectionSnapshotParserTests
     [InlineData("39.99", 39.99)]
     [InlineData(" 12,50 ", 12.5)]
     [InlineData("1299", 1299)]
+    [InlineData("0", 0)]
+    [InlineData("1,2", 1.2)]
+    [InlineData("1,23", 1.23)]
+    [InlineData("1,2345", 1.2345)]
     public void ParsePrice_ShouldParseAPlainAmount(string raw, double expected)
     {
         ChangeDetectionSnapshotParser.ParsePrice(raw).Should().Be((decimal)expected);
@@ -101,9 +138,19 @@ public class ChangeDetectionSnapshotParserTests
     [InlineData("12.50 EUR")]
     [InlineData("EUR 12.50")]
     [InlineData("1e3")]
+    [InlineData("   ")]
+    [InlineData("1,2,3")]
+    [InlineData("1.2.3")]
+    [InlineData("99999999999999999999999999999999")]
     public void ParsePrice_ShouldRejectSignedAmbiguousOrDecoratedValues(string? raw)
     {
         ChangeDetectionSnapshotParser.ParsePrice(raw).Should().BeNull();
+    }
+
+    [Fact(Skip = "BUG: a dot with three decimals reads a thousands separator as a decimal point, the comma form is rejected")]
+    public void ParsePrice_ShouldRejectADotFollowedByThreeDigits_LikeTheCommaForm()
+    {
+        ChangeDetectionSnapshotParser.ParsePrice("1.299").Should().BeNull();
     }
 
     [Theory]

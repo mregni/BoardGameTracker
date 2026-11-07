@@ -27,28 +27,11 @@ public class ImageControllerTests
         _imageServiceMock.VerifyNoOtherCalls();
     }
 
-    private static IFormFile CreateMockFormFile(string fileName = "test.jpg", string contentType = "image/jpeg")
-    {
-        var content = "fake image content";
-        var stream = new MemoryStream();
-        var writer = new StreamWriter(stream);
-        writer.Write(content);
-        writer.Flush();
-        stream.Position = 0;
-
-        var file = new Mock<IFormFile>();
-        file.Setup(f => f.OpenReadStream()).Returns(stream);
-        file.Setup(f => f.FileName).Returns(fileName);
-        file.Setup(f => f.Length).Returns(stream.Length);
-        file.Setup(f => f.ContentType).Returns(contentType);
-        return file.Object;
-    }
-
     [Fact]
     public async Task UploadImage_ShouldReturnOkWithFileName_WhenUploadSucceeds()
     {
         // Arrange
-        var formFile = CreateMockFormFile();
+        var formFile = new FormFile(Stream.Null, 0, 0, "file", "test.jpg");
         var command = new UploadImageCommand
         {
             File = formFile,

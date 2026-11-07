@@ -8,6 +8,7 @@ using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models.Integrations;
 using BoardGameTracker.Core.Integrations;
 using BoardGameTracker.Core.Settings.Interfaces;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -37,7 +38,6 @@ public class BggConnectionTesterTests
         _settingsServiceMock.Setup(x => x.GetBggApiKeyAsync()).ReturnsAsync($" {ApiKey} ");
 
         _loggerMock = new Mock<ILogger<BggConnectionTester>>();
-        _loggerMock.Setup(x => x.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
 
         _tester = new BggConnectionTester(_httpClientFactoryMock.Object, _settingsServiceMock.Object, _loggerMock.Object);
     }
@@ -46,6 +46,7 @@ public class BggConnectionTesterTests
     {
         _httpClientFactoryMock.VerifyNoOtherCalls();
         _settingsServiceMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -96,7 +97,8 @@ public class BggConnectionTesterTests
     [InlineData(HttpStatusCode.TooManyRequests, IntegrationConnectionStatus.RateLimited, IntegrationMessageKeys.RateLimited)]
     [InlineData(HttpStatusCode.InternalServerError, IntegrationConnectionStatus.Unreachable, IntegrationMessageKeys.UnexpectedResponse)]
     [InlineData(HttpStatusCode.ServiceUnavailable, IntegrationConnectionStatus.Unreachable, IntegrationMessageKeys.UnexpectedResponse)]
-    [InlineData(HttpStatusCode.Accepted, IntegrationConnectionStatus.Ok, IntegrationMessageKeys.Ok)]
+    [InlineData(HttpStatusCode.MultipleChoices, IntegrationConnectionStatus.Unreachable, IntegrationMessageKeys.UnexpectedResponse)]
+    [InlineData((HttpStatusCode)199, IntegrationConnectionStatus.Unreachable, IntegrationMessageKeys.UnexpectedResponse)]
     public async Task TestAsync_ShouldMapTheBggResponse(HttpStatusCode statusCode, IntegrationConnectionStatus expected, string messageKey)
     {
         _handler.Respond = _ => new HttpResponseMessage(statusCode);
@@ -105,6 +107,23 @@ public class BggConnectionTesterTests
 
         result.Status.Should().Be(expected);
         result.MessageKey.Should().Be(messageKey);
+        _settingsServiceMock.Verify(x => x.GetBggApiKeyAsync(), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(BggConnectionTester.HttpClientName), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, $"BoardGameGeek connection test returned {(int)statusCode}");
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Created)]
+    [InlineData(HttpStatusCode.Accepted)]
+    [InlineData((HttpStatusCode)299)]
+    public async Task TestAsync_ShouldReportOkWithoutLogging_ForEverySuccessStatus(HttpStatusCode statusCode)
+    {
+        _handler.Respond = _ => new HttpResponseMessage(statusCode);
+
+        var result = await _tester.TestAsync();
+
+        result.Should().Be(IntegrationTestResult.Ok);
         _settingsServiceMock.Verify(x => x.GetBggApiKeyAsync(), Times.Once);
         _httpClientFactoryMock.Verify(x => x.CreateClient(BggConnectionTester.HttpClientName), Times.Once);
         VerifyNoOtherCalls();
@@ -121,6 +140,7 @@ public class BggConnectionTesterTests
         result.MessageKey.Should().Be(IntegrationMessageKeys.Timeout);
         _settingsServiceMock.Verify(x => x.GetBggApiKeyAsync(), Times.Once);
         _httpClientFactoryMock.Verify(x => x.CreateClient(BggConnectionTester.HttpClientName), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "BoardGameGeek connection test timed out");
         VerifyNoOtherCalls();
     }
 
@@ -135,6 +155,7 @@ public class BggConnectionTesterTests
         result.MessageKey.Should().Be(IntegrationMessageKeys.Unreachable);
         _settingsServiceMock.Verify(x => x.GetBggApiKeyAsync(), Times.Once);
         _httpClientFactoryMock.Verify(x => x.CreateClient(BggConnectionTester.HttpClientName), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "BoardGameGeek connection test failed: NameResolutionError");
         VerifyNoOtherCalls();
     }
 
@@ -148,6 +169,7 @@ public class BggConnectionTesterTests
         result.Should().Be(IntegrationTestResult.Unauthorized);
         _settingsServiceMock.Verify(x => x.GetBggApiKeyAsync(), Times.Once);
         _httpClientFactoryMock.Verify(x => x.CreateClient(BggConnectionTester.HttpClientName), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "BoardGameGeek API key cannot be sent as a bearer token");
         VerifyNoOtherCalls();
     }
 
@@ -160,6 +182,7 @@ public class BggConnectionTesterTests
         var act = () => _tester.TestAsync(cts.Token);
 
         await act.Should().ThrowAsync<System.OperationCanceledException>();
+        _handler.Requests.Should().BeEmpty();
         _settingsServiceMock.Verify(x => x.GetBggApiKeyAsync(), Times.Once);
         _httpClientFactoryMock.Verify(x => x.CreateClient(BggConnectionTester.HttpClientName), Times.Once);
         VerifyNoOtherCalls();
@@ -180,6 +203,7 @@ public class BggConnectionTesterTests
         logged.Should().NotContain(message => message.Contains(ApiKey));
         _settingsServiceMock.Verify(x => x.GetBggApiKeyAsync(), Times.Once);
         _httpClientFactoryMock.Verify(x => x.CreateClient(BggConnectionTester.HttpClientName), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "BoardGameGeek connection test returned 401");
         VerifyNoOtherCalls();
     }
 
