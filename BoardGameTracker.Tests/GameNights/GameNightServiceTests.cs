@@ -1503,6 +1503,38 @@ public class GameNightServiceTests
     }
 
     [Fact]
+    public async Task UpdateRsvpByLink_ShouldNotReportTheHostNotified_WhenTheCooldownSkippedTheEmail()
+    {
+        SetupGameNightsEnabled(true);
+        SetupClock(BeforeTheNight);
+        var rsvp = RsvpWithGameNight(2, GameNightRsvpState.Pending, new Player("Kathleen"),
+            hostId: 1, host: new Player("Mikhael", null, "host@test.com"));
+        var linkId = rsvp.GameNight!.LinkId;
+
+        SetupRsvpAuthentication(false);
+        _rsvpRepositoryMock.Setup(x => x.SingleOrDefaultAsync(RsvpSpec(7), CancellationToken.None)).ReturnsAsync(rsvp);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+        SetupLocalTime();
+
+        var first = await _gameNightService.UpdateRsvpByLink(linkId, new UpdateRsvpCommand { Id = 7, State = GameNightRsvpState.Maybe }, false);
+        var second = await _gameNightService.UpdateRsvpByLink(linkId, new UpdateRsvpCommand { Id = 7, State = GameNightRsvpState.Declined }, false);
+
+        first.HostNotified.Should().BeTrue();
+        second.HostNotified.Should().BeFalse();
+        second.Rsvp.State.Should().Be(GameNightRsvpState.Declined);
+        _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.RsvpAuthenticationEnabled, false), Times.Exactly(2));
+        _rsvpRepositoryMock.Verify(x => x.SingleOrDefaultAsync(RsvpSpec(7), CancellationToken.None), Times.Exactly(2));
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Exactly(2));
+        _backgroundEmailSenderMock.Verify(x => x.Queue("host@test.com", HostSubject, HostBody("Kathleen", "might come to")), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.GameNightsEnabled, true), Times.Exactly(2));
+        VerifyClockRead(2);
+        VerifyLocalTimeRead();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task UpdateRsvpByLink_ShouldNotReportTheHostNotified_WhenTheHostHasNoEmail()
     {
         SetupGameNightsEnabled(true);
