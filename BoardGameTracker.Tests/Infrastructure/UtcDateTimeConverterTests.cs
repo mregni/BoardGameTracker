@@ -1,11 +1,13 @@
 using System.Text;
 using System.Text.Json;
 using BoardGameTracker.Api.Infrastructure;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Infrastructure;
 
+[Collection(EnvironmentVariablesCollection.Name)]
 public class UtcDateTimeConverterTests
 {
     private static readonly JsonSerializerOptions Options = new();
@@ -108,12 +110,22 @@ public class UtcDateTimeConverterTests
         WriteNullable(null).Should().Be("null");
     }
 
-    [Fact(Skip = "BUG: Write treats an unspecified value as server-local while Read treats it as UTC")]
+    [Fact]
     public void Write_ShouldTreatAnUnspecifiedValueAsUtc_LikeRead()
     {
         var unspecified = DateTime.SpecifyKind(UtcValue, DateTimeKind.Unspecified);
-
-        Write(unspecified).Should().Be("\"2026-03-02T19:00:00Z\"");
-        WriteNullable(unspecified).Should().Be("\"2026-03-02T19:00:00Z\"");
+        var original = Environment.GetEnvironmentVariable("TZ");
+        Environment.SetEnvironmentVariable("TZ", "Asia/Tokyo");
+        TimeZoneInfo.ClearCachedData();
+        try
+        {
+            Write(unspecified).Should().Be("\"2026-03-02T19:00:00Z\"");
+            WriteNullable(unspecified).Should().Be("\"2026-03-02T19:00:00Z\"");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("TZ", original);
+            TimeZoneInfo.ClearCachedData();
+        }
     }
 }
