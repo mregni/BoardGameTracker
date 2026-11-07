@@ -10,12 +10,19 @@ const mocks = vi.hoisted(() => ({
 	isAuthenticated: false,
 	successToast: vi.fn(),
 	announceSessionChange: vi.fn(),
-	captured: {} as { Page: FC; validateSearch: { safeParse: (value: unknown) => { success: boolean } } },
+	captured: {} as {
+		Page: FC;
+		validateSearch: { safeParse: (value: unknown) => { success: boolean; data?: Record<string, unknown> } };
+	},
 }));
 
 vi.mock("@tanstack/react-router", () => ({
 	createFileRoute:
-		() => (config: { component: FC; validateSearch: { safeParse: (value: unknown) => { success: boolean } } }) => {
+		() =>
+		(config: {
+			component: FC;
+			validateSearch: { safeParse: (value: unknown) => { success: boolean; data?: Record<string, unknown> } };
+		}) => {
 			mocks.captured.Page = config.component;
 			mocks.captured.validateSearch = config.validateSearch;
 			return { ...config, useSearch: () => mocks.search };
@@ -189,8 +196,14 @@ describe("AuthCallbackPage", () => {
 	it("accepts the linked flag the router parses from ?linked=true", () => {
 		expect(mocks.captured.validateSearch.safeParse({ linked: true }).success).toBe(true);
 		expect(mocks.captured.validateSearch.safeParse({ linked: "true" }).success).toBe(true);
-		expect(mocks.captured.validateSearch.safeParse({ linked: 1 }).success).toBe(false);
 	});
+
+	it.each([{ error: 1 }, { redirect: 2 }, { linked: 1 }])(
+		"ignores a search value of the wrong type in %o",
+		(search) => {
+			expect(mocks.captured.validateSearch.safeParse(search)).toEqual({ success: true, data: {} });
+		},
+	);
 
 	it("explains a username clash and sends the user to sign in with their password", async () => {
 		mocks.search = { error: "error.auth.oidc-username-taken" };
