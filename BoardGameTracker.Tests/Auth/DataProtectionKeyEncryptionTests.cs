@@ -270,6 +270,17 @@ public class DataProtectionKeyEncryptionTests
     }
 
     [Fact]
+    public void EncryptPlaintextSecrets_ShouldRefuse_WhenTheEncryptedSecretDoesNotReadBackIdentically()
+    {
+        const string xml = "<key xmlns:p4=\"http://schemas.asp.net/2015/03/dataProtection\"><masterKey p4:requiresEncryption=\"true\">value</masterKey></key>";
+
+        var act = () => DataProtectionKeyXml.EncryptPlaintextSecrets(xml, new DataProtectionKeyMaterial(Secret));
+
+        act.Should().Throw<CryptographicException>().WithMessage("The re-encrypted data protection key could not be read back.");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public void KeyMaterial_ShouldKeepItsDerivation_SoThatStoredKeysStayReadable()
     {
         var key = new DataProtectionKeyMaterial("a-fixed-secret-of-at-least-32-characters").Key;
