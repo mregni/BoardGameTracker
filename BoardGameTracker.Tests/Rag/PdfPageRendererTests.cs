@@ -194,6 +194,34 @@ public class PdfPageRendererTests : IDisposable
         VerifyNoOtherCalls();
     }
 
+    [Fact(Skip = NotInstalled, SkipUnless = nameof(PdfToPpmIsInstalled))]
+    public async Task RenderPageAsync_ShouldRethrow_WhenTheCallerCancelsWhilePdfToPpmRuns()
+    {
+        await WritePdfAsync();
+        using var cancellation = new CancellationTokenSource();
+
+        var render = _renderer.RenderPageAsync(_pdfPath, _manualId, 1, cancellation.Token);
+        await cancellation.CancelAsync();
+        var action = () => render;
+
+        await action.Should().ThrowAsync<OperationCanceledException>();
+        Directory.GetFiles(FiguresDirectory).Should().BeEmpty();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact(Skip = NotInstalled, SkipUnless = nameof(PdfToPpmIsInstalled))]
+    public async Task RenderPageAsync_ShouldRemoveTheTemporaryPng_WhenItCannotBeMovedIntoPlace()
+    {
+        await WritePdfAsync();
+        Directory.CreateDirectory(Path.Combine(FiguresDirectory, "page-1.png"));
+
+        var action = () => _renderer.RenderPageAsync(_pdfPath, _manualId, 1);
+
+        await action.Should().ThrowAsync<Exception>().Where(x => x is IOException || x is UnauthorizedAccessException);
+        Directory.GetFiles(FiguresDirectory).Should().BeEmpty();
+        VerifyNoOtherCalls();
+    }
+
     [Fact]
     public void DeleteFigures_ShouldRemoveTheFolderOfThatManualOnly()
     {
