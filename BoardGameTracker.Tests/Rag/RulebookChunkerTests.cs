@@ -271,7 +271,7 @@ public class RulebookChunkerTests
         result.Select(c => c.Index).Should().Equal(0, 1);
     }
 
-    [Fact(Skip = "BUG: the overlap start can land inside a surrogate pair, so the next chunk begins with a lone low surrogate")]
+    [Fact]
     public void Chunk_ShouldNotSplitSurrogatePair_WhenTheOverlapStartFallsMidCharacter()
     {
         var text = new string('a', 799) + "\U0001D11E" + new string('b', 500);
