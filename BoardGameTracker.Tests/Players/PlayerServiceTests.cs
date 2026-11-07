@@ -201,13 +201,14 @@ public class PlayerServiceTests
     [InlineData(null)]
     public async Task Create_ShouldThrowValidationException_WhenNameIsBlank(string? name)
     {
-        var command = new CreatePlayerCommand { Name = name! };
+        var command = new CreatePlayerCommand { Name = name!, Image = "/images/profile/new.webp" };
 
         var action = async () => await _playerService.Create(command);
 
         var error = await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.PlayerNameRequired);
         error.Which.Errors[nameof(CreatePlayerCommand.Name)].Should().Equal(Constants.Errors.PlayerNameRequired);
 
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("/images/profile/new.webp"), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -226,6 +227,7 @@ public class PlayerServiceTests
         error.Which.Errors[nameof(CreatePlayerCommand.Name)].Should().Equal(Constants.Errors.PlayerNameAlreadyExists);
 
         VerifyNameChecked("JOHN");
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync(null), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -535,6 +537,7 @@ public class PlayerServiceTests
 
         _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<PlayerByIdForUpdateSpec>(s => IsPlayer(s, 1)), CancellationToken.None), Times.Once);
         VerifyNameChecked("Jane", 1);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("new.png"), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -836,7 +839,7 @@ public class PlayerServiceTests
         VerifyNoOtherCalls();
     }
 
-    [Fact(Skip = "BUG: a refused name leaves the image the client already uploaded on disk")]
+    [Fact]
     public async Task Create_ShouldRemoveTheUploadedImage_WhenTheNameIsTaken()
     {
         var command = new CreatePlayerCommand { Name = "JOHN", Image = "/images/profile/new.webp" };
@@ -902,6 +905,7 @@ public class PlayerServiceTests
         player.Image.Should().Be("old.png");
 
         _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<PlayerByIdForUpdateSpec>(s => IsPlayer(s, 1)), CancellationToken.None), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("new.png"), Times.Once);
         VerifyNoOtherCalls();
     }
 
