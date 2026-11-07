@@ -165,4 +165,31 @@ public class GameDtoExtensionsTests
         result[1].PlayCount.Should().Be(4);
         result[1].LastPlayed.Should().Be(lastPlayed);
     }
+
+    [Fact]
+    public void ToListDto_ShouldLeaveThePlayStatsEmpty_WhenThereAreNone()
+    {
+        var games = new[] { new Game("One") { Id = 1 } };
+
+        var result = games.ToListDto(new Dictionary<int, GamePlayStats>());
+
+        result.Select(x => (x.Id, x.PlayCount, x.LastPlayed)).Should().Equal((1, 0, (DateTime?)null));
+    }
+
+    [Fact]
+    public void ToDto_ShouldLeaveTheListsNull_WhenTheCollectionsAreNotLoaded()
+    {
+        var game = new Game("Bare") { Id = 1 };
+        foreach (var collection in new[] { nameof(Game.Expansions), nameof(Game.Categories), nameof(Game.Mechanics), nameof(Game.People) })
+        {
+            typeof(Game).GetProperty(collection)!.SetValue(game, null);
+        }
+
+        var dto = game.ToDto();
+
+        dto.Expansions.Should().BeNull();
+        dto.Categories.Should().BeNull();
+        dto.Mechanics.Should().BeNull();
+        dto.People.Should().BeNull();
+    }
 }
