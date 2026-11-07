@@ -24,7 +24,7 @@ ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
 RUN --mount=type=secret,id=sentry_auth_token,env=SENTRY_AUTH_TOKEN pnpm build
 
 # Stage 2: Build Backend (runs natively on the build host; the framework-dependent output is architecture-neutral)
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine@sha256:230c3fbae0ceedc70bca04eed2bfb5694e8b248cadbb81010f41b7a993601f55 AS backend-build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine@sha256:5562fd626eec39f6f53218f9b7d7856ab7195d51d846568304fbe85071a3b6e6 AS backend-build
 ARG VERSION
 WORKDIR /src
 
@@ -71,7 +71,7 @@ RUN case "${TARGETARCH}" in arm64) rid=linux-musl-arm64 ;; *) rid=linux-musl-x64
     test -f "/app/publish/runtimes/${rid}/native/libSkiaSharp.so"
 
 # Stage 3: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine@sha256:819bd3649d8bf53f35527c68d62e17b348ef6f24ae73073f497f00a878348062 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine@sha256:486297ae006e95ee2ee3112a2c03e3d26e41fbbc64b7a29e28e7a18cc36b12bb AS runtime
 
 # Build arguments for runtime configuration
 ARG ASPNETCORE_ENVIRONMENT=production
