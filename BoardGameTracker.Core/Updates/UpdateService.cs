@@ -83,7 +83,7 @@ public partial class UpdateService : IUpdateService
             }
 
             var latestVersion = semverTags
-                .Where(t => isBetaTrack || !IsBetaVersion(t))
+                .Where(t => isBetaTrack || !t.Contains('-'))
                 .OrderByDescending(VersionKey)
                 .FirstOrDefault();
 
@@ -175,11 +175,6 @@ public partial class UpdateService : IUpdateService
     private static (Version Version, bool Stable) VersionKey(string versionString)
     {
         return (ParseVersion(versionString), !versionString.Contains('-'));
-    }
-
-    private static bool IsBetaVersion(string versionString)
-    {
-        return versionString.Contains("-beta", StringComparison.OrdinalIgnoreCase);
     }
 
     internal static bool CompareVersions(string current, string latest)

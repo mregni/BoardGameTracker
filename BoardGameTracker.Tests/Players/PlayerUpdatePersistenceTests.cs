@@ -8,8 +8,6 @@ using Xunit;
 
 namespace BoardGameTracker.Tests.Players;
 
-// Regression coverage for bug C2: a name change through a tracked fetch must persist,
-// while the previous AsNoTracking read path silently dropped the change.
 public class PlayerUpdatePersistenceTests
 {
     private static MainDbContext CreateContext(string databaseName)

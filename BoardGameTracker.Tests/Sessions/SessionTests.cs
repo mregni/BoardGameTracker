@@ -210,4 +210,134 @@ public class SessionTests
         session.TeamScore.Should().BeNull();
         session.PlayerSessions.Single().Won.Should().BeTrue();
     }
+
+    [Fact]
+    public void Constructor_ShouldStoreTheGivenValues()
+    {
+        var session = new Session(3, Start, Start.AddMinutes(90), "Fun");
+
+        session.GameId.Should().Be(3);
+        session.Start.Should().Be(Start);
+        session.End.Should().Be(Start.AddMinutes(90));
+        session.Comment.Should().Be("Fun");
+        session.GetDuration().Should().Be(TimeSpan.FromMinutes(90));
+        session.PlayerSessions.Should().BeEmpty();
+        session.Expansions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Constructor_ShouldThrow_WhenCommentIsNull()
+    {
+        var act = () => new Session(1, Start, Start.AddHours(1), null!);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void UpdateComment_ShouldStoreTheNewComment()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), "before");
+
+        session.UpdateComment("after");
+
+        session.Comment.Should().Be("after");
+    }
+
+    [Fact]
+    public void UpdateTimes_ShouldAcceptAZeroLengthSession()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+
+        session.UpdateTimes(Start, Start);
+
+        session.GetDuration().Should().Be(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public void AddPlayerSession_ShouldStoreTheGivenResult_WhenCompetitive()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+
+        session.AddPlayerSession(4, 15, true, true);
+
+        var playerSession = session.PlayerSessions.Single();
+        playerSession.PlayerId.Should().Be(4);
+        playerSession.Score.Should().Be(15);
+        playerSession.FirstPlay.Should().BeTrue();
+        playerSession.Won.Should().BeTrue();
+    }
+
+    [Fact]
+    public void AddPlayerSession_ShouldFollowTheTeamLoss_WhenCoop()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+        session.MarkAsCoop(false, null);
+
+        session.AddPlayerSession(3, 12, false, true);
+
+        session.PlayerSessions.Single().Won.Should().BeFalse();
+    }
+
+    [Fact]
+    public void AddExpansion_ShouldKeepDifferentExpansions()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+        var first = new Expansion("First", 1, 1);
+        var second = new Expansion("Second", 2, 1);
+
+        session.AddExpansion(first);
+        session.AddExpansion(second);
+
+        session.Expansions.Should().Equal(first, second);
+    }
+
+    [Fact]
+    public void RemoveExpansion_ShouldOnlyRemoveThatExpansion()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+        var first = new Expansion("First", 1, 1);
+        var second = new Expansion("Second", 2, 1);
+        session.AddExpansion(first);
+        session.AddExpansion(second);
+
+        session.RemoveExpansion(first);
+
+        session.Expansions.Should().Equal(second);
+    }
+
+    [Fact]
+    public void AddExpansion_And_RemoveExpansion_ShouldRejectNull()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+
+        var add = () => session.AddExpansion(null!);
+        var remove = () => session.RemoveExpansion(null!);
+
+        add.Should().Throw<ArgumentNullException>();
+        remove.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void AddPlayerSession_ShouldAcceptThePlayerAgain_AfterRemoval()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+        session.AddPlayerSession(7, 10, false, false);
+
+        session.RemovePlayerSession(7);
+        session.AddPlayerSession(7, 20, false, true);
+
+        var playerSession = session.PlayerSessions.Single();
+        playerSession.Score.Should().Be(20);
+        playerSession.Won.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SetGameNight_ShouldRejectANegativeId()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+
+        var act = () => session.SetGameNight(-1);
+
+        act.Should().Throw<ArgumentException>();
+    }
 }

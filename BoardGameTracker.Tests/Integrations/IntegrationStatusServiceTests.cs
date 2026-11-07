@@ -16,6 +16,7 @@ namespace BoardGameTracker.Tests.Integrations;
 public class IntegrationStatusServiceTests
 {
     private static readonly DateTime Now = new(2026, 10, 16, 9, 30, 0, DateTimeKind.Utc);
+    private readonly CancellationToken _token = new CancellationTokenSource().Token;
 
     private readonly Mock<IIntegrationTester> _bggTesterMock;
     private readonly Mock<IIntegrationTester> _changeDetectionTesterMock;
@@ -26,11 +27,11 @@ public class IntegrationStatusServiceTests
     {
         _bggTesterMock = new Mock<IIntegrationTester>();
         _bggTesterMock.SetupGet(x => x.Integration).Returns(IntegrationKind.Bgg);
-        _bggTesterMock.Setup(x => x.TestAsync(It.IsAny<CancellationToken>())).ReturnsAsync(IntegrationTestResult.Ok);
+        _bggTesterMock.Setup(x => x.TestAsync(_token)).ReturnsAsync(IntegrationTestResult.Ok);
 
         _changeDetectionTesterMock = new Mock<IIntegrationTester>();
         _changeDetectionTesterMock.SetupGet(x => x.Integration).Returns(IntegrationKind.ChangeDetection);
-        _changeDetectionTesterMock.Setup(x => x.TestAsync(It.IsAny<CancellationToken>())).ReturnsAsync(IntegrationTestResult.NotConfigured);
+        _changeDetectionTesterMock.Setup(x => x.TestAsync(_token)).ReturnsAsync(IntegrationTestResult.NotConfigured);
 
         _dateTimeProviderMock = new Mock<IDateTimeProvider>();
         _dateTimeProviderMock.SetupGet(x => x.UtcNow).Returns(Now);
@@ -57,7 +58,7 @@ public class IntegrationStatusServiceTests
     [Fact]
     public async Task GetAllAsync_ShouldTestEveryIntegration_InAStableOrder()
     {
-        var statuses = await _service.GetAllAsync();
+        var statuses = await _service.GetAllAsync(_token);
 
         statuses.Should().HaveCount(2);
         statuses[0].Integration.Should().Be(IntegrationKind.Bgg);
@@ -66,8 +67,8 @@ public class IntegrationStatusServiceTests
         statuses[0].CheckedAt.Should().Be(Now);
         statuses[1].Integration.Should().Be(IntegrationKind.ChangeDetection);
         statuses[1].Status.Should().Be(IntegrationConnectionStatus.NotConfigured);
-        _bggTesterMock.Verify(x => x.TestAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _changeDetectionTesterMock.Verify(x => x.TestAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _bggTesterMock.Verify(x => x.TestAsync(_token), Times.Once);
+        _changeDetectionTesterMock.Verify(x => x.TestAsync(_token), Times.Once);
         _dateTimeProviderMock.VerifyGet(x => x.UtcNow, Times.Exactly(2));
         VerifyTesterSetup();
         VerifyNoOtherCalls();
@@ -76,12 +77,12 @@ public class IntegrationStatusServiceTests
     [Fact]
     public async Task GetAllAsync_ShouldServeTheCachedStatus_OnTheSecondCall()
     {
-        var first = await _service.GetAllAsync();
-        var second = await _service.GetAllAsync();
+        var first = await _service.GetAllAsync(_token);
+        var second = await _service.GetAllAsync(_token);
 
         second.Should().Equal(first);
-        _bggTesterMock.Verify(x => x.TestAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _changeDetectionTesterMock.Verify(x => x.TestAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _bggTesterMock.Verify(x => x.TestAsync(_token), Times.Once);
+        _changeDetectionTesterMock.Verify(x => x.TestAsync(_token), Times.Once);
         _dateTimeProviderMock.VerifyGet(x => x.UtcNow, Times.Exactly(2));
         VerifyTesterSetup();
         VerifyNoOtherCalls();
@@ -90,18 +91,18 @@ public class IntegrationStatusServiceTests
     [Fact]
     public async Task TestAsync_ShouldBypassTheCache_AndRefreshIt()
     {
-        await _service.GetAllAsync();
-        _bggTesterMock.Setup(x => x.TestAsync(It.IsAny<CancellationToken>())).ReturnsAsync(IntegrationTestResult.Unauthorized);
+        await _service.GetAllAsync(_token);
+        _bggTesterMock.Setup(x => x.TestAsync(_token)).ReturnsAsync(IntegrationTestResult.Unauthorized);
 
-        var tested = await _service.TestAsync(IntegrationKind.Bgg);
-        var all = await _service.GetAllAsync();
+        var tested = await _service.TestAsync(IntegrationKind.Bgg, _token);
+        var all = await _service.GetAllAsync(_token);
 
         tested.Integration.Should().Be(IntegrationKind.Bgg);
         tested.Status.Should().Be(IntegrationConnectionStatus.Unauthorized);
         tested.MessageKey.Should().Be(IntegrationMessageKeys.Unauthorized);
         all[0].Should().BeSameAs(tested);
-        _bggTesterMock.Verify(x => x.TestAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
-        _changeDetectionTesterMock.Verify(x => x.TestAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _bggTesterMock.Verify(x => x.TestAsync(_token), Times.Exactly(2));
+        _changeDetectionTesterMock.Verify(x => x.TestAsync(_token), Times.Once);
         _dateTimeProviderMock.VerifyGet(x => x.UtcNow, Times.Exactly(3));
         VerifyTesterSetup();
         VerifyNoOtherCalls();
@@ -110,13 +111,13 @@ public class IntegrationStatusServiceTests
     [Fact]
     public async Task Invalidate_ShouldForceANewTest_OnTheNextCall()
     {
-        await _service.GetAllAsync();
+        await _service.GetAllAsync(_token);
 
         _service.Invalidate();
-        await _service.GetAllAsync();
+        await _service.GetAllAsync(_token);
 
-        _bggTesterMock.Verify(x => x.TestAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
-        _changeDetectionTesterMock.Verify(x => x.TestAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        _bggTesterMock.Verify(x => x.TestAsync(_token), Times.Exactly(2));
+        _changeDetectionTesterMock.Verify(x => x.TestAsync(_token), Times.Exactly(2));
         _dateTimeProviderMock.VerifyGet(x => x.UtcNow, Times.Exactly(4));
         VerifyTesterSetup();
         VerifyNoOtherCalls();
@@ -126,5 +127,7 @@ public class IntegrationStatusServiceTests
     public void CacheDuration_ShouldBeShort()
     {
         IntegrationStatusService.CacheDuration.Should().Be(TimeSpan.FromMinutes(5));
+        VerifyTesterSetup();
+        VerifyNoOtherCalls();
     }
 }

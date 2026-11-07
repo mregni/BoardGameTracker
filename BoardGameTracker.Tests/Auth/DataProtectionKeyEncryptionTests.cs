@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using BoardGameTracker.Tests.Support;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -21,7 +22,7 @@ public class DataProtectionKeyEncryptionTests
     private static readonly string MasterKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
     private static readonly XElement KeyElement = XElement.Parse($"<descriptor><masterKey>{MasterKey}</masterKey></descriptor>");
 
-    private readonly Mock<ILogger> _loggerMock = new();
+    private readonly Mock<ILogger<DataProtectionKeyEncryptionTests>> _loggerMock = new();
 
     private void VerifyNoOtherCalls()
     {
@@ -40,6 +41,7 @@ public class DataProtectionKeyEncryptionTests
         var decrypted = Decryptor(material).Decrypt(encrypted.EncryptedElement);
 
         XNode.DeepEquals(decrypted, KeyElement).Should().BeTrue();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -51,6 +53,7 @@ public class DataProtectionKeyEncryptionTests
         var second = encryptor.Encrypt(KeyElement).EncryptedElement.ToString();
 
         first.Should().NotBe(second);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -61,6 +64,7 @@ public class DataProtectionKeyEncryptionTests
         var act = () => Decryptor(new DataProtectionKeyMaterial(Secret + "-changed")).Decrypt(encrypted.EncryptedElement);
 
         act.Should().Throw<CryptographicException>();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -75,6 +79,7 @@ public class DataProtectionKeyEncryptionTests
         var act = () => Decryptor(material).Decrypt(encrypted);
 
         act.Should().Throw<CryptographicException>();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -84,7 +89,8 @@ public class DataProtectionKeyEncryptionTests
 
         var act = () => Decryptor(new DataProtectionKeyMaterial(Secret)).Decrypt(element);
 
-        act.Should().Throw<CryptographicException>().WithMessage("*malformed*");
+        act.Should().Throw<CryptographicException>().WithMessage("The encrypted data protection key is malformed.");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -94,7 +100,8 @@ public class DataProtectionKeyEncryptionTests
 
         var act = () => new SecretXmlDecryptor(new ServiceCollection().BuildServiceProvider()).Decrypt(encrypted.EncryptedElement);
 
-        act.Should().Throw<CryptographicException>().WithMessage("*DATA_PROTECTION_KEY*");
+        act.Should().Throw<CryptographicException>().WithMessage("A data protection key is encrypted, but DATA_PROTECTION_KEY is not set. Restore the variable with its original value.");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -102,7 +109,8 @@ public class DataProtectionKeyEncryptionTests
     {
         var act = () => new DataProtectionKeyMaterial("too-short");
 
-        act.Should().Throw<ArgumentException>().WithMessage("*at least 32*");
+        act.Should().Throw<ArgumentException>().WithMessage("DATA_PROTECTION_KEY must be at least 32 characters long, but was 9.*").Which.ParamName.Should().Be("secret");
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -113,6 +121,7 @@ public class DataProtectionKeyEncryptionTests
         var act = () => new DataProtectionKeyMaterial(secret);
 
         act.Should().Throw<ArgumentException>().WithMessage("DATA_PROTECTION_KEY still holds the CHANGEME placeholder*");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -120,7 +129,8 @@ public class DataProtectionKeyEncryptionTests
     {
         var act = () => new ServiceCollection().AddDataProtection().ProtectKeysWithSecret("CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS");
 
-        act.Should().Throw<ArgumentException>().WithMessage("*DATA_PROTECTION_KEY*CHANGEME*");
+        act.Should().Throw<ArgumentException>().WithMessage("DATA_PROTECTION_KEY still holds the CHANGEME placeholder*");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -128,6 +138,7 @@ public class DataProtectionKeyEncryptionTests
     {
         new DataProtectionKeyMaterial(Secret).Key.Should().Equal(new DataProtectionKeyMaterial(Secret).Key);
         new DataProtectionKeyMaterial(Secret).Key.Should().NotEqual(new DataProtectionKeyMaterial(Secret + "-changed").Key);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -139,6 +150,7 @@ public class DataProtectionKeyEncryptionTests
 
         provider.GetService<DataProtectionKeyMaterial>().Should().NotBeNull();
         provider.GetRequiredService<IOptions<KeyManagementOptions>>().Value.XmlEncryptor.Should().BeOfType<SecretXmlEncryptor>();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -153,6 +165,7 @@ public class DataProtectionKeyEncryptionTests
 
         provider.GetService<DataProtectionKeyMaterial>().Should().BeNull();
         provider.GetRequiredService<IOptions<KeyManagementOptions>>().Value.XmlEncryptor.Should().BeNull();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -160,7 +173,8 @@ public class DataProtectionKeyEncryptionTests
     {
         var act = () => new ServiceCollection().AddDataProtection().ProtectKeysWithSecret("too-short");
 
-        act.Should().Throw<ArgumentException>().WithMessage("*DATA_PROTECTION_KEY*");
+        act.Should().Throw<ArgumentException>().WithMessage("DATA_PROTECTION_KEY must be at least 32 characters long, but was 9.*");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -173,13 +187,9 @@ public class DataProtectionKeyEncryptionTests
         var warned = _loggerMock.Object.WarnWhenKeysAreUnencrypted(provider);
 
         warned.Should().BeTrue();
-        _loggerMock.Verify(x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("DATA_PROTECTION_KEY is not set") && state.ToString()!.Contains("unencrypted")),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
+        _loggerMock.VerifyLog(
+            LogLevel.Warning,
+            "DATA_PROTECTION_KEY is not set: the data protection keys are stored unencrypted in the database, so a copy of the database is enough to read the stored OIDC client secret and integration API keys and to forge password-reset links. Set DATA_PROTECTION_KEY to a random value of at least 32 characters (for example the output of 'openssl rand -base64 48') and keep it stable; see the environment variables page of the documentation");
         VerifyNoOtherCalls();
     }
 
@@ -214,6 +224,7 @@ public class DataProtectionKeyEncryptionTests
         CreateProtector(repository, Secret).Unprotect(protectedPayload).Should().Be(Payload);
         var withoutSecret = () => CreateProtector(repository, null).Unprotect(protectedPayload);
         withoutSecret.Should().Throw<CryptographicException>();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -227,12 +238,77 @@ public class DataProtectionKeyEncryptionTests
         CreateProtector(repository, Secret).Unprotect(protectedPayload).Should().Be(Payload);
         var withOtherSecret = () => CreateProtector(repository, Secret + "-changed").Unprotect(protectedPayload);
         withOtherSecret.Should().Throw<CryptographicException>();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("<key><descriptor /></key>")]
+    [InlineData("<key><masterKey p4:requiresEncryption=\"false\" xmlns:p4=\"http://schemas.asp.net/2015/03/dataProtection\">value</masterKey></key>")]
+    [InlineData("<key><masterKey requiresEncryption=\"true\">value</masterKey></key>")]
+    public void EncryptPlaintextSecrets_ShouldReturnNull_WhenNothingRequiresEncryption(string xml)
+    {
+        DataProtectionKeyXml.EncryptPlaintextSecrets(xml, new DataProtectionKeyMaterial(Secret)).Should().BeNull();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
-    public void EncryptPlaintextSecrets_ShouldReturnNull_WhenNothingRequiresEncryption()
+    public void EncryptPlaintextSecrets_ShouldEncryptEverySecret_AndOnlyTheOutermostOfNestedOnes()
     {
-        DataProtectionKeyXml.EncryptPlaintextSecrets("<key><descriptor /></key>", new DataProtectionKeyMaterial(Secret)).Should().BeNull();
+        const string ns = "xmlns:p4=\"http://schemas.asp.net/2015/03/dataProtection\"";
+        var xml = $"<key><first p4:requiresEncryption=\"true\" {ns}><inner p4:requiresEncryption=\"true\">one</inner></first><second p4:requiresEncryption=\"true\" {ns}>two</second><kept>three</kept></key>";
+        var material = new DataProtectionKeyMaterial(Secret);
+
+        var encrypted = XElement.Parse(DataProtectionKeyXml.EncryptPlaintextSecrets(xml, material)!);
+
+        var secrets = encrypted.Elements().Where(element => element.Name.LocalName == "encryptedSecret").ToList();
+        secrets.Should().HaveCount(2);
+        secrets.Should().AllSatisfy(element => element.Attribute("decryptorType")!.Value.Should().Be(typeof(SecretXmlDecryptor).AssemblyQualifiedName));
+        encrypted.Element("kept")!.Value.Should().Be("three");
+        Decryptor(material).Decrypt(secrets[0].Elements().Single()).Descendants().Single().Value.Should().Be("one");
+        Decryptor(material).Decrypt(secrets[1].Elements().Single()).Value.Should().Be("two");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void EncryptPlaintextSecrets_ShouldRefuse_WhenTheEncryptedSecretDoesNotReadBackIdentically()
+    {
+        const string xml = "<key xmlns:p4=\"http://schemas.asp.net/2015/03/dataProtection\"><masterKey p4:requiresEncryption=\"true\">value</masterKey></key>";
+
+        var act = () => DataProtectionKeyXml.EncryptPlaintextSecrets(xml, new DataProtectionKeyMaterial(Secret));
+
+        act.Should().Throw<CryptographicException>().WithMessage("The re-encrypted data protection key could not be read back.");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void KeyMaterial_ShouldKeepItsDerivation_SoThatStoredKeysStayReadable()
+    {
+        var key = new DataProtectionKeyMaterial("a-fixed-secret-of-at-least-32-characters").Key;
+
+        Convert.ToHexString(key).Should().Be("AE7324CB3A3DA3A3262F721014787BB5E4A293DDB65264A1158AFB54E8685F87");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void Encrypt_ShouldLayOutThePayloadAsNonceTagCiphertext()
+    {
+        var encrypted = new SecretXmlEncryptor(new DataProtectionKeyMaterial(Secret)).Encrypt(KeyElement).EncryptedElement;
+        var plaintextLength = System.Text.Encoding.UTF8.GetByteCount(KeyElement.ToString(SaveOptions.DisableFormatting));
+
+        encrypted.Name.LocalName.Should().Be("encryptedKey");
+        Convert.FromBase64String((string)encrypted.Element("value")!).Should().HaveCount(12 + 16 + plaintextLength);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void Decrypt_ShouldAcceptAPayloadOfExactlyTheHeaderLength_OnlyWhenTheTagMatches()
+    {
+        var element = new XElement("encryptedKey", new XElement("value", Convert.ToBase64String(new byte[12 + 16])));
+
+        var act = () => Decryptor(new DataProtectionKeyMaterial(Secret)).Decrypt(element);
+
+        act.Should().Throw<CryptographicException>().Which.Message.Should().NotBe("The encrypted data protection key is malformed.");
+        VerifyNoOtherCalls();
     }
 
     private static IDataProtector CreateProtector(IXmlRepository repository, string? secret)

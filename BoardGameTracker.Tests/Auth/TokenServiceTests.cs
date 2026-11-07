@@ -1,5 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Core.Auth;
@@ -44,18 +47,17 @@ public class TokenServiceTests : IDisposable
     [Fact]
     public void GenerateAccessToken_ShouldReturnValidJwt()
     {
-        // Arrange
         var user = new ApplicationUser("testuser", "test@test.com", "Test User");
         var roles = new List<string> { "Admin", "User" };
 
-        // Act
         var token = _tokenService.GenerateAccessToken(user, roles, Guid.NewGuid());
 
-        // Assert
-        token.Should().NotBeNullOrEmpty();
         var jwtToken = new JsonWebTokenHandler().ReadJsonWebToken(token);
+        jwtToken.Alg.Should().Be(SecurityAlgorithms.HmacSha256);
         jwtToken.Issuer.Should().Be("test-issuer");
-        jwtToken.Audiences.Should().Contain("test-audience");
+        jwtToken.Audiences.Should().Equal("test-audience");
+        jwtToken.Subject.Should().Be(user.Id);
+        jwtToken.ValidTo.Should().BeCloseTo(DateTime.UtcNow.AddMinutes(60), TimeSpan.FromSeconds(5));
         jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.UniqueName && c.Value == "testuser");
         jwtToken.Claims.Should().Contain(c => c.Type == "display_name" && c.Value == "Test User");
     }
@@ -63,18 +65,14 @@ public class TokenServiceTests : IDisposable
     [Fact]
     public void GenerateAccessToken_ShouldIncludeRoleClaims()
     {
-        // Arrange
         var user = new ApplicationUser("testuser", "test@test.com");
         var roles = new List<string> { "Admin", "User" };
 
-        // Act
         var token = _tokenService.GenerateAccessToken(user, roles, Guid.NewGuid());
 
-        // Assert
         var jwtToken = new JsonWebTokenHandler().ReadJsonWebToken(token);
         var roleClaims = jwtToken.Claims.Where(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").ToList();
-        roleClaims.Should().HaveCount(2);
-        roleClaims.Select(c => c.Value).Should().Contain("Admin").And.Contain("User");
+        roleClaims.Select(c => c.Value).Should().BeEquivalentTo("Admin", "User");
     }
 
     [Fact]
@@ -104,31 +102,25 @@ public class TokenServiceTests : IDisposable
     [Fact]
     public async Task GenerateRefreshTokenAsync_ShouldCreateAndStoreToken()
     {
-        // Arrange
         var userId = "test-user-id";
 
-        // Act
         var refreshToken = await _tokenService.GenerateRefreshTokenAsync(userId);
 
-        // Assert
-        refreshToken.Should().NotBeNull();
-        refreshToken.Token.Should().NotBeNullOrEmpty();
         refreshToken.UserId.Should().Be(userId);
         refreshToken.IsActive.Should().BeTrue();
         refreshToken.IsExpired.Should().BeFalse();
         refreshToken.IsRevoked.Should().BeFalse();
 
-        var stored = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == refreshToken.Token, TestContext.Current.CancellationToken);
-        stored.Should().NotBeNull();
+        var stored = await _context.RefreshTokens.AsNoTracking().SingleAsync(t => t.Token == refreshToken.Token, TestContext.Current.CancellationToken);
+        stored.UserId.Should().Be(userId);
+        stored.ExpiresAt.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromMinutes(1));
     }
 
     [Fact]
     public async Task GetRefreshTokenAsync_ShouldReturnNull_WhenNotExists()
     {
-        // Act
         var result = await _tokenService.GetRefreshTokenAsync("nonexistent-token");
 
-        // Assert
         result.Should().BeNull();
     }
 
@@ -140,7 +132,7 @@ public class TokenServiceTests : IDisposable
 
         await _tokenService.RevokeRefreshTokenAsync(refreshToken, "Test revocation");
 
-        var stored = await _context.RefreshTokens.FirstAsync(t => t.Token == refreshToken.Token, TestContext.Current.CancellationToken);
+        var stored = await _context.RefreshTokens.AsNoTracking().FirstAsync(t => t.Token == refreshToken.Token, TestContext.Current.CancellationToken);
         stored.IsRevoked.Should().BeTrue();
         stored.IsActive.Should().BeFalse();
         stored.RevokedReason.Should().Be("Test revocation");
@@ -155,7 +147,7 @@ public class TokenServiceTests : IDisposable
 
         await _tokenService.RevokeRefreshTokenAsync(first, "Logged out");
 
-        var stored = await _context.RefreshTokens.ToListAsync(TestContext.Current.CancellationToken);
+        var stored = await _context.RefreshTokens.AsNoTracking().ToListAsync(TestContext.Current.CancellationToken);
         stored.Should().AllSatisfy(t => t.IsActive.Should().BeFalse());
         stored.Single(t => t.Token == first.Token).ReplacedByToken.Should().Be(second.Token);
         stored.Single(t => t.Token == first.Token).RevokedReason.Should().Be("Replaced by new token");
@@ -170,7 +162,7 @@ public class TokenServiceTests : IDisposable
 
         var third = await _tokenService.SupersedeRefreshTokenAsync(second);
 
-        var stored = await _context.RefreshTokens.ToListAsync(TestContext.Current.CancellationToken);
+        var stored = await _context.RefreshTokens.AsNoTracking().ToListAsync(TestContext.Current.CancellationToken);
         var storedFirst = stored.Single(t => t.Token == first.Token);
         var storedSecond = stored.Single(t => t.Token == second.Token);
         storedFirst.WasUsed.Should().BeTrue();
@@ -179,8 +171,11 @@ public class TokenServiceTests : IDisposable
         storedSecond.IsSuperseded.Should().BeTrue();
         storedSecond.ReplacedByToken.Should().Be(third.Token);
         storedSecond.RevokedReason.Should().Be(RefreshToken.SupersededReason);
-        stored.Single(t => t.Token == third.Token).IsActive.Should().BeTrue();
-        third.PlainTextToken.Should().NotBeNullOrEmpty();
+        var storedThird = stored.Single(t => t.Token == third.Token);
+        storedThird.IsActive.Should().BeTrue();
+        storedThird.UserId.Should().Be("test-user-id");
+        storedThird.ExpiresAt.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromMinutes(1));
+        RefreshToken.Hash(third.PlainTextToken!).Should().Be(third.Token);
     }
 
     [Fact]
@@ -191,7 +186,6 @@ public class TokenServiceTests : IDisposable
 
         var successor = await _tokenService.GetSuccessorAsync(first);
 
-        successor.Should().NotBeNull();
         successor!.Id.Should().Be(second.Id);
     }
 
@@ -245,16 +239,16 @@ public class TokenServiceTests : IDisposable
 
         await _tokenService.RevokeAllUserTokensAsync(userId, "Bulk revocation");
 
-        var tokens = await _context.RefreshTokens.Where(t => t.UserId == userId).ToListAsync(TestContext.Current.CancellationToken);
+        var tokens = await _context.RefreshTokens.AsNoTracking().Where(t => t.UserId == userId).ToListAsync(TestContext.Current.CancellationToken);
         tokens.Should().HaveCount(3);
         tokens.Should().AllSatisfy(t => t.IsRevoked.Should().BeTrue());
         tokens.Where(t => t.Token != preRevoked.Token)
             .Should().AllSatisfy(t => t.RevokedReason.Should().Be("Bulk revocation"));
 
-        var storedPreRevoked = await _context.RefreshTokens.FirstAsync(t => t.Token == preRevoked.Token, TestContext.Current.CancellationToken);
+        var storedPreRevoked = await _context.RefreshTokens.AsNoTracking().FirstAsync(t => t.Token == preRevoked.Token, TestContext.Current.CancellationToken);
         storedPreRevoked.RevokedReason.Should().Be("Original reason");
 
-        var storedOther = await _context.RefreshTokens.FirstAsync(t => t.Token == otherUsersToken.Token, TestContext.Current.CancellationToken);
+        var storedOther = await _context.RefreshTokens.AsNoTracking().FirstAsync(t => t.Token == otherUsersToken.Token, TestContext.Current.CancellationToken);
         storedOther.IsRevoked.Should().BeFalse();
     }
 
@@ -268,10 +262,9 @@ public class TokenServiceTests : IDisposable
 
         var result = await _tokenService.GetRefreshTokenAsync(created.PlainTextToken!);
 
-        result.Should().NotBeNull();
         result!.Token.Should().Be(created.Token);
         result.UserId.Should().Be(user.Id);
-        result.User.Should().NotBeNull();
+        result.User.Should().BeSameAs(user);
     }
 
     [Fact]
@@ -294,7 +287,128 @@ public class TokenServiceTests : IDisposable
 
         var act = () => service.GenerateAccessToken(user, new List<string>(), Guid.NewGuid());
 
-        act.Should().Throw<InvalidOperationException>();
+        act.Should().Throw<InvalidOperationException>().WithMessage("JWT Secret is not configured");
+    }
+
+    [Fact]
+    public async Task GenerateAccessToken_ShouldSignWithTheConfiguredSecret()
+    {
+        var user = new ApplicationUser("testuser", "test@test.com");
+        var token = _tokenService.GenerateAccessToken(user, new List<string>(), Guid.NewGuid());
+        var parameters = new TokenValidationParameters
+        {
+            ValidIssuer = "test-issuer",
+            ValidAudience = "test-audience",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("test-secret-key-that-is-at-least-32-characters-long")),
+        };
+
+        var valid = await new JsonWebTokenHandler().ValidateTokenAsync(token, parameters);
+
+        valid.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GenerateAccessToken_ShouldGiveEveryTokenItsOwnId()
+    {
+        var user = new ApplicationUser("testuser", "test@test.com");
+        var sessionId = Guid.NewGuid();
+
+        var first = new JsonWebTokenHandler().ReadJsonWebToken(_tokenService.GenerateAccessToken(user, new List<string>(), sessionId));
+        var second = new JsonWebTokenHandler().ReadJsonWebToken(_tokenService.GenerateAccessToken(user, new List<string>(), sessionId));
+
+        first.Id.Should().NotBeNullOrEmpty().And.NotBe(second.Id);
+    }
+
+    [Fact]
+    public void Hash_ShouldBeUppercaseHexSha256()
+    {
+        RefreshToken.Hash("abc").Should().Be("BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD");
+    }
+
+    [Fact]
+    public async Task GenerateRefreshTokenAsync_ShouldStoreOnlyTheHash_AndExpireAfterTheConfiguredDays()
+    {
+        var refreshToken = await _tokenService.GenerateRefreshTokenAsync("test-user-id");
+
+        var stored = await _context.RefreshTokens.AsNoTracking().SingleAsync(TestContext.Current.CancellationToken);
+        stored.Token.Should().Be(RefreshToken.Hash(refreshToken.PlainTextToken!));
+        stored.Token.Should().NotBe(refreshToken.PlainTextToken);
+        stored.PlainTextToken.Should().BeNull();
+        stored.ExpiresAt.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task GetRefreshTokenAsync_ShouldNotAcceptTheStoredHashAsAToken()
+    {
+        var created = await _tokenService.GenerateRefreshTokenAsync("test-user-id");
+
+        var result = await _tokenService.GetRefreshTokenAsync(created.Token);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RotateRefreshTokenAsync_ShouldGiveTheReplacementTheConfiguredLifetime()
+    {
+        var current = await _tokenService.GenerateRefreshTokenAsync("test-user-id");
+
+        var replacement = await _tokenService.RotateRefreshTokenAsync(current);
+
+        var storedOld = await _context.RefreshTokens.AsNoTracking().FirstAsync(t => t.Token == current.Token, TestContext.Current.CancellationToken);
+        storedOld.RevokedReason.Should().Be(RefreshToken.RotatedReason);
+        storedOld.ReplacedByToken.Should().Be(replacement.Token);
+        replacement.ExpiresAt.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task RevokeRefreshTokenAsync_ShouldLeaveOtherSessionsAlone()
+    {
+        var token = await _tokenService.GenerateRefreshTokenAsync("test-user-id");
+        var otherDevice = await _tokenService.GenerateRefreshTokenAsync("test-user-id");
+
+        await _tokenService.RevokeRefreshTokenAsync(token, "Logged out");
+
+        var stored = await _context.RefreshTokens.AsNoTracking().FirstAsync(t => t.Token == otherDevice.Token, TestContext.Current.CancellationToken);
+        stored.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RevokeRefreshTokenAsync_ShouldStop_WhenTheChainLoopsBackOnItself()
+    {
+        var first = RefreshToken.Create("test-user-id", 7);
+        var second = RefreshToken.Create("test-user-id", 7);
+        first.Revoke(RefreshToken.RotatedReason, second.Token);
+        second.Revoke(RefreshToken.RotatedReason, first.Token);
+        _context.RefreshTokens.AddRange(first, second);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var act = () => _tokenService.RevokeRefreshTokenAsync(first, "Logged out").WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task CleanupExpiredTokensAsync_ShouldKeepTokensJustInsideTheThirtyDays_AndRemoveThoseJustOutside()
+    {
+        var keptExpired = RefreshToken.Create("test-user-id", -29);
+        var goneExpired = RefreshToken.Create("test-user-id", -30);
+        var keptRevoked = RevokedDaysAgo(29);
+        var goneRevoked = RevokedDaysAgo(30);
+        _context.RefreshTokens.AddRange(keptExpired, goneExpired, keptRevoked, goneRevoked);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _tokenService.CleanupExpiredTokensAsync();
+
+        var remaining = await _context.RefreshTokens.AsNoTracking().Select(t => t.Token).ToListAsync(TestContext.Current.CancellationToken);
+        remaining.Should().BeEquivalentTo(keptExpired.Token, keptRevoked.Token);
+    }
+
+    private static RefreshToken RevokedDaysAgo(int days)
+    {
+        var token = RefreshToken.Create("test-user-id", 90);
+        token.Revoke("Old revocation");
+        typeof(RefreshToken).GetProperty(nameof(RefreshToken.RevokedAt))!.SetValue(token, DateTime.UtcNow.AddDays(-days));
+        return token;
     }
 
     [Fact]
@@ -310,7 +424,7 @@ public class TokenServiceTests : IDisposable
         replacement.Token.Should().NotBe(current.Token);
         replacement.UserId.Should().Be(user.Id);
         replacement.IsActive.Should().BeTrue();
-        var storedOld = await _context.RefreshTokens.FirstAsync(t => t.Token == current.Token, TestContext.Current.CancellationToken);
+        var storedOld = await _context.RefreshTokens.AsNoTracking().FirstAsync(t => t.Token == current.Token, TestContext.Current.CancellationToken);
         storedOld.IsRevoked.Should().BeTrue();
         storedOld.ReplacedByToken.Should().Be(replacement.Token);
         (await _context.RefreshTokens.CountAsync(t => t.UserId == user.Id, TestContext.Current.CancellationToken)).Should().Be(2);
@@ -325,6 +439,19 @@ public class TokenServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CleanupExpiredTokensAsync_ShouldNotSave_WhenNothingIsDue()
+    {
+        _context.RefreshTokens.Add(RefreshToken.Create("test-user-id", 7));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var saves = 0;
+        _context.SavingChanges += (_, _) => saves++;
+
+        await _tokenService.CleanupExpiredTokensAsync();
+
+        saves.Should().Be(0);
+    }
+
+    [Fact]
     public async Task CleanupExpiredTokensAsync_ShouldRemoveTokensExpiredOverThirtyDaysAgo()
     {
         var oldExpired = RefreshToken.Create("test-user-id", -31);
@@ -334,7 +461,7 @@ public class TokenServiceTests : IDisposable
 
         await _tokenService.CleanupExpiredTokensAsync();
 
-        var remaining = await _context.RefreshTokens.ToListAsync(TestContext.Current.CancellationToken);
+        var remaining = await _context.RefreshTokens.AsNoTracking().ToListAsync(TestContext.Current.CancellationToken);
         remaining.Should().ContainSingle(t => t.Token == active.Token);
     }
 
@@ -351,7 +478,7 @@ public class TokenServiceTests : IDisposable
 
         await _tokenService.CleanupExpiredTokensAsync();
 
-        var remaining = await _context.RefreshTokens.ToListAsync(TestContext.Current.CancellationToken);
+        var remaining = await _context.RefreshTokens.AsNoTracking().ToListAsync(TestContext.Current.CancellationToken);
         remaining.Should().ContainSingle(t => t.Token == active.Token);
     }
 
@@ -366,7 +493,7 @@ public class TokenServiceTests : IDisposable
 
         await _tokenService.CleanupExpiredTokensAsync();
 
-        var remaining = await _context.RefreshTokens.ToListAsync(TestContext.Current.CancellationToken);
+        var remaining = await _context.RefreshTokens.AsNoTracking().ToListAsync(TestContext.Current.CancellationToken);
         remaining.Should().HaveCount(2);
     }
 }

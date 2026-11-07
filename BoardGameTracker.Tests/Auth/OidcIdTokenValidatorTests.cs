@@ -3,6 +3,7 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -37,6 +38,7 @@ public class OidcIdTokenValidatorTests : IDisposable
     private void VerifyNoOtherCalls()
     {
         _configurationsMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
     }
 
     private static OpenIdConnectConfiguration Configuration(params SecurityKey[] keys)
@@ -58,7 +60,6 @@ public class OidcIdTokenValidatorTests : IDisposable
     private void VerifyRefreshedOnce()
     {
         _configurationsMock.Verify(x => x.RefreshAsync(Authority, default), Times.Once);
-        VerifyNoOtherCalls();
     }
 
     private static OpenIdConnectConfiguration Advertising(string algorithm, params SecurityKey[] keys)
@@ -108,6 +109,9 @@ public class OidcIdTokenValidatorTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         VerifyRefreshedOnce();
+        _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenInvalidSignatureException");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -124,6 +128,9 @@ public class OidcIdTokenValidatorTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         VerifyRefreshedOnce();
+        _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenInvalidSignatureException");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -136,6 +143,7 @@ public class OidcIdTokenValidatorTests : IDisposable
 
         result.Subject.Should().Be("user-sub");
         _configurationsMock.Verify(x => x.RefreshAsync(Authority, default), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
         VerifyNoOtherCalls();
     }
 
@@ -149,6 +157,8 @@ public class OidcIdTokenValidatorTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         _configurationsMock.Verify(x => x.RefreshAsync(Authority, default), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenSignatureKeyNotFoundException");
         VerifyNoOtherCalls();
     }
 
@@ -161,6 +171,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenInvalidIssuerException");
         VerifyNoOtherCalls();
     }
 
@@ -173,6 +184,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenInvalidAudienceException");
         VerifyNoOtherCalls();
     }
 
@@ -185,6 +197,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was issued to another authorized party");
         VerifyNoOtherCalls();
     }
 
@@ -197,6 +210,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was issued to another authorized party");
         VerifyNoOtherCalls();
     }
 
@@ -219,6 +233,20 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt did not carry the nonce of this sign-in");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ShouldReject_AnEmptyNonce_EvenWhenAnEmptyNonceIsExpected()
+    {
+        var claims = ValidClaims();
+        claims["nonce"] = string.Empty;
+
+        var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), string.Empty);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt did not carry the nonce of this sign-in");
         VerifyNoOtherCalls();
     }
 
@@ -234,6 +262,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenExpiredException");
         VerifyNoOtherCalls();
     }
 
@@ -260,6 +289,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenNoExpirationException");
         VerifyNoOtherCalls();
     }
 
@@ -273,6 +303,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenNotYetValidException");
         VerifyNoOtherCalls();
     }
 
@@ -294,6 +325,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt has a missing or future iat claim");
         VerifyNoOtherCalls();
     }
 
@@ -315,6 +347,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt carried no sub claim");
         VerifyNoOtherCalls();
     }
 
@@ -327,6 +360,9 @@ public class OidcIdTokenValidatorTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         VerifyRefreshedOnce();
+        _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenSignatureKeyNotFoundException");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -338,6 +374,9 @@ public class OidcIdTokenValidatorTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         VerifyRefreshedOnce();
+        _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenInvalidSignatureException");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -352,8 +391,9 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, $"{header}.{parts[1]}.", Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
-        _configurationsMock.Verify(x => x.RefreshAsync(Authority, default), Times.AtMostOnce);
-        _configurationsMock.Invocations.Clear();
+        _configurationsMock.Verify(x => x.RefreshAsync(Authority, default), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenInvalidSignatureException");
         VerifyNoOtherCalls();
     }
 
@@ -367,6 +407,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         configuration.IdTokenSigningAlgValuesSupported.Add("HS256");
         configuration.IdTokenSigningAlgValuesSupported.Add("none");
         OidcIdTokenValidator.SupportedAlgorithms(configuration).Should().Equal("RS256");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -378,6 +419,9 @@ public class OidcIdTokenValidatorTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         VerifyRefreshedOnce();
+        _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
+        _loggerMock.VerifyLog(LogLevel.Warning, "https://idp.example.com/realms/bgt signs id_tokens only with algorithms that BoardGameTracker does not accept, such as HS256; set a signing key at the identity provider so it signs with RS256 or ES256");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -389,6 +433,8 @@ public class OidcIdTokenValidatorTests : IDisposable
 
         result.Subject.Should().Be("user-sub");
         VerifyRefreshedOnce();
+        _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -401,16 +447,13 @@ public class OidcIdTokenValidatorTests : IDisposable
 
         result.Subject.Should().Be("user-sub");
         VerifyRefreshedOnce();
+        _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
+        VerifyNoOtherCalls();
     }
 
     private void VerifyExpiredCertificateWarnings(Times times)
     {
-        _loggerMock.Verify(x => x.Log(
-            LogLevel.Warning,
-            It.IsAny<EventId>(),
-            It.Is<It.IsAnyType>((v, _) => v.ToString()!.Contains("signing certificate of " + Authority + " expired on 2026-05-08")),
-            It.IsAny<Exception?>(),
-            It.IsAny<Func<It.IsAnyType, Exception?, string>>()), times);
+        _loggerMock.VerifyLog(LogLevel.Warning, $"The signing certificate of {Authority} expired on 2026-05-08; consider rotating it at the identity provider", times);
     }
 
     private X509SecurityKey ExpiredCertificateKey()
@@ -436,9 +479,11 @@ public class OidcIdTokenValidatorTests : IDisposable
     [Fact]
     public async Task ValidateAsync_ShouldWarnAgain_AfterTheConfigurationWasRefreshed()
     {
-        await _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, _keys.Sign(ValidClaims()), Nonce);
-        await _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, _keys.Sign(ValidClaims()), Nonce);
+        var first = await _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, _keys.Sign(ValidClaims()), Nonce);
+        var second = await _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, _keys.Sign(ValidClaims()), Nonce);
 
+        first.Subject.Should().Be("user-sub");
+        second.Subject.Should().Be("user-sub");
         VerifyExpiredCertificateWarnings(Times.Exactly(2));
         VerifyNoOtherCalls();
     }
@@ -452,8 +497,10 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Advertising("RS256", ExpiredCertificateKey()), ClientId, attacker.Sign(ValidClaims()), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
-        VerifyExpiredCertificateWarnings(Times.Never());
         VerifyRefreshedOnce();
+        _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenInvalidSignatureException");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -464,7 +511,6 @@ public class OidcIdTokenValidatorTests : IDisposable
         var result = await _validator.ValidateAsync(Authority, Advertising("RS256", new X509SecurityKey(certificate, _keys.KeyId)), ClientId, _keys.Sign(ValidClaims()), Nonce);
 
         result.Subject.Should().Be("user-sub");
-        _loggerMock.Verify(x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception?>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -477,6 +523,47 @@ public class OidcIdTokenValidatorTests : IDisposable
         var act = () => _validator.ValidateAsync(Authority, Advertising("RS256", _keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenInvalidAudienceException");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void Limits_ShouldKeepTheirValues()
+    {
+        OidcIdTokenValidator.ClockSkew.Should().Be(TimeSpan.FromMinutes(2));
+        OidcIdTokenValidator.AllowedAlgorithms.Should().Equal("RS256", "ES256");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ShouldAcceptAnIssuedAtWithinTheClockSkew()
+    {
+        var claims = ValidClaims();
+        claims["iat"] = DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds();
+        claims.Remove("nbf");
+
+        var result = await _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
+
+        result.Subject.Should().Be("user-sub");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ShouldAcceptAnAuthorizedPartyThatIsTheClient_WithASingleAudience()
+    {
+        var claims = ValidClaims();
+        claims["azp"] = ClientId;
+
+        var result = await _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, _keys.Sign(claims), Nonce);
+
+        result.Subject.Should().Be("user-sub");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void SupportedAlgorithms_ShouldBeEmpty_WhenNothingAdvertisedIsAllowed()
+    {
+        OidcIdTokenValidator.SupportedAlgorithms(["HS256", "none"]).Should().BeEmpty();
         VerifyNoOtherCalls();
     }
 }

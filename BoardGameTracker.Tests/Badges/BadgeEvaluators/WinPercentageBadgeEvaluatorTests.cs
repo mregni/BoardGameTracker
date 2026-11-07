@@ -48,17 +48,25 @@ public class WinPercentageBadgeEvaluatorTests
     }
 
     [Theory]
+    [InlineData(BadgeLevel.Green, 29, 100, false)]
+    [InlineData(BadgeLevel.Green, 30, 100, true)]
     [InlineData(BadgeLevel.Green, 2, 10, false)]
     [InlineData(BadgeLevel.Green, 3, 10, true)]
     [InlineData(BadgeLevel.Green, 5, 10, true)]
+    [InlineData(BadgeLevel.Blue, 49, 100, false)]
+    [InlineData(BadgeLevel.Blue, 50, 100, true)]
     [InlineData(BadgeLevel.Blue, 4, 10, false)]
     [InlineData(BadgeLevel.Blue, 5, 10, true)]
     [InlineData(BadgeLevel.Blue, 7, 10, true)]
     [InlineData(BadgeLevel.Blue, 4, 7, true)]
+    [InlineData(BadgeLevel.Red, 64, 100, false)]
+    [InlineData(BadgeLevel.Red, 65, 100, true)]
     [InlineData(BadgeLevel.Red, 12, 20, false)]
     [InlineData(BadgeLevel.Red, 16, 25, false)]
     [InlineData(BadgeLevel.Red, 13, 20, true)]
     [InlineData(BadgeLevel.Red, 16, 20, true)]
+    [InlineData(BadgeLevel.Gold, 79, 100, false)]
+    [InlineData(BadgeLevel.Gold, 80, 100, true)]
     [InlineData(BadgeLevel.Gold, 7, 10, false)]
     [InlineData(BadgeLevel.Gold, 8, 10, true)]
     [InlineData(BadgeLevel.Gold, 10, 10, true)]
@@ -88,6 +96,24 @@ public class WinPercentageBadgeEvaluatorTests
     {
         var badge = TestBadges.Create(BadgeType.WinPercentage, BadgeLevel.Green);
         var sessions = CreateSessionsWithWins(0, 10);
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CanAwardBadge_ShouldOnlyCountWinsOfTheEvaluatedPlayer()
+    {
+        var badge = TestBadges.Create(BadgeType.WinPercentage, BadgeLevel.Green);
+        var sessions = new List<Session>();
+        for (var i = 0; i < 5; i++)
+        {
+            sessions.Add(new SessionBuilder().ForGame(1).DaysAgo(i)
+                .WithWinner(PlayerId + 1)
+                .WithPlayer(PlayerId)
+                .Build());
+        }
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 

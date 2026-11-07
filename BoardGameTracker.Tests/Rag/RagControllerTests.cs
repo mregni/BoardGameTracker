@@ -16,6 +16,7 @@ public class RagControllerTests
     private readonly Mock<IRagService> _ragServiceMock;
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly RagController _controller;
+    private readonly CancellationToken _token = new CancellationTokenSource().Token;
 
     public RagControllerTests()
     {
@@ -36,12 +37,11 @@ public class RagControllerTests
         _environmentProviderMock.Setup(x => x.RagEnabled).Returns(false);
         var command = new AskRagCommand { Question = "How does scoring work?" };
 
-        var result = await _controller.Ask(5, command, CancellationToken.None);
+        var result = await _controller.Ask(5, command, _token);
 
         result.Should().BeOfType<NotFoundResult>();
 
         _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
-        _ragServiceMock.Verify(x => x.AskAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -54,15 +54,15 @@ public class RagControllerTests
         var command = new AskRagCommand { Question = "How does scoring work?", ManualId = manualId };
         var answer = new RagAnswerDto { Answer = "Count the points.", HasContext = true };
         _ragServiceMock
-            .Setup(x => x.AskAsync(5, "How does scoring work?", manualId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.AskAsync(5, "How does scoring work?", manualId, _token))
             .ReturnsAsync(answer);
 
-        var result = await _controller.Ask(5, command, CancellationToken.None);
+        var result = await _controller.Ask(5, command, _token);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(answer);
 
         _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
-        _ragServiceMock.Verify(x => x.AskAsync(5, "How does scoring work?", manualId, It.IsAny<CancellationToken>()), Times.Once);
+        _ragServiceMock.Verify(x => x.AskAsync(5, "How does scoring work?", manualId, _token), Times.Once);
         VerifyNoOtherCalls();
     }
 }

@@ -33,7 +33,6 @@ public class MarathonRunnerBadgeEvaluatorTests
         var badge = TestBadges.Create(BadgeType.MarathonRunner, BadgeLevel.Green);
         var currentSession = new SessionBuilder().LastingMinutes(100).Build(); // Short current session
 
-        // Create a list with long sessions in history but short current session
         var sessions = new List<Session>
         {
             currentSession,

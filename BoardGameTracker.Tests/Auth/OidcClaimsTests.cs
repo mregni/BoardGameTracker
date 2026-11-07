@@ -46,7 +46,10 @@ public class OidcClaimsTests
     [Fact]
     public void Parse_ShouldTreatANonObjectAsEmpty()
     {
-        OidcClaims.Parse("[1,2]").Subject.Should().BeNull();
+        var claims = OidcClaims.Parse("[1,2]");
+
+        claims.Subject.Should().BeNull();
+        claims.Names.Should().BeEmpty();
     }
 
     [Theory]
@@ -56,6 +59,6 @@ public class OidcClaimsTests
     public void OidcIssuer_ShouldCompareIgnoringCaseAndTrailingSlashes(string issuer, string authority, bool expected)
     {
         OidcIssuer.Matches(issuer, authority).Should().Be(expected);
-        OidcIssuer.Normalize(issuer).Should().NotEndWith("/");
+        OidcIssuer.Normalize(issuer).Should().Be(issuer.Trim().TrimEnd('/'));
     }
 }

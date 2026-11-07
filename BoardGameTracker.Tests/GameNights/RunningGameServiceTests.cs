@@ -14,7 +14,7 @@ using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -52,7 +52,7 @@ public class RunningGameServiceTests
             _sessionServiceMock.Object,
             _unitOfWorkMock.Object,
             _dateTimeProviderMock.Object,
-            new Mock<ILogger<RunningGameService>>().Object);
+            NullLogger<RunningGameService>.Instance);
     }
 
     private void VerifyNoOtherCalls()
@@ -63,12 +63,38 @@ public class RunningGameServiceTests
         _playerServiceMock.VerifyNoOtherCalls();
         _sessionServiceMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
+        _dateTimeProviderMock.VerifyNoOtherCalls();
+    }
+
+    private static GameNightByIdSpec NightSpec(int id) =>
+        It.Is<GameNightByIdSpec>(s => s.IsSatisfiedBy(NightWithId(id)) && !s.IsSatisfiedBy(NightWithId(id + 1)));
+
+    private static RunningGameByIdSpec RunningSpec(int id) =>
+        It.Is<RunningGameByIdSpec>(s => s.IsSatisfiedBy(RunningGameWithId(id)) && !s.IsSatisfiedBy(RunningGameWithId(id + 1)));
+
+    private static GameNight NightWithId(int id)
+    {
+        var gameNight = CreateNight();
+        gameNight.Id = id;
+        return gameNight;
+    }
+
+    private static RunningGame RunningGameWithId(int id)
+    {
+        var runningGame = RunningGame.Create(3, 9, Now, [1]);
+        runningGame.Id = id;
+        return runningGame;
+    }
+
+    private void VerifyClockRead(int times)
+    {
+        _dateTimeProviderMock.VerifyGet(x => x.UtcNow, Times.Exactly(times));
     }
 
     private void SetupGameNight(GameNight? gameNight)
     {
         _gameNightRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(NightSpec(3), CancellationToken.None))
             .ReturnsAsync(gameNight);
     }
 
@@ -102,10 +128,10 @@ public class RunningGameServiceTests
         SetupGameNight(CreateNight());
         _gameServiceMock.Setup(x => x.ExistsAsync(9)).ReturnsAsync(true);
         _playerServiceMock
-            .Setup(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()))
+            .Setup(x => x.GetExistingIdsAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 1, 2 }))))
             .ReturnsAsync((IEnumerable<int> ids) => ids.ToList());
         _runningGameRepositoryMock
-            .Setup(x => x.CreateAsync(It.IsAny<RunningGame>()))
+            .Setup(x => x.CreateAsync(It.Is<RunningGame>(r => r.GameNightId == 3 && r.GameId == 9 && r.Start == Now)))
             .ReturnsAsync((RunningGame r) => r);
 
         var result = await _service.Start(3, new StartRunningGameCommand { GameId = 9, PlayerIds = [1, 2, 2] });
@@ -115,11 +141,12 @@ public class RunningGameServiceTests
         result.Start.Should().Be(Now);
         result.GetPlayerIds().Should().Equal(1, 2);
 
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(NightSpec(3), CancellationToken.None), Times.Once);
         _gameServiceMock.Verify(x => x.ExistsAsync(9), Times.Once);
         _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 1, 2 }))), Times.Once);
         _runningGameRepositoryMock.Verify(x => x.CreateAsync(result), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyClockRead(2);
         VerifyNoOtherCalls();
     }
 
@@ -130,8 +157,11 @@ public class RunningGameServiceTests
 
         var act = () => _service.Start(3, new StartRunningGameCommand { GameId = 9, PlayerIds = [1] });
 
-        await act.Should().ThrowAsync<EntityNotFoundException>();
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        var error = await act.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(GameNight));
+        error.Which.EntityId.Should().Be(3);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(NightSpec(3), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -146,7 +176,8 @@ public class RunningGameServiceTests
 
         var error = await act.Should().ThrowAsync<ValidationException>();
         error.Which.Message.Should().Be(Constants.Errors.GameNightEnded);
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(NightSpec(3), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -159,7 +190,9 @@ public class RunningGameServiceTests
 
         var error = await act.Should().ThrowAsync<ValidationException>();
         error.Which.Message.Should().Be(Constants.Errors.GameNightNotStarted);
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(NightSpec(3), CancellationToken.None), Times.Once);
+        VerifyClockRead(1);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -170,14 +203,16 @@ public class RunningGameServiceTests
         runningGame.Id = 12;
         typeof(RunningGame).GetProperty(nameof(RunningGame.GameNight))!.SetValue(runningGame, GameNight.Create("Night", "", Now.AddHours(13), 1, 5));
         _runningGameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None))
             .ReturnsAsync(runningGame);
 
         var act = () => _service.Finish(12, new FinishRunningGameCommand { PlayerSessions = [] });
 
         var error = await act.Should().ThrowAsync<ValidationException>();
         error.Which.Message.Should().Be(Constants.Errors.GameNightNotStarted);
-        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None), Times.Once);
+        VerifyClockRead(1);
+        _runningGameRepositoryMock.Verify(x => x.DeleteAsync(12), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -189,9 +224,13 @@ public class RunningGameServiceTests
 
         var act = () => _service.Start(3, new StartRunningGameCommand { GameId = 9, PlayerIds = [1] });
 
-        await act.Should().ThrowAsync<EntityNotFoundException>();
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        var error = await act.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(Game));
+        error.Which.EntityId.Should().Be(9);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(NightSpec(3), CancellationToken.None), Times.Once);
         _gameServiceMock.Verify(x => x.ExistsAsync(9), Times.Once);
+        VerifyClockRead(1);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -201,16 +240,18 @@ public class RunningGameServiceTests
         SetupGameNight(CreateNight());
         _gameServiceMock.Setup(x => x.ExistsAsync(9)).ReturnsAsync(true);
         _playerServiceMock
-            .Setup(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()))
+            .Setup(x => x.GetExistingIdsAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 1, 8 }))))
             .ReturnsAsync([1]);
 
         var act = () => _service.Start(3, new StartRunningGameCommand { GameId = 9, PlayerIds = [1, 8] });
 
         var error = await act.Should().ThrowAsync<EntityNotFoundException>();
         error.Which.EntityId.Should().Be(8);
-        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(NightSpec(3), CancellationToken.None), Times.Once);
         _gameServiceMock.Verify(x => x.ExistsAsync(9), Times.Once);
-        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 1, 8 }))), Times.Once);
+        VerifyClockRead(1);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -221,16 +262,22 @@ public class RunningGameServiceTests
         var session = new Session(9, runningGame.Start, Now, string.Empty) { Id = 40 };
         var players = new List<CreatePlayerSessionCommand> { new() { PlayerId = 1, Score = 88, Won = true } };
         _runningGameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None))
             .ReturnsAsync(runningGame);
         _sessionServiceMock
-            .Setup(x => x.CreateFromCommand(It.IsAny<CreateSessionCommand>()))
+            .Setup(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c =>
+            c.GameId == 9 &&
+            c.Start == runningGame.Start &&
+            c.Minutes == 37 &&
+            c.LocationId == 5 &&
+            c.GameNightId == 3 &&
+            c.PlayerSessions == players)))
             .ReturnsAsync(session);
 
         var result = await _service.Finish(12, new FinishRunningGameCommand { PlayerSessions = players });
 
         result.Should().BeSameAs(session);
-        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None), Times.Once);
         _runningGameRepositoryMock.Verify(x => x.DeleteAsync(12), Times.Once);
         _sessionServiceMock.Verify(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c =>
             c.GameId == 9 &&
@@ -239,6 +286,7 @@ public class RunningGameServiceTests
             c.LocationId == 5 &&
             c.GameNightId == 3 &&
             c.PlayerSessions == players)), Times.Once);
+        VerifyClockRead(2);
         VerifyNoOtherCalls();
     }
 
@@ -248,10 +296,10 @@ public class RunningGameServiceTests
         var runningGame = CreateRunningGame(Now.AddMinutes(-37));
         var start = Now.AddHours(-2);
         _runningGameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None))
             .ReturnsAsync(runningGame);
         _sessionServiceMock
-            .Setup(x => x.CreateFromCommand(It.IsAny<CreateSessionCommand>()))
+            .Setup(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c => c.Start == start && c.Minutes == 50)))
             .ReturnsAsync(new Session(9, start, Now, string.Empty));
 
         await _service.Finish(12, new FinishRunningGameCommand
@@ -261,9 +309,10 @@ public class RunningGameServiceTests
             Minutes = 50,
         });
 
-        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None), Times.Once);
         _runningGameRepositoryMock.Verify(x => x.DeleteAsync(12), Times.Once);
         _sessionServiceMock.Verify(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c => c.Start == start && c.Minutes == 50)), Times.Once);
+        VerifyClockRead(1);
         VerifyNoOtherCalls();
     }
 
@@ -272,10 +321,13 @@ public class RunningGameServiceTests
     {
         var runningGame = CreateRunningGame(Now.AddMinutes(-37));
         _runningGameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None))
             .ReturnsAsync(runningGame);
         _sessionServiceMock
-            .Setup(x => x.CreateFromCommand(It.IsAny<CreateSessionCommand>()))
+            .Setup(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c =>
+            c.LocationId == 8 &&
+            c.Comment == "Close one" &&
+            c.ExpansionIds.SequenceEqual(new[] { 3, 4 }))))
             .ReturnsAsync(new Session(9, runningGame.Start, Now, "Close one"));
 
         await _service.Finish(12, new FinishRunningGameCommand
@@ -286,12 +338,13 @@ public class RunningGameServiceTests
             ExpansionIds = [3, 4],
         });
 
-        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None), Times.Once);
         _runningGameRepositoryMock.Verify(x => x.DeleteAsync(12), Times.Once);
         _sessionServiceMock.Verify(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c =>
             c.LocationId == 8 &&
             c.Comment == "Close one" &&
             c.ExpansionIds.SequenceEqual(new[] { 3, 4 }))), Times.Once);
+        VerifyClockRead(2);
         VerifyNoOtherCalls();
     }
 
@@ -300,10 +353,10 @@ public class RunningGameServiceTests
     {
         var runningGame = CreateRunningGame(Now.AddMinutes(-37));
         _runningGameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None))
             .ReturnsAsync(runningGame);
         _sessionServiceMock
-            .Setup(x => x.CreateFromCommand(It.IsAny<CreateSessionCommand>()))
+            .Setup(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c => c.IsCoop && c.TeamWon == false && c.TeamScore == 14)))
             .ReturnsAsync(new Session(9, runningGame.Start, Now, string.Empty));
 
         await _service.Finish(12, new FinishRunningGameCommand
@@ -314,9 +367,10 @@ public class RunningGameServiceTests
             TeamScore = 14,
         });
 
-        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None), Times.Once);
         _runningGameRepositoryMock.Verify(x => x.DeleteAsync(12), Times.Once);
         _sessionServiceMock.Verify(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c => c.IsCoop && c.TeamWon == false && c.TeamScore == 14)), Times.Once);
+        VerifyClockRead(2);
         VerifyNoOtherCalls();
     }
 
@@ -325,17 +379,18 @@ public class RunningGameServiceTests
     {
         var runningGame = CreateRunningGame(Now.AddSeconds(-10));
         _runningGameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None))
             .ReturnsAsync(runningGame);
         _sessionServiceMock
-            .Setup(x => x.CreateFromCommand(It.IsAny<CreateSessionCommand>()))
+            .Setup(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c => c.Minutes == 1)))
             .ReturnsAsync(new Session(9, runningGame.Start, Now, string.Empty));
 
         await _service.Finish(12, new FinishRunningGameCommand { PlayerSessions = [new CreatePlayerSessionCommand { PlayerId = 1 }] });
 
-        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None), Times.Once);
         _runningGameRepositoryMock.Verify(x => x.DeleteAsync(12), Times.Once);
         _sessionServiceMock.Verify(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c => c.Minutes == 1)), Times.Once);
+        VerifyClockRead(2);
         VerifyNoOtherCalls();
     }
 
@@ -343,13 +398,16 @@ public class RunningGameServiceTests
     public async Task Finish_ShouldThrowEntityNotFound_WhenTheRunningGameDoesNotExist()
     {
         _runningGameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None))
             .ReturnsAsync((RunningGame?)null);
 
         var act = () => _service.Finish(12, new FinishRunningGameCommand { PlayerSessions = [new CreatePlayerSessionCommand { PlayerId = 1 }] });
 
-        await act.Should().ThrowAsync<EntityNotFoundException>();
-        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        var error = await act.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(RunningGame));
+        error.Which.EntityId.Should().Be(12);
+        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None), Times.Once);
+        _runningGameRepositoryMock.Verify(x => x.DeleteAsync(12), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -360,6 +418,84 @@ public class RunningGameServiceTests
 
         _runningGameRepositoryMock.Verify(x => x.DeleteAsync(12), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(1, false)]
+    public async Task Start_ShouldOpen_ExactlyTwelveHoursBeforeTheNight(int secondsTooEarly, bool allowed)
+    {
+        SetupGameNight(GameNight.Create("Night", "", Now.Add(GameNight.PlayOpensBefore).AddSeconds(secondsTooEarly), 1, 5));
+        _gameServiceMock.Setup(x => x.ExistsAsync(9)).ReturnsAsync(true);
+        _playerServiceMock
+            .Setup(x => x.GetExistingIdsAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 1 }))))
+            .ReturnsAsync([1]);
+
+        var act = () => _service.Start(3, new StartRunningGameCommand { GameId = 9, PlayerIds = [1] });
+
+        if (allowed)
+        {
+            await act.Should().NotThrowAsync();
+            _gameServiceMock.Verify(x => x.ExistsAsync(9), Times.Once);
+            _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 1 }))), Times.Once);
+            _runningGameRepositoryMock.Verify(x => x.CreateAsync(It.Is<RunningGame>(r => r.GameNightId == 3 && r.GameId == 9 && r.Start == Now)), Times.Once);
+            _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+            VerifyClockRead(2);
+        }
+        else
+        {
+            var error = await act.Should().ThrowAsync<ValidationException>();
+            error.Which.Message.Should().Be(Constants.Errors.GameNightNotStarted);
+            _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+            VerifyClockRead(1);
+        }
+
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(NightSpec(3), CancellationToken.None), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(89, 1)]
+    [InlineData(91, 2)]
+    [InlineData(1500, 25)]
+    public async Task Finish_ShouldRoundTheElapsedTime_ToWholeMinutes(int elapsedSeconds, int expectedMinutes)
+    {
+        var runningGame = CreateRunningGame(Now.AddSeconds(-elapsedSeconds));
+        _runningGameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None))
+            .ReturnsAsync(runningGame);
+        _sessionServiceMock
+            .Setup(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c => c.Minutes == expectedMinutes)))
+            .ReturnsAsync(new Session(9, runningGame.Start, Now, string.Empty));
+
+        await _service.Finish(12, new FinishRunningGameCommand { PlayerSessions = [new CreatePlayerSessionCommand { PlayerId = 1 }] });
+
+        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None), Times.Once);
+        _runningGameRepositoryMock.Verify(x => x.DeleteAsync(12), Times.Once);
+        _sessionServiceMock.Verify(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c => c.Minutes == expectedMinutes)), Times.Once);
+        VerifyClockRead(2);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Finish_ShouldCountTheMinutesFromTheChangedStart_WhenOnlyTheStartIsGiven()
+    {
+        var runningGame = CreateRunningGame(Now.AddMinutes(-37));
+        var start = Now.AddMinutes(-20);
+        _runningGameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None))
+            .ReturnsAsync(runningGame);
+        _sessionServiceMock
+            .Setup(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c => c.Start == start && c.Minutes == 20)))
+            .ReturnsAsync(new Session(9, start, Now, string.Empty));
+
+        await _service.Finish(12, new FinishRunningGameCommand { PlayerSessions = [new CreatePlayerSessionCommand { PlayerId = 1 }], Start = start });
+
+        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(RunningSpec(12), CancellationToken.None), Times.Once);
+        _runningGameRepositoryMock.Verify(x => x.DeleteAsync(12), Times.Once);
+        _sessionServiceMock.Verify(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c => c.Start == start && c.Minutes == 20)), Times.Once);
+        VerifyClockRead(2);
         VerifyNoOtherCalls();
     }
 }

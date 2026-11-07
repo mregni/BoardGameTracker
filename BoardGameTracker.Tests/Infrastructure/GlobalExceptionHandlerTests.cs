@@ -4,8 +4,10 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -22,36 +24,40 @@ public class GlobalExceptionHandlerTests
     public GlobalExceptionHandlerTests()
     {
         _problemDetailsServiceMock = new Mock<IProblemDetailsService>();
-        _problemDetailsServiceMock
-            .Setup(x => x.TryWriteAsync(It.IsAny<ProblemDetailsContext>()))
-            .Returns(ValueTask.FromResult(false));
         _loggerMock = new Mock<ILogger<GlobalExceptionHandler>>();
         _handler = new GlobalExceptionHandler(_problemDetailsServiceMock.Object, _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Debug,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.AtMostOnce());
+        _problemDetailsServiceMock.VerifyNoOtherCalls();
         _loggerMock.VerifyNoOtherCalls();
     }
 
     private void VerifyErrorLogged(Exception exception)
     {
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                exception,
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+        _loggerMock.VerifyLog(LogLevel.Error, "Unhandled exception occurred", exception);
+    }
+
+    private void VerifyDebugLogged(Exception exception, int statusCode)
+    {
+        _loggerMock.VerifyLog(LogLevel.Debug, $"Request POST /api/games failed with {statusCode}", exception);
+    }
+
+    private void VerifyProblemWritten(HttpContext httpContext, Exception exception, int statusCode, string title)
+    {
+        _problemDetailsServiceMock.Verify(
+            x => x.TryWriteAsync(It.Is<ProblemDetailsContext>(c =>
+                c.HttpContext == httpContext &&
+                c.Exception == exception &&
+                c.ProblemDetails.Status == statusCode &&
+                c.ProblemDetails.Title == title)),
             Times.Once);
+    }
+
+    private sealed class StartedResponseFeature : HttpResponseFeature
+    {
+        public override bool HasStarted => true;
     }
 
     private sealed class FakeDbException : System.Data.Common.DbException
@@ -64,6 +70,8 @@ public class GlobalExceptionHandlerTests
     private static (HttpContext httpContext, MemoryStream responseBody) CreateHttpContext()
     {
         var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = "POST";
+        httpContext.Request.Path = "/api/games";
         var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
         return (httpContext, responseBody);
@@ -91,6 +99,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be("Email is invalid");
 
+        VerifyProblemWritten(httpContext, exception, 400, "Email is invalid");
+        VerifyDebugLogged(exception, 400);
         VerifyNoOtherCalls();
     }
 
@@ -113,6 +123,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be("One or more validation errors occurred.");
 
+        VerifyProblemWritten(httpContext, exception, 400, "One or more validation errors occurred.");
+        VerifyDebugLogged(exception, 400);
         VerifyNoOtherCalls();
     }
 
@@ -131,6 +143,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be("Domain rule violated");
 
+        VerifyProblemWritten(httpContext, exception, 400, "Domain rule violated");
+        VerifyDebugLogged(exception, 400);
         VerifyNoOtherCalls();
     }
 
@@ -149,6 +163,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be("Custom domain error");
 
+        VerifyProblemWritten(httpContext, exception, 400, "Custom domain error");
+        VerifyDebugLogged(exception, 400);
         VerifyNoOtherCalls();
     }
 
@@ -167,6 +183,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(404);
         problemDetails.Title.Should().Be("The requested resource was not found.");
 
+        VerifyProblemWritten(httpContext, exception, 404, "The requested resource was not found.");
+        VerifyDebugLogged(exception, 404);
         VerifyNoOtherCalls();
     }
 
@@ -185,6 +203,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(404);
         problemDetails.Title.Should().Be("The requested resource was not found.");
 
+        VerifyProblemWritten(httpContext, exception, 404, "The requested resource was not found.");
+        VerifyDebugLogged(exception, 404);
         VerifyNoOtherCalls();
     }
 
@@ -203,6 +223,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(404);
         problemDetails.Title.Should().Be("The requested resource was not found.");
 
+        VerifyProblemWritten(httpContext, exception, 404, "The requested resource was not found.");
+        VerifyDebugLogged(exception, 404);
         VerifyNoOtherCalls();
     }
 
@@ -221,6 +243,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be("Invalid request.");
 
+        VerifyProblemWritten(httpContext, exception, 400, "Invalid request.");
+        VerifyDebugLogged(exception, 400);
         VerifyNoOtherCalls();
     }
 
@@ -239,6 +263,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(429);
         problemDetails.Title.Should().Be("BoardGameGeek is rate-limiting requests. Please wait a moment and try again.");
 
+        VerifyProblemWritten(httpContext, exception, 429, "BoardGameGeek is rate-limiting requests. Please wait a moment and try again.");
+        VerifyDebugLogged(exception, 429);
         VerifyNoOtherCalls();
     }
 
@@ -257,6 +283,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(504);
         problemDetails.Title.Should().Be("BoardGameGeek is still preparing your collection. Please try again in a moment.");
 
+        VerifyProblemWritten(httpContext, exception, 504, "BoardGameGeek is still preparing your collection. Please try again in a moment.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
@@ -277,6 +304,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
         problemDetails.Title.Should().NotBe("This is a sensitive internal error message");
 
+        VerifyProblemWritten(httpContext, exception, 500, "An unexpected error occurred. Please try again later.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
@@ -297,6 +325,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
         problemDetails.Title.Should().NotContain("Object reference not set");
 
+        VerifyProblemWritten(httpContext, exception, 500, "An unexpected error occurred. Please try again later.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
@@ -316,6 +345,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(500);
         problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
 
+        VerifyProblemWritten(httpContext, exception, 500, "An unexpected error occurred. Please try again later.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
@@ -336,6 +366,8 @@ public class GlobalExceptionHandlerTests
         var problemDetails = await GetProblemDetailsFromResponse(responseBody);
         problemDetails.Title.Should().Be("error.auth.account-locked-out");
 
+        VerifyProblemWritten(httpContext, exception, 401, "error.auth.account-locked-out");
+        VerifyDebugLogged(exception, 401);
         VerifyNoOtherCalls();
     }
 
@@ -354,6 +386,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(500);
         problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
 
+        VerifyProblemWritten(httpContext, exception, 500, "An unexpected error occurred. Please try again later.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
@@ -377,13 +410,18 @@ public class GlobalExceptionHandlerTests
     [Fact]
     public async Task TryHandleAsync_WithOperationCanceledButLiveRequest_ShouldReturn500AndLog()
     {
-        var (httpContext, _) = CreateHttpContext();
+        var (httpContext, responseBody) = CreateHttpContext();
         var exception = new OperationCanceledException();
 
         var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
 
         result.Should().BeTrue();
         httpContext.Response.StatusCode.Should().Be(500);
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(500);
+        problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
+
+        VerifyProblemWritten(httpContext, exception, 500, "An unexpected error occurred. Please try again later.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
@@ -402,6 +440,8 @@ public class GlobalExceptionHandlerTests
         var problemDetails = await GetProblemDetailsFromResponse(responseBody);
         problemDetails.Status.Should().Be(413);
         problemDetails.Title.Should().Be("Request body too large.");
+        VerifyProblemWritten(httpContext, exception, 413, "Request body too large.");
+        VerifyDebugLogged(exception, 413);
         VerifyNoOtherCalls();
     }
 
@@ -409,20 +449,51 @@ public class GlobalExceptionHandlerTests
     public async Task TryHandleAsync_ShouldWriteThroughProblemDetailsService_WhenItAcceptsTheContext()
     {
         var (httpContext, responseBody) = CreateHttpContext();
-        ProblemDetailsContext? captured = null;
+        var exception = new EntityNotFoundException("Game", 1);
         _problemDetailsServiceMock
-            .Setup(x => x.TryWriteAsync(It.IsAny<ProblemDetailsContext>()))
-            .Callback<ProblemDetailsContext>(context => captured = context)
+            .Setup(x => x.TryWriteAsync(It.Is<ProblemDetailsContext>(c => c.HttpContext == httpContext)))
             .Returns(ValueTask.FromResult(true));
 
-        var result = await _handler.TryHandleAsync(httpContext, new EntityNotFoundException("Game", 1), CancellationToken.None);
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
 
         result.Should().BeTrue();
         httpContext.Response.StatusCode.Should().Be(404);
         responseBody.Length.Should().Be(0);
-        captured.Should().NotBeNull();
-        captured!.ProblemDetails.Status.Should().Be(404);
-        captured.ProblemDetails.Title.Should().Be("The requested resource was not found.");
+        VerifyProblemWritten(httpContext, exception, 404, "The requested resource was not found.");
+        VerifyDebugLogged(exception, 404);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_ShouldLeaveTheResponseAlone_WhenItAlreadyStarted()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        httpContext.Features.Set<IHttpResponseFeature>(new StartedResponseFeature { StatusCode = 200 });
+        var exception = new InvalidOperationException("Late failure");
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeFalse();
+        httpContext.Response.StatusCode.Should().Be(200);
+        responseBody.Length.Should().Be(0);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Exception after the response started for POST /api/games", exception);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_ShouldPassTheTokenToTheFallbackWrite()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+        var exception = new DomainException("Domain rule violated");
+
+        var act = async () => await _handler.TryHandleAsync(httpContext, exception, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        responseBody.Length.Should().Be(0);
+        VerifyProblemWritten(httpContext, exception, 400, "Domain rule violated");
+        VerifyDebugLogged(exception, 400);
         VerifyNoOtherCalls();
     }
 
@@ -445,6 +516,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be("Invalid request.");
 
+        VerifyProblemWritten(httpContext, exception, 400, "Invalid request.");
+        VerifyDebugLogged(exception, 400);
         VerifyNoOtherCalls();
     }
 
@@ -463,8 +536,9 @@ public class GlobalExceptionHandlerTests
 
         var problemDetails = await GetProblemDetailsFromResponse(responseBody);
         problemDetails.Status.Should().Be(503);
-        problemDetails.Title.Should().Be(exception.Message);
+        problemDetails.Title.Should().Be("BGG features are disabled. Please configure a BGG API key in settings.");
 
+        VerifyProblemWritten(httpContext, exception, 503, "BGG features are disabled. Please configure a BGG API key in settings.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
@@ -485,6 +559,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Title.Should().Be("The requested feature is not configured.");
         problemDetails.Title.Should().NotContain("BGG_API_KEY");
 
+        VerifyProblemWritten(httpContext, exception, 503, "The requested feature is not configured.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
@@ -506,6 +581,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Title.Should().Be("The BoardGameGeek service is currently unavailable. Please try again later.");
         problemDetails.Title.Should().NotContain("Sensitive upstream detail");
 
+        VerifyProblemWritten(httpContext, exception, 502, "The BoardGameGeek service is currently unavailable. Please try again later.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
@@ -525,6 +601,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(409);
         problemDetails.Title.Should().Be("The resource was modified by another request. Please retry.");
 
+        VerifyProblemWritten(httpContext, exception, 409, "The resource was modified by another request. Please retry.");
+        VerifyDebugLogged(exception, 409);
         VerifyNoOtherCalls();
     }
 
@@ -543,6 +621,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be("The request references data that does not exist or conflicts with existing data.");
 
+        VerifyProblemWritten(httpContext, exception, 400, "The request references data that does not exist or conflicts with existing data.");
+        VerifyDebugLogged(exception, 400);
         VerifyNoOtherCalls();
     }
 
@@ -559,7 +639,9 @@ public class GlobalExceptionHandlerTests
 
         var problemDetails = await GetProblemDetailsFromResponse(responseBody);
         problemDetails.Status.Should().Be(500);
+        problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
 
+        VerifyProblemWritten(httpContext, exception, 500, "An unexpected error occurred. Please try again later.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
@@ -581,6 +663,8 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be("The request contains invalid data.");
 
+        VerifyProblemWritten(httpContext, exception, 400, "The request contains invalid data.");
+        VerifyDebugLogged(exception, 400);
         VerifyNoOtherCalls();
     }
 
@@ -601,6 +685,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(500);
         problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
 
+        VerifyProblemWritten(httpContext, exception, 500, "An unexpected error occurred. Please try again later.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
@@ -633,7 +718,9 @@ public class GlobalExceptionHandlerTests
 
         var problemDetails = await GetProblemDetailsFromResponse(responseBody);
         problemDetails.Status.Should().Be(500);
+        problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
 
+        VerifyProblemWritten(httpContext, exception, 500, "An unexpected error occurred. Please try again later.");
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }

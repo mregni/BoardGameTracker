@@ -18,7 +18,9 @@ public class CloseLossBadgeEvaluatorTests
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly CloseLossBadgeEvaluator _evaluator;
     private const int PlayerId = 1;
-    private const int GameId = 1;
+    private const int GameId = 7;
+    private static readonly Game EvaluatedGame = new("Evaluated") { Id = GameId };
+    private static readonly Game OtherGame = new("Other") { Id = GameId + 1 };
 
     public CloseLossBadgeEvaluatorTests()
     {
@@ -30,6 +32,7 @@ public class CloseLossBadgeEvaluatorTests
     public void BadgeType_ShouldBeCloseLoss()
     {
         _evaluator.BadgeType.Should().Be(BadgeType.CloseLoss);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -100,7 +103,7 @@ public class CloseLossBadgeEvaluatorTests
     {
         var badge = TestBadges.Create(BadgeType.CloseLoss, BadgeLevel.Green);
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.Is<GameHasScoringSpec>(s => s.IsSatisfiedBy(EvaluatedGame) && !s.IsSatisfiedBy(OtherGame)), CancellationToken.None))
             .ReturnsAsync(false);
 
         var session = new SessionBuilder().ForGame(GameId)
@@ -121,7 +124,7 @@ public class CloseLossBadgeEvaluatorTests
     {
         var badge = TestBadges.Create(BadgeType.CloseLoss, BadgeLevel.Green);
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.Is<GameHasScoringSpec>(s => s.IsSatisfiedBy(EvaluatedGame) && !s.IsSatisfiedBy(OtherGame)), CancellationToken.None))
             .ReturnsAsync((bool?)null);
 
         var session = new SessionBuilder().ForGame(GameId)
@@ -224,6 +227,49 @@ public class CloseLossBadgeEvaluatorTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task CanAwardBadge_ShouldReturnFalse_WhenNobodyWon()
+    {
+        var badge = TestBadges.Create(BadgeType.CloseLoss, BadgeLevel.Green);
+        SetupGameWithScoring();
+
+        var session = new SessionBuilder().ForGame(GameId)
+            .WithPlayer(PlayerId, 99)
+            .WithPlayer(2, 100)
+            .Build();
+        var sessions = new List<Session> { session };
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
+
+        result.Should().BeFalse();
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(99, 100, 110, true)]
+    [InlineData(99, 110, 100, true)]
+    [InlineData(98, 100, 110, true)]
+    [InlineData(97, 100, 110, false)]
+    public async Task CanAwardBadge_ShouldCompareWithTheClosestWinner_WhenThereAreSeveralWinners(double playerScore, double firstWinnerScore, double secondWinnerScore, bool expected)
+    {
+        var badge = TestBadges.Create(BadgeType.CloseLoss, BadgeLevel.Green);
+        SetupGameWithScoring();
+
+        var session = new SessionBuilder().ForGame(GameId)
+            .WithPlayer(PlayerId, playerScore)
+            .WithWinner(2, firstWinnerScore)
+            .WithWinner(3, secondWinnerScore)
+            .Build();
+        var sessions = new List<Session> { session };
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
+
+        result.Should().Be(expected);
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
+    }
+
     [Theory]
     [InlineData(BadgeLevel.Green)]
     [InlineData(BadgeLevel.Blue)]
@@ -250,13 +296,13 @@ public class CloseLossBadgeEvaluatorTests
     private void SetupGameWithScoring()
     {
         _gameRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.Is<GameHasScoringSpec>(s => s.IsSatisfiedBy(EvaluatedGame) && !s.IsSatisfiedBy(OtherGame)), CancellationToken.None))
             .ReturnsAsync(true);
     }
 
     private void VerifyGameLookup()
     {
-        _gameRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.Is<GameHasScoringSpec>(s => s.IsSatisfiedBy(EvaluatedGame) && !s.IsSatisfiedBy(OtherGame)), CancellationToken.None), Times.Once);
     }
 
     private void VerifyNoOtherCalls()

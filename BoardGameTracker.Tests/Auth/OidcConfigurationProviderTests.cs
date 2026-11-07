@@ -7,8 +7,10 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Moq;
 using Xunit;
@@ -21,6 +23,7 @@ public class OidcConfigurationProviderTests : IDisposable
 
     private readonly MetadataHandler _handler = new();
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
+    private readonly Mock<ILogger<OidcConfigurationProvider>> _loggerMock = new();
     private readonly TestIdTokens _keys = new();
 
     public OidcConfigurationProviderTests()
@@ -45,10 +48,21 @@ public class OidcConfigurationProviderTests : IDisposable
     }
 
     private OidcConfigurationProvider CreateProvider(TimeSpan? minimumRefreshInterval = null) =>
-        new(_httpClientFactoryMock.Object, Mock.Of<ILogger<OidcConfigurationProvider>>())
+        new(_httpClientFactoryMock.Object, _loggerMock.Object)
         {
             MinimumRefreshInterval = minimumRefreshInterval ?? TimeSpan.FromSeconds(30),
         };
+
+    private void VerifyClients(int times)
+    {
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(times));
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _httpClientFactoryMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
+    }
 
     [Fact]
     public async Task GetAsync_ShouldLoadTheDiscoveryDocumentAndItsSigningKeys()
@@ -60,6 +74,9 @@ public class OidcConfigurationProviderTests : IDisposable
         configuration.Issuer.Should().Be(Authority);
         configuration.EndSessionEndpoint.Should().Be($"{Authority}/logout");
         configuration.SigningKeys.Should().ContainSingle(k => k.KeyId == _keys.KeyId);
+        _handler.Requests.Should().Equal($"{Authority}/.well-known/openid-configuration", $"{Authority}/certs");
+        VerifyClients(2);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -71,6 +88,8 @@ public class OidcConfigurationProviderTests : IDisposable
         await provider.GetAsync(Authority);
 
         _handler.Requests.Should().HaveCount(2);
+        VerifyClients(2);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -85,6 +104,9 @@ public class OidcConfigurationProviderTests : IDisposable
 
         configuration.SigningKeys.Should().ContainSingle(k => k.KeyId == "key-2");
         _handler.Requests.Should().HaveCount(4);
+        VerifyClients(4);
+        _loggerMock.VerifyLog(LogLevel.Information, $"Refetching the OIDC configuration and signing keys of {Authority}");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -96,6 +118,8 @@ public class OidcConfigurationProviderTests : IDisposable
         await provider.RefreshAsync(Authority);
 
         _handler.Requests.Should().HaveCount(2);
+        VerifyClients(2);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -108,6 +132,8 @@ public class OidcConfigurationProviderTests : IDisposable
         await provider.GetAsync(Authority);
 
         _handler.Requests.Should().HaveCount(4);
+        VerifyClients(4);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -121,6 +147,25 @@ public class OidcConfigurationProviderTests : IDisposable
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
         _handler.Fail = false;
         (await provider.GetAsync(Authority)).Issuer.Should().Be(Authority);
+        VerifyClients(3);
+        _loggerMock.VerifyLog(LogLevel.Error, $"The OIDC configuration of {Authority} could not be loaded");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetAsync_ShouldReportADiscoveryFailure_WhenTheCallerCancelsWhileTheFetchFails()
+    {
+        var provider = CreateProvider();
+        using var caller = new CancellationTokenSource();
+        _handler.Fail = true;
+        _handler.OnRequest = caller.Cancel;
+
+        var act = () => provider.GetAsync(Authority, caller.Token);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
+        VerifyClients(1);
+        _loggerMock.VerifyLog(LogLevel.Error, $"The OIDC configuration of {Authority} could not be loaded");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -139,6 +184,59 @@ public class OidcConfigurationProviderTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
         _handler.Requests.Should().NotContain("http://keys.example.com/certs");
+        VerifyClients(1);
+        _loggerMock.VerifyLog(LogLevel.Error, $"The OIDC configuration of {Authority} could not be loaded");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void RefreshIntervals_ShouldKeepTheirDefaults()
+    {
+        var provider = new OidcConfigurationProvider(_httpClientFactoryMock.Object, _loggerMock.Object);
+
+        provider.MinimumRefreshInterval.Should().Be(TimeSpan.FromSeconds(30));
+        provider.AutomaticRefreshInterval.Should().Be(TimeSpan.FromHours(1));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldLoadTheConfiguration_WhenNothingIsCachedYet()
+    {
+        var provider = CreateProvider(TimeSpan.FromMinutes(5));
+
+        var configuration = await provider.RefreshAsync(Authority + "/");
+
+        configuration.Issuer.Should().Be(Authority);
+        _handler.Requests.Should().HaveCount(2);
+        VerifyClients(2);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Invalidate_ShouldIgnoreCaseAndTrailingSlashes()
+    {
+        var provider = CreateProvider();
+        await provider.GetAsync(Authority);
+
+        provider.Invalidate("https://IDP.example.com/realms/bgt/");
+        await provider.GetAsync(Authority);
+
+        _handler.Requests.Should().HaveCount(4);
+        VerifyClients(4);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetAsync_ShouldPassOnCancellation_WithoutReportingADiscoveryFailure()
+    {
+        var provider = CreateProvider();
+        using var cancelled = new CancellationTokenSource();
+        await cancelled.CancelAsync();
+
+        var act = () => provider.GetAsync(Authority, cancelled.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        VerifyNoOtherCalls();
     }
 
     private void Advertise(string algorithm)
@@ -155,7 +253,7 @@ public class OidcConfigurationProviderTests : IDisposable
 
     private Task<OidcIdToken> ValidateAsync(OidcConfigurationProvider provider, OpenIdConnectConfiguration configuration)
     {
-        var validator = new OidcIdTokenValidator(provider, Mock.Of<ILogger<OidcIdTokenValidator>>());
+        var validator = new OidcIdTokenValidator(provider, NullLogger<OidcIdTokenValidator>.Instance);
         return validator.ValidateAsync(Authority, configuration, "bgt-client", _keys.Sign(TestIdTokens.Claims(Authority, "bgt-client", "user-sub", "nonce")), "nonce");
     }
 
@@ -171,6 +269,9 @@ public class OidcConfigurationProviderTests : IDisposable
 
         result.Subject.Should().Be("user-sub");
         _handler.Requests.Should().HaveCount(4);
+        VerifyClients(4);
+        _loggerMock.VerifyLog(LogLevel.Information, $"Refetching the OIDC configuration and signing keys of {Authority}");
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -185,6 +286,8 @@ public class OidcConfigurationProviderTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         _handler.Requests.Should().HaveCount(2);
+        VerifyClients(2);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -200,6 +303,8 @@ public class OidcConfigurationProviderTests : IDisposable
 
         result.Subject.Should().Be("user-sub");
         _handler.Requests.Should().HaveCount(2);
+        VerifyClients(2);
+        VerifyNoOtherCalls();
     }
 
     private sealed class MetadataHandler : HttpMessageHandler
@@ -210,10 +315,13 @@ public class OidcConfigurationProviderTests : IDisposable
 
         public bool Fail { get; set; }
 
+        public Action? OnRequest { get; set; }
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var address = request.RequestUri!.ToString();
             Requests.Add(address);
+            OnRequest?.Invoke();
             if (Fail || !Documents.TryGetValue(address, out var document))
             {
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));

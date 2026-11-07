@@ -212,7 +212,7 @@ public class HeadToHeadCalculatorTests
 
         HeadToHeadCalculator.Fill(result, sessions, PlayerOne, PlayerTwo);
 
-        result.RecentSessions.Should().HaveCount(HeadToHeadCalculator.RecentSessionCount);
+        result.RecentSessions.Should().HaveCount(10);
         result.RecentSessions[0].Should().BeEquivalentTo(new CompareSession
         {
             SessionId = sessions[0].SessionId,
@@ -400,5 +400,88 @@ public class HeadToHeadCalculatorTests
     {
         HeadToHeadCalculator.Closest([Session(1, 0, oneWon: true, oneScore: 3, twoScore: 1)], PlayerOne, PlayerTwo)!
             .PlayerId.Should().Be(PlayerOne);
+    }
+
+    [Fact]
+    public void Closest_ShouldPreferTheMostRecentSession_WhenTheGapIsTheSame()
+    {
+        var sessions = new List<SessionTogether>
+        {
+            Session(1, 4, oneWon: true, oneScore: 10, twoScore: 8),
+            Session(2, 1, twoWon: true, oneScore: 8, twoScore: 10)
+        };
+
+        HeadToHeadCalculator.Closest(sessions, PlayerOne, PlayerTwo)!.GameId.Should().Be(2);
+    }
+
+    [Fact]
+    public void Games_ShouldUseTheHighestSessionIdAsTheLastResult_WhenSessionsStartedAtTheSameTime()
+    {
+        var sessions = new List<SessionTogether> { Session(1, 0, oneWon: true), Session(1, 0, twoWon: true) };
+
+        HeadToHeadCalculator.Games(sessions).Single().LastOutcome.Should().Be(CompareOutcome.PlayerTwo);
+    }
+
+    [Fact]
+    public void Games_ShouldOrderOnGameId_WhenCountAndLastPlayedAreEqual()
+    {
+        var sessions = new List<SessionTogether> { Session(9, 2), Session(4, 2) };
+
+        HeadToHeadCalculator.Games(sessions).Select(g => g.GameId).Should().Equal(4, 9);
+    }
+
+    [Fact]
+    public void Games_ShouldNotCountASessionAsScored_WhenNeitherPlayerHasAScore()
+    {
+        var sessions = new List<SessionTogether>
+        {
+            Session(1, 0),
+            Session(1, 1, teamWon: true, oneScore: 5, twoScore: 5),
+            Session(1, 2, twoScore: 5)
+        };
+
+        HeadToHeadCalculator.Games(sessions).Single().ScoredSessionCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void Fill_ShouldUseTheLowestSessionIdAsTheFirstGame_WhenSessionsStartedAtTheSameTime()
+    {
+        var result = new CompareResultDto();
+
+        HeadToHeadCalculator.Fill(result, [Session(3, 0), Session(4, 0)], PlayerOne, PlayerTwo);
+
+        result.FirstGameTogether.Should().BeEquivalentTo(new FirstGameTogether { GameId = 3, StartDate = Day });
+    }
+
+    [Fact]
+    public void Fill_ShouldFillTheBestGamesForBothPlayers()
+    {
+        var sessions = new List<SessionTogether>
+        {
+            Session(1, 0, oneWon: true),
+            Session(1, 1, oneWon: true),
+            Session(1, 2, twoWon: true),
+            Session(2, 3, twoWon: true),
+            Session(2, 4, twoWon: true),
+            Session(2, 5, twoWon: true)
+        };
+        var result = new CompareResultDto();
+
+        HeadToHeadCalculator.Fill(result, sessions, PlayerOne, PlayerTwo);
+
+        result.BestGames.PlayerOne.Should().Equal(1);
+        result.BestGames.PlayerTwo.Should().Equal(2);
+    }
+
+    [Fact]
+    public void BestGames_ShouldOrderOnGameId_WhenLeadAndSessionCountAreEqual()
+    {
+        var games = new List<CompareGame>
+        {
+            new() { GameId = 8, SessionCount = 3, PlayerOneWins = 2 },
+            new() { GameId = 3, SessionCount = 3, PlayerOneWins = 2 }
+        };
+
+        HeadToHeadCalculator.BestGames(games, CompareOutcome.PlayerOne).Should().Equal(3, 8);
     }
 }

@@ -1,3 +1,4 @@
+using Ardalis.Specification;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Rag.Specifications;
 using FluentAssertions;
@@ -35,5 +36,13 @@ public class NearestManualChunksSpecTests
         spec.Take.Should().Be(7);
         spec.Selector.Should().NotBeNull();
         spec.AsNoTracking.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Spec_ShouldOrderByAscendingDistance_SoTheNearestChunksComeFirst()
+    {
+        var spec = new NearestManualChunksSpec(1, QueryVector(), 7);
+
+        spec.OrderExpressions.Should().ContainSingle().Which.OrderType.Should().Be(OrderTypeEnum.OrderBy);
     }
 }

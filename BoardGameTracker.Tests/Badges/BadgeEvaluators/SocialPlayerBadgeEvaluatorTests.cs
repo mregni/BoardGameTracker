@@ -45,7 +45,6 @@ public class SocialPlayerBadgeEvaluatorTests
         var badge = TestBadges.Create(BadgeType.SocialPlayer, BadgeLevel.Green);
         var sessions = new List<Session>();
 
-        // Create sessions where player only plays with themselves (solo)
         for (var i = 0; i < 10; i++)
         {
             var session = new SessionBuilder().ForGame(1).DaysAgo(i)
@@ -65,7 +64,6 @@ public class SocialPlayerBadgeEvaluatorTests
         var badge = TestBadges.Create(BadgeType.SocialPlayer, BadgeLevel.Green);
         var sessions = new List<Session>();
 
-        // Create 10 sessions but only with 3 different opponents
         for (var i = 0; i < 10; i++)
         {
             var session = new SessionBuilder().ForGame(1).DaysAgo(i)
@@ -86,7 +84,6 @@ public class SocialPlayerBadgeEvaluatorTests
         var badge = TestBadges.Create(BadgeType.SocialPlayer, BadgeLevel.Green);
         var sessions = new List<Session>();
 
-        // Create 5 sessions, each with a unique opponent
         for (var i = 0; i < 5; i++)
         {
             var session = new SessionBuilder().ForGame(1).DaysAgo(i)
@@ -107,7 +104,6 @@ public class SocialPlayerBadgeEvaluatorTests
         var badge = TestBadges.Create(BadgeType.SocialPlayer, BadgeLevel.Green);
         var sessions = new List<Session>();
 
-        // Create 2 sessions with multiple opponents each
         var session1 = new SessionBuilder().ForGame(1)
             .WithWinner(PlayerId)
             .WithPlayer(2)
@@ -170,7 +166,6 @@ public class SocialPlayerBadgeEvaluatorTests
     {
         var sessions = new List<Session>();
 
-        // Create sessions with one opponent each
         for (var i = 0; i < opponentCount; i++)
         {
             var session = new SessionBuilder().ForGame(1).DaysAgo(i)

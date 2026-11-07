@@ -8,7 +8,7 @@ using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using BoardGameTracker.Tests.Support;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -20,7 +20,6 @@ public class BadgeServiceTests
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IBadgeEvaluator> _sessionsEvaluatorMock;
     private readonly Mock<IBadgeEvaluator> _winsEvaluatorMock;
-    private readonly Mock<ILogger<BadgeService>> _loggerMock;
     private readonly BadgeService _badgeService;
 
     public BadgeServiceTests()
@@ -29,7 +28,6 @@ public class BadgeServiceTests
         _sessionRepositoryMock = new Mock<ISessionRepository>();
         _sessionsEvaluatorMock = new Mock<IBadgeEvaluator>();
         _winsEvaluatorMock = new Mock<IBadgeEvaluator>();
-        _loggerMock = new Mock<ILogger<BadgeService>>();
 
         _sessionsEvaluatorMock.Setup(x => x.BadgeType).Returns(BadgeType.Sessions);
         _winsEvaluatorMock.Setup(x => x.BadgeType).Returns(BadgeType.Wins);
@@ -44,20 +42,24 @@ public class BadgeServiceTests
             _badgeRepositoryMock.Object,
             _sessionRepositoryMock.Object,
             evaluators,
-            _loggerMock.Object);
+            NullLogger<BadgeService>.Instance);
     }
 
     private void VerifyNoOtherCalls()
     {
         _badgeRepositoryMock.VerifyNoOtherCalls();
         _sessionRepositoryMock.VerifyNoOtherCalls();
+        _sessionsEvaluatorMock.Verify(x => x.BadgeType, Times.Once);
+        _sessionsEvaluatorMock.VerifyNoOtherCalls();
+        _winsEvaluatorMock.Verify(x => x.BadgeType, Times.Once);
+        _winsEvaluatorMock.VerifyNoOtherCalls();
     }
 
-    private void VerifyAwardRepositoryReads()
+    private void VerifyAwardRepositoryReads(params int[] playerIds)
     {
         _badgeRepositoryMock.Verify(x => x.GetAllAsync(), Times.Once);
-        _badgeRepositoryMock.Verify(x => x.GetPlayerBadgesBatchAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.GetByPlayerBatchAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _badgeRepositoryMock.Verify(x => x.GetPlayerBadgesBatchAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(playerIds))), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.GetByPlayerBatchAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(playerIds))), Times.Once);
     }
 
     #region GetAllBadgesAsync Tests
@@ -65,7 +67,6 @@ public class BadgeServiceTests
     [Fact]
     public async Task GetAllBadgesAsync_ShouldReturnAllBadges_WhenBadgesExist()
     {
-        // Arrange
         var badges = new List<Badge>
         {
             Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green),
@@ -77,10 +78,8 @@ public class BadgeServiceTests
             .Setup(x => x.GetAllAsync())
             .ReturnsAsync(badges);
 
-        // Act
         var result = await _badgeService.GetAllBadgesAsync();
 
-        // Assert
         result.Should().BeEquivalentTo(badges);
 
         _badgeRepositoryMock.Verify(x => x.GetAllAsync(), Times.Once);
@@ -94,20 +93,17 @@ public class BadgeServiceTests
     [Fact]
     public async Task AwardBadgesAsync_ShouldReturnEarly_WhenSessionHasNoPlayers()
     {
-        // Arrange
         var session = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Test session");
 
-        // Act
         await _badgeService.AwardBadgesAsync(session);
 
-        // Assert
+        _badgeRepositoryMock.Verify(x => x.GetAllAsync(), Times.Never);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task AwardBadgesAsync_ShouldAwardBadge_WhenEvaluatorReturnsTrue()
     {
-        // Arrange
         var playerId = 1;
         var session = new SessionBuilder().WithWinner(playerId, 100).Build();
         var badge = Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green);
@@ -127,20 +123,17 @@ public class BadgeServiceTests
             .Setup(x => x.AwardBadgeToPlayer(playerId, badge.Id))
             .ReturnsAsync(true);
 
-        // Act
         await _badgeService.AwardBadgesAsync(session);
 
-        // Assert
         _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, badge.Id), Times.Once);
         _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, badge, session, playerSessions), Times.Once);
-        VerifyAwardRepositoryReads();
+        VerifyAwardRepositoryReads(playerId);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task AwardBadgesAsync_ShouldNotAwardBadge_WhenEvaluatorReturnsFalse()
     {
-        // Arrange
         var playerId = 1;
         var session = new SessionBuilder().WithWinner(playerId, 100).Build();
         var badge = Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green);
@@ -156,20 +149,17 @@ public class BadgeServiceTests
             .Setup(x => x.CanAwardBadge(playerId, badge, session, playerSessions))
             .ReturnsAsync(false);
 
-        // Act
         await _badgeService.AwardBadgesAsync(session);
 
-        // Assert
         _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, badge, session, playerSessions), Times.Once);
-        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
-        VerifyAwardRepositoryReads();
+        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, badge.Id), Times.Never);
+        VerifyAwardRepositoryReads(playerId);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task AwardBadgesAsync_ShouldSkipAlreadyEarnedBadges()
     {
-        // Arrange
         var playerId = 1;
         var session = new SessionBuilder().WithWinner(playerId, 100).Build();
         var earnedBadge = Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green);
@@ -181,68 +171,59 @@ public class BadgeServiceTests
             new Dictionary<int, List<Badge>> { { playerId, [earnedBadge]} },
             new Dictionary<int, List<Session>> { { playerId, playerSessions } });
 
-        // Act
         await _badgeService.AwardBadgesAsync(session);
 
-        // Assert
-        _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(It.IsAny<int>(), It.IsAny<Badge>(), It.IsAny<Session>(), It.IsAny<List<Session>>()), Times.Never);
-        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
-        VerifyAwardRepositoryReads();
+        _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, earnedBadge, session, playerSessions), Times.Never);
+        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, earnedBadge.Id), Times.Never);
+        VerifyAwardRepositoryReads(playerId);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task AwardBadgesAsync_ShouldProcessMultiplePlayers()
     {
-        // Arrange
         var playerId1 = 1;
         var playerId2 = 2;
         var session = new SessionBuilder().WithPlayers(playerId1, playerId2).Build();
         var badge = Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green);
-        var playerSessions = new List<Session> { session };
+        var firstPlayerSessions = new List<Session> { session };
+        var secondPlayerSessions = new List<Session> { session, new SessionBuilder().WithPlayer(playerId2).Build() };
 
-        _badgeRepositoryMock
-            .Setup(x => x.GetAllAsync())
-            .ReturnsAsync([badge]);
-
-        _badgeRepositoryMock
-            .Setup(x => x.GetPlayerBadgesBatchAsync(It.Is<IEnumerable<int>>(ids => ids.Contains(playerId1) && ids.Contains(playerId2))))
-            .ReturnsAsync(new Dictionary<int, List<Badge>>
-            {
-                { playerId1, []},
-                { playerId2, []}
-            });
-
-        _sessionRepositoryMock
-            .Setup(x => x.GetByPlayerBatchAsync(It.Is<IEnumerable<int>>(ids => ids.Contains(playerId1) && ids.Contains(playerId2))))
-            .ReturnsAsync(new Dictionary<int, List<Session>>
-            {
-                { playerId1, playerSessions },
-                { playerId2, playerSessions }
-            });
+        SetupRepositories(
+            [playerId1, playerId2],
+            [badge],
+            new Dictionary<int, List<Badge>> { { playerId1, [] }, { playerId2, [] } },
+            new Dictionary<int, List<Session>> { { playerId1, firstPlayerSessions }, { playerId2, secondPlayerSessions } });
 
         _sessionsEvaluatorMock
-            .Setup(x => x.CanAwardBadge(It.IsAny<int>(), badge, session, playerSessions))
+            .Setup(x => x.CanAwardBadge(playerId1, badge, session, firstPlayerSessions))
+            .ReturnsAsync(true);
+
+        _sessionsEvaluatorMock
+            .Setup(x => x.CanAwardBadge(playerId2, badge, session, secondPlayerSessions))
             .ReturnsAsync(true);
 
         _badgeRepositoryMock
-            .Setup(x => x.AwardBadgeToPlayer(It.IsAny<int>(), badge.Id))
+            .Setup(x => x.AwardBadgeToPlayer(playerId1, badge.Id))
             .ReturnsAsync(true);
 
-        // Act
+        _badgeRepositoryMock
+            .Setup(x => x.AwardBadgeToPlayer(playerId2, badge.Id))
+            .ReturnsAsync(true);
+
         await _badgeService.AwardBadgesAsync(session);
 
-        // Assert
+        _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId1, badge, session, firstPlayerSessions), Times.Once);
+        _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId2, badge, session, secondPlayerSessions), Times.Once);
         _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId1, badge.Id), Times.Once);
         _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId2, badge.Id), Times.Once);
-        VerifyAwardRepositoryReads();
+        VerifyAwardRepositoryReads(playerId1, playerId2);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task AwardBadgesAsync_ShouldProcessBadgesInLevelOrder()
     {
-        // Arrange
         var playerId = 1;
         var session = new SessionBuilder().WithWinner(playerId, 100).Build();
         var bronzeBadge = Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green);
@@ -256,29 +237,32 @@ public class BadgeServiceTests
             new Dictionary<int, List<Session>> { { playerId, playerSessions } });
 
         var callOrder = new List<BadgeLevel?>();
-        _sessionsEvaluatorMock
-            .Setup(x => x.CanAwardBadge(playerId, It.IsAny<Badge>(), session, playerSessions))
-            .Callback<int, Badge, Session, List<Session>>((_, badge, _, _) => callOrder.Add(badge.Level))
-            .ReturnsAsync(true);
+        foreach (var badge in new[] { bronzeBadge, silverBadge })
+        {
+            _sessionsEvaluatorMock
+                .Setup(x => x.CanAwardBadge(playerId, badge, session, playerSessions))
+                .Callback(() => callOrder.Add(badge.Level))
+                .ReturnsAsync(true);
 
-        _badgeRepositoryMock
-            .Setup(x => x.AwardBadgeToPlayer(playerId, It.IsAny<int>()))
-            .ReturnsAsync(true);
+            _badgeRepositoryMock
+                .Setup(x => x.AwardBadgeToPlayer(playerId, badge.Id))
+                .ReturnsAsync(true);
+        }
 
-        // Act
         await _badgeService.AwardBadgesAsync(session);
 
-        // Assert
-        callOrder.Should().ContainInOrder(BadgeLevel.Green, BadgeLevel.Blue);
-        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, It.IsAny<int>()), Times.Exactly(2));
-        VerifyAwardRepositoryReads();
+        callOrder.Should().Equal(BadgeLevel.Green, BadgeLevel.Blue);
+        _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, bronzeBadge, session, playerSessions), Times.Once);
+        _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, silverBadge, session, playerSessions), Times.Once);
+        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, bronzeBadge.Id), Times.Once);
+        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, silverBadge.Id), Times.Once);
+        VerifyAwardRepositoryReads(playerId);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task AwardBadgesAsync_ShouldStopProcessingBadgeGroup_WhenEvaluatorReturnsFalse()
     {
-        // Arrange
         var playerId = 1;
         var session = new SessionBuilder().WithWinner(playerId, 100).Build();
         var bronzeBadge = Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green);
@@ -295,21 +279,19 @@ public class BadgeServiceTests
             .Setup(x => x.CanAwardBadge(playerId, bronzeBadge, session, playerSessions))
             .ReturnsAsync(false);
 
-        // Act
         await _badgeService.AwardBadgesAsync(session);
 
-        // Assert
         _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, bronzeBadge, session, playerSessions), Times.Once);
         _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, silverBadge, session, playerSessions), Times.Never);
-        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
-        VerifyAwardRepositoryReads();
+        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, bronzeBadge.Id), Times.Never);
+        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, silverBadge.Id), Times.Never);
+        VerifyAwardRepositoryReads(playerId);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task AwardBadgesAsync_ShouldSkipBadgeType_WhenNoEvaluatorExists()
     {
-        // Arrange
         var playerId = 1;
         var session = new SessionBuilder().WithWinner(playerId, 100).Build();
         var badge = Badge.CreateWithId(1, "badge.unknown.title", "badge.unknown.desc", BadgeType.DifferentGames, "unknown.png", BadgeLevel.Green);
@@ -321,19 +303,16 @@ public class BadgeServiceTests
             new Dictionary<int, List<Badge>> { { playerId, []} },
             new Dictionary<int, List<Session>> { { playerId, playerSessions } });
 
-        // Act
         await _badgeService.AwardBadgesAsync(session);
 
-        // Assert
-        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
-        VerifyAwardRepositoryReads();
+        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, badge.Id), Times.Never);
+        VerifyAwardRepositoryReads(playerId);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task AwardBadgesAsync_ShouldProcessMultipleBadgeTypes()
     {
-        // Arrange
         var playerId = 1;
         var session = new SessionBuilder().WithWinner(playerId, 100).Build();
         var sessionBadge = Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green);
@@ -355,16 +334,20 @@ public class BadgeServiceTests
             .ReturnsAsync(true);
 
         _badgeRepositoryMock
-            .Setup(x => x.AwardBadgeToPlayer(playerId, It.IsAny<int>()))
+            .Setup(x => x.AwardBadgeToPlayer(playerId, sessionBadge.Id))
             .ReturnsAsync(true);
 
-        // Act
+        _badgeRepositoryMock
+            .Setup(x => x.AwardBadgeToPlayer(playerId, winBadge.Id))
+            .ReturnsAsync(true);
+
         await _badgeService.AwardBadgesAsync(session);
 
-        // Assert
+        _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, sessionBadge, session, playerSessions), Times.Once);
+        _winsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, winBadge, session, playerSessions), Times.Once);
         _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, sessionBadge.Id), Times.Once);
         _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, winBadge.Id), Times.Once);
-        VerifyAwardRepositoryReads();
+        VerifyAwardRepositoryReads(playerId);
         VerifyNoOtherCalls();
     }
 
@@ -393,13 +376,135 @@ public class BadgeServiceTests
             .Setup(x => x.AwardBadgeToPlayer(playerId, badge.Id))
             .ReturnsAsync(true);
 
-        // Act
         await _badgeService.AwardBadgesAsync(session);
 
-        // Assert
         _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, badge, session, playerSessions), Times.Once);
         _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, badge.Id), Times.Once);
-        VerifyAwardRepositoryReads();
+        VerifyAwardRepositoryReads(playerId);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AwardBadgesAsync_ShouldStartFromTheFirstUnearnedLevel_WhenALowerLevelIsAlreadyEarned()
+    {
+        var playerId = 1;
+        var session = new SessionBuilder().WithWinner(playerId, 100).Build();
+        var bronzeBadge = Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green);
+        var silverBadge = Badge.CreateWithId(2, "badge.session.silver.title", "badge.session.silver.desc", BadgeType.Sessions, "session-silver.png", BadgeLevel.Blue);
+        var playerSessions = new List<Session> { session };
+
+        SetupRepositoriesForAwardTest(
+            playerId,
+            [bronzeBadge, silverBadge],
+            new Dictionary<int, List<Badge>> { { playerId, [bronzeBadge] } },
+            new Dictionary<int, List<Session>> { { playerId, playerSessions } });
+
+        _sessionsEvaluatorMock
+            .Setup(x => x.CanAwardBadge(playerId, silverBadge, session, playerSessions))
+            .ReturnsAsync(true);
+
+        _badgeRepositoryMock
+            .Setup(x => x.AwardBadgeToPlayer(playerId, silverBadge.Id))
+            .ReturnsAsync(true);
+
+        await _badgeService.AwardBadgesAsync(session);
+
+        _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, silverBadge, session, playerSessions), Times.Once);
+        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, silverBadge.Id), Times.Once);
+        VerifyAwardRepositoryReads(playerId);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AwardBadgesAsync_ShouldKeepEarnedBadgesPerPlayer()
+    {
+        var playerId1 = 1;
+        var playerId2 = 2;
+        var session = new SessionBuilder().WithPlayers(playerId1, playerId2).Build();
+        var badge = Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green);
+        var playerSessions = new List<Session> { session };
+
+        SetupRepositories(
+            [playerId1, playerId2],
+            [badge],
+            new Dictionary<int, List<Badge>> { { playerId1, [badge] }, { playerId2, [] } },
+            new Dictionary<int, List<Session>> { { playerId1, playerSessions }, { playerId2, playerSessions } });
+
+        _sessionsEvaluatorMock
+            .Setup(x => x.CanAwardBadge(playerId2, badge, session, playerSessions))
+            .ReturnsAsync(true);
+
+        _badgeRepositoryMock
+            .Setup(x => x.AwardBadgeToPlayer(playerId2, badge.Id))
+            .ReturnsAsync(true);
+
+        await _badgeService.AwardBadgesAsync(session);
+
+        _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId2, badge, session, playerSessions), Times.Once);
+        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId2, badge.Id), Times.Once);
+        VerifyAwardRepositoryReads(playerId1, playerId2);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AwardBadgesAsync_ShouldStillEvaluateTheNextBadgeType_WhenAnEarlierTypeIsNotAwarded()
+    {
+        var playerId = 1;
+        var session = new SessionBuilder().WithWinner(playerId, 100).Build();
+        var sessionBadge = Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green);
+        var winBadge = Badge.CreateWithId(2, "badge.win.bronze.title", "badge.win.bronze.desc", BadgeType.Wins, "win-bronze.png", BadgeLevel.Green);
+        var playerSessions = new List<Session> { session };
+
+        SetupRepositoriesForAwardTest(
+            playerId,
+            [sessionBadge, winBadge],
+            new Dictionary<int, List<Badge>> { { playerId, [] } },
+            new Dictionary<int, List<Session>> { { playerId, playerSessions } });
+
+        _sessionsEvaluatorMock
+            .Setup(x => x.CanAwardBadge(playerId, sessionBadge, session, playerSessions))
+            .ReturnsAsync(false);
+
+        _winsEvaluatorMock
+            .Setup(x => x.CanAwardBadge(playerId, winBadge, session, playerSessions))
+            .ReturnsAsync(true);
+
+        _badgeRepositoryMock
+            .Setup(x => x.AwardBadgeToPlayer(playerId, winBadge.Id))
+            .ReturnsAsync(true);
+
+        await _badgeService.AwardBadgesAsync(session);
+
+        _sessionsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, sessionBadge, session, playerSessions), Times.Once);
+        _winsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, winBadge, session, playerSessions), Times.Once);
+        _badgeRepositoryMock.Verify(x => x.AwardBadgeToPlayer(playerId, winBadge.Id), Times.Once);
+        VerifyAwardRepositoryReads(playerId);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AwardBadgesAsync_ShouldStillEvaluateTheNextBadgeType_WhenAnEarlierTypeHasNoEvaluator()
+    {
+        var playerId = 1;
+        var session = new SessionBuilder().WithWinner(playerId, 100).Build();
+        var unknownBadge = Badge.CreateWithId(1, "badge.unknown.title", "badge.unknown.desc", BadgeType.DifferentGames, "unknown.png", BadgeLevel.Green);
+        var winBadge = Badge.CreateWithId(2, "badge.win.bronze.title", "badge.win.bronze.desc", BadgeType.Wins, "win-bronze.png", BadgeLevel.Green);
+        var playerSessions = new List<Session> { session };
+
+        SetupRepositoriesForAwardTest(
+            playerId,
+            [unknownBadge, winBadge],
+            new Dictionary<int, List<Badge>> { { playerId, [] } },
+            new Dictionary<int, List<Session>> { { playerId, playerSessions } });
+
+        _winsEvaluatorMock
+            .Setup(x => x.CanAwardBadge(playerId, winBadge, session, playerSessions))
+            .ReturnsAsync(false);
+
+        await _badgeService.AwardBadgesAsync(session);
+
+        _winsEvaluatorMock.Verify(x => x.CanAwardBadge(playerId, winBadge, session, playerSessions), Times.Once);
+        VerifyAwardRepositoryReads(playerId);
         VerifyNoOtherCalls();
     }
 
@@ -413,16 +518,25 @@ public class BadgeServiceTests
         Dictionary<int, List<Badge>> playerBadgesMap,
         Dictionary<int, List<Session>> playerSessionsMap)
     {
+        SetupRepositories([playerId], allBadges, playerBadgesMap, playerSessionsMap);
+    }
+
+    private void SetupRepositories(
+        int[] playerIds,
+        List<Badge> allBadges,
+        Dictionary<int, List<Badge>> playerBadgesMap,
+        Dictionary<int, List<Session>> playerSessionsMap)
+    {
         _badgeRepositoryMock
             .Setup(x => x.GetAllAsync())
             .ReturnsAsync(allBadges);
 
         _badgeRepositoryMock
-            .Setup(x => x.GetPlayerBadgesBatchAsync(It.Is<IEnumerable<int>>(ids => ids.Contains(playerId))))
+            .Setup(x => x.GetPlayerBadgesBatchAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(playerIds))))
             .ReturnsAsync(playerBadgesMap);
 
         _sessionRepositoryMock
-            .Setup(x => x.GetByPlayerBatchAsync(It.Is<IEnumerable<int>>(ids => ids.Contains(playerId))))
+            .Setup(x => x.GetByPlayerBatchAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(playerIds))))
             .ReturnsAsync(playerSessionsMap);
     }
 

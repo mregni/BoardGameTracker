@@ -144,6 +144,33 @@ public class SentryScrubberTests
     }
 
     [Fact]
+    public void ScrubBreadcrumb_ShouldFilterOneSensitiveDataValue_WhenTheMessageIsClean()
+    {
+        var breadcrumb = new Breadcrumb(
+            "navigated",
+            "navigation",
+            new Dictionary<string, string>
+            {
+                ["from"] = "/login",
+                ["to"] = "/auth-callback?code=abc",
+            });
+
+        var result = SentryScrubber.ScrubBreadcrumb(breadcrumb);
+
+        result.Message.Should().Be("navigated");
+        result.Data!["from"].Should().Be("/login");
+        result.Data["to"].Should().Be("/auth-callback?code=[Filtered]");
+    }
+
+    [Fact]
+    public void ScrubBreadcrumb_ShouldReturnSameInstance_WhenACleanMessageHasNoData()
+    {
+        var breadcrumb = new Breadcrumb("loaded games", "default");
+
+        SentryScrubber.ScrubBreadcrumb(breadcrumb).Should().BeSameAs(breadcrumb);
+    }
+
+    [Fact]
     public void ScrubBreadcrumb_ShouldFilterMessageWhenDataIsMissing()
     {
         var breadcrumb = new Breadcrumb("GET /rsvp?linkId=abc", "http");

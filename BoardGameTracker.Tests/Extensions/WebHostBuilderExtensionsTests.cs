@@ -1,3 +1,4 @@
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Tests.Support;
 using FluentAssertions;
@@ -5,6 +6,9 @@ using Moq;
 using Sentry;
 using Sentry.AspNetCore;
 using Sentry.Extensibility;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog.Events;
 using System.Text;
 using System.Text.Json;
 using Sentry.Protocol.Envelopes;
@@ -13,14 +17,25 @@ using Xunit;
 namespace BoardGameTracker.Tests.Extensions;
 
 [Collection(EnvironmentVariablesCollection.Name)]
-public class WebHostBuilderExtensionsTests
+public class WebHostBuilderExtensionsTests : IDisposable
 {
+    private const string DefaultDsn = "https://3d89aa9317b0a7b3108edbafd31da95a@o4506121302573056.ingest.us.sentry.io/4506121326559232";
+    private static readonly string[] EnvironmentKeys = ["STATISTICS_ENABLED", "SENTRY_DSN", "ASPNETCORE_ENVIRONMENT", "ENVIRONMENT", "LOGLEVEL"];
+
+    private readonly Dictionary<string, string?> _originalEnvironmentVariables = [];
+    private readonly Mock<IWebHostBuilder> _webHostBuilderMock = new();
     private readonly Mock<ITransport> _transportMock;
     private readonly List<Envelope> _envelopes = [];
     private readonly SentryOptions _options;
 
     public WebHostBuilderExtensionsTests()
     {
+        foreach (var key in EnvironmentKeys)
+        {
+            _originalEnvironmentVariables[key] = Environment.GetEnvironmentVariable(key);
+            Environment.SetEnvironmentVariable(key, null);
+        }
+
         _transportMock = new Mock<ITransport>();
         _transportMock
             .Setup(x => x.SendEnvelopeAsync(It.IsAny<Envelope>(), It.IsAny<CancellationToken>()))
@@ -38,9 +53,33 @@ public class WebHostBuilderExtensionsTests
         _options.ApplySentryScrubbing();
     }
 
+    public void Dispose()
+    {
+        foreach (var kvp in _originalEnvironmentVariables)
+        {
+            Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
+        }
+        GC.SuppressFinalize(this);
+    }
+
     private void VerifyNoOtherCalls()
     {
         _transportMock.VerifyNoOtherCalls();
+        _webHostBuilderMock.VerifyNoOtherCalls();
+    }
+
+    private void VerifyEnvelopeSent()
+    {
+        _transportMock.Verify(x => x.SendEnvelopeAsync(It.Is<Envelope>(e => _envelopes.Contains(e)), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    private SentryClient ClientFor(SentryAspNetCoreOptions options)
+    {
+        options.Dsn = "https://public@sentry.invalid/1";
+        options.Transport = _transportMock.Object;
+        options.AutoSessionTracking = false;
+        options.SendClientReports = false;
+        return new SentryClient(options);
     }
 
     [Fact]
@@ -63,7 +102,7 @@ public class WebHostBuilderExtensionsTests
         breadcrumb.GetProperty("message").GetString().Should().Be("GET /rsvp?linkId=[Filtered]");
         breadcrumb.GetProperty("data").GetProperty("url").GetString().Should().Be("/auth-callback?code=[Filtered]&page=1");
 
-        _transportMock.Verify(x => x.SendEnvelopeAsync(It.IsAny<Envelope>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyEnvelopeSent();
         VerifyNoOtherCalls();
     }
 
@@ -83,7 +122,7 @@ public class WebHostBuilderExtensionsTests
         sent.GetProperty("transaction").GetString().Should().Be("GET api/auth/oidc/{provider}/callback");
         sent.GetProperty("request").GetProperty("url").GetString().Should().Be("https://bgt.example.com/api/auth/oidc/x/callback?code=[Filtered]&lang=en");
 
-        _transportMock.Verify(x => x.SendEnvelopeAsync(It.IsAny<Envelope>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyEnvelopeSent();
         VerifyNoOtherCalls();
     }
 
@@ -110,7 +149,7 @@ public class WebHostBuilderExtensionsTests
             SendDefaultPii = true
         };
 
-        WebHostBuilderExtensions.ConfigureSentry(options);
+        BoardGameTracker.Common.Extensions.WebHostBuilderExtensions.ConfigureSentry(options);
         options.Dsn = "https://public@sentry.invalid/1";
         options.Transport = _transportMock.Object;
         options.AutoSessionTracking = false;
@@ -128,7 +167,125 @@ public class WebHostBuilderExtensionsTests
         var @event = await SingleItem("event");
         @event.GetProperty("request").GetProperty("url").GetString().Should().Be("https://bgt.example.com/api/auth/oidc/x/callback?code=[Filtered]&lang=en");
 
-        _transportMock.Verify(x => x.SendEnvelopeAsync(It.IsAny<Envelope>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyEnvelopeSent();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(null, DefaultDsn)]
+    [InlineData("", DefaultDsn)]
+    [InlineData("https://own@sentry.example.com/2", "https://own@sentry.example.com/2")]
+    public void ConfigureSentry_ShouldUseTheOwnDsn_OnlyWhenOneIsSet(string? configured, string expected)
+    {
+        Environment.SetEnvironmentVariable("SENTRY_DSN", configured);
+        var options = new SentryAspNetCoreOptions();
+
+        BoardGameTracker.Common.Extensions.WebHostBuilderExtensions.ConfigureSentry(options);
+
+        options.Dsn.Should().Be(expected);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void ConfigureSentry_ShouldSampleATenthOfTheTraces_AndNameTheEnvironment()
+    {
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "staging");
+        var options = new SentryAspNetCoreOptions();
+
+        BoardGameTracker.Common.Extensions.WebHostBuilderExtensions.ConfigureSentry(options);
+
+        options.Environment.Should().Be("staging");
+        options.TracesSampleRate.Should().Be(0.1);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("development", "debug", true)]
+    [InlineData("Development", "debug", true)]
+    [InlineData("development", "info", false)]
+    [InlineData("production", "debug", false)]
+    public void ConfigureSentry_ShouldOnlyDebug_InDevelopmentWithTheDebugLogLevel(string environment, string logLevel, bool expected)
+    {
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", environment);
+        Environment.SetEnvironmentVariable("LOGLEVEL", logLevel);
+        var options = new SentryAspNetCoreOptions();
+
+        BoardGameTracker.Common.Extensions.WebHostBuilderExtensions.ConfigureSentry(options);
+
+        options.Debug.Should().Be(expected);
+        LogLevelExtensions.GetEnvironmentLogLevel().Should().Be(logLevel == "debug" ? LogEventLevel.Debug : LogEventLevel.Information);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ConfigureSentry_ShouldDropExceptionsThatAreNotServerErrors()
+    {
+        var options = new SentryAspNetCoreOptions();
+        BoardGameTracker.Common.Extensions.WebHostBuilderExtensions.ConfigureSentry(options);
+        var client = ClientFor(options);
+
+        client.CaptureEvent(new SentryEvent(new DomainException("error.x")), new Scope(options));
+        await client.FlushAsync(TimeSpan.FromSeconds(5));
+
+        _envelopes.Should().BeEmpty();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ConfigureSentry_ShouldSendServerErrorsAndMessages_WithoutTheServerName(bool withException)
+    {
+        var options = new SentryAspNetCoreOptions();
+        BoardGameTracker.Common.Extensions.WebHostBuilderExtensions.ConfigureSentry(options);
+        var client = ClientFor(options);
+        var @event = withException ? new SentryEvent(new InvalidOperationException("boom")) : new SentryEvent { Message = "boom" };
+        @event.ServerName = "host-1";
+
+        client.CaptureEvent(@event, new Scope(options));
+        await client.FlushAsync(TimeSpan.FromSeconds(5));
+
+        var sent = await SingleItem("event");
+        sent.TryGetProperty("server_name", out _).Should().BeFalse();
+        VerifyEnvelopeSent();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("false")]
+    [InlineData("yes")]
+    public void UseConfiguredSentry_ShouldLeaveTheHostAlone_WhenStatisticsAreOff(string? value)
+    {
+        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", value);
+
+        var result = _webHostBuilderMock.Object.UseConfiguredSentry();
+
+        result.Should().BeSameAs(_webHostBuilderMock.Object);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("true")]
+    [InlineData("True")]
+    public void UseConfiguredSentry_ShouldAddSentry_WhenStatisticsAreOn(string value)
+    {
+        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", value);
+        var services = new ServiceCollection();
+        _webHostBuilderMock
+            .Setup(x => x.ConfigureServices(It.IsAny<Action<IServiceCollection>>()))
+            .Callback<Action<IServiceCollection>>(configure => configure(services))
+            .Returns(_webHostBuilderMock.Object);
+        _webHostBuilderMock
+            .Setup(x => x.ConfigureServices(It.IsAny<Action<WebHostBuilderContext, IServiceCollection>>()))
+            .Returns(_webHostBuilderMock.Object);
+
+        var result = _webHostBuilderMock.Object.UseConfiguredSentry();
+
+        result.Should().BeSameAs(_webHostBuilderMock.Object);
+        services.Should().Contain(x => x.ServiceType == typeof(Microsoft.AspNetCore.Hosting.IStartupFilter));
+        _webHostBuilderMock.Verify(x => x.ConfigureServices(It.IsAny<Action<IServiceCollection>>()), Times.Once);
+        _webHostBuilderMock.Verify(x => x.ConfigureServices(It.IsAny<Action<WebHostBuilderContext, IServiceCollection>>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
