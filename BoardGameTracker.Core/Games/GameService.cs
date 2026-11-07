@@ -4,6 +4,7 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.ChangeDetection;
@@ -203,6 +204,11 @@ public class GameService : IGameService
         game.UpdateState(command.State);
         game.UpdateYearPublished(command.YearPublished);
         game.UpdateImage(command.Image);
+        if (command.State == GameState.Wanted && command.ShopUrl != null)
+        {
+            game.UpdateShopUrl(command.ShopUrl);
+        }
+
         game.UpdateChangeDetectionWatchId(command.ChangeDetectionWatchId);
         if (game.ChangeDetectionWatchId != null && game.ChangeDetectionWatchId != previousWatchId)
         {

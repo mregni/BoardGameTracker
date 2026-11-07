@@ -997,6 +997,48 @@ public class GameServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData(GameState.Wanted, "https://new.example.com/brass", "https://new.example.com/brass")]
+    [InlineData(GameState.Wanted, "", null)]
+    [InlineData(GameState.Wanted, null, "https://old.example.com/brass")]
+    [InlineData(GameState.Owned, "https://new.example.com/brass", "https://old.example.com/brass")]
+    public async Task UpdateGame_ShouldOnlyStoreTheSentShopUrl_ForAWantedGame(GameState state, string? shopUrl, string? expected)
+    {
+        var game = new Game("Brass") { Id = 1 };
+        game.UpdateShopUrl("https://old.example.com/brass");
+        var command = new UpdateGameCommand { Id = 1, Title = "Brass", State = state, ShopUrl = shopUrl };
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
+
+        var result = await _gameService.UpdateGame(command);
+
+        result.ShopUrl.Should().Be(expected);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Updating game 1");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateGame_ShouldPreferTheUrlOfANewlyLinkedWatch_OverTheSentShopUrl()
+    {
+        const string watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var game = new Game("Brass") { Id = 1 };
+        var command = new UpdateGameCommand { Id = 1, Title = "Brass", State = GameState.Wanted, ShopUrl = "https://sent.example.com/brass", ChangeDetectionWatchId = watchId };
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
+        _changeDetectionClientMock
+            .Setup(x => x.GetWatchInfoAsync(watchId, CancellationToken.None))
+            .ReturnsAsync((ChangeDetectionStatus.Ok, new ChangeDetectionWatchInfo("https://watch.example.com/brass", "Brass", null)));
+
+        var result = await _gameService.UpdateGame(command);
+
+        result.ShopUrl.Should().Be("https://watch.example.com/brass");
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.GetWatchInfoAsync(watchId, CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Updating game 1");
+        VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task UpdateGame_ShouldDeleteThePreviousImage_WhenItChanges()
     {
