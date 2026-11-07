@@ -7,7 +7,8 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Core.Rag;
 using BoardGameTracker.Core.Rag.Interfaces;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using OllamaSharp;
 using Xunit;
@@ -17,6 +18,8 @@ namespace BoardGameTracker.Tests.Rag;
 public class AiClientFactoryTests
 {
     private const string BaseUrl = "http://ollama:11434";
+    private const string ChatBaseUrl = "http://chat:11434";
+    private const string EmbeddingBaseUrl = "http://embed:11434";
 
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
     private readonly Mock<IRagSettingsProvider> _settingsProviderMock = new();
@@ -32,15 +35,15 @@ public class AiClientFactoryTests
         _factory = new AiClientFactory(
             _httpClientFactoryMock.Object,
             _settingsProviderMock.Object,
-            Mock.Of<ILogger<AiClientFactory>>());
+            NullLogger<AiClientFactory>.Instance);
     }
 
     private void SetupSettings(string chatProvider, string chatModel = "qwen3:4b", string embeddingModel = "bge-m3",
-        int embeddingNumGpu = -1)
+        int embeddingNumGpu = -1, string? apiKey = "api-key", string chatBaseUrl = BaseUrl, string embeddingBaseUrl = BaseUrl)
     {
         _settingsProviderMock
             .Setup(x => x.GetAsync())
-            .ReturnsAsync(new RagSettings(chatProvider, BaseUrl, chatModel, "api-key", BaseUrl, embeddingModel, 1024,
+            .ReturnsAsync(new RagSettings(chatProvider, chatBaseUrl, chatModel, apiKey, embeddingBaseUrl, embeddingModel, 1024,
                 embeddingNumGpu, 5));
     }
 
@@ -55,7 +58,7 @@ public class AiClientFactoryTests
     [InlineData("openai")]
     public async Task CreateEmbeddingGeneratorAsync_ShouldReturnAutoPlacedOllamaClient_WhenNumGpuIsUnset(string chatProvider)
     {
-        SetupSettings(chatProvider, embeddingNumGpu: -1);
+        SetupSettings(chatProvider, embeddingNumGpu: -1, chatBaseUrl: ChatBaseUrl, embeddingBaseUrl: BaseUrl);
 
         var generator = await _factory.CreateEmbeddingGeneratorAsync();
 
@@ -67,17 +70,37 @@ public class AiClientFactoryTests
         VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    public async Task CreateEmbeddingGeneratorAsync_ShouldPinTheGpuLayers_WhenNumGpuIsSet(int numGpu)
+    {
+        SetupSettings(Constants.AiConfig.OllamaProvider, embeddingNumGpu: numGpu, chatBaseUrl: ChatBaseUrl, embeddingBaseUrl: EmbeddingBaseUrl);
+
+        var generator = await _factory.CreateEmbeddingGeneratorAsync();
+        var embeddings = await generator.GenerateAsync(["hello", "world"], cancellationToken: TestContext.Current.CancellationToken);
+
+        generator.Should().NotBeOfType<OllamaApiClient>();
+        embeddings.Single().Vector.ToArray().Should().Equal(0.1f, 0.2f, 0.3f);
+        _handler.LastEmbedBody.Should().Contain($"\"num_gpu\":{numGpu}");
+        _handler.LastEmbedBody.Should().Contain("\"model\":\"bge-m3\"");
+        _handler.LastEmbedBody.Should().Contain("\"input\":[\"hello\",\"world\"]");
+        _handler.Hosts.Should().Equal("embed");
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     [Fact]
-    public async Task CreateEmbeddingGeneratorAsync_ShouldPinToCpu_WhenNumGpuIsZero()
+    public async Task PinnedEmbeddingGenerator_ShouldOnlyExposeItself_WithoutAServiceKey()
     {
         SetupSettings(Constants.AiConfig.OllamaProvider, embeddingNumGpu: 0);
 
         var generator = await _factory.CreateEmbeddingGeneratorAsync();
-        await generator.GenerateAsync(["hello"]);
 
-        generator.Should().NotBeOfType<OllamaApiClient>();
-        _handler.LastEmbedBody.Should().Contain("\"num_gpu\":0");
-        _handler.LastEmbedBody.Should().Contain("bge-m3");
+        generator.GetService(typeof(IEmbeddingGenerator<string, Embedding<float>>)).Should().BeSameAs(generator);
+        generator.GetService(typeof(IEmbeddingGenerator<string, Embedding<float>>), "key").Should().BeNull();
+        generator.GetService(typeof(string)).Should().BeNull();
         _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
         _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);
         VerifyNoOtherCalls();
@@ -86,11 +109,13 @@ public class AiClientFactoryTests
     [Fact]
     public async Task CreateChatClientAsync_ShouldReturnOllamaClient_WhenProviderIsOllama()
     {
-        SetupSettings(Constants.AiConfig.OllamaProvider);
+        SetupSettings(Constants.AiConfig.OllamaProvider, chatBaseUrl: ChatBaseUrl, embeddingBaseUrl: EmbeddingBaseUrl);
 
         var client = await _factory.CreateChatClientAsync();
 
-        client.Should().BeOfType<OllamaApiClient>().Which.SelectedModel.Should().Be("qwen3:4b");
+        var ollama = client.Should().BeOfType<OllamaApiClient>().Subject;
+        ollama.SelectedModel.Should().Be("qwen3:4b");
+        ollama.Uri.Should().Be(new Uri(ChatBaseUrl));
         _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
         _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);
         VerifyNoOtherCalls();
@@ -124,8 +149,34 @@ public class AiClientFactoryTests
 
         client.Should().NotBeOfType<OllamaApiClient>();
         client.GetType().Name.Should().Contain("OpenAI");
+        var metadata = client.GetService<ChatClientMetadata>();
+        metadata!.DefaultModelId.Should().Be("qwen3:4b");
+        metadata.ProviderUri.Should().Be(new Uri(BaseUrl));
         _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
-        _httpClientFactoryMock.Verify(x => x.CreateClient(It.IsAny<string>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateChatClientAsync_ShouldUseTheChatBaseUrl_ForAnOpenAiCompatibleServer()
+    {
+        SetupSettings("openai", chatBaseUrl: "http://llm.local:1234/v1", embeddingBaseUrl: EmbeddingBaseUrl);
+
+        var client = await _factory.CreateChatClientAsync();
+
+        client.GetService<ChatClientMetadata>()!.ProviderUri.Should().Be(new Uri("http://llm.local:1234/v1"));
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact(Skip = "BUG: a blank API key crashes ApiKeyCredential, so a keyless OpenAI-compatible server cannot be used")]
+    public async Task CreateChatClientAsync_ShouldWorkWithoutAnApiKey_ForALocalOpenAiCompatibleServer()
+    {
+        SetupSettings("openai", apiKey: null);
+
+        var client = await _factory.CreateChatClientAsync();
+
+        client.GetService<ChatClientMetadata>()!.DefaultModelId.Should().Be("qwen3:4b");
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -136,7 +187,8 @@ public class AiClientFactoryTests
         { "ollama", "qwen3", new[] { "bge-m3:latest", "qwen3:4b" }, new string[0] },
         { "ollama", "qwen3:4b", new[] { "BGE-M3:latest", "qwen3:4b" }, new string[0] },
         { "ollama", "qwen3:4b", new string[0], new[] { "bge-m3", "qwen3:4b" } },
-        { "ollama", "qwen3:4b", new[] { "bge-m3:latest" }, new[] { "qwen3:4b" } }
+        { "ollama", "qwen3:4b", new[] { "bge-m3:latest" }, new[] { "qwen3:4b" } },
+        { "openai", "gpt-4o", new[] { "bge-m3-large" }, new[] { "bge-m3" } }
     };
 
     [Theory]
@@ -152,7 +204,7 @@ public class AiClientFactoryTests
         _handler.PullRequests.Should().HaveCount(expectedPulledModels.Length);
         foreach (var model in expectedPulledModels)
         {
-            _handler.PullRequests.Should().ContainSingle(body => body.Contains(model));
+            _handler.PullRequests.Should().ContainSingle(body => body.Contains($"\"{model}\""));
         }
         _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
         _httpClientFactoryMock.Verify(
@@ -171,6 +223,54 @@ public class AiClientFactoryTests
         await FluentActions.Awaiting(() => _factory.EnsureModelsAvailableAsync())
             .Should().ThrowAsync<HttpRequestException>();
 
+        _handler.PullRequests.Should().ContainSingle().Which.Should().Contain("\"bge-m3\"");
+
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EnsureModelsAvailableAsync_ShouldAskEachServer_ForItsOwnModel()
+    {
+        SetupSettings(Constants.AiConfig.OllamaProvider, chatBaseUrl: ChatBaseUrl, embeddingBaseUrl: EmbeddingBaseUrl);
+        _handler.LocalModels = ["bge-m3", "qwen3:4b"];
+
+        await _factory.EnsureModelsAvailableAsync();
+
+        _handler.Hosts.Should().Equal("embed", "chat");
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EnsureModelsAvailableAsync_ShouldStopListing_WhenTheCallerCancels()
+    {
+        SetupSettings(Constants.AiConfig.OllamaProvider);
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await FluentActions.Awaiting(() => _factory.EnsureModelsAvailableAsync(cts.Token))
+            .Should().ThrowAsync<OperationCanceledException>();
+
+        _handler.Requests.Should().BeEmpty();
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EnsureModelsAvailableAsync_ShouldStopPulling_WhenTheCallerCancelsAfterTheListing()
+    {
+        SetupSettings(Constants.AiConfig.OllamaProvider);
+        using var cts = new CancellationTokenSource();
+        _handler.OnList = cts.Cancel;
+
+        await FluentActions.Awaiting(() => _factory.EnsureModelsAvailableAsync(cts.Token))
+            .Should().ThrowAsync<OperationCanceledException>();
+
+        _handler.PullRequests.Should().BeEmpty();
         _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
         _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);
         VerifyNoOtherCalls();
@@ -179,6 +279,8 @@ public class AiClientFactoryTests
     private sealed class RecordingHandler : HttpMessageHandler
     {
         public List<string> Requests { get; } = [];
+        public List<string> Hosts { get; } = [];
+        public Action? OnList { get; set; }
         public IReadOnlyList<string> LocalModels { get; set; } = [];
         public List<string> PullRequests { get; } = [];
         public bool FailPulls { get; set; }
@@ -186,8 +288,10 @@ public class AiClientFactoryTests
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var path = request.RequestUri!.AbsolutePath;
             Requests.Add(path);
+            Hosts.Add(request.RequestUri.Host);
 
             if (path.Contains("pull", StringComparison.OrdinalIgnoreCase))
             {
@@ -210,6 +314,7 @@ public class AiClientFactoryTests
                 return Json("""{"embeddings":[[0.1,0.2,0.3]]}""");
             }
 
+            OnList?.Invoke();
             var models = string.Join(",", LocalModels.Select(m =>
                 $$"""{"name":"{{m}}","model":"{{m}}","modified_at":"2026-01-01T00:00:00Z","size":1,"digest":"d"}"""));
             return Json($$"""{"models":[{{models}}]}""");
