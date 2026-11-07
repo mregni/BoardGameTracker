@@ -198,7 +198,7 @@ public class UpdateServiceTests
 
     #region CheckForUpdatesAsync Tests
 
-    [Fact(Skip = "BUG: the stable track offers any prerelease tag that is not -beta")]
+    [Fact]
     public async Task CheckForUpdatesAsync_ShouldSkipEveryPrerelease_WhenTrackIsStable()
     {
         SetupTrack(VersionTrack.Stable);
