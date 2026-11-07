@@ -5,7 +5,6 @@ import { expect, test } from "../support/fixtures";
 import { displayDate, duration } from "../support/format";
 import { sidebarLink, toast } from "../support/loansPage";
 import { gameNights, games, locations, players } from "../support/seedData";
-import { expectingFailures } from "../support/settings";
 
 const [, cafe] = locations;
 const night = gameNights.find((gameNight) => gameNight.location === cafe) ?? gameNights[0];
@@ -99,7 +98,7 @@ test.describe("a name that is already used", () => {
 		await expect(toast(page, "A location with this name already exists")).toBeVisible();
 	};
 
-	expectingFailures("is refused for a new location", async ({ page }) => {
+	test("is refused for a new location", async ({ page }) => {
 		await tryToAdd(page);
 
 		await expect(page.getByRole("dialog")).toBeVisible();
@@ -108,7 +107,7 @@ test.describe("a name that is already used", () => {
 		await expect(page.getByRole("main").getByRole("link")).toHaveCount(locations.length);
 	});
 
-	expectingFailures("is refused when renaming", async ({ page }) => {
+	test("is refused when renaming", async ({ page }) => {
 		await page.goto(`/locations/${cafeId}`);
 		await page.getByRole("button", { name: `Edit ${cafe}` }).click();
 		const dialog = page.getByRole("dialog");
@@ -122,11 +121,6 @@ test.describe("a name that is already used", () => {
 		await expect(toast(page, "A location with this name already exists")).toBeVisible();
 		await dialog.getByRole("button", { name: "Cancel" }).click();
 		await expect(page.getByRole("heading", { name: cafe, level: 1 })).toBeVisible();
-	});
-
-	test("gives no unhandled error in the page", async ({ page }) => {
-		await tryToAdd(page);
-		test.fail(true, "BUG: a refused name rejects mutateAsync inside form submit: unhandled promise rejection");
 	});
 });
 

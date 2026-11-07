@@ -67,7 +67,7 @@
     "never-played": "Nunca jugados",
     "not-played_one": "Sin jugar en {{count}}+ mes",
     "not-played_other": "Sin jugar en {{count}}+ meses",
-    "rest": "Jugados hace poco",
+    "rest": "Resto de la colección",
     "label": "De {{total}} pagados por juegos en propiedad: {{parts}}",
     "unpriced-one": "{{title}} no tiene precio, así que no cuenta.",
     "unpriced_one": "{{count}} juego de la estantería no tiene precio, así que no cuenta.",

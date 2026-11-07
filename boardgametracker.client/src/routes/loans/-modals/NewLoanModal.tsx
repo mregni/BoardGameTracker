@@ -1,7 +1,7 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { cx } from "class-variance-authority";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ToggleButton, ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import Plus from "@/assets/icons/plus.svg?react";
@@ -39,7 +39,6 @@ const NewLoanModal = (props: ModalProps) => {
 
 	const { data: settings } = useQuery(getSettings());
 	const [openCreatePlayerModal, setOpenCreatePlayerModal] = useState(false);
-	const newlyCreatedPlayerIdRef = useRef<number | null>(null);
 
 	const onSuccess = () => {
 		form.reset(defaultValues());
@@ -95,18 +94,8 @@ const NewLoanModal = (props: ModalProps) => {
 	});
 
 	const handlePlayerCreated = (player: Player) => {
-		newlyCreatedPlayerIdRef.current = player.id;
+		form.setFieldValue("playerId", String(player.id));
 	};
-
-	useEffect(() => {
-		if (newlyCreatedPlayerIdRef.current !== null) {
-			const playerExists = players.some((p) => p.id === newlyCreatedPlayerIdRef.current);
-			if (playerExists) {
-				form.setFieldValue("playerId", String(newlyCreatedPlayerIdRef.current));
-				newlyCreatedPlayerIdRef.current = null;
-			}
-		}
-	}, [players, form]);
 
 	useEffect(() => {
 		if (!open) {

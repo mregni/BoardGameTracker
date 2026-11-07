@@ -13,7 +13,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { type Settings, SettingsSchema } from "@/models";
 import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
 import { getLanguages, getSettings } from "@/services/queries/settings";
-import { handleFormSubmit } from "@/utils/formUtils";
+import { handleFormSubmit, ignoreApiError } from "@/utils/formUtils";
 import { AccountSettings } from "./-components/AccountSettings";
 import { AdvancedSettings } from "./-components/AdvancedSettings";
 import { BggSettings } from "./-components/BggSettings";
@@ -118,7 +118,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 			setConfirmSsoStop(true);
 			return;
 		}
-		handleFormSubmit(form)(event);
+		void handleFormSubmit(form)(event);
 	};
 
 	const renderContent = () => {
@@ -195,7 +195,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 						confirmLabel={t("general.public-url.sso-confirm.confirm")}
 						onDelete={() => {
 							setConfirmSsoStop(false);
-							form.handleSubmit();
+							void ignoreApiError(form.handleSubmit());
 						}}
 					/>
 				)}

@@ -1,6 +1,7 @@
 import { cx } from "class-variance-authority";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { ignoreApiError } from "@/utils/formUtils";
 import BgtButton from "../BgtButton/BgtButton";
 import { BgtSpinner } from "../BgtLoadingSpinner/BgtSpinner";
 
@@ -55,7 +56,7 @@ export const BgtDialogFooter = (props: BgtDialogFooterProps) => {
 					form={form}
 					variant={variant === "destructive" ? "error" : "primary"}
 					className={footerButton}
-					onClick={onConfirm}
+					onClick={() => ignoreApiError(onConfirm?.())}
 					disabled={disabled || loading}
 				>
 					{loading && <BgtSpinner className="size-4" />}

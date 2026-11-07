@@ -66,6 +66,7 @@ export const getLoanStats = (activeLoans: Loan[], now: Date = new Date()) => {
 	const statuses = activeLoans.map((loan) => getLoanStatus(loan, now));
 	const kinds = statuses.map((status) => status.kind);
 	return {
+		onLoan: activeLoans.filter((loan) => loan.isActive).length,
 		overdue: kinds.filter((kind) => kind === "overdue").length,
 		longOverdue: statuses.filter((status) => getLoanStatusTone(status) === "red").length,
 		dueThisWeek: kinds.filter((kind) => kind === "due-today" || kind === "due-soon").length,

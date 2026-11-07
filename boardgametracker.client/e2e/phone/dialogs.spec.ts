@@ -60,7 +60,6 @@ const cases: DialogCase[] = [
 		opener: "Edit",
 		title: "Edit player",
 		footer: ["Cancel", "Save"],
-		bug: "BUG: the fields of the edit player dialog run past the right edge of the dialog on a phone",
 	},
 	{
 		name: "delete player",
@@ -181,7 +180,6 @@ for (const dialogCase of cases) {
 		const dialog = await openDialog(page, dialogCase);
 
 		await expect(dialog.getByRole("heading", { name: title })).toBeVisible();
-		test.fail(name === "edit player", bug);
 		await expectDialogFits(dialog);
 	});
 
