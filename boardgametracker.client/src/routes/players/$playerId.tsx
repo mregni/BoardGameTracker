@@ -1,4 +1,4 @@
-import { noop } from "@tanstack/react-query";
+import { noop, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,6 +13,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { usePermissions } from "@/hooks/usePermissions";
 import { isApiError } from "@/models";
 import { getBadges } from "@/services/queries/basdges";
+import { getLoans } from "@/services/queries/loans";
 import { getPlayer, getPlayerStatistics } from "@/services/queries/players";
 import { playerIdParamSchema } from "@/utils/routeSchemas";
 import { BgtPoster } from "../-components/BgtPoster";
@@ -22,6 +23,7 @@ import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { MostPlayedGamesCard } from "./-components/MostPlayedGamesCard";
 import { PlayerAchievementsCard } from "./-components/PlayerAchievementsCard";
 import { PlayerHeader } from "./-components/PlayerHeader";
+import { PlayerLoansCard } from "./-components/PlayerLoansCard";
 import { PlayerRivalsCard } from "./-components/PlayerRivalsCard";
 import { PlayerStatisticsGrid } from "./-components/PlayerStatisticsGrid";
 import { RecentPlayerSessionsCard } from "./-components/RecentPlayerSessionsCard";
@@ -56,6 +58,11 @@ function RouteComponent() {
 
 	const { gameById } = useGameById();
 	const { playerById } = usePlayerById();
+	const { data: loans = [] } = useQuery({ ...getLoans(), meta: silent });
+	const loanedGames = loans
+		.filter((loan) => loan.isActive && loan.playerId === playerId)
+		.map((loan) => gameById(loan.gameId))
+		.filter((game) => game !== null);
 	const modals = usePlayerModals();
 	const lastPlayed = lastPlayedOf(sessions, gameById);
 	const form = formOf(sessions, playerId);
@@ -111,6 +118,7 @@ function RouteComponent() {
 								onDelete={modals.deleteModal.show}
 								onEdit={modals.editModal.show}
 							/>
+							<PlayerLoansCard games={loanedGames} />
 							{statistics.playCount === 0 ? (
 								<BgtCard>
 									<BgtEmptyState

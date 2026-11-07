@@ -132,7 +132,7 @@ public class AuthServiceTests : IDisposable
             .ReturnsAsync(SignInResult.Success);
         _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
-        _tokenServiceMock.Setup(x => x.GenerateAccessToken(user, roles)).Returns(accessToken);
+        _tokenServiceMock.Setup(x => x.GenerateAccessToken(user, roles, refreshToken.SessionId)).Returns(accessToken);
         _tokenServiceMock.Setup(x => x.GenerateRefreshTokenAsync(user.Id)).ReturnsAsync(refreshToken);
         _tokenServiceMock.Setup(x => x.GetAccessTokenExpiry()).Returns(expiry);
 
@@ -149,7 +149,7 @@ public class AuthServiceTests : IDisposable
         _loginAttemptsMock.Verify(x => x.Reset("testuser", ClientAddress), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
-        _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles), Times.Once);
+        _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles, refreshToken.SessionId), Times.Once);
         _tokenServiceMock.Verify(x => x.GenerateRefreshTokenAsync(user.Id), Times.Once);
         _tokenServiceMock.Verify(x => x.GetAccessTokenExpiry(), Times.Once);
         VerifyNoOtherCalls();
@@ -278,7 +278,7 @@ public class AuthServiceTests : IDisposable
             .ReturnsAsync(activeToken);
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
         _tokenServiceMock.Setup(x => x.RotateRefreshTokenAsync(activeToken)).ReturnsAsync(newRefreshToken);
-        _tokenServiceMock.Setup(x => x.GenerateAccessToken(user, roles)).Returns(accessToken);
+        _tokenServiceMock.Setup(x => x.GenerateAccessToken(user, roles, newRefreshToken.SessionId)).Returns(accessToken);
         _tokenServiceMock.Setup(x => x.GetAccessTokenExpiry()).Returns(expiry);
 
         var result = await _authService.RefreshAsync("valid-refresh-token");
@@ -290,7 +290,7 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("valid-refresh-token"), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
         _tokenServiceMock.Verify(x => x.RotateRefreshTokenAsync(activeToken), Times.Once);
-        _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles), Times.Once);
+        _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles, newRefreshToken.SessionId), Times.Once);
         _tokenServiceMock.Verify(x => x.GetAccessTokenExpiry(), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -361,7 +361,7 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.Setup(x => x.GetSuccessorAsync(presented)).ReturnsAsync(unusedSuccessor);
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
         _tokenServiceMock.Setup(x => x.SupersedeRefreshTokenAsync(unusedSuccessor)).ReturnsAsync(fresh);
-        _tokenServiceMock.Setup(x => x.GenerateAccessToken(user, roles)).Returns("access");
+        _tokenServiceMock.Setup(x => x.GenerateAccessToken(user, roles, It.IsAny<Guid>())).Returns("access");
         _tokenServiceMock.Setup(x => x.GetAccessTokenExpiry()).Returns(expiry);
 
         var result = await _authService.RefreshAsync("old-token");
@@ -372,7 +372,7 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.Verify(x => x.GetSuccessorAsync(presented), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
         _tokenServiceMock.Verify(x => x.SupersedeRefreshTokenAsync(unusedSuccessor), Times.Once);
-        _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles), Times.Once);
+        _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles, It.IsAny<Guid>()), Times.Once);
         _tokenServiceMock.Verify(x => x.GetAccessTokenExpiry(), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -391,7 +391,7 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.Setup(x => x.GetSuccessorAsync(superseded)).ReturnsAsync(tip);
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
         _tokenServiceMock.Setup(x => x.SupersedeRefreshTokenAsync(tip)).ReturnsAsync(fresh);
-        _tokenServiceMock.Setup(x => x.GenerateAccessToken(user, roles)).Returns("access");
+        _tokenServiceMock.Setup(x => x.GenerateAccessToken(user, roles, It.IsAny<Guid>())).Returns("access");
 
         var result = await _authService.RefreshAsync("old-token");
 
@@ -401,7 +401,7 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.Verify(x => x.GetSuccessorAsync(superseded), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
         _tokenServiceMock.Verify(x => x.SupersedeRefreshTokenAsync(tip), Times.Once);
-        _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles), Times.Once);
+        _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles, It.IsAny<Guid>()), Times.Once);
         _tokenServiceMock.Verify(x => x.GetAccessTokenExpiry(), Times.Once);
         VerifyNoOtherCalls();
     }

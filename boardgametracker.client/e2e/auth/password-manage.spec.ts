@@ -107,6 +107,7 @@ test("checks the new password before sending it", async ({ guestPage: page }) =>
 	await newPassword.fill("abc");
 	await submit.click();
 	await expect(page.getByText(/^Password must be at least/)).toBeVisible();
+	await expect(newPassword).toBeFocused();
 
 	await newPassword.fill("a-long-enough-password-1A");
 	await confirm.fill("something-else-entirely-1A");

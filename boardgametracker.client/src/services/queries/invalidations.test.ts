@@ -161,12 +161,19 @@ describe("QueryInvalidator", () => {
 		for (const unsubscribe of unsubscribes) unsubscribe();
 	});
 
-	it("invalidateGameNights refreshes the game nights, the menu counts and the dashboard", async () => {
+	it("invalidateGameNightDeleted refreshes the locations", async () => {
+		await invalidator.invalidateGameNightDeleted(4);
+
+		expect(invalidatedKeys(spy)).toContainEqual([QUERY_KEYS.locations]);
+	});
+
+	it("invalidateGameNights refreshes the game nights, the locations, the menu counts and the dashboard", async () => {
 		await invalidator.invalidateGameNights();
 
 		expect(invalidatedKeys(spy)).toEqual(
 			expect.arrayContaining([
 				[QUERY_KEYS.gameNights],
+				[QUERY_KEYS.locations],
 				[QUERY_KEYS.counts],
 				[QUERY_KEYS.dashboard, QUERY_KEYS.statistics],
 			]),

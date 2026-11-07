@@ -323,7 +323,7 @@ test.describe("manage RSVPs", () => {
 test.describe("a night in the coming twelve hours", () => {
 	const title = "Night later today";
 
-	test("is still upcoming but can already be played, without the RSVP panel", async ({ page, request }) => {
+	test("is still upcoming but can already be played, with the RSVPs still open", async ({ page, request }) => {
 		const startDate = new Date(Date.now() + 6 * 60 * 60_000);
 		const id = await createNight(request, { title, startDate, rsvps: { [guest]: "accepted" } });
 
@@ -338,7 +338,7 @@ test.describe("a night in the coming twelve hours", () => {
 		await expect(main.getByRole("button", { name: "Start a game" })).toBeVisible();
 		await expect(main.getByRole("button", { name: "Log session" })).toBeVisible();
 		await expect(main.getByRole("button", { name: "End night" })).toBeVisible();
-		await expect(page.getByTestId("night-plan")).toHaveCount(0);
+		await expect(page.getByTestId("night-plan").getByRole("button", { name: "Manage RSVPs" })).toBeVisible();
 		await expect(
 			main.getByRole("region", { name: "Expected players" }).getByRole("button", { name: guest }),
 		).toBeVisible();

@@ -16,6 +16,7 @@ public class LocationsOverviewSpecTests
         var alpha = new Location("Alpha") { Id = 2 };
         alpha.Sessions.Add(new Session(1, new DateTime(2030, 1, 1), new DateTime(2030, 1, 1, 2, 0, 0), string.Empty));
         alpha.Sessions.Add(new Session(1, new DateTime(2030, 1, 2), new DateTime(2030, 1, 2, 2, 0, 0), string.Empty));
+        zebra.GameNights.Add(GameNight.Create("Night", string.Empty, new DateTime(2030, 1, 1), 1, 1));
 
         var spec = new LocationsOverviewSpec();
         var result = spec.Evaluate([zebra, alpha]).ToList();
@@ -23,6 +24,8 @@ public class LocationsOverviewSpecTests
         result.Select(x => x.Name).Should().Equal("Alpha", "Zebra");
         result[0].PlayCount.Should().Be(2);
         result[1].PlayCount.Should().Be(0);
+        result[0].GameNightCount.Should().Be(0);
+        result[1].GameNightCount.Should().Be(1);
         result[0].LastPlayed.Should().Be(new DateTime(2030, 1, 2));
         result[1].LastPlayed.Should().BeNull();
         spec.AsNoTracking.Should().BeTrue();

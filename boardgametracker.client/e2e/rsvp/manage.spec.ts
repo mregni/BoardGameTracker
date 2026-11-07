@@ -1,7 +1,6 @@
 import type { Page } from "@playwright/test";
 import { addDays, addHours, subHours } from "date-fns";
 import { writerCredentials } from "../support/fixtures";
-import { displayDate } from "../support/format";
 import {
 	clockTime,
 	createNight,
@@ -160,7 +159,7 @@ test("lets a guest change the answer through every option", async ({ guestPage: 
 	expect(await rsvpStateOf(api, night.id, otherGuest)).toBe("pending");
 });
 
-test("keeps the form and explains when the night starts while answering", async ({ guestPage: page }) => {
+test("keeps the form and explains when the night is ended while answering", async ({ guestPage: page }) => {
 	const night = await newNight();
 	await openInvite(page, night.linkId);
 	await expect(page.getByRole("heading", { name: "Can you make it?" })).toBeVisible();
@@ -169,7 +168,7 @@ test("keeps the form and explains when the night starts while answering", async 
 		id: night.id,
 		title: night.title,
 		notes: "",
-		startDate: subHours(new Date(), 1).toISOString(),
+		startDate: subHours(new Date(), 13).toISOString(),
 		hostId: night.hostId,
 		locationId: night.locationId,
 		suggestedGameIds: [],
@@ -184,23 +183,16 @@ test("keeps the form and explains when the night starts while answering", async 
 	expect(await rsvpStateOf(api, night.id, guest)).toBe("pending");
 });
 
-test("closes answers once the night is under way", async ({ guestPage: page }) => {
-	const startDate = subHours(new Date(), 1);
-	const night = await newNight({ startDate });
+test("keeps answers open while the night is under way", async ({ guestPage: page }) => {
+	const night = await newNight({ startDate: subHours(new Date(), 1) });
 	await openInvite(page, night.linkId);
 
-	const card = page.getByTestId("rsvp-in-progress");
-	await expect(card.getByRole("heading", { name: `${night.title} is in progress` })).toBeVisible();
-	await expect(card).toContainText(displayDate(startDate));
-	await expect(card).toContainText("Answers are closed.");
-	await expect(page.getByRole("button", { name: "Send answer" })).toHaveCount(0);
+	await answer(page, guest, "Coming");
 
-	const rsvp = night.invitedPlayers.find((candidate) => candidate.player.name === guest);
-	const refused = await page.request.put(`/api/gamenight/link/${night.linkId}/rsvp`, {
-		data: { id: rsvp?.id, gameNightId: night.id, playerId: rsvp?.playerId, state: "accepted" },
+	await expect(confirmation(page).getByRole("heading", { name: `You're coming, ${guest}` })).toBeVisible({
+		timeout: 15_000,
 	});
-	expect(refused.status()).toBe(400);
-	expect(await rsvpStateOf(api, night.id, guest)).toBe("pending");
+	expect(await rsvpStateOf(api, night.id, guest)).toBe("accepted");
 });
 
 test("says a night is over as soon as the host ends it", async ({ guestPage: page }) => {
@@ -210,6 +202,14 @@ test("says a night is over as soon as the host ends it", async ({ guestPage: pag
 
 	await expect(page.getByRole("heading", { name: `${night.title} has already taken place` })).toBeVisible();
 	await expect(page.getByText("You can't answer any more.")).toBeVisible();
+	await expect(page.getByRole("button", { name: "Send answer" })).toHaveCount(0);
+
+	const rsvp = night.invitedPlayers.find((candidate) => candidate.player.name === guest);
+	const refused = await page.request.put(`/api/gamenight/link/${night.linkId}/rsvp`, {
+		data: { id: rsvp?.id, gameNightId: night.id, playerId: rsvp?.playerId, state: "accepted" },
+	});
+	expect(refused.status()).toBe(400);
+	expect(await rsvpStateOf(api, night.id, guest)).toBe("pending");
 });
 
 test("says a night is over when it started too long ago", async ({ guestPage: page }) => {
@@ -340,6 +340,41 @@ test.describe("when invites need a sign in", () => {
 
 		await expect(page.getByRole("heading", { name: night.title, level: 1 })).toBeVisible();
 		await expect(page.getByRole("heading", { name: "Authentication Required" })).toHaveCount(0);
+	});
+});
+
+test.describe("a signed-in user linked to an invited player", () => {
+	const names = (page: Page) => page.getByRole("group", { name: "Who are you?" });
+
+	test("finds that player selected and can answer right away", async ({ page }) => {
+		const night = await newNight({ host: guest });
+		await openInvite(page, night.linkId);
+
+		await expect(names(page).getByRole("button", { name: linkedPlayer })).toHaveAttribute("aria-pressed", "true");
+
+		await page.getByRole("group", { name: "Can you make it?" }).getByRole("button", { name: "Maybe" }).click();
+		await page.getByRole("button", { name: "Send answer" }).click();
+
+		await expect(confirmation(page).getByRole("heading", { name: `You might come, ${linkedPlayer}` })).toBeVisible({
+			timeout: 15_000,
+		});
+		expect(await rsvpStateOf(api, night.id, linkedPlayer)).toBe("maybe");
+	});
+
+	test("leaves the choice open for a guest", async ({ guestPage: page }) => {
+		const night = await newNight({ host: guest });
+		await openInvite(page, night.linkId);
+
+		await expect(names(page).getByRole("button", { name: linkedPlayer })).toHaveAttribute("aria-pressed", "false");
+		await expect(names(page).getByRole("button", { pressed: true })).toHaveCount(0);
+	});
+
+	test("does not select the host", async ({ page }) => {
+		const night = await newNight();
+		await openInvite(page, night.linkId);
+
+		await expect(names(page).getByRole("button", { name: guest })).toHaveAttribute("aria-pressed", "false");
+		await expect(names(page).getByRole("button", { pressed: true })).toHaveCount(0);
 	});
 });
 

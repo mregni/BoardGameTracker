@@ -39,13 +39,15 @@ export const comingIds = (gameNight: GameNight) =>
 		.filter((rsvp) => rsvp.state === GameNightRsvpState.Accepted)
 		.map((rsvp) => rsvp.playerId);
 
-export const nightTable = (detail: GameNightDetail) => {
-	const expected =
-		!detail.gameNight.summary.attendanceRecorded && detail.sessions.length === 0 && detail.runningGames.length === 0;
-	return {
-		expected,
-		playerIds: expected ? comingIds(detail.gameNight) : detail.gameNight.summary.attendeeIds,
-	};
+export const nightTable = (detail: GameNightDetail, now: Date = new Date()) => {
+	const { attendeeIds, attendanceRecorded } = detail.gameNight.summary;
+	if (attendanceRecorded) return { expected: false, playerIds: attendeeIds };
+	if (detail.sessions.length === 0 && detail.runningGames.length === 0)
+		return { expected: true, playerIds: comingIds(detail.gameNight) };
+	if (isNightOver(detail, now)) return { expected: false, playerIds: attendeeIds };
+
+	const stillComing = comingIds(detail.gameNight).filter((id) => !attendeeIds.includes(id));
+	return { expected: stillComing.length > 0, playerIds: [...attendeeIds, ...stillComing] };
 };
 
 export const playedPlayerIds = (detail: GameNightDetail) => [

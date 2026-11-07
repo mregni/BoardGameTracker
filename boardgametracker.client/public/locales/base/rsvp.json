@@ -34,7 +34,5 @@
   "not-found": "This invite link doesn't work",
   "not-found-description": "It may have expired or been copied incorrectly. Ask the host for a new link.",
   "rsvp-failed": "Failed to send your answer",
-  "answer-saved": "Your answer is saved.",
-  "in-progress-title": "{{title}} is in progress",
-  "in-progress-description": "Answers are closed."
+  "answer-saved": "Your answer is saved."
 }

@@ -48,7 +48,7 @@ describe("locationService", () => {
 	});
 
 	it("updates a location", async () => {
-		const location = { id: 3, name: "Thuis", playCount: 2, lastPlayed: null };
+		const location = { id: 3, name: "Thuis", playCount: 2, gameNightCount: 0, lastPlayed: null };
 		await expect(updateLocationCall(location)).resolves.toBe("updated");
 		expect(axiosMock.put).toHaveBeenCalledWith("location", location);
 	});

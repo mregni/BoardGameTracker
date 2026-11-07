@@ -302,6 +302,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<string>("RevokedReason")
                         .HasColumnType("text");
 
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("text");
@@ -311,6 +314,8 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
 
                     b.HasIndex("Token")
                         .IsUnique();
@@ -1759,7 +1764,7 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .IsRequired();
 
                     b.HasOne("BoardGameTracker.Common.Entities.Location", "Location")
-                        .WithMany()
+                        .WithMany("GameNights")
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -2101,6 +2106,8 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Location", b =>
                 {
+                    b.Navigation("GameNights");
+
                     b.Navigation("Sessions");
                 });
 

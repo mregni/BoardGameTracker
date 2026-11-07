@@ -394,9 +394,10 @@ test.describe("detail", () => {
 
 		await page.getByRole("button", { name: `Delete ${cafe}` }).click();
 		await expect(dialog).toContainText(
-			`Delete location '${cafe}'? Its ${playedAt(cafe).length} sessions are kept, but no longer linked to a location.`,
+			`${playedAt(cafe).length} sessions are linked to it. 1 game night is linked to it. Move them to another location before deleting it.`,
 		);
-		await dialog.getByRole("button", { name: "Cancel" }).click();
+		await expect(dialog.getByRole("button", { name: "Delete" })).toHaveCount(0);
+		await dialog.getByRole("button", { name: "Close" }).last().click();
 		await expect(dialog).toBeHidden();
 		await expect(page.getByRole("heading", { name: cafe, level: 1 })).toBeVisible();
 	});

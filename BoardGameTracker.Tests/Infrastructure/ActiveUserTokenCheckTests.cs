@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using BoardGameTracker.Api.Infrastructure;
+using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using FluentAssertions;
 using Moq;
@@ -23,6 +24,36 @@ public class ActiveUserTokenCheckTests
         var result = await ActiveUserTokenCheck.IsActiveAsync(Principal(new Claim(ClaimTypes.NameIdentifier, "user-1")), _accessCheck.Object, TestContext.Current.CancellationToken);
 
         result.Should().Be(canSignIn);
+        _accessCheck.Verify(x => x.CanSignInAsync("user-1", It.IsAny<CancellationToken>()), Times.Once);
+        _accessCheck.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task IsActiveAsync_ShouldFollowTheSession_OfATokenThatCarriesOne(bool sessionActive)
+    {
+        var sessionId = Guid.NewGuid();
+        _accessCheck.Setup(x => x.CanSignInAsync("user-1", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _accessCheck.Setup(x => x.IsSessionActiveAsync(sessionId, It.IsAny<CancellationToken>())).ReturnsAsync(sessionActive);
+        var principal = Principal(new Claim(ClaimTypes.NameIdentifier, "user-1"), new Claim(TokenService.SessionIdClaim, sessionId.ToString()));
+
+        var result = await ActiveUserTokenCheck.IsActiveAsync(principal, _accessCheck.Object, TestContext.Current.CancellationToken);
+
+        result.Should().Be(sessionActive);
+        _accessCheck.Verify(x => x.CanSignInAsync("user-1", It.IsAny<CancellationToken>()), Times.Once);
+        _accessCheck.Verify(x => x.IsSessionActiveAsync(sessionId, It.IsAny<CancellationToken>()), Times.Once);
+        _accessCheck.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task IsActiveAsync_ShouldRefuseATokenWithAnUnreadableSession()
+    {
+        _accessCheck.Setup(x => x.CanSignInAsync("user-1", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        var principal = Principal(new Claim(ClaimTypes.NameIdentifier, "user-1"), new Claim(TokenService.SessionIdClaim, "not-a-guid"));
+
+        (await ActiveUserTokenCheck.IsActiveAsync(principal, _accessCheck.Object, TestContext.Current.CancellationToken)).Should().BeFalse();
+
         _accessCheck.Verify(x => x.CanSignInAsync("user-1", It.IsAny<CancellationToken>()), Times.Once);
         _accessCheck.VerifyNoOtherCalls();
     }

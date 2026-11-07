@@ -178,17 +178,35 @@ describe("GameNightDetailView", () => {
 		];
 		renderView(buildDetail(tonight(), declinedButPlayed, false));
 
-		const table = screen.getByRole("region", { name: "table.title" });
+		const table = screen.getByRole("region", { name: "table.expected" });
 		expect(within(table).getByText("Reggi")).toBeInTheDocument();
-		expect(within(table).queryByText("Kathleen")).not.toBeInTheDocument();
+		expect(within(table).getByText("Kathleen")).toBeInTheDocument();
 	});
 
 	it("shows the players who said yes as expected before any game", () => {
 		renderView(buildDetail(tonight(), [], false));
 
-		expect(screen.getByText("table.expected")).toBeInTheDocument();
-		expect(screen.getByText("Kathleen")).toBeInTheDocument();
-		expect(screen.queryByText("Reggi")).not.toBeInTheDocument();
+		const table = screen.getByRole("region", { name: "table.expected" });
+		expect(within(table).getByText("Kathleen")).toBeInTheDocument();
+		expect(within(table).queryByText("Reggi")).not.toBeInTheDocument();
+	});
+
+	it("keeps the RSVPs open while a night is in progress", () => {
+		renderView(buildDetail(tonight(), played()));
+
+		expect(screen.getByRole("button", { name: "card.manage-rsvps" })).toBeInTheDocument();
+	});
+
+	it("closes the RSVPs once a night has ended", () => {
+		renderView(buildDetail(tonight(), played(), false, new Date()));
+
+		expect(screen.queryByTestId("night-plan")).not.toBeInTheDocument();
+	});
+
+	it("closes the RSVPs once a night is past its time", () => {
+		renderView(buildDetail(addHours(new Date(), -13), [], false));
+
+		expect(screen.queryByTestId("night-plan")).not.toBeInTheDocument();
 	});
 
 	it("says it is playing now in the header of a night in progress", () => {
@@ -216,8 +234,9 @@ describe("GameNightDetailView", () => {
 		const user = userEvent.setup();
 		const props = renderView(buildDetail(tonight(), played()));
 
-		expect(screen.getByText("table.host")).toBeInTheDocument();
-		expect(screen.queryByText("Reggi")).not.toBeInTheDocument();
+		const table = screen.getByRole("region", { name: "table.title" });
+		expect(within(table).getByText("table.host")).toBeInTheDocument();
+		expect(within(table).queryByText("Reggi")).not.toBeInTheDocument();
 		expect(screen.getAllByText("planned.played")).toHaveLength(1);
 		await user.click(screen.getByRole("button", { name: "table.edit" }));
 
@@ -296,7 +315,7 @@ describe("GameNightDetailView", () => {
 		const user = userEvent.setup();
 		renderView(buildDetail(tonight(), [], false));
 
-		await user.click(screen.getByText("Kathleen"));
+		await user.click(within(screen.getByRole("region", { name: "table.expected" })).getByText("Kathleen"));
 		await user.click(screen.getByText("Age of Inventors"));
 
 		expect(navigate).toHaveBeenCalledWith({ to: "/players/2" });
@@ -403,10 +422,11 @@ describe("GameNightDetailView", () => {
 		expect(screen.queryByRole("button", { name: "card.manage-rsvps" })).not.toBeInTheDocument();
 	});
 
-	it("opens the live controls from twelve hours before the start", () => {
+	it("keeps the RSVPs next to the live controls from twelve hours before the start", () => {
 		renderView(buildDetail(addHours(new Date(), 11), [], false));
 
-		expect(screen.queryByTestId("night-plan")).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "card.manage-rsvps" })).toBeInTheDocument();
+		expect(screen.getAllByRole("region", { name: "planned.title" })).toHaveLength(1);
 		expect(screen.getByRole("button", { name: "play.start.button" })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "end.button" })).toBeInTheDocument();
 		expect(screen.getByText("card.when")).toBeInTheDocument();

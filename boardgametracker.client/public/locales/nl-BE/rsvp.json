@@ -34,7 +34,5 @@
   "not-found": "Deze uitnodigingslink werkt niet",
   "not-found-description": "Misschien is de link verlopen of niet volledig gekopieerd. Vraag de gastheer om een nieuwe link.",
   "rsvp-failed": "Je antwoord versturen is mislukt",
-  "answer-saved": "Je antwoord is opgeslagen.",
-  "in-progress-title": "{{title}} is bezig",
-  "in-progress-description": "Antwoorden kan niet meer."
+  "answer-saved": "Je antwoord is opgeslagen."
 }

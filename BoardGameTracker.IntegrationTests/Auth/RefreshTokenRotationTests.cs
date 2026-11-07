@@ -256,6 +256,42 @@ public class RefreshTokenRotationTests
     }
 
     [Fact]
+    public async Task Logout_ShouldEndEveryAccessTokenOfThatSession_ButNotOfAnotherDevice()
+    {
+        const string username = "logout-access-token";
+        await RegisterAsync(username);
+        using var client = _fixture.CreateClient();
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest(username, IntegrationFixture.UserPassword), TestContext.Current.CancellationToken);
+        var login = (await loginResponse.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json, TestContext.Current.CancellationToken))!;
+        using var otherClient = _fixture.CreateClient();
+        var otherLogin = await otherClient.PostAsJsonAsync("/api/auth/login", new LoginRequest(username, IntegrationFixture.UserPassword), TestContext.Current.CancellationToken);
+        var otherDevice = (await otherLogin.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json, TestContext.Current.CancellationToken))!;
+        var refreshed = await RefreshWithAsync(CookieValue(RefreshSetCookie(loginResponse)));
+        var rotated = (await refreshed.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json, TestContext.Current.CancellationToken))!;
+
+        (await ProfileStatusAsync(login.AccessToken)).Should().Be(HttpStatusCode.OK, "the older access token keeps working after a rotation");
+        (await ProfileStatusAsync(rotated.AccessToken)).Should().Be(HttpStatusCode.OK);
+
+        using var raw = _fixture.CreateClient();
+        using var logout = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout");
+        logout.Headers.Add(RequireSessionHeaderAttribute.HeaderName, RequireSessionHeaderAttribute.HeaderValue);
+        logout.Headers.Add("Cookie", $"{AuthSessionCookies.RefreshCookieName}={CookieValue(RefreshSetCookie(refreshed))}");
+        (await raw.SendAsync(logout, TestContext.Current.CancellationToken)).StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        (await ProfileStatusAsync(login.AccessToken)).Should().Be(HttpStatusCode.Unauthorized);
+        (await ProfileStatusAsync(rotated.AccessToken)).Should().Be(HttpStatusCode.Unauthorized);
+        (await ProfileStatusAsync(otherDevice.AccessToken)).Should().Be(HttpStatusCode.OK);
+    }
+
+    private async Task<HttpStatusCode> ProfileStatusAsync(string accessToken)
+    {
+        using var client = _fixture.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/profile");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        return (await client.SendAsync(request, TestContext.Current.CancellationToken)).StatusCode;
+    }
+
+    [Fact]
     public async Task Logout_ShouldBeRefused_WithoutTheSessionHeader()
     {
         using var browser = _fixture.CreateBrowserClient();

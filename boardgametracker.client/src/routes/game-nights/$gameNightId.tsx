@@ -33,7 +33,7 @@ import { ManageRSVPsModal } from "./-modals/ManageRSVPsModal";
 import { PlaySessionSheet } from "./-modals/PlaySessionSheet";
 import { StartGameSheet } from "./-modals/StartGameSheet";
 import { deleteNightDescription } from "./-utils/deleteNightDescription";
-import { freePlayerIds, nightGameIds, nightTable } from "./-utils/gameNightPlay";
+import { freePlayerIds, isNightOver, nightGameIds, nightTable } from "./-utils/gameNightPlay";
 
 export const Route = createFileRoute("/game-nights/$gameNightId")({
 	component: RouteComponent,
@@ -202,6 +202,7 @@ function RouteComponent() {
 								<PlaySessionSheet
 									close={closeSheet}
 									gameNight={detail.gameNight}
+									isOver={isNightOver(detail)}
 									runningGame={sheet.kind === "finish" ? sheet.runningGame : null}
 									games={games}
 									players={players}

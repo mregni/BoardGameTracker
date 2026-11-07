@@ -88,6 +88,7 @@ test("refuses a new user without the required fields", async ({ page }) => {
 
 	await expect(dialog.getByRole("heading", { name: "Add user" })).toBeVisible();
 	await expect(dialog.getByText("Required", { exact: false })).toHaveCount(3);
+	await expect(dialog.getByRole("textbox").first()).toBeFocused();
 
 	await field(page, "Password").fill("abc");
 	await expect(dialog.getByText(/^Password must be at least/)).toBeVisible();

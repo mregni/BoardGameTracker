@@ -27,6 +27,7 @@ describe("EditLocationModal", () => {
 		id: 1,
 		name: "Living Room",
 		playCount: 0,
+		gameNightCount: 0,
 		lastPlayed: null,
 	};
 
@@ -126,6 +127,7 @@ describe("EditLocationModal", () => {
 					id: 1,
 					name: "Kitchen",
 					playCount: 0,
+					gameNightCount: 0,
 					lastPlayed: null,
 				});
 			});
@@ -138,6 +140,7 @@ describe("EditLocationModal", () => {
 				id: 42,
 				name: "Basement",
 				playCount: 0,
+				gameNightCount: 0,
 				lastPlayed: null,
 			};
 			renderWithTheme(<EditLocationModal {...defaultProps} location={location} />);

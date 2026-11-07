@@ -48,6 +48,7 @@ const renderSheet = (runningGame: RunningGame | null) => {
 		<PlaySessionSheet
 			close={vi.fn()}
 			gameNight={gameNight}
+			isOver={false}
 			runningGame={runningGame}
 			games={games}
 			players={players}

@@ -1,7 +1,16 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 import { expect, test } from "../support/fixtures";
 import { duration, whole } from "../support/format";
-import { api, createNight, displayTime, gameId, openNight, playerId, removeCreatedData } from "../support/gameNights";
+import {
+	api,
+	createNight,
+	displayDateTime,
+	displayTime,
+	gameId,
+	openNight,
+	playerId,
+	removeCreatedData,
+} from "../support/gameNights";
 import {
 	coopGame,
 	expected,
@@ -107,7 +116,7 @@ test.describe("a night in progress before any game", () => {
 		await expect(card.getByRole("link", { name: title })).toHaveAttribute("href", `/game-nights/${id}`);
 		await expect(card).toContainText(`Playing since ${displayTime(startDate)}`);
 		await expect(card).toContainText("3 of 4 coming");
-		await expect(card.getByRole("button", { name: "Manage RSVPs" })).toHaveCount(0);
+		await expect(card.getByRole("button", { name: "Manage RSVPs" })).toBeVisible();
 		await expect(card.getByRole("button", { name: "Copy invite link" })).toHaveCount(0);
 		await expect(card.getByTestId("rsvp-names")).toHaveCount(0);
 		await expect(card).toContainText("Bring snacks");
@@ -175,6 +184,30 @@ test.describe("a night in progress before any game", () => {
 		await expect(main(page)).not.toContainText("Games played");
 	});
 
+	test("keeps the RSVPs open on the detail page", async ({ page, request }) => {
+		const id = await openLive(page, request);
+
+		const rsvps = page.getByRole("region", { name: "RSVPs" });
+		await expect(rsvps.getByRole("region", { name: "No answer (1)" })).toContainText(absent);
+		await expect(rsvps.getByRole("button", { name: "Copy invite link" })).toBeVisible();
+		await rsvps.getByRole("button", { name: "Manage RSVPs" }).click();
+		const dialog = page.getByRole("dialog", { name: "Manage RSVPs" });
+		await dialog
+			.getByTestId(`rsvp-row-${playerId(absent)}`)
+			.getByRole("button", { name: "Coming", exact: true })
+			.click();
+
+		await dialog.getByRole("button", { name: "Close" }).first().click();
+		await expect(rsvps.getByRole("region", { name: "Coming (4)" })).toContainText(absent);
+
+		const { gameNight } = await api(request, "get", `/api/gamenight/${id}`);
+		const answered = gameNight.invitedPlayers.find((rsvp: { playerId: number }) => rsvp.playerId === playerId(absent));
+		expect(answered.state).toBe("accepted");
+		await expect(
+			page.getByRole("region", { name: "Expected players" }).getByRole("button", { name: absent }),
+		).toBeVisible();
+	});
+
 	test("records who is here and offers them when starting", async ({ page, request }) => {
 		await openLive(page, request);
 
@@ -217,6 +250,54 @@ test.describe("a night in progress before any game", () => {
 				.getByRole("button")
 				.filter({ has: page.getByRole("img") }),
 		).toHaveText([linkedPlayer, guest, third]);
+	});
+});
+
+test.describe("a player who said yes and is not there yet", () => {
+	const startWithout = async (page: Page, name: string) => {
+		await openStart(page);
+		await sheet(page)
+			.getByRole("button", { name: `Leave ${name} out` })
+			.click();
+		await chooseGame(page, planned);
+		await sheet(page).getByRole("button", { name: "Start", exact: true }).click();
+		await expect(runningCard(page, planned)).toBeVisible();
+	};
+
+	test("stays on the list and is proposed for the next game", async ({ page, request }) => {
+		await openLive(page, request);
+		await startWithout(page, third);
+		await page.reload();
+
+		const table = page.getByRole("region", { name: "Expected players" });
+		await expect(table.getByRole("button").filter({ has: page.getByRole("img") })).toHaveText([
+			linkedPlayer,
+			guest,
+			third,
+		]);
+
+		await openStart(page);
+
+		await expect(sheet(page).getByRole("button", { name: /^Leave .* out$/ })).toHaveText([third]);
+	});
+
+	test("stays away once marked as not here", async ({ page, request }) => {
+		await openLive(page, request);
+		await startWithout(page, third);
+
+		await main(page).getByRole("button", { name: "Edit who's here" }).click();
+		const dialog = page.getByRole("dialog", { name: "Who's here?" });
+		await dialog.getByRole("button", { name: new RegExp(`^${third} `) }).click();
+		await dialog.getByRole("button", { name: "Save" }).click();
+		await expect(page.getByText("Attendance saved")).toBeVisible();
+		await page.reload();
+
+		const table = page.getByRole("region", { name: "At the table" });
+		await expect(table.getByRole("button").filter({ has: page.getByRole("img") })).toHaveText([linkedPlayer, guest]);
+
+		await openStart(page);
+
+		await expect(sheet(page).getByRole("button", { name: /^Leave .* out$/ })).toHaveCount(0);
 	});
 });
 
@@ -847,6 +928,32 @@ test.describe("a night that ran out of time", () => {
 		await expect(playedRows(page)).toHaveCount(1);
 		await expect(main(page)).toContainText(`Night winner${linkedPlayer}`);
 		await expect(page.getByRole("button", { name: /^Play .* again$/ })).toHaveCount(0);
+	});
+});
+
+test.describe("logging a session", () => {
+	const startOfLoggedSession = async (page: Page, request: APIRequestContext, id: number) => {
+		await logSession(page, planned, { [linkedPlayer]: 3 });
+		const { sessions: logged } = await api(request, "get", `/api/gamenight/${id}`);
+		return new Date(logged[0].start);
+	};
+
+	test("starts on the date of a night that is over", async ({ page, request }) => {
+		const startDate = minutesAgo(3 * 24 * 60);
+		const id = await liveNight(request, startDate);
+		await openNight(page, title, id);
+
+		expect(displayDateTime(await startOfLoggedSession(page, request, id))).toBe(displayDateTime(startDate));
+	});
+
+	test("ends now on a live night", async ({ page, request }) => {
+		const id = await liveNight(request, minutesAgo(3 * 60));
+		await openNight(page, title, id);
+
+		const start = await startOfLoggedSession(page, request, id);
+
+		const minutes = games[3].maxPlayTime;
+		expect(Math.abs(start.getTime() - minutesAgo(minutes).getTime())).toBeLessThan(2 * 60_000);
 	});
 });
 

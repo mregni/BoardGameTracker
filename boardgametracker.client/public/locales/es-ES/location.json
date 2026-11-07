@@ -27,8 +27,14 @@
   },
   "delete": {
     "description": "¿Eliminar la ubicación '{{name}}'?",
-    "description-with-sessions_one": "¿Eliminar la ubicación '{{name}}'? Su {{count}} sesión se conserva, pero ya no estará vinculada a una ubicación.",
-    "description-with-sessions_other": "¿Eliminar la ubicación '{{name}}'? Sus {{count}} sesiones se conservan, pero ya no estarán vinculadas a una ubicación."
+    "in-use": {
+      "title": "Esta ubicación está en uso",
+      "sessions_one": "{{count}} sesión está vinculada a ella.",
+      "sessions_other": "{{count}} sesiones están vinculadas a ella.",
+      "game-nights_one": "{{count}} noche de juego está vinculada a ella.",
+      "game-nights_other": "{{count}} noches de juego están vinculadas a ella.",
+      "hint": "Muévelas a otra ubicación antes de eliminarla."
+    }
   },
   "detail": {
     "back": "Volver a ubicaciones",

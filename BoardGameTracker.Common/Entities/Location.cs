@@ -14,11 +14,13 @@ public class Location: HasId
     }
 
     public ICollection<Session> Sessions { get; private set; }
+    public ICollection<GameNight> GameNights { get; private set; }
 
     public Location(string name)
     {
         Name = name;
         Sessions = new List<Session>();
+        GameNights = new List<GameNight>();
     }
 
     public void UpdateName(string name)

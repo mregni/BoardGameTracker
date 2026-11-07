@@ -12,6 +12,8 @@ namespace BoardGameTracker.Core.Auth;
 
 public class TokenService : ITokenService
 {
+    public const string SessionIdClaim = "session_id";
+
     private static readonly JsonWebTokenHandler TokenHandler = new();
 
     private readonly JwtOptions _options;
@@ -23,7 +25,7 @@ public class TokenService : ITokenService
         _context = context;
     }
 
-    public string GenerateAccessToken(ApplicationUser user, IList<string> roles)
+    public string GenerateAccessToken(ApplicationUser user, IList<string> roles, Guid sessionId)
     {
         if (string.IsNullOrWhiteSpace(_options.Secret))
         {
@@ -38,6 +40,7 @@ public class TokenService : ITokenService
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.UniqueName, user.UserName!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(SessionIdClaim, sessionId.ToString()),
         };
 
         if (user.DisplayName != null)
@@ -84,7 +87,7 @@ public class TokenService : ITokenService
 
     private async Task<RefreshToken> ReplaceAsync(RefreshToken current, string reason)
     {
-        var replacement = RefreshToken.Create(current.UserId, _options.RefreshTokenExpiryDays);
+        var replacement = RefreshToken.Create(current.UserId, _options.RefreshTokenExpiryDays, current.SessionId);
         current.Revoke(reason, replacement.Token);
 
         _context.RefreshTokens.Add(replacement);

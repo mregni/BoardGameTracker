@@ -152,6 +152,36 @@ test("stops accepting the access token after logging out", async ({ guestPage: p
 
 	await page.request.post("/api/auth/logout", { headers: { ...SESSION_HEADERS, ...headers } });
 
-	test.fail(true, "BUG: the access token keeps working for up to 15 minutes after logout");
 	expect((await page.request.get("/api/auth/profile", { headers })).status()).toBe(401);
+});
+
+test("keeps an access token through a refresh, then logs out only that device", async ({
+	guestPage: page,
+	browser,
+}) => {
+	const user = await createUser("logout-device-user", "Reader");
+	const { baseURL } = test.info().project.use;
+	const otherDevice = await browser.newContext({ baseURL });
+	const bearer = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
+	const profileStatus = async (accessToken: string) =>
+		(await page.request.get("/api/auth/profile", { headers: bearer(accessToken) })).status();
+
+	try {
+		await paceLogin();
+		const { accessToken } = await (await page.request.post("/api/auth/login", { data: user })).json();
+		await paceLogin();
+		const other = await (await otherDevice.request.post("/api/auth/login", { data: user })).json();
+		const refreshed = await (await page.request.post("/api/auth/refresh", { headers: SESSION_HEADERS })).json();
+
+		expect(await profileStatus(accessToken)).toBe(200);
+		expect(await profileStatus(refreshed.accessToken)).toBe(200);
+
+		await page.request.post("/api/auth/logout", { headers: SESSION_HEADERS });
+
+		expect(await profileStatus(accessToken)).toBe(401);
+		expect(await profileStatus(refreshed.accessToken)).toBe(401);
+		expect(await profileStatus(other.accessToken)).toBe(200);
+	} finally {
+		await otherDevice.close();
+	}
 });
