@@ -951,18 +951,66 @@ public class SessionServiceTests
         VerifyNoOtherCalls();
     }
 
-    [Fact(Skip = "BUG: UpdateFromCommand ignores command.GameId, so changing the game in the edit form is silently dropped")]
+    [Fact]
     public async Task UpdateFromCommand_ShouldMoveTheSessionToTheGameInTheCommand()
     {
         var existingSession = StoredSession(1);
         var command = UpdateCommand(Player(1));
         command.GameId = 2;
         SetupUpdate(existingSession, command);
+        _gameServiceMock.Setup(x => x.ExistsAsync(2)).ReturnsAsync(true);
 
         var result = await _sessionService.UpdateFromCommand(command);
 
         result.GameId.Should().Be(2);
 
+        VerifyGameLookup(2);
+        VerifyUpdated(existingSession, command);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldThrowEntityNotFound_WhenTheNewGameDoesNotExist()
+    {
+        var existingSession = StoredSession();
+        var command = UpdateCommand();
+        command.GameId = 2;
+        _sessionRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(existingSession);
+        _gameServiceMock.Setup(x => x.ExistsAsync(2)).ReturnsAsync(false);
+
+        var action = async () => await _sessionService.UpdateFromCommand(command);
+
+        var error = await action.Should().ThrowAsync<EntityNotFoundException>();
+        error.Which.EntityType.Should().Be(nameof(Game));
+        error.Which.EntityId.Should().Be(2);
+        existingSession.GameId.Should().Be(1);
+
+        VerifyGameLookup(2);
+        VerifyUpdateChecks(1, command);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldOnlyKeepExpansionsOfTheNewGame_WhenTheGameChanges()
+    {
+        var existingSession = StoredSession(1);
+        existingSession.AddExpansion(new Expansion("Old Expansion", 100, 1) { Id = 5 });
+        var newExpansion = new Expansion("New Expansion", 200, 2) { Id = 7 };
+        var command = UpdateCommand(Player(1));
+        command.GameId = 2;
+        command.ExpansionIds = [5, 7];
+        SetupUpdate(existingSession, command);
+        _gameServiceMock.Setup(x => x.ExistsAsync(2)).ReturnsAsync(true);
+        _gameServiceMock
+            .Setup(x => x.GetGameExpansions(2, It.Is<List<int>>(ids => ids.SequenceEqual(new[] { 5, 7 }))))
+            .ReturnsAsync([newExpansion]);
+
+        var result = await _sessionService.UpdateFromCommand(command);
+
+        result.Expansions.Should().Equal(newExpansion);
+
+        VerifyGameLookup(2);
+        _gameServiceMock.Verify(x => x.GetGameExpansions(2, It.Is<List<int>>(ids => ids.SequenceEqual(new[] { 5, 7 }))), Times.Once);
         VerifyUpdated(existingSession, command);
         VerifyNoOtherCalls();
     }
