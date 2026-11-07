@@ -34,11 +34,13 @@ public class SessionSuggestionsControllerTests
             LastLocationId = 4
         };
 
+        using var cancellation = new CancellationTokenSource();
+        var token = cancellation.Token;
         _sessionSuggestionServiceMock
-            .Setup(x => x.GetSuggestions(It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetSuggestions(token))
             .ReturnsAsync(suggestions);
 
-        var result = await _controller.GetSuggestions(TestContext.Current.CancellationToken);
+        var result = await _controller.GetSuggestions(token);
 
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var dto = okResult.Value.Should().BeAssignableTo<SessionSuggestionsDto>().Subject;
@@ -46,7 +48,7 @@ public class SessionSuggestionsControllerTests
         dto.FrequentPlayerIds.Should().Equal(8, 2, 5);
         dto.LastLocationId.Should().Be(4);
 
-        _sessionSuggestionServiceMock.Verify(x => x.GetSuggestions(It.IsAny<CancellationToken>()), Times.Once);
+        _sessionSuggestionServiceMock.Verify(x => x.GetSuggestions(token), Times.Once);
         VerifyNoOtherCalls();
     }
 }

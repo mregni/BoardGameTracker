@@ -48,6 +48,7 @@ public class SessionControllerTests
         var sessionDto = okResult.Value.Should().BeAssignableTo<SessionDto>().Subject;
 
         sessionDto.Id.Should().Be(sessionId);
+        sessionDto.GameId.Should().Be(1);
         sessionDto.Comment.Should().Be("Fun game night");
 
         _sessionServiceMock.Verify(x => x.Get(sessionId), Times.Once);
@@ -106,6 +107,8 @@ public class SessionControllerTests
 
         // Assert
         var okResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
+        okResult.ActionName.Should().Be(nameof(SessionController.GetSession));
+        okResult.RouteValues!["id"].Should().Be(1);
         var sessionDto = okResult.Value.Should().BeAssignableTo<SessionDto>().Subject;
 
         sessionDto.Id.Should().Be(1);

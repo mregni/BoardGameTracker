@@ -103,6 +103,37 @@ public class WinningStreakBadgeEvaluatorTests
         result.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task CanAwardBadge_ShouldOrderSessionsByStart_NotListOrder()
+    {
+        var badge = TestBadges.Create(BadgeType.WinningStreak, BadgeLevel.Green);
+        var sessions = CreateSessionsWithWinStreak(5);
+        sessions.Reverse();
+        sessions.Add(new SessionBuilder().ForGame(1).DaysAgo(6).WithPlayer(PlayerId).Build());
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CanAwardBadge_ShouldOnlyCountWinsOfTheEvaluatedPlayer()
+    {
+        var badge = TestBadges.Create(BadgeType.WinningStreak, BadgeLevel.Green);
+        var sessions = new List<Session>();
+        for (var i = 0; i < 5; i++)
+        {
+            sessions.Add(new SessionBuilder().ForGame(1).DaysAgo(i)
+                .WithWinner(PlayerId + 1)
+                .WithPlayer(PlayerId)
+                .Build());
+        }
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+
+        result.Should().BeFalse();
+    }
+
     #endregion
 
     #region Edge Cases

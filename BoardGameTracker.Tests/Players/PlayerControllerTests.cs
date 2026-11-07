@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
@@ -101,6 +101,8 @@ public class PlayerControllerTests
 
         // Assert
         var okResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
+        okResult.ActionName.Should().Be(nameof(PlayerController.GetPlayerById));
+        okResult.RouteValues!["id"].Should().Be(1);
         var playerDto = okResult.Value.Should().BeAssignableTo<PlayerDto>().Subject;
 
         playerDto.Id.Should().Be(1);

@@ -3,7 +3,7 @@ using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Players;
 using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -12,14 +12,28 @@ namespace BoardGameTracker.Tests.Players;
 public class PlayerStatisticsServiceTests
 {
     private readonly Mock<IPlayerRepository> _playerRepositoryMock;
-    private readonly Mock<ILogger<PlayerStatisticsService>> _loggerMock;
     private readonly PlayerStatisticsService _service;
 
     public PlayerStatisticsServiceTests()
     {
         _playerRepositoryMock = new Mock<IPlayerRepository>();
-        _loggerMock = new Mock<ILogger<PlayerStatisticsService>>();
-        _service = new PlayerStatisticsService(_playerRepositoryMock.Object, _loggerMock.Object);
+        _service = new PlayerStatisticsService(_playerRepositoryMock.Object, NullLogger<PlayerStatisticsService>.Instance);
+    }
+
+    private void VerifyLookups(int playerId)
+    {
+        _playerRepositoryMock.Verify(x => x.GetTotalPlayCount(playerId), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetTotalWinCount(playerId), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetPlayLengthInMinutes(playerId), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetDistinctGameCount(playerId), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetCoopResults(playerId), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetMostPlayedGames(playerId, 5), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetRivals(playerId), Times.Once);
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _playerRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -43,6 +57,8 @@ public class PlayerStatisticsServiceTests
         result.TotalPlayedTime.Should().Be(3000.0);
         result.DistinctGameCount.Should().Be(15);
         result.MostPlayedGames.Should().BeEmpty();
+        VerifyLookups(playerId);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -55,7 +71,8 @@ public class PlayerStatisticsServiceTests
 
         result.CoopWinCount.Should().Be(4);
         result.CoopLossCount.Should().Be(2);
-        _playerRepositoryMock.Verify(x => x.GetCoopResults(1), Times.Once);
+        VerifyLookups(1);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -68,7 +85,8 @@ public class PlayerStatisticsServiceTests
         var result = await _service.CalculateStatisticsAsync(1);
 
         result.Rivals.Should().BeEquivalentTo(rivals);
-        _playerRepositoryMock.Verify(x => x.GetRivals(1), Times.Once);
+        VerifyLookups(1);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -107,6 +125,8 @@ public class PlayerStatisticsServiceTests
         secondGame.TotalWins.Should().Be(4);
         secondGame.TotalSessions.Should().Be(8);
         secondGame.WinningPercentage.Should().Be(50.0);
+        VerifyLookups(playerId);
+        VerifyNoOtherCalls();
     }
 
 }
