@@ -118,7 +118,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 			setConfirmSsoStop(true);
 			return;
 		}
-		handleFormSubmit(form)(event);
+		void handleFormSubmit(form)(event);
 	};
 
 	const renderContent = () => {
@@ -194,7 +194,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 						confirmLabel={t("general.public-url.sso-confirm.confirm")}
 						onDelete={() => {
 							setConfirmSsoStop(false);
-							ignoreApiError(form.handleSubmit());
+							void ignoreApiError(form.handleSubmit());
 						}}
 					/>
 				)}
