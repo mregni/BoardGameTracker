@@ -212,7 +212,7 @@ public class HeadToHeadCalculatorTests
 
         HeadToHeadCalculator.Fill(result, sessions, PlayerOne, PlayerTwo);
 
-        result.RecentSessions.Should().HaveCount(HeadToHeadCalculator.RecentSessionCount);
+        result.RecentSessions.Should().HaveCount(10);
         result.RecentSessions[0].Should().BeEquivalentTo(new CompareSession
         {
             SessionId = sessions[0].SessionId,

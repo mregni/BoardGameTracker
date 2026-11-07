@@ -251,9 +251,12 @@ public class ConfigRepositoryTests : IDisposable
     public async Task SeedConfigAsync_ShouldNotTouchDatabase_WhenNothingIsMissing()
     {
         await SeedAsync((StringKey, "existing"));
+        var saves = 0;
+        _context.SavingChanges += (_, _) => saves++;
 
         await _repository.SeedConfigAsync([new ConfigDefault(StringKey, "default")]);
 
+        saves.Should().Be(0);
         var stored = await _context.Config.ToListAsync();
         stored.Should().ContainSingle();
         stored[0].Value.Should().Be("existing");
