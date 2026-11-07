@@ -376,6 +376,7 @@ public class ChangeDetectionClient : IChangeDetectionClient
                         ? ChangeDetectionStatus.Pending
                         : MapStatus(response.StatusCode));
                     ApplyWatchMetadata(unavailable, watch.Value);
+                    unavailable.RecheckQueued = queueRecheck;
                     return unavailable;
                 }
 

@@ -319,7 +319,7 @@ public class ChangeDetectionClientTests
         VerifyNoOtherCalls();
     }
 
-    [Fact(Skip = "BUG: a pending watch drops RecheckQueued, so the client never polls for the first snapshot")]
+    [Fact]
     public async Task GetLatestAsync_ShouldReportTheQueuedRecheck_WhenTheWatchHasNoSnapshotYet()
     {
         _handler.HistoryStatus = HttpStatusCode.NotFound;
