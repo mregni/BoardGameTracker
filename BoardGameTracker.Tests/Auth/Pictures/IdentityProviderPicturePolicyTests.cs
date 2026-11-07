@@ -49,13 +49,13 @@ public class IdentityProviderPicturePolicyTests
     [InlineData("http://localhost:9000/avatar.png")]
     public void Validate_ShouldAcceptLoopback_WhenTheAuthorityIsLoopback(string url)
     {
-        IdentityProviderPicturePolicy.Validate(url, LoopbackAuthority).Should().NotBeNull();
+        IdentityProviderPicturePolicy.Validate(url, LoopbackAuthority).Should().Be(new Uri(url));
     }
 
     [Fact]
     public void Validate_ShouldAcceptPlainHttp_OnlyOnTheOriginOfAnHttpAuthority()
     {
-        IdentityProviderPicturePolicy.Validate("http://auth.lan:9000/media/a.png", LanAuthority).Should().NotBeNull();
+        IdentityProviderPicturePolicy.Validate("http://auth.lan:9000/media/a.png", LanAuthority).Should().Be(new Uri("http://auth.lan:9000/media/a.png"));
         IdentityProviderPicturePolicy.Validate("http://auth.lan:9001/media/a.png", LanAuthority).Should().BeNull();
         IdentityProviderPicturePolicy.Validate("http://other.lan:9000/media/a.png", LanAuthority).Should().BeNull();
     }
@@ -67,6 +67,24 @@ public class IdentityProviderPicturePolicyTests
     public void Validate_ShouldUpgradePlainHttp_OnTheHostOfAnHttpsAuthority(string url, string authority, string expected)
     {
         IdentityProviderPicturePolicy.Validate(url, new Uri(authority))!.AbsoluteUri.Should().Be(expected);
+    }
+
+    [Fact]
+    public void Validate_ShouldNotUpgradePlainHttp_OnANonDefaultPort()
+    {
+        IdentityProviderPicturePolicy.Validate("http://idp.example.com:8080/a.png", new Uri("https://idp.example.com:8080/")).Should().BeNull();
+    }
+
+    [Fact]
+    public void Validate_ShouldNotUpgradePlainHttp_OfAnHttpAuthority()
+    {
+        IdentityProviderPicturePolicy.Validate("http://auth.lan/a.png", new Uri("http://auth.lan/")).Should().Be(new Uri("http://auth.lan/a.png"));
+    }
+
+    [Fact]
+    public void Validate_ShouldKeepHttpsOnAnotherPort_OfAnHttpAuthority()
+    {
+        IdentityProviderPicturePolicy.Validate("https://auth.lan:9443/a.png", LanAuthority).Should().Be(new Uri("https://auth.lan:9443/a.png"));
     }
 
     [Fact]
@@ -85,6 +103,8 @@ public class IdentityProviderPicturePolicyTests
     [InlineData("fd12:3456::1")]
     [InlineData("fe80::1")]
     [InlineData("::ffff:192.168.1.20")]
+    [InlineData("0.1.2.3")]
+    [InlineData("224.0.0.1")]
     public void IsAllowedAddress_ShouldRefuseInternalAddresses_ForAnotherHost(string address)
     {
         IdentityProviderPicturePolicy.IsAllowedAddress(IPAddress.Parse(address), false, false).Should().BeFalse();
@@ -106,6 +126,7 @@ public class IdentityProviderPicturePolicyTests
     [InlineData("::")]
     [InlineData("255.255.255.255")]
     [InlineData("ff02::1")]
+    [InlineData("::ffff:169.254.169.254")]
     public void IsAllowedAddress_ShouldAlwaysRefuseMetadataAndUnroutableAddresses(string address)
     {
         IdentityProviderPicturePolicy.IsAllowedAddress(IPAddress.Parse(address), true, true).Should().BeFalse();
@@ -114,6 +135,7 @@ public class IdentityProviderPicturePolicyTests
     [Theory]
     [InlineData("127.0.0.1")]
     [InlineData("::1")]
+    [InlineData("::ffff:127.0.0.1")]
     public void IsAllowedAddress_ShouldAcceptLoopback_OnlyForALoopbackAuthority(string address)
     {
         IdentityProviderPicturePolicy.IsAllowedAddress(IPAddress.Parse(address), true, false).Should().BeFalse();

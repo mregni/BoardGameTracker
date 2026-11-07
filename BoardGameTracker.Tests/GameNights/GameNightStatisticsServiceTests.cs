@@ -16,7 +16,7 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.GameNights;
 using BoardGameTracker.Core.GameNights.Specifications;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -30,10 +30,11 @@ public class GameNightStatisticsServiceTests
     private static readonly DateTime March = new(2026, 3, 6, 20, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime April = new(2026, 4, 3, 20, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime May = new(2026, 5, 1, 20, 0, 0, DateTimeKind.Utc);
+    private static readonly CancellationToken Token = new CancellationTokenSource().Token;
 
     private readonly Mock<IReadRepository<GameNight>> _gameNightRepositoryMock;
     private readonly Mock<IConfigRepository> _configRepositoryMock;
-    private readonly Mock<IDateTimeProvider> _dateTimeProviderMock;
+    private readonly FixedClock _clock = new();
     private readonly GameNightStatisticsService _service;
     private GameNightStatisticsSpec? _capturedSpec;
 
@@ -41,16 +42,12 @@ public class GameNightStatisticsServiceTests
     {
         _gameNightRepositoryMock = new Mock<IReadRepository<GameNight>>();
         _configRepositoryMock = new Mock<IConfigRepository>();
-        _dateTimeProviderMock = new Mock<IDateTimeProvider>();
-        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(Now);
-        _dateTimeProviderMock.Setup(x => x.ConvertToLocalTime(It.IsAny<DateTime>())).Returns<DateTime>(x => x);
-        _dateTimeProviderMock.Setup(x => x.ConvertToUtc(It.IsAny<DateTime>())).Returns<DateTime>(x => DateTime.SpecifyKind(x, DateTimeKind.Utc));
 
         _service = new GameNightStatisticsService(
             _gameNightRepositoryMock.Object,
             _configRepositoryMock.Object,
-            _dateTimeProviderMock.Object,
-            new Mock<ILogger<GameNightStatisticsService>>().Object);
+            _clock,
+            NullLogger<GameNightStatisticsService>.Instance);
     }
 
     private void VerifyNoOtherCalls()
@@ -68,17 +65,36 @@ public class GameNightStatisticsServiceTests
 
     private void SetupNights(params GameNightStatisticsNight[] nights)
     {
+        SetupNightsFrom(null, nights);
+    }
+
+    private void SetupNightsFrom(DateTime? from, params GameNightStatisticsNight[] nights)
+    {
         _gameNightRepositoryMock
-            .Setup(x => x.ListAsync(It.IsAny<ISpecification<GameNight, GameNightStatisticsNight>>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(Window(from), Token))
             .Callback<ISpecification<GameNight, GameNightStatisticsNight>, CancellationToken>((spec, _) => _capturedSpec = (GameNightStatisticsSpec)spec)
             .ReturnsAsync(nights.ToList());
     }
 
-    private void VerifyLoaded()
+    private ISpecification<GameNight, GameNightStatisticsNight> Window(DateTime? from) =>
+        It.Is<ISpecification<GameNight, GameNightStatisticsNight>>(s => CoversTheWindow(s, from, _clock.UtcNow));
+
+    private static bool CoversTheWindow(ISpecification<GameNight, GameNightStatisticsNight> spec, DateTime? from, DateTime now)
+    {
+        var latestStart = now + GameNight.PlayOpensBefore;
+        var earliestStart = from ?? new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        return spec is GameNightStatisticsSpec
+            && spec.IsSatisfiedBy(GameNight.Create("Latest", "", latestStart, 1, 1))
+            && !spec.IsSatisfiedBy(GameNight.Create("Too late", "", latestStart.AddMinutes(1), 1, 1))
+            && spec.IsSatisfiedBy(GameNight.Create("Earliest", "", earliestStart, 1, 1))
+            && spec.IsSatisfiedBy(GameNight.Create("Too early", "", earliestStart.AddMinutes(-1), 1, 1)) == (from == null);
+    }
+
+    private void VerifyLoaded(DateTime? from = null)
     {
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.GameNightsEnabled, true), Times.Once);
         _gameNightRepositoryMock.Verify(
-            x => x.ListAsync(It.IsAny<ISpecification<GameNight, GameNightStatisticsNight>>(), It.IsAny<CancellationToken>()),
+            x => x.ListAsync(Window(from), Token),
             Times.Once);
     }
 
@@ -137,7 +153,7 @@ public class GameNightStatisticsServiceTests
     {
         SetupEnabled(false);
 
-        var act = () => _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var act = () => _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         await act.Should().ThrowAsync<FeatureDisabledException>();
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.GameNightsEnabled, true), Times.Once);
@@ -150,7 +166,7 @@ public class GameNightStatisticsServiceTests
         SetupEnabled();
         SetupNights(Night(1, Now.AddDays(3), 1, [1]));
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.Period.Should().Be(GameNightStatisticsPeriod.AllTime);
         result.TotalNights.Should().Be(0);
@@ -182,7 +198,7 @@ public class GameNightStatisticsServiceTests
         SetupEnabled();
         SetupNights(Season());
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.TotalNights.Should().Be(5);
         result.NightsWithSessions.Should().Be(3);
@@ -201,7 +217,7 @@ public class GameNightStatisticsServiceTests
         SetupEnabled();
         SetupNights(Season());
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.TiedNights.Should().Be(1);
         result.Winners.Select(x => (x.PlayerId, x.Rank, x.NightsWon, x.NightsAttended, x.GamesWon))
@@ -216,7 +232,7 @@ public class GameNightStatisticsServiceTests
         SetupEnabled();
         SetupNights(Night(1, January, 1, [], Played(10, January, 30, (1, false), (2, true))));
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.Winners.Should().ContainSingle(x => x.PlayerId == 2 && x.NightsWon == 1 && x.NightsAttended == 1);
         result.Attendance.Select(x => x.PlayerId).Should().Equal(1, 2);
@@ -230,7 +246,7 @@ public class GameNightStatisticsServiceTests
         SetupEnabled();
         SetupNights(Season());
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.History.Select(x => x.GameNightId).Should().Equal(4, 3, 2, 1);
         result.History.Select(x => x.WinnerStreak).Should().Equal(0, 2, 1, 1);
@@ -252,7 +268,7 @@ public class GameNightStatisticsServiceTests
         SetupEnabled();
         SetupNights(Season());
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.Games.Select(x => (x.GameId, x.TimesPlayed, x.Nights, x.TimesPlanned))
             .Should().Equal((10, 4, 3, 1), (11, 2, 2, 0));
@@ -267,7 +283,7 @@ public class GameNightStatisticsServiceTests
         SetupEnabled();
         SetupNights(Season());
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.Streaks.CurrentWinner.Should().BeEquivalentTo(new { PlayerId = 1, Length = 2, From = February, To = March });
         result.Streaks.LongestWinner.Should().BeEquivalentTo(new { PlayerId = 1, Length = 2, From = February, To = March });
@@ -287,7 +303,7 @@ public class GameNightStatisticsServiceTests
             .ToArray();
         SetupNights(nights);
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.Streaks.CurrentWinner.Should().BeEquivalentTo(new { PlayerId = 2, Length = 2, From = January.AddDays(21), To = January.AddDays(28) });
         result.Streaks.LongestWinner.Should().BeEquivalentTo(new { PlayerId = 1, Length = 3, From = January, To = January.AddDays(14) });
@@ -311,7 +327,7 @@ public class GameNightStatisticsServiceTests
             Night(1, January, 1, [1, 2, 3], coopWin, coopLoss),
             Night(2, February, 1, [1, 2], mixedCoop, Played(10, February.AddHours(1), 30, (1, true), (2, false))));
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         var coopNight = result.History.Single(x => x.GameNightId == 1);
         coopNight.WinnerIds.Should().Equal(1, 2, 3);
@@ -337,7 +353,7 @@ public class GameNightStatisticsServiceTests
             Night(2, February, 1, [1], Played(10, February, 30, (1, false))),
             Night(3, March, 1, [1], Played(10, March, 30, (1, true))));
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.Streaks.CurrentWinner.Should().BeNull();
         result.Streaks.LongestWinner.Should().BeNull();
@@ -353,7 +369,7 @@ public class GameNightStatisticsServiceTests
         SetupEnabled();
         SetupNights(Season());
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.RecentNights.Select(x => x.GameNightId).Should().Equal(1, 2, 3, 4);
         result.RecentNights[0].Title.Should().Be("Night 1");
@@ -375,7 +391,7 @@ public class GameNightStatisticsServiceTests
             .ToArray();
         SetupNights(nights);
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.RecentNights.Select(x => x.GameNightId).Should().Equal(Enumerable.Range(3, 12));
         result.Attendance.Single(x => x.PlayerId == 2).RecentNights.Should().HaveCount(12).And.StartWith(false);
@@ -390,7 +406,7 @@ public class GameNightStatisticsServiceTests
         SetupEnabled();
         SetupNights(Season());
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.Records.LongestNight.Should().BeEquivalentTo(new { GameNightId = 1, Title = "Night 1", StartDate = January, GamesPlayed = 3, Value = 180d });
         result.Records.MostGames.Should().BeEquivalentTo(new { GameNightId = 1, GamesPlayed = 3, Value = 3d, GameId = (int?)10 });
@@ -412,7 +428,7 @@ public class GameNightStatisticsServiceTests
         SetupEnabled();
         SetupNights(Night(1, January, 1, [], Played(10, January, 30, (1, true)), Played(11, January, 30, (1, true))));
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.Records.MostGames!.GameId.Should().BeNull();
         result.Records.BiggestTable!.Value.Should().Be(1);
@@ -433,7 +449,7 @@ public class GameNightStatisticsServiceTests
         night.EndedAt = January.AddHours(4);
         SetupNights(night);
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.Attendance.Select(x => x.PlayerId).Should().BeEquivalentTo([2, 3, 4, 5, 6, 7]);
         result.Records.BiggestTable!.Value.Should().Be(6);
@@ -452,7 +468,7 @@ public class GameNightStatisticsServiceTests
             Night(2, February, 1, [], Played(10, February, 30, (2, true), (1, false))),
             Night(3, tonight, 1, [], Played(10, tonight, 30, (2, true), (1, false)), Played(11, tonight.AddHours(1), 30, (1, true), (2, false), (3, false))));
 
-        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
 
         result.History.Select(x => (x.GameNightId, x.InProgress)).Should().Equal((3, true), (2, false), (1, false));
         result.History[0].WinnerIds.Should().Equal(1, 2);
@@ -477,8 +493,14 @@ public class GameNightStatisticsServiceTests
     [InlineData(GameNightStatisticsPeriod.Last12Months, new[] { 2, 3, 4 })]
     public async Task GetStatistics_ShouldFilterTheNightsByPeriod(GameNightStatisticsPeriod period, int[] expectedIds)
     {
+        DateTime? from = period switch
+        {
+            GameNightStatisticsPeriod.ThisYear => new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            GameNightStatisticsPeriod.Last12Months => Now.AddMonths(-12),
+            _ => null
+        };
         SetupEnabled();
-        SetupNights();
+        SetupNightsFrom(from);
         var nights = new[]
         {
             GameNight.Create("Long ago", "", new DateTime(2024, 3, 1, 20, 0, 0, DateTimeKind.Utc), 1, 1),
@@ -492,11 +514,326 @@ public class GameNightStatisticsServiceTests
             nights[i].Id = i + 1;
         }
 
-        var result = await _service.GetStatistics(period);
+        var result = await _service.GetStatistics(period, Token);
 
         result.Period.Should().Be(period);
         _capturedSpec!.Evaluate(nights).Select(x => x.Id).Should().Equal(expectedIds);
+        VerifyLoaded(from);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldStartThisYearAtTheLocalNewYear_WhenUtcIsStillInTheOldYear()
+    {
+        _clock.UtcNow = new DateTime(2026, 12, 31, 23, 30, 0, DateTimeKind.Utc);
+        _clock.Offset = TimeSpan.FromHours(1);
+        var localNewYearInUtc = new DateTime(2026, 12, 31, 23, 0, 0, DateTimeKind.Utc);
+        SetupEnabled();
+        SetupNightsFrom(localNewYearInUtc);
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.ThisYear, Token);
+
+        result.Period.Should().Be(GameNightStatisticsPeriod.ThisYear);
+        VerifyLoaded(localNewYearInUtc);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldCountANightAsHeld_ExactlyWhenThePlayWindowCloses()
+    {
+        var closed = Now - GameNight.PlayWindow;
+        SetupEnabled();
+        SetupNights(Night(1, closed, 1, [1]), Night(2, closed.AddMinutes(1), 1, [1]));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.TotalNights.Should().Be(1);
+        result.Nights.Should().Be(0);
         VerifyLoaded();
         VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldKeepANightInProgress_UntilThePlayWindowCloses()
+    {
+        var closed = Now - GameNight.PlayWindow;
+        var open = closed.AddMinutes(1);
+        SetupEnabled();
+        SetupNights(Night(1, closed, 1, [1], Played(10, closed, 30, (1, true))), Night(2, open, 1, [1], Played(10, open, 30, (1, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.History.Select(x => (x.GameNightId, x.InProgress)).Should().Equal((2, true), (1, false));
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldHaveNoAverageGap_WithASingleNight()
+    {
+        SetupEnabled();
+        SetupNights(Night(1, January, 1, [1], Played(10, January, 30, (1, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Nights.Should().Be(1);
+        result.AverageDaysBetweenNights.Should().BeNull();
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldOrderTheNightsByStartThenId_WhateverOrderTheyArrive()
+    {
+        SetupEnabled();
+        SetupNights(
+            Night(3, February, 1, [1], Played(10, February, 30, (1, true))),
+            Night(2, January, 1, [1], Played(10, January, 30, (1, true))),
+            Night(1, January, 1, [1], Played(10, January, 30, (1, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.History.Select(x => x.GameNightId).Should().Equal(3, 2, 1);
+        result.RecentNights.Select(x => x.GameNightId).Should().Equal(1, 2, 3);
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldOrderEqualNightWinners_ByTheirWinRate()
+    {
+        SetupEnabled();
+        SetupNights(
+            Night(1, January, 9, [], Played(10, January, 30, (1, true))),
+            Night(2, February, 9, [], Played(10, February, 30, (2, true))),
+            Night(3, March, 9, [], Played(10, March, 30, (1, false))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Winners.Select(x => (x.PlayerId, x.Rank, x.NightsWon, x.NightsAttended)).Should().Equal((2, 1, 1, 1), (1, 1, 1, 2));
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldOrderEqualNightWinners_ByGamesWonThenPlayerId()
+    {
+        SetupEnabled();
+        SetupNights(
+            Night(1, January, 9, [], Played(10, January, 30, (5, true)), Played(11, January, 30, (5, true))),
+            Night(2, February, 9, [], Played(10, February, 30, (4, true))),
+            Night(3, March, 9, [], Played(10, March, 30, (3, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Winners.Select(x => (x.PlayerId, x.GamesWon)).Should().Equal((5, 2), (3, 1), (4, 1));
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldSkipRanks_AfterSharedPlaces()
+    {
+        SetupEnabled();
+        SetupNights(
+            Night(1, January, 9, [], Played(10, January, 30, (1, true))),
+            Night(2, February, 9, [], Played(10, February, 30, (1, true))),
+            Night(3, March, 9, [], Played(10, March, 30, (2, true))),
+            Night(4, April, 9, [], Played(10, April, 30, (2, true))),
+            Night(5, May, 9, [], Played(10, May, 30, (3, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Winners.Select(x => (x.PlayerId, x.Rank)).Should().Equal((1, 1), (2, 1), (3, 3));
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldNotCallACoopLossShared()
+    {
+        var coopLoss = Played(13, January, 60, (1, false), (2, false));
+        coopLoss.IsCoop = true;
+        SetupEnabled();
+        SetupNights(Night(1, January, 1, [1, 2], coopLoss));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        var night = result.History.Single();
+        night.CoopOnly.Should().BeTrue();
+        night.SharedThroughCoop.Should().BeFalse();
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldPreferTheLaterStreak_WhenTwoAreEquallyLong()
+    {
+        SetupEnabled();
+        SetupNights(
+            Night(1, January, 9, [], Played(10, January, 30, (1, true))),
+            Night(2, February, 9, [], Played(11, February, 30, (1, true))),
+            Night(3, March, 9, [], Played(12, March, 30, (2, true))),
+            Night(4, April, 9, [], Played(13, April, 30, (2, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Streaks.LongestWinner.Should().BeEquivalentTo(new { PlayerId = 2, Length = 2, From = March, To = April });
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldPreferTheLowestPlayerId_WhenStreaksEndTogether()
+    {
+        SetupEnabled();
+        SetupNights(
+            Night(1, January, 9, [], Played(10, January, 30, (2, true), (1, false)), Played(11, January, 30, (1, true), (2, false))),
+            Night(2, February, 9, [], Played(12, February, 30, (2, true), (1, false)), Played(13, February, 30, (1, true), (2, false))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Streaks.LongestWinner!.PlayerId.Should().Be(1);
+        result.Streaks.CurrentWinner!.PlayerId.Should().Be(1);
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldOrderGames_ByPlaysThenNightsThenId()
+    {
+        SetupEnabled();
+        SetupNights(
+            Night(1, January, 1, [],
+                Played(22, January, 10, (1, true)),
+                Played(20, January, 10, (1, true)),
+                Played(20, January, 10, (1, true)),
+                Played(21, January, 10, (1, true))),
+            Night(2, February, 1, [],
+                Played(21, February, 10, (1, true)),
+                Played(19, February, 10, (1, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Games.Select(x => (x.GameId, x.TimesPlayed, x.Nights)).Should().Equal((21, 2, 2), (20, 2, 1), (19, 1, 1), (22, 1, 1));
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldCountAPlannedGameOncePerNight_MostPlannedFirst()
+    {
+        var first = Night(1, January, 1, [], Played(10, January, 10, (1, true)));
+        first.PlannedGameIds = [30, 30, 31, 32];
+        var second = Night(2, February, 1, [], Played(10, February, 10, (1, true)));
+        second.PlannedGameIds = [32, 31, 10];
+        SetupEnabled();
+        SetupNights(first, second);
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.PlannedNeverPlayed.Select(x => (x.GameId, x.TimesPlanned)).Should().Equal((31, 2), (32, 2), (30, 1));
+        result.Games.Single().TimesPlanned.Should().Be(1);
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldOrderAttendance_ByNightsThenHostedThenId()
+    {
+        SetupEnabled();
+        SetupNights(
+            Night(1, January, 7, [3, 2, 1], Played(10, January, 10, (7, true))),
+            Night(2, February, 7, [3, 2], Played(10, February, 10, (7, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Attendance.Select(x => (x.PlayerId, x.NightsAttended, x.NightsHosted))
+            .Should().Equal((7, 2, 2), (2, 2, 0), (3, 2, 0), (1, 1, 0));
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldMeasureTheLongestNight_FromTheFirstStartToTheLastEnd()
+    {
+        SetupEnabled();
+        SetupNights(Night(1, January, 1, [], Played(10, January, 30, (1, true)), Played(11, January.AddHours(2), 30, (1, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Records.LongestNight!.Value.Should().Be(150);
+        result.TotalMinutes.Should().Be(60);
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldNameNoTopGame_WhenTwoGamesTiedAboveOnePlay()
+    {
+        SetupEnabled();
+        SetupNights(Night(1, January, 1, [],
+            Played(10, January, 10, (1, true)),
+            Played(10, January, 10, (1, true)),
+            Played(11, January, 10, (1, true)),
+            Played(11, January, 10, (1, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Records.MostGames!.Value.Should().Be(4);
+        result.Records.MostGames.GameId.Should().BeNull();
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldGiveTiedRecordsToTheEarliestNight()
+    {
+        SetupEnabled();
+        SetupNights(
+            Night(1, February, 5, [1], Played(10, February, 60, (1, true))),
+            Night(2, January, 5, [1], Played(10, January, 60, (1, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Records.LongestNight!.GameNightId.Should().Be(2);
+        result.Records.MostGames!.GameNightId.Should().Be(2);
+        result.Records.BiggestTable!.GameNightId.Should().Be(2);
+        result.Records.LatestFinish!.GameNightId.Should().Be(2);
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldJudgeTheLatestFinish_ByTheLocalClock()
+    {
+        _clock.Offset = TimeSpan.FromHours(1);
+        var pastMidnightLocally = new DateTime(2026, 2, 6, 23, 30, 0, DateTimeKind.Utc);
+        SetupEnabled();
+        SetupNights(
+            Night(1, January, 1, [], Played(10, January.AddMinutes(90), 60, (1, true))),
+            Night(2, pastMidnightLocally, 1, [], Played(11, pastMidnightLocally, 15, (1, true))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime, Token);
+
+        result.Records.LatestFinish.Should().BeEquivalentTo(new
+        {
+            GameNightId = 1,
+            Value = 60d,
+            GameId = (int?)10,
+            At = (DateTime?)January.AddMinutes(150)
+        });
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    private sealed class FixedClock : IDateTimeProvider
+    {
+        public DateTime UtcNow { get; set; } = GameNightStatisticsServiceTests.Now;
+        public TimeSpan Offset { get; set; }
+        public DateTime Now => UtcNow + Offset;
+        public TimeZoneInfo TimeZone => TimeZoneInfo.Utc;
+        public DateTime ConvertToLocalTime(DateTime utcDateTime) => utcDateTime + Offset;
+        public DateTime ConvertToUtc(DateTime localDateTime) => DateTime.SpecifyKind(localDateTime - Offset, DateTimeKind.Utc);
     }
 }

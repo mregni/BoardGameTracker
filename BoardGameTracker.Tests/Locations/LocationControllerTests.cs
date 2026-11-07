@@ -31,7 +31,6 @@ public class LocationControllerTests
     [Fact]
     public async Task GetLocations_ShouldReturnOkWithLocations_WhenLocationsExist()
     {
-        // Arrange
         var locations = new List<LocationDto>
         {
             new() { Id = 1, Name = "Home", PlayCount = 2 },
@@ -43,10 +42,8 @@ public class LocationControllerTests
             .Setup(x => x.GetLocations())
             .ReturnsAsync(locations);
 
-        // Act
         var result = await _controller.GetLocations();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedLocations = okResult.Value.Should().BeAssignableTo<List<LocationDto>>().Subject;
 
@@ -62,15 +59,12 @@ public class LocationControllerTests
     [Fact]
     public async Task GetLocations_ShouldReturnOkWithEmptyList_WhenNoLocationsExist()
     {
-        // Arrange
         _locationServiceMock
             .Setup(x => x.GetLocations())
             .ReturnsAsync([]);
 
-        // Act
         var result = await _controller.GetLocations();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedLocations = okResult.Value.Should().BeAssignableTo<List<LocationDto>>().Subject;
 
@@ -83,7 +77,6 @@ public class LocationControllerTests
     [Fact]
     public async Task CreateLocation_ShouldReturnCreatedWithLocation_WhenLocationIsCreated()
     {
-        // Arrange
         var command = new CreateLocationCommand
         {
             Name = "Game Store"
@@ -95,10 +88,8 @@ public class LocationControllerTests
             .Setup(x => x.Create(command))
             .ReturnsAsync(createdLocation);
 
-        // Act
         var result = await _controller.CreateLocation(command);
 
-        // Assert
         var okResult = result.Should().BeOfType<CreatedResult>().Subject;
         var locationDto = okResult.Value.Should().BeAssignableTo<LocationDto>().Subject;
 
@@ -112,7 +103,6 @@ public class LocationControllerTests
     [Fact]
     public async Task UpdateLocation_ShouldReturnOkWithUpdatedLocation_WhenLocationIsUpdated()
     {
-        // Arrange
         var command = new UpdateLocationCommand
         {
             Id = 1,
@@ -125,10 +115,8 @@ public class LocationControllerTests
             .Setup(x => x.Update(command))
             .ReturnsAsync(updatedLocation);
 
-        // Act
         var result = await _controller.UpdateLocation(command);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var locationDto = okResult.Value.Should().BeAssignableTo<LocationDto>().Subject;
 
@@ -142,7 +130,6 @@ public class LocationControllerTests
     [Fact]
     public async Task DeleteLocation_ShouldReturnNoContent_WhenLocationIsDeleted()
     {
-        // Arrange
         var locationId = 1;
         var location = new Location("Test") { Id = locationId };
 
@@ -154,10 +141,8 @@ public class LocationControllerTests
             .Setup(x => x.Delete(locationId))
             .Returns(Task.CompletedTask);
 
-        // Act
         var result = await _controller.DeleteLocation(locationId);
 
-        // Assert
         result.Should().BeOfType<NoContentResult>();
 
         _locationServiceMock.Verify(x => x.GetByIdAsync(locationId), Times.Once);
@@ -168,17 +153,14 @@ public class LocationControllerTests
     [Fact]
     public async Task DeleteLocation_ShouldReturnNotFound_WhenLocationDoesNotExist()
     {
-        // Arrange
         var locationId = 999;
 
         _locationServiceMock
             .Setup(x => x.GetByIdAsync(locationId))
             .ReturnsAsync((Location?)null);
 
-        // Act
         var result = await _controller.DeleteLocation(locationId);
 
-        // Assert
         result.Should().BeOfType<NotFoundResult>();
 
         _locationServiceMock.Verify(x => x.GetByIdAsync(locationId), Times.Once);

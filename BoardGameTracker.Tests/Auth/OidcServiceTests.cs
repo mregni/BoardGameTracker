@@ -4,12 +4,14 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +27,7 @@ namespace BoardGameTracker.Tests.Auth;
 public class OidcServiceTests : IDisposable
 {
     private readonly MainDbContext _context;
+    private readonly Mock<IUserStore<ApplicationUser>> _userStoreMock = new();
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
     private readonly Mock<ITokenService> _tokenServiceMock;
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
@@ -44,9 +47,8 @@ public class OidcServiceTests : IDisposable
             .Options;
         _context = new MainDbContext(options);
 
-        var userStoreMock = new Mock<IUserStore<ApplicationUser>>();
         _userManagerMock = new Mock<UserManager<ApplicationUser>>(
-            userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+            _userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
         _tokenServiceMock = new Mock<ITokenService>();
         _httpClientFactoryMock = new Mock<IHttpClientFactory>();
@@ -79,6 +81,7 @@ public class OidcServiceTests : IDisposable
 
     private void VerifyNoOtherCalls()
     {
+        _userStoreMock.VerifyNoOtherCalls();
         _userManagerMock.VerifyNoOtherCalls();
         _tokenServiceMock.VerifyNoOtherCalls();
         _httpClientFactoryMock.VerifyNoOtherCalls();
@@ -86,6 +89,7 @@ public class OidcServiceTests : IDisposable
         _idTokenValidatorMock.VerifyNoOtherCalls();
         _roleReconcilerMock.VerifyNoOtherCalls();
         _secretProtectorMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
     }
 
     private static OidcProvider CreateDisabledProvider(string name)
@@ -106,9 +110,7 @@ public class OidcServiceTests : IDisposable
 
         var result = await _service.GetEnabledProviderAsync();
 
-        result.Should().NotBeNull();
-        result!.DisplayName.Should().Be("Google");
-        result.DisplayName.Should().Be("Google");
+        result.Should().Be(new OidcProviderInfo("Google", null, null));
         VerifyNoOtherCalls();
     }
 
@@ -178,6 +180,7 @@ public class OidcServiceTests : IDisposable
 
         var remaining = await _context.ExternalLogins.ToListAsync(TestContext.Current.CancellationToken);
         remaining.Should().BeEmpty();
+        _loggerMock.VerifyLog(LogLevel.Information, "Unlinked external login 1 (provider: google) from user user-1");
         VerifyNoOtherCalls();
     }
 
@@ -208,6 +211,7 @@ public class OidcServiceTests : IDisposable
         await _service.UnlinkExternalLoginAsync("user-1", first.Id);
 
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).Id.Should().Be(second.Id);
+        _loggerMock.VerifyLog(LogLevel.Information, "Unlinked external login 1 (provider: google) from user user-1");
         VerifyNoOtherCalls();
     }
 
@@ -291,6 +295,7 @@ public class OidcServiceTests : IDisposable
         (await _context.OidcSessions.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
         _configurationsMock.Verify(x => x.GetAsync("https://sso.example.com/realms/bgt", default), Times.Once);
         _secretProtectorMock.Verify(x => x.Unprotect("protected-id-token"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Ending the identity provider session of user user-1 at Keycloak");
         VerifyNoOtherCalls();
     }
 
@@ -355,6 +360,7 @@ public class OidcServiceTests : IDisposable
 
         result.Should().BeNull();
         _configurationsMock.Verify(x => x.GetAsync("https://sso.example.com/realms/bgt", default), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Could not build the identity provider sign-out address for Keycloak");
         VerifyNoOtherCalls();
     }
 
@@ -460,6 +466,7 @@ public class OidcServiceTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Error, "OIDC discovery at https://sso.example.com/realms/bgt failed with InternalServerError");
         VerifyNoOtherCalls();
     }
 
@@ -510,6 +517,11 @@ public class OidcServiceTests : IDisposable
         result.SigningCertificateExpiredOn.Should().BeNull();
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), kind == "insecure" ? Times.Once() : Times.Exactly(2));
         _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
+        if (kind == "missing")
+        {
+            _loggerMock.VerifyLog(LogLevel.Warning, "The signing keys of https://sso.example.com/realms/bgt could not be loaded: NotFound");
+        }
+
         VerifyNoOtherCalls();
     }
 
@@ -524,6 +536,84 @@ public class OidcServiceTests : IDisposable
         result.SigningCertificateExpiredOn.Should().BeNull();
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
         _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The signing keys of https://sso.example.com/realms/bgt could not be loaded");
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("[]")]
+    [InlineData("""{"issuer":" "}""")]
+    [InlineData("""{"issuer":"https://sso.example.com/realms/bgt"}""")]
+    [InlineData("""{"issuer":"https://sso.example.com/realms/bgt","authorization_endpoint":"https://sso.example.com/auth"}""")]
+    [InlineData("""{"issuer":"https://sso.example.com/realms/bgt","authorization_endpoint":"","token_endpoint":"https://sso.example.com/token"}""")]
+    [InlineData("not json")]
+    public async Task TestDiscoveryAsync_ShouldFail_WhenTheDocumentIsIncomplete(string document)
+    {
+        SetupDiscovery(HttpStatusCode.OK, document);
+
+        var act = () => _service.TestDiscoveryAsync(DiscoveryAuthority);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
+        if (document == "not json")
+        {
+            _loggerMock.VerifyLog(LogLevel.Error, $"OIDC discovery at {DiscoveryAuthority} returned something that is not a discovery document");
+        }
+
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TestDiscoveryAsync_ShouldFail_WhenTheIssuerIsNotAString()
+    {
+        SetupDiscovery(HttpStatusCode.OK, """{"issuer":42}""");
+
+        var act = () => _service.TestDiscoveryAsync(DiscoveryAuthority);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TestDiscoveryAsync_ShouldReportTheNetworkFailure()
+    {
+        _httpClientFactoryMock.Setup(x => x.CreateClient(OidcService.HttpClientName)).Returns(() => new HttpClient(new StaticHandler(_documents)));
+
+        var act = () => _service.TestDiscoveryAsync(DiscoveryAuthority);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcDiscoveryFailed);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Error, "OIDC discovery at https://sso.example.com/realms/bgt could not be reached");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EndSessionAsync_ShouldReturnNull_WhenTheStoredIdTokenCannotBeDecrypted()
+    {
+        var (_, key) = await AddSessionAsync(DateTime.UtcNow.AddDays(1));
+        SetUpMetadata("https://sso.example.com/realms/bgt/logout");
+        _secretProtectorMock.Setup(x => x.Unprotect("protected-id-token")).Throws(new System.Security.Cryptography.CryptographicException("broken"));
+
+        var result = await _service.EndSessionAsync(key, "https://games.example.com");
+
+        result.Should().BeNull();
+        _configurationsMock.Verify(x => x.GetAsync("https://sso.example.com/realms/bgt", default), Times.Once);
+        _secretProtectorMock.Verify(x => x.Unprotect("protected-id-token"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Could not build the identity provider sign-out address for Keycloak");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CleanupExpiredSessionsAsync_ShouldDoNothing_WhenNothingExpired()
+    {
+        _context.OidcSessions.Add(new OidcSession("new", "user-1", 1, "t", DateTime.UtcNow.AddDays(1)));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _service.CleanupExpiredSessionsAsync();
+
+        (await _context.OidcSessions.CountAsync(TestContext.Current.CancellationToken)).Should().Be(1);
         VerifyNoOtherCalls();
     }
 

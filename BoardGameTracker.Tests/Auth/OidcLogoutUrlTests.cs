@@ -28,6 +28,6 @@ public class OidcLogoutUrlTests
     {
         var url = OidcLogoutUrl.Build("https://sso.example.com/logout?tenant=1", "t", "bgt", "https://games.example.com");
 
-        url.Should().StartWith("https://sso.example.com/logout?tenant=1&id_token_hint=t&");
+        url.Should().Be("https://sso.example.com/logout?tenant=1&id_token_hint=t&post_logout_redirect_uri=https%3A%2F%2Fgames.example.com%2Flogin&client_id=bgt");
     }
 }

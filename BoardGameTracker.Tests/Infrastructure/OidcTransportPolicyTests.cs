@@ -65,6 +65,8 @@ public class OidcTransportPolicyTests
     [InlineData("localhost.", true)]
     [InlineData("[::1]", true)]
     [InlineData("::1", true)]
+    [InlineData("[localhostx", false)]
+    [InlineData("xlocalhost]", false)]
     [InlineData("192.168.1.20", false)]
     public void IsLoopbackHost_ShouldRecogniseLoopbackNames(string? host, bool expected)
     {

@@ -38,13 +38,13 @@ public class GameNightStatisticsControllerTests
     {
         var statistics = new GameNightStatisticsDto { Period = period, Nights = 3 };
         _statisticsServiceMock
-            .Setup(x => x.GetStatistics(period, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetStatistics(period, TestContext.Current.CancellationToken))
             .ReturnsAsync(statistics);
 
-        var result = await _controller.GetStatistics(period);
+        var result = await _controller.GetStatistics(period, TestContext.Current.CancellationToken);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(statistics);
-        _statisticsServiceMock.Verify(x => x.GetStatistics(period, It.IsAny<CancellationToken>()), Times.Once);
+        _statisticsServiceMock.Verify(x => x.GetStatistics(period, TestContext.Current.CancellationToken), Times.Once);
         VerifyNoOtherCalls();
     }
 

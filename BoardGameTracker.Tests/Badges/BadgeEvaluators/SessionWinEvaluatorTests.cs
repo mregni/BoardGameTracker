@@ -90,7 +90,6 @@ public class SessionWinEvaluatorTests
         var badge = TestBadges.Create(BadgeType.Wins, BadgeLevel.Green);
         var sessions = new List<Session>();
 
-        // Create sessions where player 1 has 2 wins but player 2 has many wins
         for (var i = 0; i < 5; i++)
         {
             var session = new SessionBuilder().ForGame(1).DaysAgo(i)

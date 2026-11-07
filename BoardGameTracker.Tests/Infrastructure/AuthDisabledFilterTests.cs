@@ -89,6 +89,7 @@ public class AuthDisabledFilterTests
     }
 
     [Theory]
+    [InlineData("")]
     [InlineData("/api/games")]
     [InlineData("/api/auth/login")]
     [InlineData("/api/auth/refresh")]

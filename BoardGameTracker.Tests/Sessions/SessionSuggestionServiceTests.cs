@@ -1,4 +1,3 @@
-using BoardGameTracker.Common;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions;
 using BoardGameTracker.Core.Sessions.Interfaces;
@@ -11,6 +10,9 @@ namespace BoardGameTracker.Tests.Sessions;
 
 public class SessionSuggestionServiceTests
 {
+    private const int RecentGamesCount = 8;
+    private const int FrequentPlayersCount = 3;
+
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IPlayerRepository> _playerRepositoryMock;
     private readonly SessionSuggestionService _service;
@@ -31,50 +33,57 @@ public class SessionSuggestionServiceTests
     [Fact]
     public async Task GetSuggestions_ShouldCombineRecentGamesFrequentPlayersAndLastLocation()
     {
+        using var cancellation = new CancellationTokenSource();
+        var token = cancellation.Token;
         _sessionRepositoryMock
-            .Setup(x => x.GetRecentlyPlayedGameIds(Constants.SessionForm.RecentGamesCount, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetRecentlyPlayedGameIds(RecentGamesCount, token))
             .ReturnsAsync([4, 2, 9]);
         _playerRepositoryMock
-            .Setup(x => x.GetTopPlayers(Constants.SessionForm.FrequentPlayersCount, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetTopPlayers(FrequentPlayersCount, token))
             .ReturnsAsync([(7, "Mikhael", null, 12, 4), (3, "Reggi", null, 9, 2)]);
         _sessionRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LastUsedLocationSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LastUsedLocationSpec>(), token))
             .ReturnsAsync(5);
 
-        var result = await _service.GetSuggestions(TestContext.Current.CancellationToken);
+        var result = await _service.GetSuggestions(token);
 
         result.RecentGameIds.Should().Equal(4, 2, 9);
         result.FrequentPlayerIds.Should().Equal(7, 3);
         result.LastLocationId.Should().Be(5);
 
-        _sessionRepositoryMock.Verify(x => x.GetRecentlyPlayedGameIds(Constants.SessionForm.RecentGamesCount, It.IsAny<CancellationToken>()), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetTopPlayers(Constants.SessionForm.FrequentPlayersCount, It.IsAny<CancellationToken>()), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<LastUsedLocationSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyLookups(token);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task GetSuggestions_ShouldReturnEmptySuggestions_WhenNoSessionsExist()
     {
+        using var cancellation = new CancellationTokenSource();
+        var token = cancellation.Token;
         _sessionRepositoryMock
-            .Setup(x => x.GetRecentlyPlayedGameIds(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetRecentlyPlayedGameIds(RecentGamesCount, token))
             .ReturnsAsync([]);
         _playerRepositoryMock
-            .Setup(x => x.GetTopPlayers(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetTopPlayers(FrequentPlayersCount, token))
             .ReturnsAsync([]);
         _sessionRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LastUsedLocationSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LastUsedLocationSpec>(), token))
             .ReturnsAsync((int?)null);
 
-        var result = await _service.GetSuggestions(TestContext.Current.CancellationToken);
+        var result = await _service.GetSuggestions(token);
 
         result.RecentGameIds.Should().BeEmpty();
         result.FrequentPlayerIds.Should().BeEmpty();
         result.LastLocationId.Should().BeNull();
 
-        _sessionRepositoryMock.Verify(x => x.GetRecentlyPlayedGameIds(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetTopPlayers(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<LastUsedLocationSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyLookups(token);
         VerifyNoOtherCalls();
+    }
+
+    private void VerifyLookups(CancellationToken token)
+    {
+        _sessionRepositoryMock.Verify(x => x.GetRecentlyPlayedGameIds(RecentGamesCount, token), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetTopPlayers(FrequentPlayersCount, token), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<LastUsedLocationSpec>(), token), Times.Once);
     }
 }

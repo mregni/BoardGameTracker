@@ -121,6 +121,59 @@ public class UserAccessCheckTests : IDisposable
     [Fact]
     public void CacheLifetime_ShouldBeShort()
     {
-        UserAccessCheck.CacheLifetime.Should().BeLessThanOrEqualTo(TimeSpan.FromMinutes(1));
+        UserAccessCheck.CacheLifetime.Should().Be(TimeSpan.FromSeconds(30));
+    }
+
+    [Fact]
+    public async Task CanSignInAsync_ShouldCacheARefusal_ForEachUserSeparately()
+    {
+        await AddUserAsync("disabled", DateTimeOffset.MaxValue);
+        await AddUserAsync("active");
+
+        (await _check.CanSignInAsync("disabled", TestContext.Current.CancellationToken)).Should().BeFalse();
+        (await _check.CanSignInAsync("active", TestContext.Current.CancellationToken)).Should().BeTrue();
+
+        await SetLockoutAsync("disabled", null);
+
+        (await _check.CanSignInAsync("disabled", TestContext.Current.CancellationToken)).Should().BeFalse("the answer is cached briefly");
+    }
+
+    [Fact]
+    public async Task Forget_ShouldOnlyDropTheAnswerOfThatUser()
+    {
+        await AddUserAsync("user-1");
+        await AddUserAsync("user-2");
+        (await _check.CanSignInAsync("user-1", TestContext.Current.CancellationToken)).Should().BeTrue();
+        (await _check.CanSignInAsync("user-2", TestContext.Current.CancellationToken)).Should().BeTrue();
+        await SetLockoutAsync("user-1", DateTimeOffset.MaxValue);
+        await SetLockoutAsync("user-2", DateTimeOffset.MaxValue);
+
+        _check.Forget("user-1");
+
+        (await _check.CanSignInAsync("user-1", TestContext.Current.CancellationToken)).Should().BeFalse();
+        (await _check.CanSignInAsync("user-2", TestContext.Current.CancellationToken)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CanSignInAsync_ShouldHonourTheCallersCancellation()
+    {
+        await AddUserAsync("user-1");
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        var act = () => _check.CanSignInAsync("user-1", cancellation.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task IsSessionActiveAsync_ShouldHonourTheCallersCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        var act = () => _check.IsSessionActiveAsync(Guid.NewGuid(), cancellation.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 }

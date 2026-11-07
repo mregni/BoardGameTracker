@@ -1,8 +1,10 @@
+using System.Security.Claims;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -11,21 +13,14 @@ namespace BoardGameTracker.Tests.Infrastructure;
 public class AuthDisabledExtensionsTests
 {
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
-    private readonly Mock<IApplicationBuilder> _appBuilderMock;
+    private readonly ApplicationBuilder _appBuilder;
 
     public AuthDisabledExtensionsTests()
     {
         _environmentProviderMock = new Mock<IEnvironmentProvider>();
-
-        var serviceProviderMock = new Mock<IServiceProvider>();
-        serviceProviderMock
-            .Setup(x => x.GetService(typeof(IEnvironmentProvider)))
-            .Returns(_environmentProviderMock.Object);
-
-        _appBuilderMock = new Mock<IApplicationBuilder>();
-        _appBuilderMock
-            .Setup(x => x.ApplicationServices)
-            .Returns(serviceProviderMock.Object);
+        _appBuilder = new ApplicationBuilder(new ServiceCollection()
+            .AddSingleton(_environmentProviderMock.Object)
+            .BuildServiceProvider());
     }
 
     private void VerifyNoOtherCalls()
@@ -34,36 +29,31 @@ public class AuthDisabledExtensionsTests
     }
 
     [Fact]
-    public void UseAuthDisabledMiddleware_ShouldRegisterMiddleware_WhenAuthIsDisabled()
+    public async Task UseAuthDisabledMiddleware_ShouldRegisterMiddleware_WhenAuthIsDisabled()
     {
-        // Arrange
         _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(false);
-        _appBuilderMock
-            .Setup(x => x.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
-            .Returns(_appBuilderMock.Object);
+        var context = new DefaultHttpContext();
 
-        // Act
-        var result = _appBuilderMock.Object.UseAuthDisabledMiddleware();
+        var result = _appBuilder.UseAuthDisabledMiddleware();
+        await _appBuilder.Build()(context);
 
-        // Assert
-        result.Should().BeSameAs(_appBuilderMock.Object);
-        _appBuilderMock.Verify(x => x.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()), Times.Once);
+        result.Should().BeSameAs(_appBuilder);
+        context.User.FindFirstValue(ClaimTypes.NameIdentifier).Should().Be("auth-disabled-admin-id");
         _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public void UseAuthDisabledMiddleware_ShouldNotRegisterMiddleware_WhenAuthIsEnabled()
+    public async Task UseAuthDisabledMiddleware_ShouldNotRegisterMiddleware_WhenAuthIsEnabled()
     {
-        // Arrange
         _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(true);
+        var context = new DefaultHttpContext();
 
-        // Act
-        var result = _appBuilderMock.Object.UseAuthDisabledMiddleware();
+        var result = _appBuilder.UseAuthDisabledMiddleware();
+        await _appBuilder.Build()(context);
 
-        // Assert
-        result.Should().BeSameAs(_appBuilderMock.Object);
-        _appBuilderMock.Verify(x => x.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()), Times.Never);
+        result.Should().BeSameAs(_appBuilder);
+        context.User.Identity!.IsAuthenticated.Should().BeFalse();
         _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
         VerifyNoOtherCalls();
     }

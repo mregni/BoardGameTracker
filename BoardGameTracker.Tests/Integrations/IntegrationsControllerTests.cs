@@ -17,6 +17,7 @@ public class IntegrationsControllerTests
 {
     private readonly Mock<IIntegrationStatusService> _serviceMock = new();
     private readonly IntegrationsController _controller;
+    private readonly CancellationToken _token = new CancellationTokenSource().Token;
 
     public IntegrationsControllerTests()
     {
@@ -44,12 +45,12 @@ public class IntegrationsControllerTests
             Status(IntegrationKind.Bgg, IntegrationConnectionStatus.Ok),
             Status(IntegrationKind.ChangeDetection, IntegrationConnectionStatus.NotConfigured)
         };
-        _serviceMock.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(statuses);
+        _serviceMock.Setup(x => x.GetAllAsync(_token)).ReturnsAsync(statuses);
 
-        var result = await _controller.GetStatus(CancellationToken.None);
+        var result = await _controller.GetStatus(_token);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(statuses);
-        _serviceMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _serviceMock.Verify(x => x.GetAllAsync(_token), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -61,12 +62,12 @@ public class IntegrationsControllerTests
     public async Task Test_ShouldTestTheRequestedIntegration(string integration, IntegrationKind expected)
     {
         var status = Status(expected, IntegrationConnectionStatus.Unauthorized);
-        _serviceMock.Setup(x => x.TestAsync(expected, It.IsAny<CancellationToken>())).ReturnsAsync(status);
+        _serviceMock.Setup(x => x.TestAsync(expected, _token)).ReturnsAsync(status);
 
-        var result = await _controller.Test(integration, CancellationToken.None);
+        var result = await _controller.Test(integration, _token);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(status);
-        _serviceMock.Verify(x => x.TestAsync(expected, It.IsAny<CancellationToken>()), Times.Once);
+        _serviceMock.Verify(x => x.TestAsync(expected, _token), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -76,7 +77,7 @@ public class IntegrationsControllerTests
     [InlineData("openai")]
     public async Task Test_ShouldReturnNotFound_ForAnUnknownIntegration(string integration)
     {
-        var result = await _controller.Test(integration, CancellationToken.None);
+        var result = await _controller.Test(integration, _token);
 
         result.Should().BeOfType<NotFoundResult>();
         VerifyNoOtherCalls();

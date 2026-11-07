@@ -15,6 +15,9 @@ namespace BoardGameTracker.Tests.Players;
 
 public class PlayerRepositoryRivalsTests : IDisposable
 {
+    private readonly Mock<IReadRepository<Session>> _sessionRepositoryMock = new();
+    private readonly Mock<IReadRepository<PlayerSession>> _playerSessionRepositoryMock = new();
+    private readonly Mock<IDateTimeProvider> _dateTimeProviderMock = new();
     private readonly MainDbContext _context;
     private readonly PlayerRepository _repository;
 
@@ -26,9 +29,16 @@ public class PlayerRepositoryRivalsTests : IDisposable
 
         _repository = new PlayerRepository(
             _context,
-            Mock.Of<IReadRepository<Session>>(),
-            Mock.Of<IReadRepository<PlayerSession>>(),
-            Mock.Of<IDateTimeProvider>());
+            _sessionRepositoryMock.Object,
+            _playerSessionRepositoryMock.Object,
+            _dateTimeProviderMock.Object);
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _sessionRepositoryMock.VerifyNoOtherCalls();
+        _playerSessionRepositoryMock.VerifyNoOtherCalls();
+        _dateTimeProviderMock.VerifyNoOtherCalls();
     }
 
     public void Dispose()
@@ -74,5 +84,7 @@ public class PlayerRepositoryRivalsTests : IDisposable
                 new { PlayerId = carol.Id, Sessions = 2, Wins = 1, Losses = 1 }
             ],
             options => options.WithStrictOrdering());
+
+        VerifyNoOtherCalls();
     }
 }

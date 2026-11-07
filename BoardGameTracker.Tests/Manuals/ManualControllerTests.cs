@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
@@ -11,6 +13,7 @@ using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Manuals.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -22,6 +25,7 @@ public class ManualControllerTests
     private readonly Mock<IManualService> _manualServiceMock;
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly ManualController _controller;
+    private readonly CancellationToken _token = new CancellationTokenSource().Token;
 
     public ManualControllerTests()
     {
@@ -36,9 +40,20 @@ public class ManualControllerTests
         _environmentProviderMock.VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public void UploadManuals_ShouldAcceptARequestOfOneGibibyte()
+    {
+        var upload = typeof(ManualController).GetMethod(nameof(ManualController.UploadManuals))!;
+
+        upload.GetCustomAttribute<RequestSizeLimitAttribute>().Should().BeAssignableTo<IRequestSizeLimitMetadata>()
+            .Which.MaxRequestBodySize.Should().Be(1_073_741_824);
+        upload.GetCustomAttribute<RequestFormLimitsAttribute>()!.MultipartBodyLengthLimit.Should().Be(1_073_741_824);
+        VerifyNoOtherCalls();
+    }
+
     private static Manual CreateManual(int id, int gameId)
     {
-        return new Manual("rulebook.pdf", "stored-rulebook.pdf", "application/pdf", 1024, gameId, DateTime.UtcNow) { Id = id };
+        return new Manual("rulebook.pdf", "stored-rulebook.pdf", "application/pdf", 1024, gameId, new DateTime(2026, 11, 7, 10, 0, 0, DateTimeKind.Utc)) { Id = id };
     }
 
     [Fact]
@@ -51,7 +66,10 @@ public class ManualControllerTests
         var result = await _controller.GetManualsForGame(5);
 
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().BeOfType<List<ManualDto>>().Which.Should().HaveCount(1);
+        var dto = okResult.Value.Should().BeOfType<List<ManualDto>>().Which.Should().ContainSingle().Subject;
+        dto.Id.Should().Be(1);
+        dto.GameId.Should().Be(5);
+        dto.Title.Should().Be("rulebook.pdf");
 
         _manualServiceMock.Verify(x => x.GetManualsForGame(5), Times.Once);
         VerifyNoOtherCalls();
@@ -68,7 +86,10 @@ public class ManualControllerTests
         var result = await _controller.UploadManuals(5, command);
 
         var okResult = result.Should().BeOfType<CreatedResult>().Subject;
-        okResult.Value.Should().BeOfType<List<ManualDto>>().Which.Should().HaveCount(1);
+        okResult.Location.Should().BeNull();
+        var dto = okResult.Value.Should().BeOfType<List<ManualDto>>().Which.Should().ContainSingle().Subject;
+        dto.Id.Should().Be(1);
+        dto.GameId.Should().Be(5);
 
         _manualServiceMock.Verify(x => x.UploadManuals(5, command.Files), Times.Once);
         VerifyNoOtherCalls();
@@ -98,7 +119,6 @@ public class ManualControllerTests
         result.Should().BeOfType<NotFoundResult>();
 
         _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
-        _manualServiceMock.Verify(x => x.RequeueManualForIndexing(It.IsAny<int>()), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -127,6 +147,7 @@ public class ManualControllerTests
         fileResult.FileStream.Should().BeSameAs(stream);
         fileResult.ContentType.Should().Be("application/pdf");
         fileResult.FileDownloadName.Should().Be("Catan.pdf");
+        fileResult.EnableRangeProcessing.Should().BeTrue();
 
         _manualServiceMock.Verify(x => x.GetManualForDownload(3), Times.Once);
         VerifyNoOtherCalls();
@@ -137,12 +158,11 @@ public class ManualControllerTests
     {
         _environmentProviderMock.Setup(x => x.RagEnabled).Returns(false);
 
-        var result = await _controller.GetManualPageImage(3, 2, CancellationToken.None);
+        var result = await _controller.GetManualPageImage(3, 2, _token);
 
         result.Should().BeOfType<NotFoundResult>();
 
         _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
-        _manualServiceMock.Verify(x => x.GetManualPageImage(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -152,17 +172,18 @@ public class ManualControllerTests
         _environmentProviderMock.Setup(x => x.RagEnabled).Returns(true);
         var stream = new MemoryStream();
         _manualServiceMock
-            .Setup(x => x.GetManualPageImage(3, 2, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetManualPageImage(3, 2, _token))
             .ReturnsAsync(new ManualDownload { Stream = stream, ContentType = "image/png", FileName = "page-2.png" });
 
-        var result = await _controller.GetManualPageImage(3, 2, CancellationToken.None);
+        var result = await _controller.GetManualPageImage(3, 2, _token);
 
         var fileResult = result.Should().BeOfType<FileStreamResult>().Subject;
         fileResult.FileStream.Should().BeSameAs(stream);
         fileResult.ContentType.Should().Be("image/png");
+        fileResult.FileDownloadName.Should().BeEmpty();
 
         _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
-        _manualServiceMock.Verify(x => x.GetManualPageImage(3, 2, It.IsAny<CancellationToken>()), Times.Once);
+        _manualServiceMock.Verify(x => x.GetManualPageImage(3, 2, _token), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -171,15 +192,15 @@ public class ManualControllerTests
     {
         _environmentProviderMock.Setup(x => x.RagEnabled).Returns(true);
         _manualServiceMock
-            .Setup(x => x.GetManualPageImage(3, 2, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetManualPageImage(3, 2, _token))
             .ReturnsAsync((ManualDownload?)null);
 
-        var result = await _controller.GetManualPageImage(3, 2, CancellationToken.None);
+        var result = await _controller.GetManualPageImage(3, 2, _token);
 
         result.Should().BeOfType<NotFoundResult>();
 
         _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
-        _manualServiceMock.Verify(x => x.GetManualPageImage(3, 2, It.IsAny<CancellationToken>()), Times.Once);
+        _manualServiceMock.Verify(x => x.GetManualPageImage(3, 2, _token), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -225,13 +246,76 @@ public class ManualControllerTests
     public async Task GetGamesWithManuals_ShouldReturnTheGameIds()
     {
         _manualServiceMock
-            .Setup(x => x.GetGameIdsWithManuals(It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetGameIdsWithManuals(_token))
             .ReturnsAsync([1, 3]);
 
-        var result = await _controller.GetGamesWithManuals(TestContext.Current.CancellationToken);
+        var result = await _controller.GetGamesWithManuals(_token);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(new List<int> { 1, 3 });
-        _manualServiceMock.Verify(x => x.GetGameIdsWithManuals(TestContext.Current.CancellationToken), Times.Once);
+        _manualServiceMock.Verify(x => x.GetGameIdsWithManuals(_token), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    private void SignIn(bool isAuthenticated)
+    {
+        var identity = isAuthenticated ? new ClaimsIdentity("test") : new ClaimsIdentity();
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) }
+        };
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetManualsForGameNight_ShouldPassWhetherTheVisitorIsSignedIn(bool isAuthenticated)
+    {
+        SignIn(isAuthenticated);
+        var linkId = Guid.NewGuid();
+        var manuals = new List<GameNightManualsDto>();
+        _manualServiceMock.Setup(x => x.GetManualsForGameNight(linkId, isAuthenticated)).ReturnsAsync(manuals);
+
+        var result = await _controller.GetManualsForGameNight(linkId);
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(manuals);
+        _manualServiceMock.Verify(x => x.GetManualsForGameNight(linkId, isAuthenticated), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetManualsForGameNight_ShouldTreatAPrincipalWithoutIdentityAsAnonymous()
+    {
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal() }
+        };
+        var linkId = Guid.NewGuid();
+        var manuals = new List<GameNightManualsDto>();
+        _manualServiceMock.Setup(x => x.GetManualsForGameNight(linkId, false)).ReturnsAsync(manuals);
+
+        var result = await _controller.GetManualsForGameNight(linkId);
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(manuals);
+        _manualServiceMock.Verify(x => x.GetManualsForGameNight(linkId, false), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DownloadGameNightManual_ShouldPassWhetherTheVisitorIsSignedIn(bool isAuthenticated)
+    {
+        SignIn(isAuthenticated);
+        var linkId = Guid.NewGuid();
+        var stream = new MemoryStream();
+        _manualServiceMock
+            .Setup(x => x.GetManualForGameNightDownload(linkId, 11, isAuthenticated))
+            .ReturnsAsync(new ManualDownload { Stream = stream, ContentType = "application/pdf", FileName = "Catan.pdf" });
+
+        var result = await _controller.DownloadGameNightManual(linkId, 11);
+
+        result.Should().BeOfType<FileStreamResult>().Which.FileStream.Should().BeSameAs(stream);
+        _manualServiceMock.Verify(x => x.GetManualForGameNightDownload(linkId, 11, isAuthenticated), Times.Once);
         VerifyNoOtherCalls();
     }
 }

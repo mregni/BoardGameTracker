@@ -52,10 +52,7 @@ public class StringExtensionTests
 
             var result = fileName.GenerateUniqueFileName();
 
-            result.Should().StartWith("test_");
-            result.Should().EndWith(".txt");
-            result.Should().NotBe(fileName);
-            result.Length.Should().BeGreaterThan(fileName.Length);
+            result.Should().MatchRegex(@"^test_\w{8}\.\w{3}\.txt$");
         }
 
         [Fact]
@@ -89,8 +86,7 @@ public class StringExtensionTests
 
             var result = fileName.GenerateUniqueFileName();
 
-            result.Should().StartWith("_");
-            result.Should().NotBeEmpty();
+            result.Should().MatchRegex(@"^_\w{8}\.\w{3}$");
         }
 
         [Fact]

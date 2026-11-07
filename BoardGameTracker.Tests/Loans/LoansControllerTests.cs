@@ -28,12 +28,12 @@ public class LoanControllerTests
     private void VerifyNoOtherCalls()
     {
         _loanServiceMock.VerifyNoOtherCalls();
+        _dateTimeProviderMock.VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task GetLoans_ShouldReturnOkWithLoans_WhenLoansExist()
     {
-        // Arrange
         var loans = new List<Loan>
         {
             new Loan(1, 1, DateTime.UtcNow.AddDays(-5)) { Id = 1 },
@@ -44,10 +44,8 @@ public class LoanControllerTests
             .Setup(x => x.GetLoans())
             .ReturnsAsync(loans);
 
-        // Act
         var result = await _controller.GetLoans();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedLoans = okResult.Value.Should().BeAssignableTo<List<LoanDto>>().Subject;
 
@@ -60,33 +58,31 @@ public class LoanControllerTests
         returnedLoans[1].PlayerId.Should().Be(2);
 
         _loanServiceMock.Verify(x => x.GetLoans(), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task GetLoans_ShouldReturnOkWithEmptyList_WhenNoLoansExist()
     {
-        // Arrange
         _loanServiceMock
             .Setup(x => x.GetLoans())
             .ReturnsAsync([]);
 
-        // Act
         var result = await _controller.GetLoans();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedLoans = okResult.Value.Should().BeAssignableTo<List<LoanDto>>().Subject;
         returnedLoans.Should().BeEmpty();
 
         _loanServiceMock.Verify(x => x.GetLoans(), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task GetLoanById_ShouldReturnOkWithLoan_WhenLoanExists()
     {
-        // Arrange
         var loanId = 1;
         var loan = new Loan(1, 1, DateTime.UtcNow.AddDays(-5)) { Id = loanId };
 
@@ -94,10 +90,8 @@ public class LoanControllerTests
             .Setup(x => x.GetLoanById(loanId))
             .ReturnsAsync(loan);
 
-        // Act
         var result = await _controller.GetLoanById(loanId);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedLoan = okResult.Value.Should().BeAssignableTo<LoanDto>().Subject;
 
@@ -106,11 +100,43 @@ public class LoanControllerTests
         returnedLoan.PlayerId.Should().Be(1);
 
         _loanServiceMock.Verify(x => x.GetLoanById(loanId), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLoanById_ShouldMapEveryFieldOfTheLoan()
+    {
+        var loanDate = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        var dueDate = new DateTime(2026, 9, 15, 0, 0, 0, DateTimeKind.Utc);
+        var returnedDate = new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc);
+        var loan = new Loan(4, 6, loanDate) { Id = 8 };
+        loan.SetDueDate(dueDate);
+        loan.MarkAsReturned(returnedDate);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(returnedDate.AddDays(1));
+        _loanServiceMock.Setup(x => x.GetLoanById(8)).ReturnsAsync(loan);
+
+        var result = await _controller.GetLoanById(8);
+
+        var dto = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<LoanDto>().Subject;
+        dto.Should().BeEquivalentTo(new LoanDto
+        {
+            Id = 8,
+            GameId = 4,
+            PlayerId = 6,
+            LoanDate = loanDate,
+            DueDate = dueDate,
+            ReturnedDate = returnedDate,
+            IsActive = false
+        });
+        _loanServiceMock.Verify(x => x.GetLoanById(8), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Theory]
     [InlineData(-1, true)]
+    [InlineData(0, true)]
     [InlineData(1, false)]
     public async Task GetLoanById_ShouldMarkTheLoanActive_OnlyOnceItHasStarted(int startsInDays, bool expected)
     {
@@ -123,23 +149,21 @@ public class LoanControllerTests
         var dto = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<LoanDto>().Subject;
         dto.IsActive.Should().Be(expected);
         _loanServiceMock.Verify(x => x.GetLoanById(1), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task GetLoanById_ShouldReturnNotFound_WhenLoanDoesNotExist()
     {
-        // Arrange
         var loanId = 999;
 
         _loanServiceMock
             .Setup(x => x.GetLoanById(loanId))
             .ReturnsAsync((Loan?)null);
 
-        // Act
         var result = await _controller.GetLoanById(loanId);
 
-        // Assert
         result.Should().BeOfType<NotFoundResult>();
 
         _loanServiceMock.Verify(x => x.GetLoanById(loanId), Times.Once);
@@ -149,7 +173,6 @@ public class LoanControllerTests
     [Fact]
     public async Task CreateLoan_ShouldReturnCreatedAtAction_WhenLoanIsCreated()
     {
-        // Arrange
         var command = new CreateLoanCommand
         {
             GameId = 1,
@@ -164,10 +187,8 @@ public class LoanControllerTests
             .Setup(x => x.LoanGameToPlayer(command))
             .ReturnsAsync(createdLoan);
 
-        // Act
         var result = await _controller.CreateLoan(command);
 
-        // Assert
         var createdResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
         createdResult.ActionName.Should().Be(nameof(LoanController.GetLoanById));
         createdResult.RouteValues.Should().ContainKey("id");
@@ -179,13 +200,13 @@ public class LoanControllerTests
         returnedLoan.PlayerId.Should().Be(command.PlayerId);
 
         _loanServiceMock.Verify(x => x.LoanGameToPlayer(command), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task UpdateLoan_ShouldReturnOkWithUpdatedLoan_WhenLoanIsUpdated()
     {
-        // Arrange
         var command = new UpdateLoanCommand
         {
             Id = 1,
@@ -201,10 +222,8 @@ public class LoanControllerTests
             .Setup(x => x.Update(command))
             .ReturnsAsync(updatedLoan);
 
-        // Act
         var result = await _controller.UpdateLoan(command);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedLoan = okResult.Value.Should().BeAssignableTo<LoanDto>().Subject;
 
@@ -213,13 +232,13 @@ public class LoanControllerTests
         returnedLoan.PlayerId.Should().Be(command.PlayerId);
 
         _loanServiceMock.Verify(x => x.Update(command), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task ReturnLoan_ShouldReturnOkWithUpdatedLoan_WhenLoanIsReturned()
     {
-        // Arrange
         var command = new ReturnLoanCommand
         {
             Id = 1,
@@ -233,10 +252,8 @@ public class LoanControllerTests
             .Setup(x => x.ReturnLoan(command))
             .ReturnsAsync(returnedLoan);
 
-        // Act
         var result = await _controller.ReturnLoan(command);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var loan = okResult.Value.Should().BeAssignableTo<LoanDto>().Subject;
 
@@ -244,6 +261,7 @@ public class LoanControllerTests
         loan.ReturnedDate.Should().Be(command.ReturnDate);
 
         _loanServiceMock.Verify(x => x.ReturnLoan(command), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -260,13 +278,13 @@ public class LoanControllerTests
         dto.Id.Should().Be(3);
         dto.ReturnedDate.Should().BeNull();
         _loanServiceMock.Verify(x => x.UndoReturn(3), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task DeleteLoan_ShouldReturnNoContent_WhenLoanIsDeleted()
     {
-        // Arrange
         var loanId = 1;
         var existingLoan = new Loan(1, 1, DateTime.UtcNow.AddDays(-5)) { Id = loanId };
 
@@ -278,10 +296,8 @@ public class LoanControllerTests
             .Setup(x => x.Delete(loanId))
             .Returns(Task.CompletedTask);
 
-        // Act
         var result = await _controller.DeleteLoan(loanId);
 
-        // Assert
         result.Should().BeOfType<NoContentResult>();
 
         _loanServiceMock.Verify(x => x.GetLoanById(loanId), Times.Once);
@@ -292,20 +308,18 @@ public class LoanControllerTests
     [Fact]
     public async Task DeleteLoan_ShouldReturnNotFound_WhenLoanDoesNotExist()
     {
-        // Arrange
         var loanId = 999;
 
         _loanServiceMock
             .Setup(x => x.GetLoanById(loanId))
             .ReturnsAsync((Loan?)null);
 
-        // Act
         var result = await _controller.DeleteLoan(loanId);
 
-        // Assert
         result.Should().BeOfType<NotFoundResult>();
 
         _loanServiceMock.Verify(x => x.GetLoanById(loanId), Times.Once);
+        _loanServiceMock.Verify(x => x.Delete(loanId), Times.Never);
         VerifyNoOtherCalls();
     }
 }

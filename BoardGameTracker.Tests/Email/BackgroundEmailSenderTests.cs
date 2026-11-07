@@ -2,6 +2,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Core.Email;
 using BoardGameTracker.Core.Email.Interfaces;
+using BoardGameTracker.Tests.Support;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -28,49 +30,64 @@ public class BackgroundEmailSenderTests
         _sender = new BackgroundEmailSender(_scopeFactoryMock.Object, _loggerMock.Object);
     }
 
+    private void VerifyNoOtherCalls()
+    {
+        _scopeFactoryMock.VerifyNoOtherCalls();
+        _scopeMock.VerifyNoOtherCalls();
+        _serviceProviderMock.VerifyNoOtherCalls();
+        _emailServiceMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
+    }
+
+    private void VerifyScopes(int count)
+    {
+        _scopeFactoryMock.Verify(x => x.CreateScope(), Times.Exactly(count));
+        _scopeMock.Verify(x => x.ServiceProvider, Times.Exactly(count));
+        _serviceProviderMock.Verify(x => x.GetService(typeof(IEmailService)), Times.Exactly(count));
+        _scopeMock.Verify(x => x.Dispose(), Times.Exactly(count));
+    }
+
     [Fact]
     public async Task Queue_ShouldSendTheMailInItsOwnScope()
     {
         var disposed = new TaskCompletionSource();
         _scopeMock.Setup(x => x.Dispose()).Callback(() => disposed.TrySetResult());
         _emailServiceMock
-            .Setup(x => x.SendAsync("to@test.com", "Subject", "<p>Body</p>", null, It.IsAny<CancellationToken>()))
+            .Setup(x => x.SendAsync("to@test.com", "Subject", "<p>Body</p>", null, CancellationToken.None))
             .Returns(Task.CompletedTask);
 
         _sender.Queue("to@test.com", "Subject", "<p>Body</p>");
 
         await disposed.Task.WaitAsync(SignalTimeout);
-        _emailServiceMock.Verify(x => x.SendAsync("to@test.com", "Subject", "<p>Body</p>", null, It.IsAny<CancellationToken>()), Times.Once);
-        _scopeFactoryMock.Verify(x => x.CreateScope(), Times.Once);
+        _emailServiceMock.Verify(x => x.SendAsync("to@test.com", "Subject", "<p>Body</p>", null, CancellationToken.None), Times.Once);
+        VerifyScopes(1);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Queue_ShouldLogAndSwallowAFailedSend()
     {
         var logged = new TaskCompletionSource();
+        var failure = new InvalidOperationException("smtp down");
         _emailServiceMock
-            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("smtp down"));
+            .Setup(x => x.SendAsync("to@test.com", "Subject", "<p>Body</p>", null, CancellationToken.None))
+            .ThrowsAsync(failure);
         _loggerMock
             .Setup(x => x.Log(
                 LogLevel.Warning,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
-                It.IsAny<InvalidOperationException>(),
+                failure,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
             .Callback(() => logged.TrySetResult());
 
         _sender.Queue("to@test.com", "Subject", "<p>Body</p>");
 
         await logged.Task.WaitAsync(SignalTimeout);
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("Subject")),
-                It.Is<InvalidOperationException>(e => e.Message == "smtp down"),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
+        _emailServiceMock.Verify(x => x.SendAsync("to@test.com", "Subject", "<p>Body</p>", null, CancellationToken.None), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Failed to send a queued email with subject Subject", failure);
+        VerifyScopes(1);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -79,32 +96,45 @@ public class BackgroundEmailSenderTests
         const int mails = 5;
         var active = 0;
         var maxActive = 0;
-        var sent = 0;
+        var disposed = 0;
         var gate = new object();
-        var allSent = new TaskCompletionSource();
-        _emailServiceMock
-            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .Returns(async () =>
+        var allDone = new TaskCompletionSource();
+        _scopeMock
+            .Setup(x => x.Dispose())
+            .Callback(() =>
             {
-                var now = Interlocked.Increment(ref active);
-                lock (gate)
+                if (Interlocked.Increment(ref disposed) == mails)
                 {
-                    maxActive = Math.Max(maxActive, now);
-                }
-                await Task.Delay(20);
-                Interlocked.Decrement(ref active);
-                if (Interlocked.Increment(ref sent) == mails)
-                {
-                    allSent.TrySetResult();
+                    allDone.TrySetResult();
                 }
             });
 
-        for (var i = 0; i < mails; i++)
+        var recipients = Enumerable.Range(0, mails).Select(i => $"to{i}@test.com").ToList();
+        foreach (var recipient in recipients)
         {
-            _sender.Queue($"to{i}@test.com", "Subject", "<p>Body</p>");
+            _emailServiceMock
+                .Setup(x => x.SendAsync(recipient, "Subject", "<p>Body</p>", null, CancellationToken.None))
+                .Returns(async () =>
+                {
+                    var now = Interlocked.Increment(ref active);
+                    lock (gate)
+                    {
+                        maxActive = Math.Max(maxActive, now);
+                    }
+                    await Task.Delay(20);
+                    Interlocked.Decrement(ref active);
+                });
+            _sender.Queue(recipient, "Subject", "<p>Body</p>");
         }
 
-        await allSent.Task.WaitAsync(SignalTimeout);
-        Assert.Equal(1, maxActive);
+        await allDone.Task.WaitAsync(SignalTimeout);
+        maxActive.Should().Be(1);
+        foreach (var recipient in recipients)
+        {
+            _emailServiceMock.Verify(x => x.SendAsync(recipient, "Subject", "<p>Body</p>", null, CancellationToken.None), Times.Once);
+        }
+
+        VerifyScopes(mails);
+        VerifyNoOtherCalls();
     }
 }

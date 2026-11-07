@@ -21,11 +21,16 @@ public class ChangeDetectionConnectionTesterTests
         _tester = new ChangeDetectionConnectionTester(_clientMock.Object);
     }
 
+    private void VerifyNoOtherCalls()
+    {
+        _clientMock.VerifyNoOtherCalls();
+    }
+
     [Fact]
     public void Integration_ShouldBeChangeDetection()
     {
         _tester.Integration.Should().Be(IntegrationKind.ChangeDetection);
-        _clientMock.VerifyNoOtherCalls();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -38,12 +43,13 @@ public class ChangeDetectionConnectionTesterTests
     [InlineData(ChangeDetectionStatus.ParseError, IntegrationConnectionStatus.Unreachable, IntegrationMessageKeys.Unreachable)]
     public async Task TestAsync_ShouldMapTheConnectionTest(ChangeDetectionStatus status, IntegrationConnectionStatus expected, string messageKey)
     {
-        _clientMock.Setup(x => x.TestConnectionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(status);
+        using var cts = new CancellationTokenSource();
+        _clientMock.Setup(x => x.TestConnectionAsync(cts.Token)).ReturnsAsync(status);
 
-        var result = await _tester.TestAsync();
+        var result = await _tester.TestAsync(cts.Token);
 
         result.Should().Be(new IntegrationTestResult(expected, messageKey));
-        _clientMock.Verify(x => x.TestConnectionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _clientMock.VerifyNoOtherCalls();
+        _clientMock.Verify(x => x.TestConnectionAsync(cts.Token), Times.Once);
+        VerifyNoOtherCalls();
     }
 }
