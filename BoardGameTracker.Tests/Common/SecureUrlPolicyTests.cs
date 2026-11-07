@@ -76,6 +76,7 @@ public class SecureUrlPolicyTests
     [InlineData("0.0.0.0", true)]
     [InlineData("0.1.2.3", true)]
     [InlineData("100.64.1.1", true)]
+    [InlineData("100.127.255.255", true)]
     [InlineData("224.0.0.1", true)]
     [InlineData("::ffff:10.0.0.1", true)]
     [InlineData("ff02::1", true)]
