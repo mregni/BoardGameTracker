@@ -174,6 +174,9 @@ public class LearningCurveBadgeEvaluatorTests
     [Theory]
     [InlineData(new[] { 30.0, 40.0, 50.0 }, true)]
     [InlineData(new[] { 50.0, 40.0, 30.0 }, false)]
+    [InlineData(new[] { 40.0, 40.0, 50.0 }, false)]
+    [InlineData(new[] { 30.0, 40.0, 40.0 }, false)]
+    [InlineData(new[] { 30.0, 40.0, 35.0 }, false)]
     public async Task CanAwardBadge_ShouldTreatLowerScoresAsBetter_WhenTheLowestScoreWins(double[] scoresMostRecentFirst, bool expected)
     {
         var badge = TestBadges.Create(BadgeType.LearningCurve, BadgeLevel.Green);
