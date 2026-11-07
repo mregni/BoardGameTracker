@@ -95,7 +95,7 @@ public class ChangeDetectionSnapshotParserTests
     [InlineData("In Stock: True - Price: 1234,56", 1234.56)]
     [InlineData("In Stock: True - Price: 1234.567", 1234.567)]
     [InlineData("In Stock: True - Price: 1299", 1299)]
-    [InlineData("In Stock: True - Price: 1.299", 1299)]
+    [InlineData("In Stock: True - Price: 1.299", 1.299)]
     public void Parse_ShouldParseUnambiguousSeparators(string content, double expected)
     {
         var result = ChangeDetectionSnapshotParser.Parse(content);
@@ -149,20 +149,14 @@ public class ChangeDetectionSnapshotParserTests
     }
 
     [Theory]
-    [InlineData("1.299", 1299)]
-    [InlineData("12.500", 12500)]
-    [InlineData("999.999", 999999)]
-    public void ParsePrice_ShouldReadADotBeforeThreeDigitsAsAThousandsSeparator(string raw, int expected)
-    {
-        ChangeDetectionSnapshotParser.ParsePrice(raw).Should().Be(expected);
-    }
-
-    [Theory]
+    [InlineData("1.299", 1.299)]
+    [InlineData("12.500", 12.5)]
+    [InlineData("999.999", 999.999)]
     [InlineData("0.299", 0.299)]
     [InlineData("1234.567", 1234.567)]
     [InlineData("1.29", 1.29)]
     [InlineData("1.2999", 1.2999)]
-    public void ParsePrice_ShouldKeepADecimalPoint_WhenItCannotBeAThousandsSeparator(string raw, double expected)
+    public void ParsePrice_ShouldAlwaysReadADotAsTheDecimalPoint(string raw, double expected)
     {
         ChangeDetectionSnapshotParser.ParsePrice(raw).Should().Be((decimal)expected);
     }

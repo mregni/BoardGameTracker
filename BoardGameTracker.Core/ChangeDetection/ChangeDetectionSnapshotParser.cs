@@ -74,9 +74,7 @@ public static partial class ChangeDetectionSnapshotParser
                 return null;
             }
 
-            var dotIndex = raw.IndexOf('.');
-            var isThousandsSeparator = raw[0] != '0' && dotIndex is >= 1 and <= 3 && raw.Length - dotIndex - 1 == 3;
-            normalized = isThousandsSeparator ? raw.Replace(".", string.Empty) : raw;
+            normalized = raw;
         }
 
         return decimal.TryParse(normalized, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var parsed)
