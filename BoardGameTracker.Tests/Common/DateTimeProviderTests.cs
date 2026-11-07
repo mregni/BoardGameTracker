@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using BoardGameTracker.Core.Common;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Common;
 
+[Collection(EnvironmentVariablesCollection.Name)]
 public class DateTimeProviderTests
 {
     [Fact]
@@ -178,5 +180,53 @@ public class DateTimeProviderTests
         var result = provider.ConvertToUtc(midnight);
 
         result.Should().Be(new DateTime(2026, 9, 6, 4, 0, 0, DateTimeKind.Utc));
+    }
+
+    [Fact]
+    public void Constructor_WithoutConfiguredTimezone_ShouldUseTheEnvironmentVariable()
+    {
+        var original = Environment.GetEnvironmentVariable("TZ");
+        Environment.SetEnvironmentVariable("TZ", "Asia/Tokyo");
+        try
+        {
+            var provider = new DateTimeProvider(new ConfigurationBuilder().Build());
+
+            provider.TimeZone.BaseUtcOffset.Should().Be(TimeSpan.FromHours(9));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("TZ", original);
+        }
+    }
+
+    [Fact]
+    public void Constructor_ShouldPreferTheConfiguredTimezone_OverTheEnvironmentVariable()
+    {
+        var original = Environment.GetEnvironmentVariable("TZ");
+        Environment.SetEnvironmentVariable("TZ", "Asia/Tokyo");
+        try
+        {
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?> { { "TZ", "Europe/Brussels" } })
+                .Build();
+
+            new DateTimeProvider(config).TimeZone.BaseUtcOffset.Should().Be(TimeSpan.FromHours(1));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("TZ", original);
+        }
+    }
+
+    [Fact]
+    public void Now_ShouldBeTheCurrentTimeInTheConfiguredTimezone()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { { "TZ", "Asia/Tokyo" } })
+            .Build();
+        var provider = new DateTimeProvider(config);
+
+        provider.Now.Should().BeCloseTo(DateTime.UtcNow.AddHours(9), TimeSpan.FromSeconds(5));
+        provider.UtcNow.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
     }
 }

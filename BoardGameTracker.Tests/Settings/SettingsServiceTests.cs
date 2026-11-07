@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.DataProtection;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -35,7 +36,6 @@ public class SettingsServiceTests : IDisposable
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IDbContextTransaction> _transactionMock;
-    private readonly Mock<ILogger<SettingsService>> _loggerMock;
     private readonly Mock<ILogger<IntegrationKeyProtector>> _protectorLoggerMock;
     private readonly IntegrationKeyProtector _keyProtector;
     private readonly SettingsService _settingsService;
@@ -50,16 +50,12 @@ public class SettingsServiceTests : IDisposable
         }
 
         _configRepositoryMock = new Mock<IConfigRepository>();
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey))
-            .ReturnsAsync(string.Empty);
         _environmentProviderMock = new Mock<IEnvironmentProvider>();
         _transactionMock = new Mock<IDbContextTransaction>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _unitOfWorkMock
             .Setup(x => x.BeginTransactionAsync(CancellationToken.None))
             .ReturnsAsync(_transactionMock.Object);
-        _loggerMock = new Mock<ILogger<SettingsService>>();
         _protectorLoggerMock = new Mock<ILogger<IntegrationKeyProtector>>();
         _keyProtector = new IntegrationKeyProtector(new EphemeralDataProtectionProvider(), _protectorLoggerMock.Object);
 
@@ -68,7 +64,7 @@ public class SettingsServiceTests : IDisposable
             _environmentProviderMock.Object,
             _unitOfWorkMock.Object,
             _keyProtector,
-            _loggerMock.Object);
+            NullLogger<SettingsService>.Instance);
     }
 
     private void VerifyNoOtherCalls()
@@ -76,12 +72,15 @@ public class SettingsServiceTests : IDisposable
         _configRepositoryMock.VerifyNoOtherCalls();
         _environmentProviderMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
+        _transactionMock.VerifyNoOtherCalls();
+        _protectorLoggerMock.VerifyNoOtherCalls();
     }
 
     private void VerifyTransactionCommitted()
     {
         _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(CancellationToken.None), Times.Once);
         _transactionMock.Verify(x => x.CommitAsync(CancellationToken.None), Times.Once);
+        _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
     }
 
     private string StoredAs(string plaintext) =>
@@ -91,26 +90,17 @@ public class SettingsServiceTests : IDisposable
                                      _keyProtector.Reveal("test", value) == plaintext);
 
     private static string ForeignProtectedValue(string plaintext) =>
-        new IntegrationKeyProtector(new EphemeralDataProtectionProvider(), Mock.Of<ILogger<IntegrationKeyProtector>>())
+        new IntegrationKeyProtector(new EphemeralDataProtectionProvider(), NullLogger<IntegrationKeyProtector>.Instance)
             .Protect(plaintext);
 
-    private void VerifyUndecryptableWarning(string setting, string plaintext)
+    private void VerifyUndecryptableWarning(string setting)
     {
-        _protectorLoggerMock.Verify(x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains(setting) && !state.ToString()!.Contains(plaintext)),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
+        _protectorLoggerMock.VerifyLog(LogLevel.Warning, $"The stored {setting} could not be decrypted; the data-protection keys may have been lost or rotated. The integration is treated as not configured until the key is entered again in the settings");
     }
 
     private void VerifyNothingWritten()
     {
         _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(CancellationToken.None), Times.Never);
-        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
-        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
-        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
     }
 
     private void VerifySettingsSaved(UIResourceDto model, params string[] forcedKeys)
@@ -314,6 +304,80 @@ public class SettingsServiceTests : IDisposable
         VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData("https://db.example.com", "")]
+    [InlineData("", "db-key")]
+    [InlineData("   ", "db-key")]
+    public async Task GetSettingsAsync_ShouldReportChangeDetectionAsNotConfigured_WhenTheUrlOrTheKeyIsMissing(string baseUrl, string apiKey)
+    {
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>
+            {
+                [Constants.ChangeDetectionConfig.BaseUrl] = baseUrl,
+                [Constants.ChangeDetectionConfig.ApiKey] = apiKey
+            });
+
+        var result = await _settingsService.GetSettingsAsync();
+
+        result.ChangeDetectionStatus.IsConfigured.Should().BeFalse();
+        result.ChangeDetectionStatus.Source.Should().Be("none");
+        result.ChangeDetectionStatus.IsReadOnly.Should().BeFalse();
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        VerifyEnvironmentReads();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetSettingsAsync_ShouldNeverShowTheEnvironmentChangeDetectionUrl()
+    {
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string> { [Constants.ChangeDetectionConfig.BaseUrl] = "https://db.example.com" });
+
+        var result = await WithEnvVar(Constants.ChangeDetectionConfig.BaseUrl.ToUpperInvariant(), "https://env.example.com",
+            () => _settingsService.GetSettingsAsync());
+
+        result.ChangeDetectionBaseUrl.Should().Be("https://db.example.com");
+        result.EnvironmentOverrides.Should().BeEmpty();
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        VerifyEnvironmentReads();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetSettingsAsync_ShouldTrimTheEnvironmentValue_AndIgnoreABlankOne()
+    {
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string> { { Constants.AppConfig.DateFormat, "db-date" } });
+
+        var result = await WithEnvVar("TIME_FORMAT", "  env-time  ",
+            () => WithEnvVar("DATE_FORMAT", "   ", () => _settingsService.GetSettingsAsync()));
+
+        result.TimeFormat.Should().Be("env-time");
+        result.DateFormat.Should().Be("db-date");
+        result.EnvironmentOverrides.Should().BeEquivalentTo(new Dictionary<string, string> { ["timeFormat"] = "TIME_FORMAT" });
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        VerifyEnvironmentReads();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetSettingsAsync_ShouldReportTheDatabaseBggKey_WhenItsVariableIsBlank()
+    {
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string> { { Constants.BggConfig.ApiKey, "db-api-key" } });
+
+        var result = await WithEnvVar(Constants.BggConfig.EnvApiKeyName, "   ", () => _settingsService.GetSettingsAsync());
+
+        result.BggStatus.Source.Should().Be("db");
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        VerifyEnvironmentReads();
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region UpdateSettingsAsync Tests
@@ -399,7 +463,6 @@ public class SettingsServiceTests : IDisposable
 
         result.EnvironmentOverrides.Should().ContainKey("currency").WhoseValue.Should().Be("CURRENCY");
         result.Currency.Should().Be("USD");
-        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.Currency, It.IsAny<string>()), Times.Never);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, StoredAs("key")), Times.Once);
         VerifySettingsSaved(model, Constants.AppConfig.Currency);
         VerifyNoOtherCalls();
@@ -442,7 +505,6 @@ public class SettingsServiceTests : IDisposable
         var result = await WithEnvVar(Constants.BggConfig.EnvApiKeyName, "env-key", () => _settingsService.UpdateSettingsAsync(model));
 
         result.BggStatus.IsReadOnly.Should().BeTrue();
-        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, It.IsAny<string>()), Times.Never);
         VerifySettingsSaved(model);
         VerifyNoOtherCalls();
     }
@@ -492,7 +554,7 @@ public class SettingsServiceTests : IDisposable
 
         await _settingsService.UpdateSettingsAsync(model);
 
-        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, It.IsAny<string>()), Times.Never);
+        _configRepositoryMock.Invocations.Should().NotContain(i => i.Arguments.Contains(Constants.BggConfig.ApiKey));
         VerifySettingsSaved(model);
         VerifyNoOtherCalls();
     }
@@ -606,7 +668,97 @@ public class SettingsServiceTests : IDisposable
 
         await _settingsService.UpdateSettingsAsync(model);
 
-        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey, It.IsAny<string>()), Times.Never);
+        _configRepositoryMock.Invocations.Should().NotContain(i => i.Arguments.Contains(Constants.ChangeDetectionConfig.ApiKey));
+        VerifySettingsSaved(model);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateSettingsAsync_ShouldNotCommit_WhenAWriteFails()
+    {
+        var failure = new InvalidOperationException("write failed");
+        var model = new UIResourceDto { Currency = "EUR" };
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(Constants.AppConfig.Currency, "EUR"))
+            .ThrowsAsync(failure);
+
+        var act = () => _settingsService.UpdateSettingsAsync(model);
+
+        (await act.Should().ThrowAsync<InvalidOperationException>()).Which.Should().BeSameAs(failure);
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(CancellationToken.None), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.Currency, "EUR"), Times.Once);
+        _transactionMock.Verify(x => x.CommitAsync(CancellationToken.None), Times.Never);
+        _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateSettingsAsync_ShouldCommitBeforeReadingTheResult()
+    {
+        var model = new UIResourceDto { BggApiKey = "", ChangeDetectionApiKey = "" };
+        var calls = new List<string>();
+        _transactionMock
+            .Setup(x => x.CommitAsync(CancellationToken.None))
+            .Callback(() => calls.Add("commit"))
+            .Returns(Task.CompletedTask);
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .Callback(() => calls.Add("read"))
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        await _settingsService.UpdateSettingsAsync(model);
+
+        calls.Should().Equal("commit", "read");
+        VerifySettingsSaved(model);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("http://192.168.1.10:5000", "http://192.168.1.10:5000")]
+    [InlineData("  https://changes.example.com  ", "https://changes.example.com")]
+    [InlineData("   ", "")]
+    public async Task UpdateSettingsAsync_ShouldStoreTheTrimmedChangeDetectionBaseUrl(string submitted, string expected)
+    {
+        var model = new UIResourceDto { ChangeDetectionBaseUrl = submitted, BggApiKey = "", ChangeDetectionApiKey = "" };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        await _settingsService.UpdateSettingsAsync(model);
+
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.ChangeDetectionConfig.BaseUrl, expected), Times.Once);
+        VerifySettingsSaved(model);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateSettingsAsync_ShouldStoreTheChangeDetectionBaseUrl_EvenWhenItsVariableIsSet()
+    {
+        var model = new UIResourceDto { ChangeDetectionBaseUrl = "https://db.example.com", BggApiKey = "", ChangeDetectionApiKey = "" };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        var result = await WithEnvVar(Constants.ChangeDetectionConfig.BaseUrl.ToUpperInvariant(), "https://env.example.com",
+            () => _settingsService.UpdateSettingsAsync(model));
+
+        result.EnvironmentOverrides.Should().BeEmpty();
+        VerifySettingsSaved(model);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateSettingsAsync_ShouldStoreTheBggApiKey_WhenItsVariableIsBlank()
+    {
+        var model = new UIResourceDto { BggApiKey = "key", ChangeDetectionApiKey = "" };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        var result = await WithEnvVar(Constants.BggConfig.EnvApiKeyName, "   ", () => _settingsService.UpdateSettingsAsync(model));
+
+        result.BggStatus.IsReadOnly.Should().BeFalse();
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, StoredAs("key")), Times.Once);
         VerifySettingsSaved(model);
         VerifyNoOtherCalls();
     }
@@ -723,6 +875,10 @@ public class SettingsServiceTests : IDisposable
     [Fact]
     public async Task IsBggEnabled_ShouldReturnFalse_WhenApiKeyIsEmpty()
     {
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey))
+            .ReturnsAsync(string.Empty);
+
         var result = await WithEnvVar(Constants.BggConfig.EnvApiKeyName, null, () => _settingsService.IsBggEnabled());
 
         result.Should().BeFalse();
@@ -847,7 +1003,7 @@ public class SettingsServiceTests : IDisposable
         var result = await _settingsService.GetChangeDetectionSettingsAsync();
 
         result.ApiKey.Should().BeNull();
-        VerifyUndecryptableWarning(Constants.ChangeDetectionConfig.ApiKey, "cd-key");
+        VerifyUndecryptableWarning(Constants.ChangeDetectionConfig.ApiKey);
         _configRepositoryMock.Verify(x => x.GetConfigsByPrefixAsync(Constants.ChangeDetectionConfig.Prefix), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -876,7 +1032,7 @@ public class SettingsServiceTests : IDisposable
         var result = await WithEnvVar(Constants.BggConfig.EnvApiKeyName, null, () => _settingsService.GetBggApiKeyAsync());
 
         result.Should().BeNull();
-        VerifyUndecryptableWarning(Constants.BggConfig.ApiKey, "db-api-key");
+        VerifyUndecryptableWarning(Constants.BggConfig.ApiKey);
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -914,8 +1070,8 @@ public class SettingsServiceTests : IDisposable
         result.ChangeDetectionStatus.IsConfigured.Should().BeFalse();
         result.BggApiKey.Should().BeEmpty();
         result.ChangeDetectionApiKey.Should().BeEmpty();
-        VerifyUndecryptableWarning(Constants.BggConfig.ApiKey, "db-api-key");
-        VerifyUndecryptableWarning(Constants.ChangeDetectionConfig.ApiKey, "cd-key");
+        VerifyUndecryptableWarning(Constants.BggConfig.ApiKey);
+        VerifyUndecryptableWarning(Constants.ChangeDetectionConfig.ApiKey);
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         VerifyEnvironmentReads();
         VerifyNoOtherCalls();

@@ -16,7 +16,7 @@ public class AuthSessionCookiesTests
 
     public AuthSessionCookiesTests()
     {
-        _imageTicketsMock.Setup(x => x.Issue(It.IsAny<string>())).Returns("image-ticket");
+        _imageTicketsMock.Setup(x => x.Issue("user-1")).Returns("image-ticket");
         _imageTicketsMock.Setup(x => x.Lifetime).Returns(TimeSpan.FromDays(14));
         _cookies = new AuthSessionCookies(_imageTicketsMock.Object, Options.Create(new JwtOptions { RefreshTokenExpiryDays = 14 }));
     }

@@ -28,6 +28,7 @@ public class LoanControllerTests
     private void VerifyNoOtherCalls()
     {
         _loanServiceMock.VerifyNoOtherCalls();
+        _dateTimeProviderMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -60,6 +61,7 @@ public class LoanControllerTests
         returnedLoans[1].PlayerId.Should().Be(2);
 
         _loanServiceMock.Verify(x => x.GetLoans(), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -80,6 +82,7 @@ public class LoanControllerTests
         returnedLoans.Should().BeEmpty();
 
         _loanServiceMock.Verify(x => x.GetLoans(), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -106,11 +109,43 @@ public class LoanControllerTests
         returnedLoan.PlayerId.Should().Be(1);
 
         _loanServiceMock.Verify(x => x.GetLoanById(loanId), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLoanById_ShouldMapEveryFieldOfTheLoan()
+    {
+        var loanDate = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        var dueDate = new DateTime(2026, 9, 15, 0, 0, 0, DateTimeKind.Utc);
+        var returnedDate = new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc);
+        var loan = new Loan(4, 6, loanDate) { Id = 8 };
+        loan.SetDueDate(dueDate);
+        loan.MarkAsReturned(returnedDate);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(returnedDate.AddDays(1));
+        _loanServiceMock.Setup(x => x.GetLoanById(8)).ReturnsAsync(loan);
+
+        var result = await _controller.GetLoanById(8);
+
+        var dto = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<LoanDto>().Subject;
+        dto.Should().BeEquivalentTo(new LoanDto
+        {
+            Id = 8,
+            GameId = 4,
+            PlayerId = 6,
+            LoanDate = loanDate,
+            DueDate = dueDate,
+            ReturnedDate = returnedDate,
+            IsActive = false
+        });
+        _loanServiceMock.Verify(x => x.GetLoanById(8), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Theory]
     [InlineData(-1, true)]
+    [InlineData(0, true)]
     [InlineData(1, false)]
     public async Task GetLoanById_ShouldMarkTheLoanActive_OnlyOnceItHasStarted(int startsInDays, bool expected)
     {
@@ -123,6 +158,7 @@ public class LoanControllerTests
         var dto = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<LoanDto>().Subject;
         dto.IsActive.Should().Be(expected);
         _loanServiceMock.Verify(x => x.GetLoanById(1), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -179,6 +215,7 @@ public class LoanControllerTests
         returnedLoan.PlayerId.Should().Be(command.PlayerId);
 
         _loanServiceMock.Verify(x => x.LoanGameToPlayer(command), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -213,6 +250,7 @@ public class LoanControllerTests
         returnedLoan.PlayerId.Should().Be(command.PlayerId);
 
         _loanServiceMock.Verify(x => x.Update(command), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -244,6 +282,7 @@ public class LoanControllerTests
         loan.ReturnedDate.Should().Be(command.ReturnDate);
 
         _loanServiceMock.Verify(x => x.ReturnLoan(command), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -260,6 +299,7 @@ public class LoanControllerTests
         dto.Id.Should().Be(3);
         dto.ReturnedDate.Should().BeNull();
         _loanServiceMock.Verify(x => x.UndoReturn(3), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -306,6 +346,7 @@ public class LoanControllerTests
         result.Should().BeOfType<NotFoundResult>();
 
         _loanServiceMock.Verify(x => x.GetLoanById(loanId), Times.Once);
+        _loanServiceMock.Verify(x => x.Delete(loanId), Times.Never);
         VerifyNoOtherCalls();
     }
 }

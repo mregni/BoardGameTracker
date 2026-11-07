@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BoardGameTracker.Core.Disk;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -43,6 +44,11 @@ public class DiskProviderTests: IDisposable
             GC.SuppressFinalize(this);
         }
 
+        private void VerifyNoOtherCalls()
+        {
+            _loggerMock.VerifyNoOtherCalls();
+        }
+
         [Fact]
         public void DeleteFile_ShouldRemoveFile_WhenFileExists()
         {
@@ -51,7 +57,8 @@ public class DiskProviderTests: IDisposable
             _diskProvider.DeleteFile(filePath);
 
             File.Exists(filePath).Should().BeFalse();
-            VerifyLogInformation("Removing file {Path}", filePath);
+            VerifyFileRemovalLogged(filePath);
+            VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -62,7 +69,8 @@ public class DiskProviderTests: IDisposable
             var action = () => _diskProvider.DeleteFile(filePath);
 
             action.Should().NotThrow();
-            VerifyLogInformation("Removing file {Path}", filePath);
+            VerifyFileRemovalLogged(filePath);
+            VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -73,6 +81,7 @@ public class DiskProviderTests: IDisposable
             _diskProvider.EnsureFolder(dirPath);
 
             Directory.Exists(dirPath).Should().BeTrue();
+            VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -85,6 +94,7 @@ public class DiskProviderTests: IDisposable
 
             action.Should().NotThrow();
             Directory.Exists(dirPath).Should().BeTrue();
+            VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -97,6 +107,7 @@ public class DiskProviderTests: IDisposable
             Directory.Exists(dirPath).Should().BeTrue();
             Directory.Exists(Path.Combine(_testDirectory, "parent")).Should().BeTrue();
             Directory.Exists(Path.Combine(_testDirectory, "parent", "child")).Should().BeTrue();
+            VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -107,8 +118,9 @@ public class DiskProviderTests: IDisposable
             var action = () => _diskProvider.DeleteFile(invalidPath);
 
             action.Should().NotThrow();
-            VerifyLogInformation("Removing file {Path}", invalidPath);
-            VerifyErrorLogged();
+            VerifyFileRemovalLogged(invalidPath);
+            _loggerMock.VerifyLog(LogLevel.Error, "Can't delete file because it seems to be in use");
+            VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -119,31 +131,58 @@ public class DiskProviderTests: IDisposable
 
             var result = await _diskProvider.WriteFile(stream, "data.bin", _testDirectory);
 
-            result.Should().NotBe("data.bin");
-            result.Should().EndWith(".bin");
+            result.Should().MatchRegex(@"^data_\w+\.\w+\.bin$");
             File.ReadAllBytes(Path.Combine(_testDirectory, result)).Should().Equal(content);
+            VerifyNoOtherCalls();
         }
 
         [Fact]
         public async Task WriteFile_ShouldRemoveThePartialFile_WhenTheCopyFails()
         {
-            var stream = new Mock<Stream>();
-            stream.SetupGet(x => x.CanRead).Returns(true);
-            stream
-                .Setup(x => x.CopyToAsync(It.IsAny<Stream>(), It.IsAny<int>(), CancellationToken.None))
-                .ThrowsAsync(new IOException("connection reset"));
+            await using var stream = new FailingStream();
 
-            var action = async () => await _diskProvider.WriteFile(stream.Object, "data.bin", _testDirectory);
+            var action = async () => await _diskProvider.WriteFile(stream, "data.bin", _testDirectory);
 
-            await action.Should().ThrowAsync<IOException>();
+            await action.Should().ThrowAsync<IOException>().WithMessage("connection reset");
             Directory.EnumerateFiles(_testDirectory).Should().BeEmpty();
+            VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task WriteFile_ShouldNotOverwriteAnEarlierUpload_WithTheSameName()
+        {
+            using var first = new MemoryStream([1]);
+            using var second = new MemoryStream([2]);
+
+            var firstName = await _diskProvider.WriteFile(first, "data.bin", _testDirectory);
+            var secondName = await _diskProvider.WriteFile(second, "data.bin", _testDirectory);
+
+            secondName.Should().NotBe(firstName);
+            File.ReadAllBytes(Path.Combine(_testDirectory, firstName)).Should().Equal(1);
+            File.ReadAllBytes(Path.Combine(_testDirectory, secondName)).Should().Equal(2);
+            VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public void DeleteFile_ShouldLogAnUnknownError_WhenThePathIsADirectory()
+        {
+            var dirPath = Path.Combine(_testDirectory, "folder");
+            Directory.CreateDirectory(dirPath);
+
+            var action = () => _diskProvider.DeleteFile(dirPath);
+
+            action.Should().NotThrow();
+            Directory.Exists(dirPath).Should().BeTrue();
+            VerifyFileRemovalLogged(dirPath);
+            _loggerMock.VerifyLog(LogLevel.Error, $"Unknown error occurred while deleting file {dirPath}");
+            VerifyNoOtherCalls();
         }
 
         [Fact]
         public void ClearFolder_ShouldDeleteAllFiles_AndLeaveSubdirectories()
         {
-            CreateTestFile("one.txt", "1");
-            CreateTestFile("two.txt", "2");
+            var first = CreateTestFile("one.txt", "1");
+            var second = CreateTestFile("two.txt", "2");
             var subDir = Path.Combine(_testDirectory, "sub");
             Directory.CreateDirectory(subDir);
             var nestedFile = Path.Combine(subDir, "nested.txt");
@@ -154,6 +193,9 @@ public class DiskProviderTests: IDisposable
             Directory.EnumerateFiles(_testDirectory).Should().BeEmpty();
             Directory.Exists(subDir).Should().BeTrue();
             File.Exists(nestedFile).Should().BeTrue();
+            VerifyFileRemovalLogged(first);
+            VerifyFileRemovalLogged(second);
+            VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -164,6 +206,7 @@ public class DiskProviderTests: IDisposable
             var action = () => _diskProvider.ClearFolder(missingDir);
 
             action.Should().NotThrow();
+            VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -172,6 +215,7 @@ public class DiskProviderTests: IDisposable
             var filePath = CreateTestFile("exists.txt", "content");
 
             _diskProvider.FileExists(filePath).Should().BeTrue();
+            VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -180,6 +224,7 @@ public class DiskProviderTests: IDisposable
             var filePath = Path.Combine(_testDirectory, "missing.txt");
 
             _diskProvider.FileExists(filePath).Should().BeFalse();
+            VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -191,6 +236,7 @@ public class DiskProviderTests: IDisposable
             using var reader = new StreamReader(stream);
 
             reader.ReadToEnd().Should().Be("file-content");
+            VerifyNoOtherCalls();
         }
 
         private string CreateTestFile(string fileName, string content)
@@ -201,27 +247,14 @@ public class DiskProviderTests: IDisposable
             return filePath;
         }
 
-        private void VerifyLogInformation(string message, params object[] args)
+        private void VerifyFileRemovalLogged(string path)
         {
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Information,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(message.Replace("{Path}", args[0].ToString()!))),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            _loggerMock.VerifyLog(LogLevel.Information, $"Removing file {path}");
         }
 
-        private void VerifyErrorLogged()
+        private sealed class FailingStream : MemoryStream
         {
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken) =>
+                throw new IOException("connection reset");
         }
 }

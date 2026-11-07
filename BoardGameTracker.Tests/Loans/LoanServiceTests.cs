@@ -13,7 +13,7 @@ using BoardGameTracker.Core.Loans;
 using BoardGameTracker.Core.Loans.Specifications;
 using BoardGameTracker.Core.Players.Specifications;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -26,7 +26,6 @@ public class LoanServiceTests
     private readonly Mock<IReadRepository<Player>> _playerRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IDateTimeProvider> _dateTimeProviderMock = new();
-    private readonly Mock<ILogger<LoanService>> _loggerMock;
     private readonly LoanService _loanService;
 
     public LoanServiceTests()
@@ -34,11 +33,7 @@ public class LoanServiceTests
         _loanRepositoryMock = new Mock<IRepository<Loan>>();
         _gameRepositoryMock = new Mock<IGameRepository>();
         _playerRepositoryMock = new Mock<IReadRepository<Player>>();
-        _playerRepositoryMock
-            .Setup(x => x.AnyAsync(It.IsAny<PlayerByIdSpec>(), CancellationToken.None))
-            .ReturnsAsync(true);
         _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _loggerMock = new Mock<ILogger<LoanService>>();
 
         _loanService = new LoanService(
             _loanRepositoryMock.Object,
@@ -46,7 +41,7 @@ public class LoanServiceTests
             _playerRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _dateTimeProviderMock.Object,
-            _loggerMock.Object);
+            NullLogger<LoanService>.Instance);
     }
 
     private void VerifyNoOtherCalls()
@@ -55,11 +50,25 @@ public class LoanServiceTests
         _gameRepositoryMock.VerifyNoOtherCalls();
         _playerRepositoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
+        _dateTimeProviderMock.VerifyNoOtherCalls();
     }
 
-    private void VerifyPlayerChecked()
+    private static bool MatchesGame(GameWithLoansSpec spec, int id) =>
+        spec.IsSatisfiedBy(new Game("Any") { Id = id }) && !spec.IsSatisfiedBy(new Game("Any") { Id = id + 1 });
+
+    private static bool MatchesPlayer(PlayerByIdSpec spec, int id) =>
+        spec.IsSatisfiedBy(new Player("Any") { Id = id }) && !spec.IsSatisfiedBy(new Player("Any") { Id = id + 1 });
+
+    private void SetupPlayerExists(int playerId, bool exists)
     {
-        _playerRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<PlayerByIdSpec>(), CancellationToken.None), Times.Once);
+        _playerRepositoryMock
+            .Setup(x => x.AnyAsync(It.Is<PlayerByIdSpec>(s => MatchesPlayer(s, playerId)), CancellationToken.None))
+            .ReturnsAsync(exists);
+    }
+
+    private void VerifyPlayerChecked(int playerId)
+    {
+        _playerRepositoryMock.Verify(x => x.AnyAsync(It.Is<PlayerByIdSpec>(s => MatchesPlayer(s, playerId)), CancellationToken.None), Times.Once);
     }
 
     #region GetLoans Tests
@@ -151,6 +160,7 @@ public class LoanServiceTests
         DateTime? dueDate = hasDueDate ? DateTime.UtcNow.AddDays(14) : null;
 
         var game = new Game("Test Game") { Id = gameId };
+        SetupPlayerExists(playerId, true);
         var command = new CreateLoanCommand
         {
             GameId = gameId,
@@ -160,11 +170,11 @@ public class LoanServiceTests
         };
 
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, gameId)), CancellationToken.None))
             .ReturnsAsync(game);
 
         _loanRepositoryMock
-            .Setup(x => x.CreateAsync(It.IsAny<Loan>()))
+            .Setup(x => x.CreateAsync(It.Is<Loan>(l => l.GameId == gameId && l.PlayerId == playerId && l.LoanDate == loanDate && l.DueDate == dueDate)))
             .ReturnsAsync((Loan l) => l);
 
 
@@ -182,9 +192,9 @@ public class LoanServiceTests
         result.LoanDate.Should().Be(loanDate);
         result.DueDate.Should().Be(dueDate);
 
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
-        VerifyPlayerChecked();
-        _loanRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Loan>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, gameId)), CancellationToken.None), Times.Once);
+        VerifyPlayerChecked(playerId);
+        _loanRepositoryMock.Verify(x => x.CreateAsync(It.Is<Loan>(l => l.GameId == gameId && l.PlayerId == playerId && l.LoanDate == loanDate && l.DueDate == dueDate)), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -196,6 +206,7 @@ public class LoanServiceTests
         var game = new Game("Test Game") { Id = gameId };
         game.LoanToPlayer(99, DateTime.UtcNow.AddDays(-3));
 
+        SetupPlayerExists(2, true);
         var command = new CreateLoanCommand
         {
             GameId = gameId,
@@ -204,7 +215,7 @@ public class LoanServiceTests
         };
 
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, gameId)), CancellationToken.None))
             .ReturnsAsync(game);
 
         var act = async () => await _loanService.LoanGameToPlayer(command);
@@ -212,9 +223,8 @@ public class LoanServiceTests
         await act.Should().ThrowAsync<DomainException>()
             .WithMessage(Constants.Errors.GameAlreadyOnLoan);
 
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
-        VerifyPlayerChecked();
-        _loanRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Loan>()), Times.Never);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, gameId)), CancellationToken.None), Times.Once);
+        VerifyPlayerChecked(2);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
@@ -227,6 +237,7 @@ public class LoanServiceTests
         var game = new Game("Test Game") { Id = gameId };
         game.LoanToPlayer(99, start.AddDays(10));
 
+        SetupPlayerExists(2, true);
         var command = new CreateLoanCommand
         {
             GameId = gameId,
@@ -236,7 +247,7 @@ public class LoanServiceTests
         };
 
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, gameId)), CancellationToken.None))
             .ReturnsAsync(game);
 
         var act = async () => await _loanService.LoanGameToPlayer(command);
@@ -244,9 +255,8 @@ public class LoanServiceTests
         await act.Should().ThrowAsync<DomainException>()
             .WithMessage(Constants.Errors.GameAlreadyOnLoan);
 
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
-        VerifyPlayerChecked();
-        _loanRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Loan>()), Times.Never);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, gameId)), CancellationToken.None), Times.Once);
+        VerifyPlayerChecked(2);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
@@ -263,16 +273,19 @@ public class LoanServiceTests
         };
 
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 999)), CancellationToken.None))
             .ReturnsAsync((Game?)null);
 
         // Act
         var action = async () => await _loanService.LoanGameToPlayer(command);
 
         // Assert
-        await action.Should().ThrowAsync<EntityNotFoundException>();
+        var thrown = await action.Should().ThrowAsync<EntityNotFoundException>();
+        thrown.Which.EntityType.Should().Be(nameof(Game));
+        thrown.Which.EntityId.Should().Be(999);
 
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 999)), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -283,19 +296,19 @@ public class LoanServiceTests
         var command = new CreateLoanCommand { GameId = 1, PlayerId = 999, LoanDate = DateTime.UtcNow };
 
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None))
             .ReturnsAsync(game);
-        _playerRepositoryMock
-            .Setup(x => x.AnyAsync(It.IsAny<PlayerByIdSpec>(), CancellationToken.None))
-            .ReturnsAsync(false);
+        SetupPlayerExists(999, false);
 
         var act = async () => await _loanService.LoanGameToPlayer(command);
 
-        await act.Should().ThrowAsync<EntityNotFoundException>();
+        var thrown = await act.Should().ThrowAsync<EntityNotFoundException>();
+        thrown.Which.EntityType.Should().Be(nameof(Player));
+        thrown.Which.EntityId.Should().Be(999);
 
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
-        VerifyPlayerChecked();
-        _loanRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Loan>()), Times.Never);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None), Times.Once);
+        VerifyPlayerChecked(999);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -358,9 +371,12 @@ public class LoanServiceTests
         var action = async () => await _loanService.ReturnLoan(command);
 
         // Assert
-        await action.Should().ThrowAsync<EntityNotFoundException>();
+        var thrown = await action.Should().ThrowAsync<EntityNotFoundException>();
+        thrown.Which.EntityType.Should().Be(nameof(Loan));
+        thrown.Which.EntityId.Should().Be(999);
 
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(command.Id), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -377,7 +393,7 @@ public class LoanServiceTests
         loan.MarkAsReturned(new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc));
         _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None))
             .ReturnsAsync(game);
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
 
@@ -385,7 +401,7 @@ public class LoanServiceTests
 
         result.ReturnedDate.Should().BeNull();
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -400,7 +416,7 @@ public class LoanServiceTests
         game.LoanToPlayer(2, new DateTime(2026, 9, 15, 0, 0, 0, DateTimeKind.Utc)).Id = 9;
         _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None))
             .ReturnsAsync(game);
 
         var act = () => _loanService.UndoReturn(8);
@@ -408,7 +424,8 @@ public class LoanServiceTests
         await act.Should().ThrowAsync<DomainException>().WithMessage(BoardGameTracker.Common.Constants.Errors.GameAlreadyOnLoan);
         loan.ReturnedDate.Should().NotBeNull();
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -420,14 +437,15 @@ public class LoanServiceTests
         loan.Id = 8;
         _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None))
             .ReturnsAsync(game);
 
         var act = () => _loanService.UndoReturn(8);
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(BoardGameTracker.Common.Constants.Errors.LoanNotReturned);
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -438,14 +456,83 @@ public class LoanServiceTests
 
         var act = () => _loanService.UndoReturn(999);
 
-        await act.Should().ThrowAsync<EntityNotFoundException>();
+        var thrown = await act.Should().ThrowAsync<EntityNotFoundException>();
+        thrown.Which.EntityType.Should().Be(nameof(Loan));
+        thrown.Which.EntityId.Should().Be(999);
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(999), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UndoReturn_ShouldThrowEntityNotFoundException_WhenTheGameIsGone()
+    {
+        var loan = new Loan(4, 1, new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc)) { Id = 8 };
+        loan.MarkAsReturned(new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc));
+        _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None))
+            .ReturnsAsync((Game?)null);
+
+        var act = () => _loanService.UndoReturn(8);
+
+        var thrown = await act.Should().ThrowAsync<EntityNotFoundException>();
+        thrown.Which.EntityType.Should().Be(nameof(Game));
+        thrown.Which.EntityId.Should().Be(4);
+        loan.ReturnedDate.Should().Be(new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc));
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
     #endregion
 
     #region Update Tests
+
+    [Fact]
+    public async Task Update_ShouldThrowEntityNotFoundException_WhenTheGameIsGone()
+    {
+        var loanDate = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        var loan = new Loan(4, 1, loanDate) { Id = 8 };
+        _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None))
+            .ReturnsAsync((Game?)null);
+
+        var act = () => _loanService.Update(new UpdateLoanCommand { Id = 8, GameId = 77, PlayerId = 1, LoanDate = loanDate.AddDays(1) });
+
+        var thrown = await act.Should().ThrowAsync<EntityNotFoundException>();
+        thrown.Which.EntityType.Should().Be(nameof(Game));
+        thrown.Which.EntityId.Should().Be(4);
+        loan.LoanDate.Should().Be(loanDate);
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldKeepTheReturnedDate_WhenTheCommandHasNone()
+    {
+        var loanDate = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        var returnedDate = new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc);
+        var loan = new Loan(4, 1, loanDate) { Id = 8 };
+        loan.MarkAsReturned(returnedDate);
+        _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None))
+            .ReturnsAsync(new Game("Catan") { Id = 4 });
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+
+        var result = await _loanService.Update(new UpdateLoanCommand { Id = 8, GameId = 4, PlayerId = 1, LoanDate = loanDate });
+
+        result.ReturnedDate.Should().Be(returnedDate);
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
 
     [Fact]
     public async Task Update_ShouldUpdateLoanDates_WhenLoanExists()
@@ -455,12 +542,12 @@ public class LoanServiceTests
         var originalLoanDate = DateTime.UtcNow.AddDays(-10);
         var newLoanDate = DateTime.UtcNow.AddDays(-5);
         var newDueDate = DateTime.UtcNow.AddDays(10);
-        var loan = new Loan(1, 1, originalLoanDate) { Id = loanId };
+        var loan = new Loan(4, 1, originalLoanDate) { Id = loanId };
 
         var command = new UpdateLoanCommand
         {
             Id = loanId,
-            GameId = 1,
+            GameId = 4,
             PlayerId = 1,
             LoanDate = newLoanDate,
             DueDate = newDueDate
@@ -472,8 +559,8 @@ public class LoanServiceTests
 
 
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
-            .ReturnsAsync(new Game("Catan") { Id = 1 });
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None))
+            .ReturnsAsync(new Game("Catan") { Id = 4 });
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -488,7 +575,7 @@ public class LoanServiceTests
         result.DueDate.Should().Be(newDueDate);
 
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(loanId), Times.Once);
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None), Times.Once);
 
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
@@ -505,7 +592,7 @@ public class LoanServiceTests
         loan.Id = 8;
         _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None))
             .ReturnsAsync(game);
 
         var act = () => _loanService.Update(new UpdateLoanCommand { Id = 8, GameId = 1, PlayerId = 3, LoanDate = new DateTime(2026, 9, 5, 0, 0, 0, DateTimeKind.Utc) });
@@ -513,7 +600,8 @@ public class LoanServiceTests
         await act.Should().ThrowAsync<DomainException>().WithMessage(BoardGameTracker.Common.Constants.Errors.GameAlreadyOnLoan);
         loan.LoanDate.Should().Be(new DateTime(2026, 9, 20, 0, 0, 0, DateTimeKind.Utc));
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -529,7 +617,7 @@ public class LoanServiceTests
         overdue.SetDueDate(new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc));
         _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None))
             .ReturnsAsync(game);
 
         var act = () => _loanService.Update(new UpdateLoanCommand
@@ -544,7 +632,8 @@ public class LoanServiceTests
         await act.Should().ThrowAsync<DomainException>().WithMessage(BoardGameTracker.Common.Constants.Errors.GameAlreadyOnLoan);
         loan.LoanDate.Should().Be(new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc));
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -557,7 +646,7 @@ public class LoanServiceTests
         var loan = new Loan(1, 3, new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc)) { Id = 8 };
         _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None))
             .ReturnsAsync(game);
 
         var act = () => _loanService.Update(new UpdateLoanCommand
@@ -572,7 +661,8 @@ public class LoanServiceTests
         await act.Should().ThrowAsync<DomainException>().WithMessage(BoardGameTracker.Common.Constants.Errors.GameAlreadyOnLoan);
         loan.LoanDate.Should().Be(new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc));
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 1)), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -596,9 +686,12 @@ public class LoanServiceTests
         var action = async () => await _loanService.Update(command);
 
         // Assert
-        await action.Should().ThrowAsync<EntityNotFoundException>();
+        var thrown = await action.Should().ThrowAsync<EntityNotFoundException>();
+        thrown.Which.EntityType.Should().Be(nameof(Loan));
+        thrown.Which.EntityId.Should().Be(999);
 
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(command.Id), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -608,13 +701,13 @@ public class LoanServiceTests
         // Arrange
         var loanId = 1;
         var originalLoanDate = DateTime.UtcNow.AddDays(-10);
-        var loan = new Loan(1, 1, originalLoanDate) { Id = loanId };
+        var loan = new Loan(4, 1, originalLoanDate) { Id = loanId };
         loan.SetDueDate(DateTime.UtcNow.AddDays(5));
 
         var command = new UpdateLoanCommand
         {
             Id = loanId,
-            GameId = 1,
+            GameId = 4,
             PlayerId = 1,
             LoanDate = originalLoanDate,
             DueDate = null
@@ -626,8 +719,8 @@ public class LoanServiceTests
 
 
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
-            .ReturnsAsync(new Game("Catan") { Id = 1 });
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None))
+            .ReturnsAsync(new Game("Catan") { Id = 4 });
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -641,7 +734,7 @@ public class LoanServiceTests
         result.DueDate.Should().BeNull();
 
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(loanId), Times.Once);
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -650,21 +743,21 @@ public class LoanServiceTests
     public async Task Update_ShouldChangeTheReturnedDate_WhenTheLoanWasReturned()
     {
         var loanDate = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
-        var loan = new Loan(1, 1, loanDate) { Id = 1 };
+        var loan = new Loan(4, 1, loanDate) { Id = 1 };
         loan.MarkAsReturned(new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc));
         var newReturnedDate = new DateTime(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc);
 
         _loanRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(loan);
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
-            .ReturnsAsync(new Game("Catan") { Id = 1 });
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None))
+            .ReturnsAsync(new Game("Catan") { Id = 4 });
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
 
-        var result = await _loanService.Update(new UpdateLoanCommand { Id = 1, GameId = 1, PlayerId = 1, LoanDate = loanDate, ReturnedDate = newReturnedDate });
+        var result = await _loanService.Update(new UpdateLoanCommand { Id = 1, GameId = 4, PlayerId = 1, LoanDate = loanDate, ReturnedDate = newReturnedDate });
 
         result.ReturnedDate.Should().Be(newReturnedDate);
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -673,19 +766,19 @@ public class LoanServiceTests
     public async Task Update_ShouldIgnoreTheReturnedDate_WhenTheLoanIsStillActive()
     {
         var loanDate = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
-        var loan = new Loan(1, 1, loanDate) { Id = 1 };
+        var loan = new Loan(4, 1, loanDate) { Id = 1 };
 
         _loanRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(loan);
         _gameRepositoryMock
-            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None))
-            .ReturnsAsync(new Game("Catan") { Id = 1 });
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None))
+            .ReturnsAsync(new Game("Catan") { Id = 4 });
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
 
-        var result = await _loanService.Update(new UpdateLoanCommand { Id = 1, GameId = 1, PlayerId = 1, LoanDate = loanDate, ReturnedDate = new DateTime(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc) });
+        var result = await _loanService.Update(new UpdateLoanCommand { Id = 1, GameId = 4, PlayerId = 1, LoanDate = loanDate, ReturnedDate = new DateTime(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc) });
 
         result.ReturnedDate.Should().BeNull();
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
-        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 4)), CancellationToken.None), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -724,23 +817,23 @@ public class LoanServiceTests
     [Fact]
     public async Task CountActiveLoans_ShouldReturnCount_FromRepository()
     {
-        // Arrange
         var expectedCount = 5;
         var now = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
+        var token = new CancellationTokenSource().Token;
         var upcoming = new Loan(1, 1, now.AddDays(1));
+        var started = new Loan(1, 1, now);
         _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(now);
 
         _loanRepositoryMock
-            .Setup(x => x.CountAsync(It.Is<ActiveLoansSpec>(s => !s.IsSatisfiedBy(upcoming)), CancellationToken.None))
+            .Setup(x => x.CountAsync(It.Is<ActiveLoansSpec>(s => !s.IsSatisfiedBy(upcoming) && s.IsSatisfiedBy(started)), token))
             .ReturnsAsync(expectedCount);
 
-        // Act
-        var result = await _loanService.CountActiveLoans();
+        var result = await _loanService.CountActiveLoans(token);
 
-        // Assert
         result.Should().Be(expectedCount);
 
-        _loanRepositoryMock.Verify(x => x.CountAsync(It.IsAny<ActiveLoansSpec>(), CancellationToken.None), Times.Once);
+        _loanRepositoryMock.Verify(x => x.CountAsync(It.Is<ActiveLoansSpec>(s => !s.IsSatisfiedBy(upcoming) && s.IsSatisfiedBy(started)), token), Times.Once);
+        _dateTimeProviderMock.Verify(x => x.UtcNow, Times.Once);
         VerifyNoOtherCalls();
     }
 

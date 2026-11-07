@@ -207,4 +207,40 @@ public class GameLoanTests
         act.Should().Throw<DomainException>().WithMessage(Constants.Errors.LoanDueBeforeStart);
         game.Loans.Should().BeEmpty();
     }
+
+    [Fact]
+    public void EnsureLoanDatesAreFree_ShouldIgnoreTheLoanItself()
+    {
+        var game = new Game("Catan");
+        var start = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        var loan = game.LoanToPlayer(1, start);
+
+        var act = () => game.EnsureLoanDatesAreFree(loan, start.AddDays(1), null);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void EnsureLoanDatesAreFree_ShouldIgnoreAnotherInstanceOfTheSameSavedLoan()
+    {
+        var game = new Game("Catan");
+        var start = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        game.LoanToPlayer(1, start).Id = 5;
+
+        var act = () => game.EnsureLoanDatesAreFree(new Loan(0, 1, start) { Id = 5 }, start.AddDays(1), null);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void EnsureLoanDatesAreFree_ShouldStillSeeOtherUnsavedLoans()
+    {
+        var game = new Game("Catan");
+        var start = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        game.LoanToPlayer(1, start);
+
+        var act = () => game.EnsureLoanDatesAreFree(new Loan(0, 1, start), start.AddDays(1), null);
+
+        act.Should().Throw<DomainException>().WithMessage(Constants.Errors.GameAlreadyOnLoan);
+    }
 }
