@@ -244,6 +244,18 @@ public class OidcFlowTests : IDisposable
     }
 
     [Fact]
+    public async Task StartLoginAsync_ShouldRejectAStoredInsecureAuthority_WithoutCallingIt()
+    {
+        await UpdateProviderAsync(p => p.Update(p.DisplayName, "http://idp.example.com", p.ClientId, null, true, p.Scopes, true,
+            null, null, null, null, null, null, null, null, null, null));
+
+        var act = () => _service.StartLoginAsync(PublicBase, null);
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InsecureAuthority);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task StartLoginAsync_ShouldRejectAnAuthorizationEndpoint_WhosePathChangesWhenTheQueryIsAdded()
     {
         _idp.AuthorizationEndpoint = "https://idp.example.com/%%2e";
