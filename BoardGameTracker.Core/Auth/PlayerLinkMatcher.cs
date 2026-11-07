@@ -134,7 +134,7 @@ public static class PlayerLinkMatcher
             .Split(WordSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
-    private static string RemoveAccents(string value)
+    internal static string RemoveAccents(string value)
     {
         var builder = new StringBuilder(value.Length);
         foreach (var c in value)

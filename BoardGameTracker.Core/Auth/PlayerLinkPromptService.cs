@@ -52,7 +52,9 @@ public class PlayerLinkPromptService : IPlayerLinkPromptService
             .Select(p => new PlayerLinkCandidate(p.Id, p.Name, p.Image, p.Email))
             .ToListAsync();
         candidates.RemoveAll(p => !PlayerLinkMatcher.EmailAllowsLink(user.Email, user.EmailConfirmed, p.Email));
-        candidates.Sort((left, right) => StringComparer.InvariantCultureIgnoreCase.Compare(left.Name, right.Name));
+        candidates = candidates
+            .OrderBy(p => PlayerLinkMatcher.RemoveAccents(p.Name.ToLowerInvariant()), StringComparer.Ordinal)
+            .ToList();
 
         var suggestions = PlayerLinkMatcher.Suggest(candidates, user.Email, user.DisplayName, user.UserName);
         var players = candidates.Select(p => new PlayerLinkCandidateDto(p.Id, p.Name, p.Image)).ToList();
