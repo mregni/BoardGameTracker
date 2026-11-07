@@ -175,10 +175,14 @@ test.describe("a night in progress before any game", () => {
 			guest,
 			third,
 		]);
-		await expect(page.getByRole("region", { name: "Planned games" }).getByRole("button")).toHaveText([
+		const plannedGames = page.getByRole("region", { name: "Planned games" });
+		await expect(plannedGames.getByRole("button").filter({ has: page.getByRole("img") })).toHaveText([
 			planned,
 			coopGame.title,
 		]);
+		await expect(plannedGames.getByRole("button", { name: /^Start / })).toHaveCount(2);
+		await expect(plannedGames.getByRole("button", { name: `Start ${planned}`, exact: true })).toBeVisible();
+		await expect(plannedGames.getByRole("button", { name: `Start ${coopGame.title}`, exact: true })).toBeVisible();
 		await expect(running(page)).toHaveCount(0);
 		await expect(page.getByRole("button", { name: /^Play .* again$/ })).toHaveCount(0);
 		await expect(main(page)).not.toContainText("Games played");
