@@ -80,12 +80,10 @@ public class ConsistentScheduleBadgeEvaluatorTests
 
         var sessions = new List<Session>();
 
-        // Create sessions for 5 Saturdays, skip one, then 5 more
         for (var i = 0; i < 5; i++)
         {
             sessions.Add(new SessionBuilder().Between(saturdayDate.AddDays(-7 * i).Date.AddHours(14), saturdayDate.AddDays(-7 * i).Date.AddHours(16)).Build());
         }
-        // Skip the 6th Saturday
         for (var i = 6; i < 11; i++)
         {
             sessions.Add(new SessionBuilder().Between(saturdayDate.AddDays(-7 * i).Date.AddHours(14), saturdayDate.AddDays(-7 * i).Date.AddHours(16)).Build());
@@ -173,7 +171,6 @@ public class ConsistentScheduleBadgeEvaluatorTests
 
         var sessions = new List<Session>();
 
-        // Create 10 Saturday sessions but every other week
         for (var i = 0; i < 10; i++)
         {
             sessions.Add(new SessionBuilder().Between(saturdayDate.AddDays(-14 * i).Date.AddHours(14), saturdayDate.AddDays(-14 * i).Date.AddHours(16)).Build()); // Every 2 weeks
@@ -196,7 +193,6 @@ public class ConsistentScheduleBadgeEvaluatorTests
 
         var sessions = new List<Session>();
 
-        // Create 2 sessions per Saturday for 10 weeks
         for (var i = 0; i < 10; i++)
         {
             var saturday = saturdayDate.AddDays(-7 * i);
@@ -221,13 +217,11 @@ public class ConsistentScheduleBadgeEvaluatorTests
 
         var sessions = new List<Session>();
 
-        // Create 10 consecutive Saturday sessions
         for (var i = 0; i < 10; i++)
         {
             sessions.Add(new SessionBuilder().Between(saturdayDate.AddDays(-7 * i).Date.AddHours(14), saturdayDate.AddDays(-7 * i).Date.AddHours(16)).Build());
         }
 
-        // Add non-Saturday sessions (should be ignored)
         sessions.Add(new SessionBuilder().Between(saturdayDate.AddDays(-1).Date.AddHours(14), saturdayDate.AddDays(-1).Date.AddHours(16)).Build()); // Friday
         sessions.Add(new SessionBuilder().Between(saturdayDate.AddDays(-2).Date.AddHours(14), saturdayDate.AddDays(-2).Date.AddHours(16)).Build()); // Thursday
         sessions.Add(new SessionBuilder().Between(saturdayDate.AddDays(1).Date.AddHours(14), saturdayDate.AddDays(1).Date.AddHours(16)).Build());  // Sunday

@@ -110,7 +110,6 @@ public class PlayerServiceTests
     [Fact]
     public async Task GetList_ShouldReturnAllPlayers_WhenPlayersExist()
     {
-        // Arrange
         var players = new List<Player>
         {
             new Player("John") { Id = 1 },
@@ -122,10 +121,8 @@ public class PlayerServiceTests
             .Setup(x => x.GetAllAsync())
             .ReturnsAsync(players);
 
-        // Act
         var result = await _playerService.GetList();
 
-        // Assert
         result.Should().HaveCount(3);
         result.Should().Contain(p => p.Name == "John");
         result.Should().Contain(p => p.Name == "Jane");
@@ -138,15 +135,12 @@ public class PlayerServiceTests
     [Fact]
     public async Task GetList_ShouldReturnEmptyList_WhenNoPlayersExist()
     {
-        // Arrange
         _playerRepositoryMock
             .Setup(x => x.GetAllAsync())
             .ReturnsAsync([]);
 
-        // Act
         var result = await _playerService.GetList();
 
-        // Assert
         result.Should().BeEmpty();
 
         _playerRepositoryMock.Verify(x => x.GetAllAsync(), Times.Once);
@@ -160,7 +154,6 @@ public class PlayerServiceTests
     [Fact]
     public async Task Create_ShouldCreatePlayer_AndSaveChanges()
     {
-        // Arrange
         var command = new CreatePlayerCommand { Name = "New Player", Image = "player.png", Email = "player@example.com" };
 
         _playerRepositoryMock
@@ -171,10 +164,8 @@ public class PlayerServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         var result = await _playerService.Create(command);
 
-        // Assert
         result.Name.Should().Be("New Player");
         result.Image.Should().Be("player.png");
         result.Email.Should().Be("player@example.com");
@@ -245,7 +236,6 @@ public class PlayerServiceTests
     [Fact]
     public async Task Get_ShouldReturnPlayer_WhenPlayerExists()
     {
-        // Arrange
         var playerId = 1;
         var player = new Player("John") { Id = playerId };
 
@@ -253,10 +243,8 @@ public class PlayerServiceTests
             .Setup(x => x.GetByIdAsync(playerId))
             .ReturnsAsync(player);
 
-        // Act
         var result = await _playerService.Get(playerId);
 
-        // Assert
         result.Should().BeSameAs(player);
 
         _playerRepositoryMock.Verify(x => x.GetByIdAsync(playerId), Times.Once);
@@ -266,17 +254,14 @@ public class PlayerServiceTests
     [Fact]
     public async Task Get_ShouldReturnNull_WhenPlayerDoesNotExist()
     {
-        // Arrange
         var playerId = 999;
 
         _playerRepositoryMock
             .Setup(x => x.GetByIdAsync(playerId))
             .ReturnsAsync((Player?)null);
 
-        // Act
         var result = await _playerService.Get(playerId);
 
-        // Assert
         result.Should().BeNull();
 
         _playerRepositoryMock.Verify(x => x.GetByIdAsync(playerId), Times.Once);
@@ -290,7 +275,6 @@ public class PlayerServiceTests
     [Fact]
     public async Task Update_ShouldUpdatePlayer_WhenPlayerExists()
     {
-        // Arrange
         var playerId = 1;
         var existingPlayer = new Player("Old Name", "old.png", "old@example.com") { Id = playerId };
         var command = new UpdatePlayerCommand
@@ -310,10 +294,8 @@ public class PlayerServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         var result = await _playerService.Update(command);
 
-        // Assert
         result.Should().BeSameAs(existingPlayer);
         result.Name.Should().Be("New Name");
         result.Image.Should().Be("new.png");
@@ -476,7 +458,6 @@ public class PlayerServiceTests
     [Fact]
     public async Task Update_ShouldThrowEntityNotFoundException_WhenPlayerDoesNotExist()
     {
-        // Arrange
         var command = new UpdatePlayerCommand
         {
             Id = 999,
@@ -487,10 +468,8 @@ public class PlayerServiceTests
             .Setup(x => x.SingleOrDefaultAsync(It.Is<PlayerByIdForUpdateSpec>(s => IsPlayer(s, 999)), CancellationToken.None))
             .ReturnsAsync((Player?)null);
 
-        // Act
         var action = async () => await _playerService.Update(command);
 
-        // Assert
         var error = await action.Should().ThrowAsync<EntityNotFoundException>();
         error.Which.EntityType.Should().Be(nameof(Player));
         error.Which.EntityId.Should().Be(999);
@@ -502,7 +481,6 @@ public class PlayerServiceTests
     [Fact]
     public async Task Update_ShouldNotDeleteImage_WhenImageUnchanged()
     {
-        // Arrange
         var playerId = 1;
         var existingImage = "same.png";
         var existingPlayer = new Player("Old Name", existingImage) { Id = playerId };
@@ -522,10 +500,8 @@ public class PlayerServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         var result = await _playerService.Update(command);
 
-        // Assert
         result.Image.Should().Be(existingImage);
         result.Name.Should().Be("New Name");
 
@@ -582,16 +558,13 @@ public class PlayerServiceTests
     [Fact]
     public async Task CountAsync_ShouldReturnPlayerCount()
     {
-        // Arrange
         using var cancellation = new CancellationTokenSource();
         _playerRepositoryMock
             .Setup(x => x.CountAsync(cancellation.Token))
             .ReturnsAsync(15);
 
-        // Act
         var result = await _playerService.CountAsync(cancellation.Token);
 
-        // Assert
         result.Should().Be(15);
 
         _playerRepositoryMock.Verify(x => x.CountAsync(cancellation.Token), Times.Once);
@@ -605,7 +578,6 @@ public class PlayerServiceTests
     [Fact]
     public async Task GetSessions_ShouldReturnPlayerSessions()
     {
-        // Arrange
         var playerId = 1;
         var count = 10;
         var sessions = new List<Session>
@@ -618,10 +590,8 @@ public class PlayerServiceTests
             .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => IsRecentSessionsOf(s, playerId, count)), CancellationToken.None))
             .ReturnsAsync(sessions);
 
-        // Act
         var result = await _playerService.GetSessions(playerId, count);
 
-        // Assert
         result.Should().BeSameAs(sessions);
 
         _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => IsRecentSessionsOf(s, playerId, count)), CancellationToken.None), Times.Once);
@@ -635,7 +605,6 @@ public class PlayerServiceTests
     [Fact]
     public async Task Delete_ShouldDeletePlayerAndSessions_WhenPlayerExists()
     {
-        // Arrange
         var playerId = 1;
         var player = new Player("John", "john.png") { Id = playerId };
 
@@ -659,10 +628,8 @@ public class PlayerServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         await _playerService.Delete(playerId);
 
-        // Assert
         _playerRepositoryMock.Verify(x => x.GetByIdAsync(playerId), Times.Once);
         _gameNightRepositoryMock.Verify(
             x => x.AnyAsync(It.Is<GameNightsHostedByPlayerSpec>(s => IsHostedBy(s, 1)), CancellationToken.None), Times.Once);
@@ -676,17 +643,14 @@ public class PlayerServiceTests
     [Fact]
     public async Task Delete_ShouldThrowEntityNotFoundException_WhenPlayerDoesNotExist()
     {
-        // Arrange
         var playerId = 999;
 
         _playerRepositoryMock
             .Setup(x => x.GetByIdAsync(playerId))
             .ReturnsAsync((Player?)null);
 
-        // Act
         var action = async () => await _playerService.Delete(playerId);
 
-        // Assert
         var error = await action.Should().ThrowAsync<EntityNotFoundException>();
         error.Which.EntityType.Should().Be(nameof(Player));
         error.Which.EntityId.Should().Be(999);
@@ -725,7 +689,6 @@ public class PlayerServiceTests
     [Fact]
     public async Task GetStats_ShouldReturnPlayerStatistics()
     {
-        // Arrange
         var playerId = 1;
         var stats = new PlayerStatistics
         {
@@ -740,10 +703,8 @@ public class PlayerServiceTests
             .Setup(x => x.CalculateStatisticsAsync(playerId))
             .ReturnsAsync(stats);
 
-        // Act
         var result = await _playerService.GetStats(playerId);
 
-        // Assert
         result.Should().BeSameAs(stats);
 
         _playerStatisticsDomainServiceMock.Verify(x => x.CalculateStatisticsAsync(playerId), Times.Once);
@@ -757,7 +718,6 @@ public class PlayerServiceTests
     [Fact]
     public async Task GetTotalPlayCount_ShouldReturnPlayCount()
     {
-        // Arrange
         var playerId = 1;
         var expectedCount = 42;
 
@@ -765,10 +725,8 @@ public class PlayerServiceTests
             .Setup(x => x.GetTotalPlayCount(playerId))
             .ReturnsAsync(expectedCount);
 
-        // Act
         var result = await _playerService.GetTotalPlayCount(playerId);
 
-        // Assert
         result.Should().Be(42);
 
         _playerRepositoryMock.Verify(x => x.GetTotalPlayCount(playerId), Times.Once);

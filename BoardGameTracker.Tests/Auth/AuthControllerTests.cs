@@ -473,17 +473,14 @@ public class AuthControllerTests
     [Fact]
     public async Task ChangePassword_ShouldReturnNoContent_WhenPasswordChanged()
     {
-        // Arrange
         SetupAuthenticatedUser("user-id");
         var request = new ChangePasswordRequest("old-password", "new-password");
 
         _authServiceMock.Setup(x => x.ChangePasswordAsync("user-id", request))
             .Returns(Task.CompletedTask);
 
-        // Act
         var result = await _controller.ChangePassword(request);
 
-        // Assert
         result.Should().BeOfType<NoContentResult>();
 
         _authServiceMock.Verify(x => x.ChangePasswordAsync("user-id", request), Times.Once);

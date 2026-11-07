@@ -29,7 +29,6 @@ public class EfRepositoryTests
         var created = await repository.CreateAsync(loan);
 
         created.Should().BeSameAs(loan);
-        // The entity is tracked as Added but must NOT be committed until IUnitOfWork saves.
         context.ChangeTracker.Entries<Loan>().Count(e => e.State == EntityState.Added).Should().Be(1);
         (await context.Loans.CountAsync()).Should().Be(0);
 

@@ -92,7 +92,6 @@ public class DurationBadgeEvaluatorTests
         var badge = TestBadges.Create(BadgeType.Duration, BadgeLevel.Green);
         var sessions = new List<Session>();
 
-        // Create 6 winning sessions of 50 minutes each = 300 minutes
         for (var i = 0; i < 6; i++)
         {
             var session = new SessionBuilder().DaysAgo(i).LastingMinutes(50)

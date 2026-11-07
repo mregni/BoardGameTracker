@@ -40,14 +40,11 @@ public class GameStatisticsServiceTests
     [Fact]
     public async Task CalculateStatisticsAsync_ShouldReturnNullOptionalValues_WhenNotAvailable()
     {
-        // Arrange
         var gameId = GameId;
         SetupDefaultRepositoryMocks(gameId);
 
-        // Act
         var result = await _service.CalculateStatisticsAsync(gameId, _token);
 
-        // Assert
         result.PricePerPlay.Should().BeNull();
         result.HighScore.Should().BeNull();
         result.AverageScore.Should().BeNull();
@@ -64,7 +61,6 @@ public class GameStatisticsServiceTests
     [Fact]
     public async Task CalculateStatisticsAsync_ShouldUseEmptyString_WhenPlayerImageIsNull()
     {
-        // Arrange
         var gameId = GameId;
         var playerId = 5;
         var player = new Player("Jane Doe") { Id = playerId };
@@ -72,10 +68,8 @@ public class GameStatisticsServiceTests
         SetupDefaultRepositoryMocks(gameId);
         _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId, _token)).ReturnsAsync((player, 10));
 
-        // Act
         var result = await _service.CalculateStatisticsAsync(gameId, _token);
 
-        // Assert
         result.MostWinsPlayer.Should().BeEquivalentTo(new MostWinningPlayer { Id = playerId, Name = "Jane Doe", Image = string.Empty, TotalWins = 10 });
         VerifyAllStatisticsRead(gameId);
         VerifyNoOtherCalls();
@@ -84,7 +78,6 @@ public class GameStatisticsServiceTests
     [Fact]
     public async Task CalculateStatisticsAsync_ShouldReturnCompleteStatistics()
     {
-        // Arrange
         var gameId = GameId;
         var lastPlayed = new DateTime(2024, 6, 15);
         var player = new Player("Winner", "winner.jpg") { Id = 10 };
@@ -101,10 +94,8 @@ public class GameStatisticsServiceTests
         _gameStatisticsRepositoryMock.Setup(x => x.GetCoopResults(gameId, _token)).ReturnsAsync((2, 3));
         _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId, _token)).ReturnsAsync((player, 20));
 
-        // Act
         var result = await _service.CalculateStatisticsAsync(gameId, _token);
 
-        // Assert
         result.PlayCount.Should().Be(50);
         result.TotalPlayedTime.Should().Be(3000.0);
         result.LastPlayed.Should().Be(lastPlayed);

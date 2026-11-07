@@ -47,14 +47,11 @@ public class TokenServiceTests : IDisposable
     [Fact]
     public void GenerateAccessToken_ShouldReturnValidJwt()
     {
-        // Arrange
         var user = new ApplicationUser("testuser", "test@test.com", "Test User");
         var roles = new List<string> { "Admin", "User" };
 
-        // Act
         var token = _tokenService.GenerateAccessToken(user, roles, Guid.NewGuid());
 
-        // Assert
         var jwtToken = new JsonWebTokenHandler().ReadJsonWebToken(token);
         jwtToken.Alg.Should().Be(SecurityAlgorithms.HmacSha256);
         jwtToken.Issuer.Should().Be("test-issuer");
@@ -68,14 +65,11 @@ public class TokenServiceTests : IDisposable
     [Fact]
     public void GenerateAccessToken_ShouldIncludeRoleClaims()
     {
-        // Arrange
         var user = new ApplicationUser("testuser", "test@test.com");
         var roles = new List<string> { "Admin", "User" };
 
-        // Act
         var token = _tokenService.GenerateAccessToken(user, roles, Guid.NewGuid());
 
-        // Assert
         var jwtToken = new JsonWebTokenHandler().ReadJsonWebToken(token);
         var roleClaims = jwtToken.Claims.Where(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").ToList();
         roleClaims.Select(c => c.Value).Should().BeEquivalentTo("Admin", "User");
@@ -108,13 +102,10 @@ public class TokenServiceTests : IDisposable
     [Fact]
     public async Task GenerateRefreshTokenAsync_ShouldCreateAndStoreToken()
     {
-        // Arrange
         var userId = "test-user-id";
 
-        // Act
         var refreshToken = await _tokenService.GenerateRefreshTokenAsync(userId);
 
-        // Assert
         refreshToken.UserId.Should().Be(userId);
         refreshToken.IsActive.Should().BeTrue();
         refreshToken.IsExpired.Should().BeFalse();
@@ -127,10 +118,8 @@ public class TokenServiceTests : IDisposable
     [Fact]
     public async Task GetRefreshTokenAsync_ShouldReturnNull_WhenNotExists()
     {
-        // Act
         var result = await _tokenService.GetRefreshTokenAsync("nonexistent-token");
 
-        // Assert
         result.Should().BeNull();
     }
 

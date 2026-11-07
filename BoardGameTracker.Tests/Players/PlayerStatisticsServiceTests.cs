@@ -39,7 +39,6 @@ public class PlayerStatisticsServiceTests
     [Fact]
     public async Task CalculateStatisticsAsync_ShouldReturnBasicStatistics()
     {
-        // Arrange
         var playerId = 1;
 
         _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerId)).ReturnsAsync(50);
@@ -48,10 +47,8 @@ public class PlayerStatisticsServiceTests
         _playerRepositoryMock.Setup(x => x.GetDistinctGameCount(playerId)).ReturnsAsync(15);
         _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(playerId, 5)).ReturnsAsync([]);
 
-        // Act
         var result = await _service.CalculateStatisticsAsync(playerId);
 
-        // Assert
         result.PlayCount.Should().Be(50);
         result.WinCount.Should().Be(25);
         result.TotalPlayedTime.Should().Be(3000.0);
@@ -92,7 +89,6 @@ public class PlayerStatisticsServiceTests
     [Fact]
     public async Task CalculateStatisticsAsync_ShouldReturnMostPlayedGames_WithWinningPercentage()
     {
-        // Arrange
         var playerId = 1;
         var mostPlayedGames = new List<MostPlayedGame>
         {
@@ -106,10 +102,8 @@ public class PlayerStatisticsServiceTests
         _playerRepositoryMock.Setup(x => x.GetDistinctGameCount(playerId)).ReturnsAsync(5);
         _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(playerId, 5)).ReturnsAsync(mostPlayedGames);
 
-        // Act
         var result = await _service.CalculateStatisticsAsync(playerId);
 
-        // Assert
         result.MostPlayedGames.Should().HaveCount(2);
 
         var firstGame = result.MostPlayedGames[0];

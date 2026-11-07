@@ -30,7 +30,6 @@ public class ImageControllerTests
     [Fact]
     public async Task UploadImage_ShouldReturnOkWithFileName_WhenUploadSucceeds()
     {
-        // Arrange
         var formFile = new FormFile(Stream.Null, 0, 0, "file", "test.jpg");
         var command = new UploadImageCommand
         {
@@ -43,10 +42,8 @@ public class ImageControllerTests
             .Setup(x => x.SaveImage(formFile, UploadFileType.Game))
             .ReturnsAsync(expectedFileName);
 
-        // Act
         var result = await _controller.UploadImage(command);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.Value.Should().Be(expectedFileName);
 

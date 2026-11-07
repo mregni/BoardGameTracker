@@ -33,7 +33,6 @@ public class PlayerControllerTests
     [Fact]
     public async Task GetPlayers_ShouldReturnOkWithPlayers_WhenPlayersExist()
     {
-        // Arrange
         var players = new List<Player>
         {
             new Player("Alice", "https://example.com/alice.jpg") { Id = 1 },
@@ -44,10 +43,8 @@ public class PlayerControllerTests
             .Setup(x => x.GetList())
             .ReturnsAsync(players);
 
-        // Act
         var result = await _controller.GetPlayers();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedPlayers = okResult.Value.Should().BeAssignableTo<List<PlayerDto>>().Subject;
 
@@ -62,15 +59,12 @@ public class PlayerControllerTests
     [Fact]
     public async Task GetPlayers_ShouldReturnOkWithEmptyList_WhenNoPlayersExist()
     {
-        // Arrange
         _playerServiceMock
             .Setup(x => x.GetList())
             .ReturnsAsync([]);
 
-        // Act
         var result = await _controller.GetPlayers();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedPlayers = okResult.Value.Should().BeAssignableTo<List<PlayerDto>>().Subject;
 
@@ -83,7 +77,6 @@ public class PlayerControllerTests
     [Fact]
     public async Task CreatePlayer_ShouldReturnCreatedWithPlayer_WhenPlayerIsCreated()
     {
-        // Arrange
         var command = new CreatePlayerCommand
         {
             Name = "Charlie",
@@ -96,10 +89,8 @@ public class PlayerControllerTests
             .Setup(x => x.Create(command))
             .ReturnsAsync(createdPlayer);
 
-        // Act
         var result = await _controller.CreatePlayer(command);
 
-        // Assert
         var okResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
         okResult.ActionName.Should().Be(nameof(PlayerController.GetPlayerById));
         okResult.RouteValues!["id"].Should().Be(1);
@@ -116,7 +107,6 @@ public class PlayerControllerTests
     [Fact]
     public async Task UpdatePlayer_ShouldReturnOkWithUpdatedPlayer_WhenPlayerIsUpdated()
     {
-        // Arrange
         var command = new UpdatePlayerCommand
         {
             Id = 1,
@@ -130,10 +120,8 @@ public class PlayerControllerTests
             .Setup(x => x.Update(command))
             .ReturnsAsync(updatedPlayer);
 
-        // Act
         var result = await _controller.UpdatePlayer(command);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var playerDto = okResult.Value.Should().BeAssignableTo<PlayerDto>().Subject;
 
@@ -150,7 +138,6 @@ public class PlayerControllerTests
     [Fact]
     public async Task GetPlayerById_ShouldReturnOkWithPlayer_WhenPlayerExists()
     {
-        // Arrange
         var playerId = 1;
         var player = new Player("Frank", "https://example.com/frank.jpg") { Id = playerId };
 
@@ -161,10 +148,8 @@ public class PlayerControllerTests
             .Setup(x => x.GetLinkedAccountAsync(playerId))
             .ReturnsAsync(new PlayerLinkedAccountDto { Id = "u1", Username = "frank", DisplayName = "Frank F" });
 
-        // Act
         var result = await _controller.GetPlayerById(playerId);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var playerDto = okResult.Value.Should().BeAssignableTo<PlayerDto>().Subject;
 
@@ -180,17 +165,14 @@ public class PlayerControllerTests
     [Fact]
     public async Task GetPlayerById_ShouldReturnNotFound_WhenPlayerDoesNotExist()
     {
-        // Arrange
         var playerId = 999;
 
         _playerServiceMock
             .Setup(x => x.Get(playerId))
             .ReturnsAsync((Player?)null);
 
-        // Act
         var result = await _controller.GetPlayerById(playerId);
 
-        // Assert
         result.Should().BeOfType<NotFoundResult>();
 
         _playerServiceMock.Verify(x => x.Get(playerId), Times.Once);
@@ -200,17 +182,14 @@ public class PlayerControllerTests
     [Fact]
     public async Task DeletePlayerById_ShouldReturnNoContent_WhenPlayerIsDeleted()
     {
-        // Arrange
         var playerId = 1;
 
         _playerServiceMock
             .Setup(x => x.Delete(playerId))
             .Returns(Task.CompletedTask);
 
-        // Act
         var result = await _controller.DeletePlayerById(playerId);
 
-        // Assert
         result.Should().BeOfType<NoContentResult>();
 
         _playerServiceMock.Verify(x => x.Delete(playerId), Times.Once);
@@ -265,7 +244,6 @@ public class PlayerControllerTests
     [Fact]
     public async Task GetPlayerSessionsById_ShouldReturnOkWithSessions_WhenSessionsExist()
     {
-        // Arrange
         var playerId = 1;
         var count = 10;
         var sessions = new List<Session>
@@ -278,10 +256,8 @@ public class PlayerControllerTests
             .Setup(x => x.GetSessions(playerId, count))
             .ReturnsAsync(sessions);
 
-        // Act
         var result = await _controller.GetPlayerSessionsById(playerId, count);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedSessions = okResult.Value.Should().BeAssignableTo<List<SessionDto>>().Subject;
 
@@ -296,7 +272,6 @@ public class PlayerControllerTests
     [Fact]
     public async Task GetPlayerSessionsById_ShouldReturnOkWithEmptyList_WhenNoSessionsExist()
     {
-        // Arrange
         var playerId = 1;
         int? count = null;
 
@@ -304,10 +279,8 @@ public class PlayerControllerTests
             .Setup(x => x.GetSessions(playerId, count))
             .ReturnsAsync([]);
 
-        // Act
         var result = await _controller.GetPlayerSessionsById(playerId, count);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedSessions = okResult.Value.Should().BeAssignableTo<List<SessionDto>>().Subject;
 

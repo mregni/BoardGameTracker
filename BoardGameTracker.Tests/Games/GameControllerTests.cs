@@ -61,7 +61,6 @@ public class GameControllerTests
     [Fact]
     public async Task GetGames_ShouldReturnOkWithGames_WhenGamesExist()
     {
-        // Arrange
         var games = new List<Game>
         {
             new Game("Catan", true) { Id = 1 },
@@ -77,10 +76,8 @@ public class GameControllerTests
             .Setup(x => x.GetPlayStatsPerGame())
             .ReturnsAsync(new Dictionary<int, GamePlayStats> { [1] = new(3, lastPlayed) });
 
-        // Act
         var result = await _controller.GetGames();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedGames = okResult.Value.Should().BeAssignableTo<List<GameDto>>().Subject;
 
@@ -102,7 +99,6 @@ public class GameControllerTests
     [Fact]
     public async Task GetGames_ShouldReturnOkWithEmptyList_WhenNoGamesExist()
     {
-        // Arrange
         _gameServiceMock
             .Setup(x => x.GetGames())
             .ReturnsAsync([]);
@@ -110,10 +106,8 @@ public class GameControllerTests
             .Setup(x => x.GetPlayStatsPerGame())
             .ReturnsAsync([]);
 
-        // Act
         var result = await _controller.GetGames();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedGames = okResult.Value.Should().BeAssignableTo<List<GameDto>>().Subject;
 
@@ -131,7 +125,6 @@ public class GameControllerTests
     [Fact]
     public async Task CreateGame_ShouldReturnCreatedWithGame_WhenCommandIsValid()
     {
-        // Arrange
         var command = new CreateGameCommand
         {
             Title = "New Game",
@@ -145,10 +138,8 @@ public class GameControllerTests
             .Setup(x => x.CreateGameFromCommand(command))
             .ReturnsAsync(createdGame);
 
-        // Act
         var result = await _controller.CreateGame(command);
 
-        // Assert
         var okResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
         var gameDto = okResult.Value.Should().BeAssignableTo<GameDto>().Subject;
 
@@ -169,7 +160,6 @@ public class GameControllerTests
     [Fact]
     public async Task UpdateGame_ShouldReturnOkWithUpdatedGame_WhenCommandIsValid()
     {
-        // Arrange
         var command = new UpdateGameCommand
         {
             Id = 1,
@@ -184,10 +174,8 @@ public class GameControllerTests
             .Setup(x => x.UpdateGame(command))
             .ReturnsAsync(updatedGame);
 
-        // Act
         var result = await _controller.UpdateGame(command);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var gameDto = okResult.Value.Should().BeAssignableTo<GameDto>().Subject;
 
@@ -233,17 +221,14 @@ public class GameControllerTests
     [Fact]
     public async Task DeleteGameById_ShouldReturnNoContent_WhenGameIsDeleted()
     {
-        // Arrange
         var gameId = 1;
 
         _gameServiceMock
             .Setup(x => x.Delete(gameId))
             .Returns(Task.CompletedTask);
 
-        // Act
         var result = await _controller.DeleteGameById(gameId);
 
-        // Assert
         result.Should().BeOfType<NoContentResult>();
 
         _gameServiceMock.Verify(x => x.Delete(gameId), Times.Once);
@@ -257,7 +242,6 @@ public class GameControllerTests
     [Fact]
     public async Task GetGameById_ShouldReturnOkWithGame_WhenGameExists()
     {
-        // Arrange
         var gameId = 1;
         var game = new Game("Catan", true) { Id = gameId };
 
@@ -265,10 +249,8 @@ public class GameControllerTests
             .Setup(x => x.GetGameById(gameId))
             .ReturnsAsync(game);
 
-        // Act
         var result = await _controller.GetGameById(gameId);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var gameDto = okResult.Value.Should().BeAssignableTo<GameDto>().Subject;
 
@@ -282,17 +264,14 @@ public class GameControllerTests
     [Fact]
     public async Task GetGameById_ShouldReturnNotFound_WhenGameDoesNotExist()
     {
-        // Arrange
         var gameId = 999;
 
         _gameServiceMock
             .Setup(x => x.GetGameById(gameId))
             .ReturnsAsync((Game?)null);
 
-        // Act
         var result = await _controller.GetGameById(gameId);
 
-        // Assert
         result.Should().BeOfType<NotFoundResult>();
 
         _gameServiceMock.Verify(x => x.GetGameById(gameId), Times.Once);
@@ -306,7 +285,6 @@ public class GameControllerTests
     [Fact]
     public async Task GetGameSessionsById_ShouldReturnOkWithSessions_WhenSessionsExist()
     {
-        // Arrange
         var gameId = 1;
         int? count = 10;
         var sessions = new List<Session>
@@ -319,10 +297,8 @@ public class GameControllerTests
             .Setup(x => x.GetSessionsForGame(gameId, count))
             .ReturnsAsync(sessions);
 
-        // Act
         var result = await _controller.GetGameSessionsById(gameId, count);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedSessions = okResult.Value.Should().BeAssignableTo<List<SessionDto>>().Subject;
 
@@ -335,7 +311,6 @@ public class GameControllerTests
     [Fact]
     public async Task GetGameSessionsById_ShouldReturnOkWithEmptyList_WhenNoSessionsExist()
     {
-        // Arrange
         var gameId = 1;
         int? count = null;
 
@@ -343,10 +318,8 @@ public class GameControllerTests
             .Setup(x => x.GetSessionsForGame(gameId, count))
             .ReturnsAsync([]);
 
-        // Act
         var result = await _controller.GetGameSessionsById(gameId, count);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedSessions = okResult.Value.Should().BeAssignableTo<List<SessionDto>>().Subject;
 
@@ -363,7 +336,6 @@ public class GameControllerTests
     [Fact]
     public async Task GetGameExpansions_ShouldReturnOkWithExpansions_WhenExpansionsExist()
     {
-        // Arrange
         var gameId = 1;
         var expansions = new[]
         {
@@ -375,10 +347,8 @@ public class GameControllerTests
             .Setup(x => x.SearchExpansionsForGame(gameId))
             .ReturnsAsync(expansions);
 
-        // Act
         var result = await _controller.GetGameExpansions(gameId);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedExpansions = okResult.Value.Should().BeAssignableTo<ExpansionData[]>().Subject;
 
@@ -395,7 +365,6 @@ public class GameControllerTests
     [Fact]
     public async Task UpdateGameExpansions_ShouldReturnOkWithUpdatedExpansions()
     {
-        // Arrange
         var gameId = 1;
         var command = new UpdateGameExpansionsCommand { ExpansionBggIds = [100, 101, 102]};
         var expansions = new List<Expansion>
@@ -408,10 +377,8 @@ public class GameControllerTests
             .Setup(x => x.UpdateGameExpansions(gameId, command.ExpansionBggIds))
             .ReturnsAsync(expansions);
 
-        // Act
         var result = await _controller.UpdateGameExpansions(gameId, command);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedExpansions = okResult.Value.Should().BeAssignableTo<List<ExpansionDto>>().Subject;
 
@@ -448,7 +415,6 @@ public class GameControllerTests
     [Fact]
     public async Task DeleteGameExpansions_ShouldReturnNoContent()
     {
-        // Arrange
         var gameId = 1;
         var expansionId = 100;
 
@@ -456,10 +422,8 @@ public class GameControllerTests
             .Setup(x => x.DeleteExpansion(gameId, expansionId))
             .Returns(Task.CompletedTask);
 
-        // Act
         var result = await _controller.DeleteGameExpansions(gameId, expansionId);
 
-        // Assert
         result.Should().BeOfType<NoContentResult>();
 
         _gameServiceMock.Verify(x => x.DeleteExpansion(gameId, expansionId), Times.Once);
@@ -473,7 +437,6 @@ public class GameControllerTests
     [Fact]
     public async Task GetGameStatistics_ShouldReturnOkWithAllStatisticsData()
     {
-        // Arrange
         var gameId = 1;
         var stats = new GameStatistics
         {
@@ -514,10 +477,8 @@ public class GameControllerTests
             .Setup(x => x.GetScoringRankedChart(gameId, 42.5, _token))
             .ReturnsAsync(scoringRankChart);
 
-        // Act
         var result = await _controller.GetGameStatistics(gameId, _token);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var response = okResult.Value.Should().BeOfType<GameStatisticsResponse>().Subject;
         response.GameStats.Should().Be(stats);
@@ -609,7 +570,6 @@ public class GameControllerTests
     [Fact]
     public async Task ImportBggGames_ShouldReturnNoContent_WhenCommandIsValid()
     {
-        // Arrange
         var command = new ImportBggGamesCommand
         {
             Games =
@@ -623,10 +583,8 @@ public class GameControllerTests
             .Setup(x => x.ImportList(command.Games))
             .Returns(Task.CompletedTask);
 
-        // Act
         var result = await _controller.ImportBggGames(command);
 
-        // Assert
         result.Should().BeOfType<NoContentResult>();
 
         _bggImportServiceMock.Verify(x => x.ImportList(command.Games), Times.Once);
@@ -640,7 +598,6 @@ public class GameControllerTests
     [Fact]
     public async Task SearchOnBgg_ShouldReturnGame_WhenImportSucceeds()
     {
-        // Arrange
         var search = new BggSearch { BggId = 123 };
         var game = new Game("BGG Game", true) { Id = 1 };
 
@@ -648,10 +605,8 @@ public class GameControllerTests
             .Setup(x => x.ImportGameFromBgg(search))
             .ReturnsAsync(game);
 
-        // Act
         var result = await _controller.SearchOnBgg(search);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var gameDto = okResult.Value.Should().BeAssignableTo<GameDto>().Subject;
 
@@ -664,17 +619,14 @@ public class GameControllerTests
     [Fact]
     public async Task SearchOnBgg_ShouldReturnNotFound_WhenGameNotFoundOnBgg()
     {
-        // Arrange
         var search = new BggSearch { BggId = 999 };
 
         _bggImportServiceMock
             .Setup(x => x.ImportGameFromBgg(search))
             .ReturnsAsync((Game?)null);
 
-        // Act
         var result = await _controller.SearchOnBgg(search);
 
-        // Assert
         result.Should().BeOfType<NotFoundResult>();
 
         _bggImportServiceMock.Verify(x => x.ImportGameFromBgg(search), Times.Once);

@@ -88,7 +88,6 @@ public class LocationServiceTests
     [Fact]
     public async Task GetLocations_ShouldReturnAllLocations_WhenLocationsExist()
     {
-        // Arrange
         var locations = new List<LocationDto>
         {
             new() { Id = 1, Name = "Living Room", PlayCount = 4 },
@@ -100,10 +99,8 @@ public class LocationServiceTests
             .Setup(x => x.ListAsync(It.IsAny<LocationsOverviewSpec>(), CancellationToken.None))
             .ReturnsAsync(locations);
 
-        // Act
         var result = await _locationService.GetLocations();
 
-        // Assert
         result.Should().HaveCount(3);
         result.Should().Contain(l => l.Name == "Living Room" && l.PlayCount == 4);
         result.Should().Contain(l => l.Name == "Game Store");
@@ -120,17 +117,14 @@ public class LocationServiceTests
     [Fact]
     public async Task GetByIdAsync_ShouldReturnLocation_WhenLocationExists()
     {
-        // Arrange
         var location = new Location("Living Room") { Id = 1 };
 
         _locationRepositoryMock
             .Setup(x => x.GetByIdAsync(1))
             .ReturnsAsync(location);
 
-        // Act
         var result = await _locationService.GetByIdAsync(1);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(1);
         result.Name.Should().Be("Living Room");
@@ -142,15 +136,12 @@ public class LocationServiceTests
     [Fact]
     public async Task GetByIdAsync_ShouldReturnNull_WhenLocationDoesNotExist()
     {
-        // Arrange
         _locationRepositoryMock
             .Setup(x => x.GetByIdAsync(999))
             .ReturnsAsync((Location?)null);
 
-        // Act
         var result = await _locationService.GetByIdAsync(999);
 
-        // Assert
         result.Should().BeNull();
 
         _locationRepositoryMock.Verify(x => x.GetByIdAsync(999), Times.Once);
@@ -164,7 +155,6 @@ public class LocationServiceTests
     [Fact]
     public async Task Create_ShouldCreateLocation_AndSaveChanges()
     {
-        // Arrange
         var command = new CreateLocationCommand { Name = "New Location" };
 
         _locationRepositoryMock
@@ -175,10 +165,8 @@ public class LocationServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         var result = await _locationService.Create(command);
 
-        // Assert
         result.Should().NotBeNull();
         result.Name.Should().Be("New Location");
 
@@ -248,7 +236,6 @@ public class LocationServiceTests
     [Fact]
     public async Task Delete_ShouldDeleteLocation_AndSaveChanges()
     {
-        // Arrange
         var locationId = 1;
 
         _gameNightRepositoryMock
@@ -267,10 +254,8 @@ public class LocationServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         await _locationService.Delete(locationId);
 
-        // Assert
         VerifyGameNightsChecked(locationId);
         VerifySessionsChecked(locationId);
         _locationRepositoryMock.Verify(x => x.DeleteAsync(locationId), Times.Once);
@@ -323,7 +308,6 @@ public class LocationServiceTests
     [Fact]
     public async Task Update_ShouldUpdateLocation_AndSaveChanges()
     {
-        // Arrange
         var command = new UpdateLocationCommand { Id = 1, Name = "Updated Location" };
         var existingLocation = new Location("Old Location") { Id = 1 };
 
@@ -335,10 +319,8 @@ public class LocationServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         var result = await _locationService.Update(command);
 
-        // Assert
         result.Should().NotBeNull();
         result.Name.Should().Be("Updated Location");
 
@@ -375,17 +357,14 @@ public class LocationServiceTests
     [Fact]
     public async Task Update_ShouldThrowEntityNotFoundException_WhenLocationNotFound()
     {
-        // Arrange
         var command = new UpdateLocationCommand { Id = 999, Name = "NonExistent" };
 
         _locationRepositoryMock
             .Setup(x => x.GetByIdAsync(999))
             .ReturnsAsync((Location?)null);
 
-        // Act
         var action = async () => await _locationService.Update(command);
 
-        // Assert
         var error = await action.Should().ThrowAsync<EntityNotFoundException>();
         error.Which.EntityType.Should().Be(nameof(Location));
         error.Which.EntityId.Should().Be(999);
@@ -436,7 +415,6 @@ public class LocationServiceTests
     [Fact]
     public async Task CountAsync_ShouldReturnLocationCount()
     {
-        // Arrange
         var expectedCount = 10;
         var token = new CancellationTokenSource().Token;
 
@@ -444,10 +422,8 @@ public class LocationServiceTests
             .Setup(x => x.CountAsync(token))
             .ReturnsAsync(expectedCount);
 
-        // Act
         var result = await _locationService.CountAsync(token);
 
-        // Assert
         result.Should().Be(10);
 
         _locationRepositoryMock.Verify(x => x.CountAsync(token), Times.Once);

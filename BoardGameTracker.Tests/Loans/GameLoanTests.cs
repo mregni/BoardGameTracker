@@ -11,15 +11,12 @@ public class GameLoanTests
     [Fact]
     public void LoanToPlayer_WithNoExistingLoans_ShouldSucceed()
     {
-        // Arrange
         var game = new Game("Test Game");
         var playerId = 1;
         var loanDate = DateTime.UtcNow;
 
-        // Act
         var loan = game.LoanToPlayer(playerId, loanDate);
 
-        // Assert
         loan.Should().NotBeNull();
         loan.PlayerId.Should().Be(playerId);
         loan.LoanDate.Should().Be(loanDate);

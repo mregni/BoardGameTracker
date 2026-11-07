@@ -50,7 +50,6 @@ public class SettingsControllerTests
     [Fact]
     public async Task Get_ShouldReturnSettings_WhenCalled()
     {
-        // Arrange
         var expectedDto = new UIResourceDto
         {
             TimeFormat = "HH:mm",
@@ -69,10 +68,8 @@ public class SettingsControllerTests
             .Setup(x => x.GetSettingsAsync())
             .ReturnsAsync(expectedDto);
 
-        // Act
         var result = await _controller.Get();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var settings = okResult.Value.Should().BeAssignableTo<UIResourceDto>().Subject;
 
@@ -85,7 +82,6 @@ public class SettingsControllerTests
     [Fact]
     public async Task Update_ShouldUpdateSettings_WhenCalled()
     {
-        // Arrange
         var model = new UIResourceDto
         {
             TimeFormat = "HH:mm:ss",
@@ -101,10 +97,8 @@ public class SettingsControllerTests
             .Setup(x => x.UpdateSettingsAsync(model))
             .ReturnsAsync(model);
 
-        // Act
         var result = await _controller.Update(model);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedModel = okResult.Value.Should().BeAssignableTo<UIResourceDto>().Subject;
 
@@ -133,7 +127,6 @@ public class SettingsControllerTests
     [Fact]
     public async Task GetLanguages_ShouldReturnLanguages_WhenLanguagesExist()
     {
-        // Arrange
         var languages = new List<Language>
         {
             new() { Id = 1, Key = "en", TranslationKey = "English" },
@@ -145,10 +138,8 @@ public class SettingsControllerTests
             .Setup(x => x.GetAllAsync())
             .ReturnsAsync(languages);
 
-        // Act
         var result = await _controller.GetLanguages();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedLanguages = okResult.Value.Should().BeAssignableTo<List<Language>>().Subject;
 

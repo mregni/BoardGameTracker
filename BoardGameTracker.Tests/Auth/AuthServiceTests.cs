@@ -181,16 +181,13 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task LoginAsync_ShouldThrowUnauthorizedAccessException_WhenUserNotFound()
     {
-        // Arrange
         var request = new LoginRequest("unknownuser", "password123");
 
         _userManagerMock.Setup(x => x.FindByNameAsync("unknownuser"))
             .ReturnsAsync((ApplicationUser?)null);
 
-        // Act
         var act = () => _authService.LoginAsync(request, ClientAddress);
 
-        // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
             .WithMessage(Constants.Errors.InvalidCredentials);
 
@@ -204,7 +201,6 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task LoginAsync_ShouldThrowUnauthorizedAccessException_WhenPasswordIsWrong()
     {
-        // Arrange
         var request = new LoginRequest("testuser", "wrongpassword");
         var user = new ApplicationUser("testuser", "test@test.com");
 
@@ -212,10 +208,8 @@ public class AuthServiceTests : IDisposable
         _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "wrongpassword", false))
             .ReturnsAsync(SignInResult.Failed);
 
-        // Act
         var act = () => _authService.LoginAsync(request, ClientAddress);
 
-        // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
             .WithMessage(Constants.Errors.InvalidCredentials);
         user.LastLoginAt.Should().BeNull();
@@ -348,14 +342,11 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task RefreshAsync_ShouldThrowUnauthorizedAccessException_WhenTokenNotFound()
     {
-        // Arrange
         _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("nonexistent-token"))
             .ReturnsAsync((RefreshToken?)null);
 
-        // Act
         var act = () => _authService.RefreshAsync("nonexistent-token");
 
-        // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
             .WithMessage(Constants.Errors.InvalidRefreshToken);
 
@@ -366,16 +357,13 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task RefreshAsync_ShouldThrowUnauthorizedAccessException_WhenTokenIsInactive()
     {
-        // Arrange
         var revokedToken = CreateRevokedRefreshToken("user-id-123");
 
         _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("revoked-token"))
             .ReturnsAsync(revokedToken);
 
-        // Act
         var act = () => _authService.RefreshAsync("revoked-token");
 
-        // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
             .WithMessage(Constants.Errors.InvalidRefreshToken);
 
@@ -635,7 +623,6 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task LogoutAsync_ShouldRevokeSpecificToken_WhenRefreshTokenProvided()
     {
-        // Arrange
         var userId = "user-id-123";
         var user = new ApplicationUser("testuser", "test@test.com");
         var token = CreateActiveRefreshTokenWithUser(userId, user);
@@ -645,10 +632,8 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.Setup(x => x.RevokeRefreshTokenAsync(token, "Logged out"))
             .Returns(Task.CompletedTask);
 
-        // Act
         await _authService.LogoutAsync(userId, "my-refresh-token");
 
-        // Assert
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("my-refresh-token"), Times.Once);
         _tokenServiceMock.Verify(x => x.RevokeRefreshTokenAsync(token, "Logged out"), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Information, "User user-id-123 logged out");
@@ -687,7 +672,6 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task LogoutAsync_ShouldNotRevokeToken_WhenTokenBelongsToDifferentUser()
     {
-        // Arrange
         var userId = "user-id-123";
         var differentUserId = "user-id-456";
         var user = new ApplicationUser("otheruser", "other@test.com");
@@ -696,10 +680,8 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("other-users-token"))
             .ReturnsAsync(token);
 
-        // Act
         await _authService.LogoutAsync(userId, "other-users-token");
 
-        // Assert
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("other-users-token"), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -707,16 +689,13 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task LogoutAsync_ShouldNotRevokeToken_WhenTokenNotFound()
     {
-        // Arrange
         var userId = "user-id-123";
 
         _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("missing-token"))
             .ReturnsAsync((RefreshToken?)null);
 
-        // Act
         await _authService.LogoutAsync(userId, "missing-token");
 
-        // Assert
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("missing-token"), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -799,16 +778,13 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task RegisterAsync_ShouldThrowValidationException_WhenRoleIsInvalid()
     {
-        // Arrange
         var request = new RegisterRequest("newuser", "new@test.com", "password123", "InvalidRole");
 
         _userManagerMock.Setup(x => x.FindByNameAsync("newuser"))
             .ReturnsAsync((ApplicationUser?)null);
 
-        // Act
         var act = () => _authService.RegisterAsync(request);
 
-        // Assert
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage(Constants.Errors.InvalidRole);
 
@@ -819,17 +795,14 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task RegisterAsync_ShouldThrowDomainException_WhenUsernameAlreadyExists()
     {
-        // Arrange
         var request = new RegisterRequest("existinguser", "new@test.com", "password123", null);
         var existingUser = new ApplicationUser("existinguser", "existing@test.com");
 
         _userManagerMock.Setup(x => x.FindByNameAsync("existinguser"))
             .ReturnsAsync(existingUser);
 
-        // Act
         var act = () => _authService.RegisterAsync(request);
 
-        // Assert
         await act.Should().ThrowAsync<DomainException>()
             .WithMessage(Constants.Errors.UsernameAlreadyExists);
 
@@ -840,7 +813,6 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task RegisterAsync_ShouldThrowValidationException_WhenCreationFails()
     {
-        // Arrange
         var request = new RegisterRequest("newuser", "new@test.com", "weak", null);
         var identityErrors = new[] { new IdentityError { Description = "Password too short" }, new IdentityError { Description = "Username invalid" } };
 
@@ -849,10 +821,8 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Setup(x => x.CreateAsync(It.Is<ApplicationUser>(u => IsNewAccount(u, "newuser", "new@test.com")), "weak"))
             .ReturnsAsync(IdentityResult.Failed(identityErrors));
 
-        // Act
         var act = () => _authService.RegisterAsync(request);
 
-        // Assert
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage("Password too short, Username invalid");
 
@@ -890,16 +860,13 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task GetProfileAsync_ShouldThrowEntityNotFoundException_WhenUserNotFound()
     {
-        // Arrange
         var userId = "nonexistent-user-id";
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId))
             .ReturnsAsync((ApplicationUser?)null);
 
-        // Act
         var act = () => _authService.GetProfileAsync(userId);
 
-        // Assert
         await act.Should().ThrowAsync<EntityNotFoundException>().Where(e => e.EntityType == nameof(ApplicationUser) && e.EntityId.Equals(userId));
 
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
@@ -1105,17 +1072,14 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task UpdateProfileAsync_ShouldThrowEntityNotFoundException_WhenUserNotFound()
     {
-        // Arrange
         var userId = "nonexistent-user-id";
         var request = new UpdateProfileRequest("New Name", null, null);
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId))
             .ReturnsAsync((ApplicationUser?)null);
 
-        // Act
         var act = () => _authService.UpdateProfileAsync(userId, request);
 
-        // Assert
         await act.Should().ThrowAsync<EntityNotFoundException>().Where(e => e.EntityType == nameof(ApplicationUser) && e.EntityId.Equals(userId));
 
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
@@ -1734,7 +1698,6 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task ChangePasswordAsync_ShouldComplete_WhenPasswordChangedSuccessfully()
     {
-        // Arrange
         var userId = "user-id-123";
         var user = new ApplicationUser("testuser", "test@test.com");
         var request = new ChangePasswordRequest("oldpassword", "newpassword");
@@ -1744,10 +1707,8 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Setup(x => x.ChangePasswordAsync(user, "oldpassword", "newpassword"))
             .ReturnsAsync(IdentityResult.Success);
 
-        // Act
         await _authService.ChangePasswordAsync(userId, request);
 
-        // Assert
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.ChangePasswordAsync(user, "oldpassword", "newpassword"), Times.Once);
@@ -1759,17 +1720,14 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task ChangePasswordAsync_ShouldThrowEntityNotFoundException_WhenUserNotFound()
     {
-        // Arrange
         var userId = "nonexistent-user-id";
         var request = new ChangePasswordRequest("oldpassword", "newpassword");
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId))
             .ReturnsAsync((ApplicationUser?)null);
 
-        // Act
         var act = () => _authService.ChangePasswordAsync(userId, request);
 
-        // Assert
         await act.Should().ThrowAsync<EntityNotFoundException>().Where(e => e.EntityType == nameof(ApplicationUser) && e.EntityId.Equals(userId));
 
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
@@ -1799,7 +1757,6 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task ChangePasswordAsync_ShouldThrowValidationException_WhenPasswordChangeFails()
     {
-        // Arrange
         var userId = "user-id-123";
         var user = new ApplicationUser("testuser", "test@test.com");
         var request = new ChangePasswordRequest("wrongpassword", "newpassword");
@@ -1810,10 +1767,8 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Setup(x => x.ChangePasswordAsync(user, "wrongpassword", "newpassword"))
             .ReturnsAsync(IdentityResult.Failed(identityErrors));
 
-        // Act
         var act = () => _authService.ChangePasswordAsync(userId, request);
 
-        // Assert
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage("Incorrect password, Too short");
 
@@ -1856,16 +1811,13 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task ResetPasswordAsync_ShouldThrowEntityNotFoundException_WhenUserNotFound()
     {
-        // Arrange
         var userId = "nonexistent-user-id";
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId))
             .ReturnsAsync((ApplicationUser?)null);
 
-        // Act
         var act = () => _authService.ResetPasswordAsync(userId);
 
-        // Assert
         await act.Should().ThrowAsync<EntityNotFoundException>().Where(e => e.EntityType == nameof(ApplicationUser) && e.EntityId.Equals(userId));
 
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
@@ -1875,7 +1827,6 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task ResetPasswordAsync_ShouldThrowValidationException_WhenResetFails()
     {
-        // Arrange
         var userId = "user-id-123";
         var user = new ApplicationUser("testuser", "test@test.com");
         var resetToken = "generated-reset-token";
@@ -1887,10 +1838,8 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Setup(x => x.ResetPasswordAsync(user, resetToken, It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Failed(identityErrors));
 
-        // Act
         var act = () => _authService.ResetPasswordAsync(userId);
 
-        // Assert
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage("Password reset failed");
 

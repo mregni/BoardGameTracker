@@ -30,7 +30,6 @@ public class BadgeControllerTests
     [Fact]
     public async Task GetBadges_ShouldReturnOkWithBadges_WhenBadgesExist()
     {
-        // Arrange
         var badges = new List<Badge>
         {
             Badge.CreateWithId(1, "badge_sessions_title", "badge_sessions_desc", BadgeType.Sessions, "sessions.png", BadgeLevel.Green),
@@ -41,10 +40,8 @@ public class BadgeControllerTests
             .Setup(x => x.GetAllBadgesAsync())
             .ReturnsAsync(badges);
 
-        // Act
         var result = await _controller.GetBadges();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedBadges = okResult.Value.Should().BeAssignableTo<List<BadgeDto>>().Subject;
 
@@ -64,15 +61,12 @@ public class BadgeControllerTests
     [Fact]
     public async Task GetBadges_ShouldReturnOkWithEmptyList_WhenNoBadgesExist()
     {
-        // Arrange
         _badgeServiceMock
             .Setup(x => x.GetAllBadgesAsync())
             .ReturnsAsync([]);
 
-        // Act
         var result = await _controller.GetBadges();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedBadges = okResult.Value.Should().BeAssignableTo<List<BadgeDto>>().Subject;
 

@@ -76,7 +76,6 @@ public class LoanServiceTests
     [Fact]
     public async Task GetLoans_ShouldReturnAllLoans_WhenLoansExist()
     {
-        // Arrange
         var loans = new List<Loan>
         {
             new Loan(1, 1, DateTime.UtcNow.AddDays(-10)) { Id = 1 },
@@ -87,10 +86,8 @@ public class LoanServiceTests
             .Setup(x => x.ListAsync(It.IsAny<LoansOrderedByDateSpec>(), CancellationToken.None))
             .ReturnsAsync(loans);
 
-        // Act
         var result = await _loanService.GetLoans();
 
-        // Assert
         result.Should().HaveCount(2);
         result.Should().BeEquivalentTo(loans);
 
@@ -105,7 +102,6 @@ public class LoanServiceTests
     [Fact]
     public async Task GetLoanById_ShouldReturnLoan_WhenLoanExists()
     {
-        // Arrange
         var loanId = 1;
         var loan = new Loan(1, 1, DateTime.UtcNow.AddDays(-10)) { Id = loanId };
 
@@ -113,10 +109,8 @@ public class LoanServiceTests
             .Setup(x => x.GetByIdAsync(loanId))
             .ReturnsAsync(loan);
 
-        // Act
         var result = await _loanService.GetLoanById(loanId);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(loanId);
 
@@ -127,17 +121,14 @@ public class LoanServiceTests
     [Fact]
     public async Task GetLoanById_ShouldReturnNull_WhenLoanDoesNotExist()
     {
-        // Arrange
         var loanId = 999;
 
         _loanRepositoryMock
             .Setup(x => x.GetByIdAsync(loanId))
             .ReturnsAsync((Loan?)null);
 
-        // Act
         var result = await _loanService.GetLoanById(loanId);
 
-        // Assert
         result.Should().BeNull();
 
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(loanId), Times.Once);
@@ -153,7 +144,6 @@ public class LoanServiceTests
     [InlineData(false)]
     public async Task LoanGameToPlayer_ShouldCreateLoan_WhenGameExists(bool hasDueDate)
     {
-        // Arrange
         var gameId = 1;
         var playerId = 2;
         var loanDate = DateTime.UtcNow;
@@ -182,10 +172,8 @@ public class LoanServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         var result = await _loanService.LoanGameToPlayer(command);
 
-        // Assert
         result.Should().NotBeNull();
         result.GameId.Should().Be(gameId);
         result.PlayerId.Should().Be(playerId);
@@ -264,7 +252,6 @@ public class LoanServiceTests
     [Fact]
     public async Task LoanGameToPlayer_ShouldThrowEntityNotFoundException_WhenGameDoesNotExist()
     {
-        // Arrange
         var command = new CreateLoanCommand
         {
             GameId = 999,
@@ -276,10 +263,8 @@ public class LoanServiceTests
             .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithLoansSpec>(s => MatchesGame(s, 999)), CancellationToken.None))
             .ReturnsAsync((Game?)null);
 
-        // Act
         var action = async () => await _loanService.LoanGameToPlayer(command);
 
-        // Assert
         var thrown = await action.Should().ThrowAsync<EntityNotFoundException>();
         thrown.Which.EntityType.Should().Be(nameof(Game));
         thrown.Which.EntityId.Should().Be(999);
@@ -319,7 +304,6 @@ public class LoanServiceTests
     [Fact]
     public async Task ReturnLoan_ShouldMarkLoanAsReturned_WhenLoanExists()
     {
-        // Arrange
         var loanId = 1;
         var loanDate = DateTime.UtcNow.AddDays(-10);
         var returnDate = DateTime.UtcNow;
@@ -340,10 +324,8 @@ public class LoanServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         var result = await _loanService.ReturnLoan(command);
 
-        // Assert
         result.Should().NotBeNull();
         result.ReturnedDate.Should().Be(returnDate);
 
@@ -356,7 +338,6 @@ public class LoanServiceTests
     [Fact]
     public async Task ReturnLoan_ShouldThrowEntityNotFoundException_WhenLoanDoesNotExist()
     {
-        // Arrange
         var command = new ReturnLoanCommand
         {
             Id = 999,
@@ -367,10 +348,8 @@ public class LoanServiceTests
             .Setup(x => x.GetByIdAsync(command.Id))
             .ReturnsAsync((Loan?)null);
 
-        // Act
         var action = async () => await _loanService.ReturnLoan(command);
 
-        // Assert
         var thrown = await action.Should().ThrowAsync<EntityNotFoundException>();
         thrown.Which.EntityType.Should().Be(nameof(Loan));
         thrown.Which.EntityId.Should().Be(999);
@@ -537,7 +516,6 @@ public class LoanServiceTests
     [Fact]
     public async Task Update_ShouldUpdateLoanDates_WhenLoanExists()
     {
-        // Arrange
         var loanId = 1;
         var originalLoanDate = DateTime.UtcNow.AddDays(-10);
         var newLoanDate = DateTime.UtcNow.AddDays(-5);
@@ -566,10 +544,8 @@ public class LoanServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         var result = await _loanService.Update(command);
 
-        // Assert
         result.Should().NotBeNull();
         result.LoanDate.Should().Be(newLoanDate);
         result.DueDate.Should().Be(newDueDate);
@@ -669,7 +645,6 @@ public class LoanServiceTests
     [Fact]
     public async Task Update_ShouldThrowEntityNotFoundException_WhenLoanDoesNotExist()
     {
-        // Arrange
         var command = new UpdateLoanCommand
         {
             Id = 999,
@@ -682,10 +657,8 @@ public class LoanServiceTests
             .Setup(x => x.GetByIdAsync(command.Id))
             .ReturnsAsync((Loan?)null);
 
-        // Act
         var action = async () => await _loanService.Update(command);
 
-        // Assert
         var thrown = await action.Should().ThrowAsync<EntityNotFoundException>();
         thrown.Which.EntityType.Should().Be(nameof(Loan));
         thrown.Which.EntityId.Should().Be(999);
@@ -698,7 +671,6 @@ public class LoanServiceTests
     [Fact]
     public async Task Update_ShouldUpdateWithNullDueDate()
     {
-        // Arrange
         var loanId = 1;
         var originalLoanDate = DateTime.UtcNow.AddDays(-10);
         var loan = new Loan(4, 1, originalLoanDate) { Id = loanId };
@@ -726,10 +698,8 @@ public class LoanServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         var result = await _loanService.Update(command);
 
-        // Assert
         result.Should().NotBeNull();
         result.DueDate.Should().BeNull();
 
@@ -790,7 +760,6 @@ public class LoanServiceTests
     [Fact]
     public async Task Delete_ShouldDeleteLoan_WhenCalled()
     {
-        // Arrange
         var loanId = 1;
 
         _loanRepositoryMock
@@ -801,10 +770,8 @@ public class LoanServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        // Act
         await _loanService.Delete(loanId);
 
-        // Assert
         _loanRepositoryMock.Verify(x => x.DeleteAsync(loanId), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();

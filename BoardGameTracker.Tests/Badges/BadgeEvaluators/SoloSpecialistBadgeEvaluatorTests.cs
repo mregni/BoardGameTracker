@@ -56,7 +56,6 @@ public class SoloSpecialistBadgeEvaluatorTests
         var badge = TestBadges.Create(BadgeType.SoloSpecialist, BadgeLevel.Green);
         var sessions = new List<Session>();
 
-        // Create 3 solo sessions
         for (var i = 0; i < 3; i++)
         {
             var session = new SessionBuilder().ForGame(1).DaysAgo(i)
@@ -65,7 +64,6 @@ public class SoloSpecialistBadgeEvaluatorTests
             sessions.Add(session);
         }
 
-        // Create 5 multi-player sessions
         for (var i = 3; i < 8; i++)
         {
             var session = new SessionBuilder().ForGame(1).DaysAgo(i)
@@ -86,7 +84,6 @@ public class SoloSpecialistBadgeEvaluatorTests
         var badge = TestBadges.Create(BadgeType.SoloSpecialist, BadgeLevel.Green);
         var sessions = new List<Session>();
 
-        // Create 10 multi-player sessions
         for (var i = 0; i < 10; i++)
         {
             var session = new SessionBuilder().ForGame(1).DaysAgo(i)
