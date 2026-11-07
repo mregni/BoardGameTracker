@@ -14,6 +14,7 @@ using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -25,16 +26,20 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
     private readonly IdentityTestScope _scope = new();
     private readonly Mock<IPlayerService> _playerServiceMock = new();
     private readonly Mock<IPlayerAccountImageService> _accountImagesMock = new();
+    private readonly Mock<ITokenService> _tokenServiceMock = new();
+    private readonly Mock<IUserAccessCheck> _userAccessCheckMock = new();
+    private readonly Mock<IImageService> _imageServiceMock = new();
+    private readonly Mock<ILogger<PlayerLinkPromptService>> _loggerMock = new();
     private readonly PlayerLinkPromptService _service;
 
     public PlayerLinkPromptServiceTests()
     {
         var userAdminService = new UserAdminService(
             _scope.UserManager,
-            Mock.Of<ITokenService>(),
-            Mock.Of<IUserAccessCheck>(),
+            _tokenServiceMock.Object,
+            _userAccessCheckMock.Object,
             _scope.Context,
-            Mock.Of<IImageService>(),
+            _imageServiceMock.Object,
             _accountImagesMock.Object,
             NullLogger<UserAdminService>.Instance);
 
@@ -43,10 +48,13 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
             userAdminService,
             _playerServiceMock.Object,
             _scope.Context,
-            NullLogger<PlayerLinkPromptService>.Instance);
+            _loggerMock.Object);
+    }
 
+    private void SetUpCreatePlayer(string name, string? email)
+    {
         _playerServiceMock
-            .Setup(x => x.Create(It.IsAny<CreatePlayerCommand>()))
+            .Setup(x => x.Create(It.Is<CreatePlayerCommand>(c => c.Name == name && c.Email == email)))
             .Returns(async (CreatePlayerCommand command) =>
             {
                 var player = new Player(command.Name, command.Image, command.Email);
@@ -54,7 +62,12 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
                 await _scope.Context.SaveChangesAsync();
                 return player;
             });
-        _accountImagesMock.Setup(x => x.ApplyAccountImageAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(true);
+    }
+
+    private void VerifyLinked(ApplicationUser user)
+    {
+        _accountImagesMock.Verify(x => x.ReleaseAsync(null), Times.Once);
+        _accountImagesMock.Verify(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.Id == user.Id)), Times.Once);
     }
 
     public void Dispose() => _scope.Dispose();
@@ -63,6 +76,10 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
     {
         _playerServiceMock.VerifyNoOtherCalls();
         _accountImagesMock.VerifyNoOtherCalls();
+        _tokenServiceMock.VerifyNoOtherCalls();
+        _userAccessCheckMock.VerifyNoOtherCalls();
+        _imageServiceMock.VerifyNoOtherCalls();
+        _loggerMock.VerifyNoOtherCalls();
     }
 
     private async Task<ApplicationUser> CreateUserAsync(string role, string userName = "mregni", string? email = "mikhael@example.com", string? displayName = "Mikhaël Regni", bool pending = true, bool emailConfirmed = true)
@@ -85,6 +102,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
 
         (await _scope.UserManager.CreateAsync(user)).Succeeded.Should().BeTrue();
         await _scope.UserManager.AddToRoleAsync(user, role);
+        _accountImagesMock.Setup(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.Id == user.Id))).ReturnsAsync(true);
         return user;
     }
 
@@ -119,8 +137,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
 
         result.Suggestions.Select(s => s.Id).Should().Equal(byEmail.Id, byName.Id, partly.Id);
         result.Suggestions.Select(s => s.Reason).Should().Equal(PlayerLinkMatchReason.Email, PlayerLinkMatchReason.Name, PlayerLinkMatchReason.Partial);
-        result.Players.Select(p => p.Id).Should().BeEquivalentTo([byEmail.Id, byName.Id, partly.Id, unrelated.Id]);
-        result.Players.Select(p => p.Name).Should().BeInAscendingOrder(StringComparer.InvariantCultureIgnoreCase);
+        result.Players.Select(p => p.Id).Should().Equal(unrelated.Id, partly.Id, byName.Id, byEmail.Id);
         result.CanCreatePlayer.Should().BeTrue();
         VerifyNoOtherCalls();
     }
@@ -190,6 +207,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
         stored.PlayerLinkPending.Should().BeFalse();
         _accountImagesMock.Verify(x => x.ReleaseAsync(null), Times.Once);
         _accountImagesMock.Verify(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.Id == user.Id && u.PlayerId == player.Id)), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {user.Id} linked their account to player {player.Id}");
         VerifyNoOtherCalls();
     }
 
@@ -222,6 +240,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
         var stored = await ReloadAsync(user.Id);
         stored.PlayerLinkPending.Should().BeTrue();
         stored.PlayerId.Should().BeNull();
+        _loggerMock.VerifyLog(LogLevel.Warning, $"User {user.Id} tried to link player {player.Id} with a different email");
         VerifyNoOtherCalls();
     }
 
@@ -235,6 +254,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
 
         (await act.Should().ThrowAsync<ForbiddenException>()).WithMessage(Constants.Errors.PlayerEmailMismatch);
         (await ReloadAsync(user.Id)).PlayerId.Should().BeNull();
+        _loggerMock.VerifyLog(LogLevel.Warning, $"User {user.Id} tried to link player {player.Id} with a different email");
         VerifyNoOtherCalls();
     }
 
@@ -266,6 +286,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
     public async Task CreatePlayerAsync_ShouldCreateAPlayerNamedAfterTheDisplayName_WithTheEmail_AndLinkIt()
     {
         var user = await CreateUserAsync(Constants.AuthRoles.User);
+        SetUpCreatePlayer("Mikhaël Regni", "mikhael@example.com");
 
         var profile = await _service.CreatePlayerAsync(user.Id);
 
@@ -278,6 +299,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
         _playerServiceMock.Verify(x => x.Create(It.Is<CreatePlayerCommand>(c => c.Name == "Mikhaël Regni" && c.Email == "mikhael@example.com")), Times.Once);
         _accountImagesMock.Verify(x => x.ReleaseAsync(null), Times.Once);
         _accountImagesMock.Verify(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.Id == user.Id)), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {user.Id} created player {player.Id} for their account");
         VerifyNoOtherCalls();
     }
 
@@ -286,12 +308,14 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
     {
         var user = await CreateUserAsync(Constants.AuthRoles.Admin);
         await AddPlayerAsync(" mikhaël regni ", " Mikhael@Example.com ");
+        SetUpCreatePlayer("mregni", null);
 
         await _service.CreatePlayerAsync(user.Id);
 
         _playerServiceMock.Verify(x => x.Create(It.Is<CreatePlayerCommand>(c => c.Name == "mregni" && c.Email == null)), Times.Once);
         _accountImagesMock.Verify(x => x.ReleaseAsync(null), Times.Once);
-        _accountImagesMock.Verify(x => x.ApplyAccountImageAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        _accountImagesMock.Verify(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.Id == user.Id)), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {user.Id} created player {(await _scope.Context.Players.AsNoTracking().SingleAsync(p => p.Name == "mregni")).Id} for their account");
         VerifyNoOtherCalls();
     }
 
@@ -299,12 +323,14 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
     public async Task CreatePlayerAsync_ShouldUseTheUsername_AndSkipThePlaceholderEmail_WhenTheAccountHasNoRealOnes()
     {
         var user = await CreateUserAsync(Constants.AuthRoles.User, "sso_123", "123" + OidcService.PlaceholderEmailDomain, null);
+        SetUpCreatePlayer("sso_123", null);
 
         await _service.CreatePlayerAsync(user.Id);
 
         _playerServiceMock.Verify(x => x.Create(It.Is<CreatePlayerCommand>(c => c.Name == "sso_123" && c.Email == null)), Times.Once);
         _accountImagesMock.Verify(x => x.ReleaseAsync(null), Times.Once);
-        _accountImagesMock.Verify(x => x.ApplyAccountImageAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        _accountImagesMock.Verify(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.Id == user.Id)), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {user.Id} created player {(await _scope.Context.Players.AsNoTracking().SingleAsync(p => p.Name == "sso_123")).Id} for their account");
         VerifyNoOtherCalls();
     }
 
@@ -317,7 +343,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
 
         var act = () => _service.CreatePlayerAsync(user.Id);
         _playerServiceMock
-            .Setup(x => x.Create(It.IsAny<CreatePlayerCommand>()))
+            .Setup(x => x.Create(It.Is<CreatePlayerCommand>(c => c.Name == "Mikhaël Regni")))
             .ThrowsAsync(new ValidationException("Name", Constants.Errors.PlayerNameAlreadyExists));
 
         await act.Should().ThrowAsync<ValidationException>();
@@ -335,6 +361,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
 
         (await act.Should().ThrowAsync<ForbiddenException>()).WithMessage(Constants.Errors.PlayerCreateNotAllowed);
         (await ReloadAsync(user.Id)).PlayerLinkPending.Should().BeTrue();
+        _loggerMock.VerifyLog(LogLevel.Warning, $"User {user.Id} may not create a player for their account");
         VerifyNoOtherCalls();
     }
 
@@ -350,6 +377,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
         var stored = await ReloadAsync(user.Id);
         stored.PlayerLinkPending.Should().BeFalse();
         stored.PlayerId.Should().BeNull();
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {user.Id} skipped linking their account to a player");
         VerifyNoOtherCalls();
     }
 
@@ -359,6 +387,124 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
         var act = () => _service.SkipAsync("missing");
 
         await act.Should().ThrowAsync<EntityNotFoundException>();
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(Constants.AuthRoles.Admin, true)]
+    [InlineData(Constants.AuthRoles.User, true)]
+    [InlineData(Constants.AuthRoles.Reader, false)]
+    public async Task GetSuggestionsAsync_ShouldOnlyLetAdminsAndUsersCreateAPlayer(string role, bool expected)
+    {
+        var user = await CreateUserAsync(role);
+
+        var result = await _service.GetSuggestionsAsync(user.Id);
+
+        result.CanCreatePlayer.Should().Be(expected);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkAsync_ShouldAcceptThePlayerAlreadyLinkedToTheSameAccount()
+    {
+        var user = await CreateUserAsync(Constants.AuthRoles.User);
+        var player = await AddPlayerAsync("Mikhaël");
+        user.LinkPlayer(player.Id);
+        await _scope.UserManager.UpdateAsync(user);
+
+        var profile = await _service.LinkAsync(user.Id, player.Id);
+
+        profile.PlayerId.Should().Be(player.Id);
+        _accountImagesMock.Verify(x => x.ReleaseAsync(player.Id), Times.Once);
+        _accountImagesMock.Verify(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.Id == user.Id)), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {user.Id} linked their account to player {player.Id}");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkAsync_ShouldLinkAPlayerWithTheConfirmedEmailOfTheAccount()
+    {
+        var user = await CreateUserAsync(Constants.AuthRoles.User);
+        var player = await AddPlayerAsync("Someone", " MIKHAEL@example.com ");
+
+        var profile = await _service.LinkAsync(user.Id, player.Id);
+
+        profile.PlayerId.Should().Be(player.Id);
+        VerifyLinked(user);
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {user.Id} linked their account to player {player.Id}");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LinkAsync_ShouldThrow_WhenTheUserDoesNotExist()
+    {
+        var player = await AddPlayerAsync("Mikhaël");
+
+        var act = () => _service.LinkAsync("missing", player.Id);
+
+        await act.Should().ThrowAsync<EntityNotFoundException>();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreatePlayerAsync_ShouldThrow_WhenTheUserDoesNotExist()
+    {
+        var act = () => _service.CreatePlayerAsync("missing");
+
+        await act.Should().ThrowAsync<EntityNotFoundException>();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreatePlayerAsync_ShouldKeepANameOfExactlyTheMaximumLength()
+    {
+        var name = new string('a', 200);
+        var user = await CreateUserAsync(Constants.AuthRoles.User, displayName: name);
+        SetUpCreatePlayer(name, "mikhael@example.com");
+
+        await _service.CreatePlayerAsync(user.Id);
+
+        _playerServiceMock.Verify(x => x.Create(It.Is<CreatePlayerCommand>(c => c.Name == name)), Times.Once);
+        VerifyLinked(user);
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {user.Id} created player {(await _scope.Context.Players.AsNoTracking().SingleAsync()).Id} for their account");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreatePlayerAsync_ShouldCutOffALongName_AndTrimTheEnd()
+    {
+        var user = await CreateUserAsync(Constants.AuthRoles.User, displayName: new string('a', 199) + " b");
+        var expected = new string('a', 199);
+        SetUpCreatePlayer(expected, "mikhael@example.com");
+
+        await _service.CreatePlayerAsync(user.Id);
+
+        _playerServiceMock.Verify(x => x.Create(It.Is<CreatePlayerCommand>(c => c.Name == expected)), Times.Once);
+        VerifyLinked(user);
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {user.Id} created player {(await _scope.Context.Players.AsNoTracking().SingleAsync()).Id} for their account");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task SkipAsync_ShouldThrow_WhenSavingTheAccountFails()
+    {
+        var user = new ApplicationUser("jane", "jane@example.com", "Jane");
+        user.AwaitPlayerLink();
+        var userStore = new Mock<IUserStore<ApplicationUser>>();
+        var userManager = new Mock<UserManager<ApplicationUser>>(userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _ = userManager.Object;
+        userManager.Invocations.Clear();
+        userManager.Setup(x => x.FindByIdAsync(user.Id)).ReturnsAsync(user);
+        userManager.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Failed(new IdentityError { Code = "failed" }));
+        var service = new PlayerLinkPromptService(userManager.Object, new Mock<IUserAdminService>(MockBehavior.Strict).Object, _playerServiceMock.Object, _scope.Context, _loggerMock.Object);
+
+        var act = () => service.SkipAsync(user.Id);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.PlayerLinkUpdateFailed);
+        userManager.Verify(x => x.FindByIdAsync(user.Id), Times.Once);
+        userManager.Verify(x => x.UpdateAsync(user), Times.Once);
+        userManager.VerifyNoOtherCalls();
+        userStore.VerifyNoOtherCalls();
         VerifyNoOtherCalls();
     }
 }

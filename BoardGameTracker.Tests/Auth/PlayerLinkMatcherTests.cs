@@ -153,4 +153,108 @@ public class PlayerLinkMatcherTests
 
         result.Should().BeEmpty();
     }
+
+    [Fact]
+    public void MaxSuggestions_ShouldKeepItsValue()
+    {
+        PlayerLinkMatcher.MaxSuggestions.Should().Be(3);
+    }
+
+    [Theory]
+    [InlineData("mikhael@example.com", true, null, true)]
+    [InlineData("mikhael@example.com", false, "  ", true)]
+    [InlineData(null, false, null, true)]
+    [InlineData("mikhael@example.com", true, " MIKHAEL@example.com ", true)]
+    [InlineData("mikhael@example.com", false, "mikhael@example.com", false)]
+    [InlineData("mikhael@example.com", true, "someone@example.com", false)]
+    [InlineData(null, true, "mikhael@example.com", false)]
+    public void EmailAllowsLink_ShouldOnlyAcceptAnEmptyPlayerEmailOrTheConfirmedAccountEmail(string? account, bool confirmed, string? player, bool expected)
+    {
+        PlayerLinkMatcher.EmailAllowsLink(account, confirmed, player).Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("Mikhael_Regni")]
+    [InlineData("mikhael-regni")]
+    [InlineData("Mikhael.Regni")]
+    [InlineData("Mikhael,Regni")]
+    [InlineData("Mikhael\tRegni")]
+    public void Suggest_ShouldSplitNamesOnEverySeparator(string playerName)
+    {
+        var result = PlayerLinkMatcher.Suggest([Player(1, playerName)], null, "Mikhaël Regni", null);
+
+        result.Should().ContainSingle().Which.Reason.Should().Be(PlayerLinkMatchReason.Name);
+    }
+
+    [Theory]
+    [InlineData("Mi", "Mi Xiao", PlayerLinkMatchReason.Partial)]
+    [InlineData("Xiao Mi", "Mi", PlayerLinkMatchReason.Partial)]
+    [InlineData("M Xiao", "M Chen", null)]
+    [InlineData("M", "Xiao M", null)]
+    public void Suggest_ShouldNeedTwoLettersForAPartialMatch(string playerName, string displayName, PlayerLinkMatchReason? expected)
+    {
+        var result = PlayerLinkMatcher.Suggest([Player(1, playerName)], null, displayName, null);
+
+        result.Select(r => (PlayerLinkMatchReason?)r.Reason).Should().Equal(expected == null ? [] : [expected]);
+    }
+
+    [Theory]
+    [InlineData("Regni Junior", PlayerLinkMatchReason.Partial)]
+    [InlineData("Junior Regni", null)]
+    [InlineData("Regni Mikhael Junior", null)]
+    public void Suggest_ShouldOnlyMatchWordsNextToEachOtherInTheSameOrder(string playerName, PlayerLinkMatchReason? expected)
+    {
+        var result = PlayerLinkMatcher.Suggest([Player(1, playerName)], null, "Mikhael Regni Junior", null);
+
+        result.Select(r => (PlayerLinkMatchReason?)r.Reason).Should().Equal(expected == null ? [] : [expected]);
+    }
+
+    [Fact]
+    public void Suggest_ShouldRankAPartialDisplayNameBeforeAPartialUsername()
+    {
+        var players = new List<PlayerLinkCandidate> { Player(1, "Anna"), Player(2, "Mikhael") };
+
+        var result = PlayerLinkMatcher.Suggest(players, null, "Mikhael Regni", "anna.smith");
+
+        result.Select(r => r.Id).Should().Equal(2, 1);
+    }
+
+    [Fact]
+    public void Suggest_ShouldRankAUsernameMatchBeforeAPartialDisplayName()
+    {
+        var players = new List<PlayerLinkCandidate> { Player(1, "Mikhael"), Player(2, "Anna Smith") };
+
+        var result = PlayerLinkMatcher.Suggest(players, null, "Mikhael Regni", "anna.smith");
+
+        result.Select(r => r.Id).Should().Equal(2, 1);
+        result.Select(r => r.Reason).Should().Equal(PlayerLinkMatchReason.Name, PlayerLinkMatchReason.Partial);
+    }
+
+    [Fact]
+    public void Suggest_ShouldOrderEqualNamesById()
+    {
+        var players = new List<PlayerLinkCandidate> { Player(2, "Mikhael"), Player(1, "MIKHAEL") };
+
+        var result = PlayerLinkMatcher.Suggest(players, null, "Mikhael", null);
+
+        result.Select(r => r.Id).Should().Equal(1, 2);
+    }
+
+    [Fact]
+    public void Suggest_ShouldKeepAUsernameThatStartsWithAnAtSign()
+    {
+        var result = PlayerLinkMatcher.Suggest([Player(1, "mregni")], null, null, "@mregni");
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Suggest_ShouldSkipAPlayerWhoseNameHasNoWords_UnlessTheEmailMatches()
+    {
+        var players = new List<PlayerLinkCandidate> { Player(1, "--"), Player(2, "..", "mikhael@example.com") };
+
+        var result = PlayerLinkMatcher.Suggest(players, "mikhael@example.com", "Mikhael", null);
+
+        result.Select(r => r.Id).Should().Equal(2);
+    }
 }
