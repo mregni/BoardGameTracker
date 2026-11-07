@@ -77,6 +77,18 @@ public class SessionQuerySpecsTests
         spec.AsNoTracking.Should().BeTrue();
     }
 
+    [Fact]
+    public void SessionsByPlayerRecentFirstSpec_ShouldMatchASessionSharedWithOtherPlayers()
+    {
+        var shared = SessionFor(1, 1, new DateTime(2030, 1, 1));
+        shared.AddPlayerSession(5, null, false, false);
+        shared.AddPlayerSession(6, null, false, false);
+
+        var result = new SessionsByPlayerRecentFirstSpec(5).Evaluate(new[] { shared }).ToList();
+
+        result.Should().ContainSingle().Which.Id.Should().Be(1);
+    }
+
     [Theory]
     [InlineData(null, new[] { 3, 2, 1 })]
     [InlineData(2, new[] { 3, 2 })]

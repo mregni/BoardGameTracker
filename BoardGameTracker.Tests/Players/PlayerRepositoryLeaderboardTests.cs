@@ -80,4 +80,33 @@ public class PlayerRepositoryLeaderboardTests : IDisposable
         _dateTimeProviderMock.Verify(x => x.ConvertToUtc(new DateTime(2026, 3, 4)), Times.Once);
         VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task GetLeaderboardRows_ShouldKeepHighestScoreFirst_WhenTheWinnerTiesTheLowestLoser()
+    {
+        var game = new Game("Catan", true, GameState.Owned);
+        var winner = new Player("Alice");
+        var tied = new Player("Bob");
+        var middle = new Player("Cara");
+        var highest = new Player("Dave");
+        _context.AddRange(game, winner, tied, middle, highest);
+        await _context.SaveChangesAsync();
+
+        var start = new DateTime(2026, 3, 2, 19, 0, 0, DateTimeKind.Utc);
+        var session = new Session(game.Id, start, start.AddHours(1), string.Empty);
+        session.AddPlayerSession(winner.Id, 10, false, true);
+        session.AddPlayerSession(tied.Id, 10, false, false);
+        session.AddPlayerSession(middle.Id, 20, false, false);
+        session.AddPlayerSession(highest.Id, 30, false, false);
+        _context.Add(session);
+        await _context.SaveChangesAsync();
+
+        var rows = await _repository.GetLeaderboardRows(new LeaderboardFilter());
+
+        rows.Single(x => x.PlayerId == winner.Id).PodiumCount.Should().Be(1);
+        rows.Single(x => x.PlayerId == highest.Id).PodiumCount.Should().Be(1);
+        rows.Single(x => x.PlayerId == middle.Id).PodiumCount.Should().Be(1);
+        rows.Single(x => x.PlayerId == tied.Id).PodiumCount.Should().Be(0);
+        VerifyNoOtherCalls();
+    }
 }
