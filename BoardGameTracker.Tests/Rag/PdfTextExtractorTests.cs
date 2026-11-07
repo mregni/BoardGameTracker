@@ -1,4 +1,3 @@
-using System.IO;
 using BoardGameTracker.Core.Rag;
 using FluentAssertions;
 using UglyToad.PdfPig.Content;
