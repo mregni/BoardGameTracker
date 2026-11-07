@@ -11,6 +11,8 @@ public static class PlayerLinkMatcher
 {
     public const int MaxSuggestions = 3;
     private const int MinimumWordLength = 2;
+    private const string AccentedLetters = "àáâãäåāăąçćĉċčďđèéêëēĕėęěĝğġģĥħìíîïĩīĭįıĵķĺļľŀłñńņňòóôõöøōŏőŕŗřśŝşšţťŧùúûüũūŭůűųŵýÿŷźżž";
+    private const string PlainLetters = "aaaaaaaaacccccddeeeeeeeeegggghhiiiiiiiiijklllllnnnnooooooooorrrsssstttuuuuuuuuuuwyyyzzz";
     private static readonly char[] WordSeparators = [' ', '\t', '\r', '\n', '.', '_', '-', ','];
 
     public static List<PlayerLinkSuggestionDto> Suggest(IEnumerable<PlayerLinkCandidate> players, string? email, string? displayName, string? userName)
@@ -128,23 +130,24 @@ public static class PlayerLinkMatcher
             return [];
         }
 
-        return RemoveAccents(value)
-            .ToLowerInvariant()
+        return RemoveAccents(value.ToLowerInvariant())
             .Split(WordSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
     private static string RemoveAccents(string value)
     {
-        var decomposed = value.Normalize(NormalizationForm.FormD);
-        var builder = new StringBuilder(decomposed.Length);
-        foreach (var c in decomposed)
+        var builder = new StringBuilder(value.Length);
+        foreach (var c in value)
         {
-            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+            if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark)
             {
-                builder.Append(c);
+                continue;
             }
+
+            var index = AccentedLetters.IndexOf(c);
+            builder.Append(index >= 0 ? PlainLetters[index] : c);
         }
 
-        return builder.ToString().Normalize(NormalizationForm.FormC);
+        return builder.ToString();
     }
 }

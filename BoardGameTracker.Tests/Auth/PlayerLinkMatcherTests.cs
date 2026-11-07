@@ -27,6 +27,7 @@ public class PlayerLinkMatcherTests
 
     [Theory]
     [InlineData("mikhaël regni")]
+    [InlineData("mikhae\u0308l regni")]
     [InlineData("MIKHAEL REGNI")]
     [InlineData("  Mikhael   Regni ")]
     public void Suggest_ShouldMatchTheDisplayName_IgnoringCaseAccentsAndSpaces(string playerName)

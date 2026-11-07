@@ -234,7 +234,8 @@
   "planned": {
     "title": "Geplande spellen",
     "played": "gespeeld",
-    "playing": "wordt nu gespeeld"
+    "playing": "wordt nu gespeeld",
+    "start-game": "Start {{game}}"
   },
   "end": {
     "button": "Avond afsluiten",

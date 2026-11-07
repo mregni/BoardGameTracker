@@ -234,7 +234,8 @@
   "planned": {
     "title": "Juegos planificados",
     "played": "jugado",
-    "playing": "en juego"
+    "playing": "en juego",
+    "start-game": "Empezar {{game}}"
   },
   "end": {
     "button": "Cerrar la noche",
