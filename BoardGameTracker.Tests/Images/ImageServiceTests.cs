@@ -109,6 +109,14 @@ public class ImageServiceTests : IDisposable
     }
 
     [Fact]
+    public void MaxUploadRequestBytes_ShouldLeaveOneMegabyteOfRoomAboveTheFileLimit()
+    {
+        ImageService.MaxUploadBytes.Should().Be(15_728_640);
+        ImageService.MaxUploadRequestBytes.Should().Be(16_777_216);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task SaveImage_ShouldThrowException_WhenTypeIsUnsupported()
     {
         var formFile = CreateFormFile("test.jpg", CreateTestImageBytes());

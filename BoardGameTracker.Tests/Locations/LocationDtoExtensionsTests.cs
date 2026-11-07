@@ -37,4 +37,14 @@ public class LocationDtoExtensionsTests
     {
         Array.Empty<Location>().ToListDto().Should().BeEmpty();
     }
+
+    [Fact]
+    public void ToListDto_ShouldSkipMissingLocations()
+    {
+        var locations = new Location[] { new("Attic") { Id = 4 }, null!, new("Cellar") { Id = 2 } };
+
+        var result = locations.ToListDto();
+
+        result.Select(x => (x.Id, x.Name)).Should().Equal((4, "Attic"), (2, "Cellar"));
+    }
 }

@@ -63,6 +63,20 @@ public class DurationBadgeEvaluatorTests
     }
 
     [Fact]
+    public async Task CanAwardBadge_ShouldCountSessionsSharedWithOtherPlayers()
+    {
+        var badge = TestBadges.Create(BadgeType.Duration, BadgeLevel.Green);
+        var session = new SessionBuilder().DaysAgo(0).LastingMinutes(300)
+            .WithPlayer(PlayerId)
+            .WithPlayer(PlayerId + 1)
+            .Build();
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, [session]);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task CanAwardBadge_ShouldIgnoreSessionsWithoutThePlayer()
     {
         var badge = TestBadges.Create(BadgeType.Duration, BadgeLevel.Green);

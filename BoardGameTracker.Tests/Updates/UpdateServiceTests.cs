@@ -369,6 +369,48 @@ public class UpdateServiceTests
     }
 
     [Fact]
+    public async Task CheckForUpdatesAsync_ShouldPersistError_WhenApiReturnsNonSuccessWithABody()
+    {
+        SetupTrack(VersionTrack.Stable);
+        var response = new ApiResponse<DockerHubTagsResponse>(
+            new HttpResponseMessage(HttpStatusCode.BadGateway) { RequestMessage = new HttpRequestMessage() },
+            new DockerHubTagsResponse { Results = [new DockerHubTag { Name = "999.0.0" }] },
+            new RefitSettings());
+
+        _dockerHubApiMock
+            .Setup(x => x.GetTags("uping", "boardgametracker", 1, CancellationToken.None))
+            .ReturnsAsync(response);
+
+        await _updateService.CheckForUpdatesAsync();
+
+        VerifyCheckPreamble();
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.CheckError, "Docker Hub API returned status BadGateway"), Times.Once);
+        VerifyLastRunPersisted();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CheckForUpdatesAsync_ShouldPersistError_WhenApiSucceedsWithoutABody()
+    {
+        SetupTrack(VersionTrack.Stable);
+        var response = new ApiResponse<DockerHubTagsResponse>(
+            new HttpResponseMessage(HttpStatusCode.OK) { RequestMessage = new HttpRequestMessage() },
+            null,
+            new RefitSettings());
+
+        _dockerHubApiMock
+            .Setup(x => x.GetTags("uping", "boardgametracker", 1, CancellationToken.None))
+            .ReturnsAsync(response);
+
+        await _updateService.CheckForUpdatesAsync();
+
+        VerifyCheckPreamble();
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(UpdateConfig.CheckError, "Docker Hub API returned status OK"), Times.Once);
+        VerifyLastRunPersisted();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task CheckForUpdatesAsync_ShouldPersistApiError_WhenApiThrowsApiException()
     {
         SetupTrack(VersionTrack.Stable);

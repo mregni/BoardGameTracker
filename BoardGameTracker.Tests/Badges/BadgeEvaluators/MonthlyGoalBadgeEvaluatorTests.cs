@@ -125,6 +125,22 @@ public class MonthlyGoalBadgeEvaluatorTests
         VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData(19, false)]
+    [InlineData(20, true)]
+    public async Task CanAwardBadge_ShouldNeedTwentySessionsInTheMonth(int count, bool expected)
+    {
+        var sessions = CreateSessions(new DateTime(2023, 3, 1, 18, 0, 0, DateTimeKind.Utc), count);
+
+        SetupLocalTime(sessions);
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, TestBadges.Create(BadgeType.MonthlyGoal), sessions.Last(), sessions);
+
+        result.Should().Be(expected);
+        VerifyLocalTimeLookups(sessions.Last(), sessions);
+        VerifyNoOtherCalls();
+    }
+
     private void SetupLocalTime(IEnumerable<Session> sessions, int offsetHours = 0)
     {
         foreach (var start in sessions.Select(x => x.Start).Distinct())
