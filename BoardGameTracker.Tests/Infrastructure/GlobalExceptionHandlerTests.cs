@@ -105,6 +105,50 @@ public class GlobalExceptionHandlerTests
     }
 
     [Fact]
+    public async Task TryHandleAsync_WithValidationExceptionWithParameters_ShouldSendTheParameters()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var parameters = new Dictionary<string, object> { ["fileName"] = "rules.txt" };
+        var exception = new ValidationException("error.manual.not-pdf", parameters);
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(400);
+        responseBody.Seek(0, SeekOrigin.Begin);
+        using var json = await JsonDocument.ParseAsync(responseBody);
+        json.RootElement.GetProperty("title").GetString().Should().Be("error.manual.not-pdf");
+        json.RootElement.GetProperty("params").GetProperty("fileName").GetString().Should().Be("rules.txt");
+
+        _problemDetailsServiceMock.Verify(
+            x => x.TryWriteAsync(It.Is<ProblemDetailsContext>(c =>
+                c.HttpContext == httpContext &&
+                c.Exception == exception &&
+                c.ProblemDetails.Status == 400 &&
+                c.ProblemDetails.Title == "error.manual.not-pdf" &&
+                c.ProblemDetails.Extensions["params"] == parameters)),
+            Times.Once);
+        VerifyDebugLogged(exception, 400);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithValidationExceptionWithoutParameters_ShouldSendNoParameters()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new ValidationException("error.auth.password-too-short");
+
+        await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        responseBody.Seek(0, SeekOrigin.Begin);
+        using var json = await JsonDocument.ParseAsync(responseBody);
+        json.RootElement.TryGetProperty("params", out _).Should().BeFalse();
+        VerifyProblemWritten(httpContext, exception, 400, "error.auth.password-too-short");
+        VerifyDebugLogged(exception, 400);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task TryHandleAsync_WithValidationExceptionWithDictionary_ShouldReturn400WithDefaultMessage()
     {
         var (httpContext, responseBody) = CreateHttpContext();

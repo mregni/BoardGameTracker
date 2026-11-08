@@ -49,6 +49,26 @@ public class ValidationExceptionTests
         exception.Errors.Should().HaveCount(1);
     }
 
+    [Fact]
+    public void Constructor_WithMessageOnly_ShouldHaveNoParameters()
+    {
+        var exception = new ValidationException("Validation failed");
+
+        exception.Parameters.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Constructor_WithParameters_ShouldKeepTheMessageAndTheParameters()
+    {
+        var parameters = new Dictionary<string, object> { ["fileName"] = "rules.pdf" };
+
+        var exception = new ValidationException("error.manual.empty", parameters);
+
+        exception.Message.Should().Be("error.manual.empty");
+        exception.Errors["General"].Should().Equal("error.manual.empty");
+        exception.Parameters.Should().BeSameAs(parameters);
+    }
+
     #endregion
 
     #region Constructor with Dictionary Tests

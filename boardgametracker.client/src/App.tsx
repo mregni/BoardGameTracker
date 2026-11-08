@@ -42,7 +42,7 @@ function getErrorToastMessage(error: unknown): string {
 		case "server":
 			return i18n.t("error:server");
 		case "client":
-			return translateApiError(error.message);
+			return translateApiError(error.message, undefined, error.params);
 		default:
 			return i18n.t("error:something-went-wrong");
 	}

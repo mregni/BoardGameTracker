@@ -177,3 +177,38 @@ describe("axiosInstance refresh on 401", () => {
 		expect(mocks.refreshSession).toHaveBeenCalledTimes(1);
 	});
 });
+
+describe("axiosInstance error details", () => {
+	const rejectWith = (data: unknown) => {
+		axiosInstance.defaults.adapter = async (config) => {
+			const response = { data, status: 400, statusText: "", headers: {}, config } as AxiosResponse;
+			throw new AxiosError("failed", "ERR_BAD_REQUEST", config, null, response);
+		};
+	};
+
+	it("passes the parameters of a reason code on", async () => {
+		rejectWith({ title: "error.manual.not-pdf", params: { fileName: "rules.txt" } });
+
+		await expect(axiosInstance.post("games/1/manuals")).rejects.toEqual({
+			kind: "client",
+			status: 400,
+			message: "error.manual.not-pdf",
+			params: { fileName: "rules.txt" },
+			url: "games/1/manuals",
+		});
+	});
+
+	it("leaves the parameters out when the server sends none", async () => {
+		rejectWith({ title: "error.auth.password-too-short" });
+
+		const error = await axiosInstance.post("auth/register").catch((reason: unknown) => reason);
+
+		expect(error).toEqual({
+			kind: "client",
+			status: 400,
+			message: "error.auth.password-too-short",
+			url: "auth/register",
+		});
+		expect(error).not.toHaveProperty("params");
+	});
+});

@@ -10,6 +10,12 @@
     "unsupported-format": "Unsupported image format",
     "profile-update-failed": "Your profile picture could not be saved, please try again"
   },
+  "manual": {
+    "missing": "Choose at least one PDF file",
+    "empty": "\"{{fileName}}\" is empty",
+    "not-pdf": "\"{{fileName}}\" is not a PDF file",
+    "too-large": "\"{{fileName}}\" is larger than {{maxSize}} MB"
+  },
   "auth": {
     "username-already-exists": "Username already exists",
     "invalid-role": "Invalid role",
@@ -56,7 +62,12 @@
     "oidc-https-required": "Single sign-on requires HTTPS. Put BoardGameTracker behind a reverse proxy with TLS and set an https public URL.",
     "account-disabled": "This account is disabled. Ask an admin to enable it.",
     "cannot-disable-self": "You cannot disable your own account.",
-    "cannot-disable-last-admin": "You cannot disable the last active admin."
+    "cannot-disable-last-admin": "You cannot disable the last active admin.",
+    "invalid-username": "The username can only contain letters, digits and - . _ @ +",
+    "email-already-exists": "This email address is already in use",
+    "invalid-email": "This email address is not valid",
+    "password-too-short": "The password must be at least 8 characters",
+    "account-update-failed": "The account could not be saved, please try again"
   },
   "changedetection": {
     "invalid-base-url": "The changedetection.io URL is not valid",

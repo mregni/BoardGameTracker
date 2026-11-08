@@ -51,9 +51,10 @@ public class OidcRoleReconciler : IOidcRoleReconciler
                 return;
             }
 
-            if (!current.Contains(target))
+            if (!current.Contains(target) && !(await _userManager.AddToRoleAsync(user, target)).Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, target);
+                _logger.LogWarning("Could not give OIDC user {UserId} the role {Role}; keeping {Previous}", user.Id, target, string.Join(",", current));
+                return;
             }
 
             var obsolete = current.Where(r => r != target).ToList();

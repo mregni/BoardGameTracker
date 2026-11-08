@@ -150,14 +150,23 @@ public class UserAdminService : IUserAdminService
         var user = await _userManager.FindByIdAsync(userId)
             ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
 
-        var admins = await _userManager.GetUsersInRoleAsync(Constants.AuthRoles.Admin);
-        if (admins.Count == 1 && admins[0].Id == userId)
+        await AdminRoleGate.Lock.WaitAsync();
+        try
         {
-            throw new DomainException(Constants.Errors.CannotDeleteLastAdmin);
+            var admins = await _userManager.GetUsersInRoleAsync(Constants.AuthRoles.Admin);
+            if (admins.Any(a => a.Id == userId) && !admins.Any(a => a.Id != userId && !a.IsDisabled))
+            {
+                throw new DomainException(Constants.Errors.CannotDeleteLastAdmin);
+            }
+
+            (await _userManager.DeleteAsync(user)).ThrowIfFailed();
+        }
+        finally
+        {
+            AdminRoleGate.Lock.Release();
         }
 
         var linkedPlayerId = user.PlayerId;
-        await _userManager.DeleteAsync(user);
         _accessCheck.Forget(userId);
         _imageService.DeleteImage(user.ProfileImage);
         await _playerAccountImageService.ReleaseAsync(linkedPlayerId);
@@ -190,8 +199,7 @@ public class UserAdminService : IUserAdminService
         _logger.LogInformation("Admin {AdminId} updated role for user {UserId} ({Username}) to {Role}",
             currentUserId, userId, user.UserName, role);
 
-        var updatedRoles = await _userManager.GetRolesAsync(user);
-        return user.ToDto(updatedRoles);
+        return await ToDtoAsync(user);
     }
 
     public async Task<UserDto> UpdateUserAsync(string userId, string username, string? email, string role, int? playerId, string currentUserId)
@@ -214,18 +222,11 @@ public class UserAdminService : IUserAdminService
         {
             await EnsureNotLastAdminAsync(userId, role, currentUserId);
 
-            if (!string.Equals(user.UserName, username, StringComparison.OrdinalIgnoreCase))
+            var renamed = !string.Equals(user.UserName, username, StringComparison.OrdinalIgnoreCase);
+            if (renamed && await _userManager.FindByNameAsync(username) != null)
             {
-                var existingUser = await _userManager.FindByNameAsync(username);
-                if (existingUser != null)
-                {
-                    throw new ValidationException(Constants.Errors.UsernameAlreadyExists);
-                }
-
-                await _userManager.SetUserNameAsync(user, username);
+                throw new ValidationException(Constants.Errors.UsernameAlreadyExists);
             }
-
-            user.UpdateEmail(email, user.EmailConfirmed || !string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase));
 
             var previousPlayerId = user.PlayerId;
             if (playerId != user.PlayerId)
@@ -241,7 +242,13 @@ public class UserAdminService : IUserAdminService
                 }
             }
 
-            await _userManager.UpdateAsync(user);
+            if (renamed)
+            {
+                user.UserName = username;
+            }
+
+            user.UpdateEmail(email, user.EmailConfirmed || !string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase));
+            (await _userManager.UpdateAsync(user)).ThrowIfFailed();
             await _playerAccountImageService.RelinkAsync(previousPlayerId, user);
 
             await ReplaceRoleAsync(user, role);
@@ -254,8 +261,7 @@ public class UserAdminService : IUserAdminService
         _logger.LogInformation("Admin {AdminId} updated user {UserId} (username: {Username}, role: {Role})",
             currentUserId, userId, username, role);
 
-        var updatedRoles = await _userManager.GetRolesAsync(user);
-        return user.ToDto(updatedRoles);
+        return await ToDtoAsync(user);
     }
 
     public async Task<UserDto> DisableAsync(string userId, string currentUserId)
@@ -280,8 +286,8 @@ public class UserAdminService : IUserAdminService
                 }
             }
 
-            await _userManager.SetLockoutEnabledAsync(user, true);
-            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+            (await _userManager.SetLockoutEnabledAsync(user, true)).ThrowIfFailed();
+            (await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue)).ThrowIfFailed();
             _accessCheck.Forget(userId);
         }
         finally
@@ -306,7 +312,7 @@ public class UserAdminService : IUserAdminService
         var user = await _userManager.FindByIdAsync(userId)
             ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
 
-        await _userManager.SetLockoutEndDateAsync(user, null);
+        (await _userManager.SetLockoutEndDateAsync(user, null)).ThrowIfFailed();
         _accessCheck.Forget(userId);
 
         _logger.LogInformation("Admin {AdminId} enabled user {UserId} ({Username})", currentUserId, userId, user.UserName);
@@ -357,7 +363,7 @@ public class UserAdminService : IUserAdminService
         }
 
         user.ManageRoleByIdentityProvider();
-        await _userManager.UpdateAsync(user);
+        (await _userManager.UpdateAsync(user)).ThrowIfFailed();
 
         _logger.LogInformation("Admin {AdminId} handed the role of user {UserId} back to the identity provider", currentUserId, userId);
         return await ToDtoAsync(user);
@@ -406,13 +412,13 @@ public class UserAdminService : IUserAdminService
 
         if (!currentRoles.Contains(role))
         {
-            await _userManager.AddToRoleAsync(user, role);
+            (await _userManager.AddToRoleAsync(user, role)).ThrowIfFailed();
         }
 
         var obsoleteRoles = currentRoles.Where(r => r != role).ToList();
         if (obsoleteRoles.Count > 0)
         {
-            await _userManager.RemoveFromRolesAsync(user, obsoleteRoles);
+            (await _userManager.RemoveFromRolesAsync(user, obsoleteRoles)).ThrowIfFailed();
         }
     }
 }

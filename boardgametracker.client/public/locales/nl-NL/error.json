@@ -10,6 +10,12 @@
     "unsupported-format": "Niet-ondersteund afbeeldingsformaat",
     "profile-update-failed": "Je profielfoto kon niet worden opgeslagen, probeer het opnieuw"
   },
+  "manual": {
+    "missing": "Kies minstens één pdf-bestand",
+    "empty": "\"{{fileName}}\" is leeg",
+    "not-pdf": "\"{{fileName}}\" is geen pdf-bestand",
+    "too-large": "\"{{fileName}}\" is groter dan {{maxSize}} MB"
+  },
   "auth": {
     "username-already-exists": "Gebruikersnaam bestaat al",
     "invalid-role": "Ongeldige rol",
@@ -56,7 +62,12 @@
     "oidc-https-required": "Single sign-on vereist HTTPS. Zet BoardGameTracker achter een reverse proxy met TLS en stel een https-adres in als publieke URL.",
     "account-disabled": "Dit account is uitgeschakeld. Vraag een admin om het in te schakelen.",
     "cannot-disable-self": "Je kunt je eigen account niet uitschakelen.",
-    "cannot-disable-last-admin": "Je kunt de laatste actieve beheerder niet uitschakelen."
+    "cannot-disable-last-admin": "Je kunt de laatste actieve beheerder niet uitschakelen.",
+    "invalid-username": "De gebruikersnaam mag alleen letters, cijfers en - . _ @ + bevatten",
+    "email-already-exists": "Dit e-mailadres is al in gebruik",
+    "invalid-email": "Dit e-mailadres is niet geldig",
+    "password-too-short": "Het wachtwoord moet minstens 8 tekens lang zijn",
+    "account-update-failed": "Het account kon niet worden opgeslagen, probeer het opnieuw"
   },
   "changedetection": {
     "invalid-base-url": "De changedetection.io-URL is ongeldig",
