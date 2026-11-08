@@ -116,6 +116,7 @@ public class OidcRoleReconcilerTests
     {
         var user = IdpUser();
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(user, "Admin")).ReturnsAsync(IdentityResult.Success);
 
         await _reconciler.ReconcileAsync(user, Provider(), Claims("bgt-admins"));
 
@@ -131,6 +132,7 @@ public class OidcRoleReconcilerTests
     {
         var user = IdpUser();
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["Admin"]);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(user, "Reader")).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.Setup(x => x.GetUsersInRoleAsync("Admin")).ReturnsAsync([user, new ApplicationUser("admin", null) { Id = "admin" }]);
 
         await _reconciler.ReconcileAsync(user, Provider(defaultRole: "Reader"), Claims("staff"));
@@ -205,6 +207,7 @@ public class OidcRoleReconcilerTests
     {
         var user = IdpUser();
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(user, "Admin")).ReturnsAsync(IdentityResult.Success);
 
         await _reconciler.ReconcileAsync(user, Provider(rolesClaim, adminGroup), Claims("bgt-admins"));
 
@@ -221,6 +224,7 @@ public class OidcRoleReconcilerTests
         var user = IdpUser();
         var claims = Claims("staff", "game-admins");
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(user, "Admin")).ReturnsAsync(IdentityResult.Success);
 
         await _reconciler.ReconcileAsync(user, Provider(adminGroup: "bgt-admins"), claims);
         _userManagerMock.Verify(x => x.AddToRoleAsync(user, "Admin"), Times.Never);
@@ -239,6 +243,7 @@ public class OidcRoleReconcilerTests
     {
         var user = IdpUser();
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["Reader"]);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(user, Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
 
         await _reconciler.ReconcileAsync(user, Provider(), OidcClaims.Parse("{\"sub\":\"s\"}"));
 
@@ -268,6 +273,7 @@ public class OidcRoleReconcilerTests
     {
         var user = IdpUser();
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync([]);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(user, "User")).ReturnsAsync(IdentityResult.Success);
 
         await _reconciler.ReconcileAsync(user, Provider(), Claims("staff"));
 
@@ -291,7 +297,7 @@ public class OidcRoleReconcilerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact(Skip = "BUG: a failed AddToRoleAsync is ignored, so the old role is removed and the user ends up without a role")]
+    [Fact]
     public async Task ReconcileAsync_ShouldKeepTheCurrentRole_WhenAddingTheNewRoleFails()
     {
         var user = IdpUser();
@@ -302,6 +308,7 @@ public class OidcRoleReconcilerTests
 
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.AddToRoleAsync(user, "Admin"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Could not give OIDC user user-1 the role Admin; keeping User");
         VerifyNoOtherCalls();
     }
 }

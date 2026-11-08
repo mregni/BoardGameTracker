@@ -4,6 +4,7 @@ export interface ApiError {
 	kind: ApiErrorKind;
 	status: number | null;
 	message: string;
+	params?: Record<string, string | number>;
 	url: string | undefined;
 }
 

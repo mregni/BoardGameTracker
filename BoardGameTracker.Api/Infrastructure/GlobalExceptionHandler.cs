@@ -43,20 +43,22 @@ public class GlobalExceptionHandler : IExceptionHandler
         }
 
         httpContext.Response.StatusCode = statusCode;
+        var problemDetails = new ProblemDetails { Status = statusCode, Title = message };
+        if (exception is ValidationException { Parameters.Count: > 0 } validation)
+        {
+            problemDetails.Extensions["params"] = validation.Parameters;
+        }
+
         var written = await _problemDetailsService.TryWriteAsync(new ProblemDetailsContext
         {
             HttpContext = httpContext,
             Exception = exception,
-            ProblemDetails = new ProblemDetails
-            {
-                Status = statusCode,
-                Title = message
-            }
+            ProblemDetails = problemDetails
         });
 
         if (!written)
         {
-            await httpContext.Response.WriteAsJsonAsync(new ProblemDetails { Status = statusCode, Title = message }, cancellationToken);
+            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
         }
 
         return true;
