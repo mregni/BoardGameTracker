@@ -23,14 +23,4 @@ public class Person : HasId
         Type = type;
         Games = new List<Game>();
     }
-
-    public void UpdateName(string name)
-    {
-        Name = name;
-    }
-
-    public void UpdateType(PersonType type)
-    {
-        Type = type;
-    }
 }

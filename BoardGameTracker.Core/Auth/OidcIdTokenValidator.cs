@@ -46,7 +46,7 @@ public class OidcIdTokenValidator : IOidcIdTokenValidator
 
         if (!result.IsValid)
         {
-            if (result.Exception is SecurityTokenInvalidAlgorithmException)
+            if (SignedWithRefusedAlgorithm(idToken, configuration))
             {
                 _logger.LogWarning("The id_token of {Authority} is signed with an algorithm that BoardGameTracker does not accept; set a signing key at the identity provider so it signs with RS256 or ES256", authority);
             }
@@ -84,6 +84,18 @@ public class OidcIdTokenValidator : IOidcIdTokenValidator
     {
         return result is null
             || (!result.IsValid && result.Exception is SecurityTokenInvalidAlgorithmException or SecurityTokenInvalidSignatureException);
+    }
+
+    private static bool SignedWithRefusedAlgorithm(string idToken, OpenIdConnectConfiguration configuration)
+    {
+        try
+        {
+            return !SupportedAlgorithms(configuration).Contains(new JsonWebToken(idToken).Alg);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
     }
 
     private TokenValidationParameters Parameters(string authority, OpenIdConnectConfiguration configuration, string clientId)
