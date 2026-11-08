@@ -81,4 +81,18 @@ public class UtcDateTimeConvertersTests
         stored.Should().Be(local.ToUniversalTime());
         read!.Value.Kind.Should().Be(DateTimeKind.Utc);
     }
+
+    [Theory]
+    [InlineData(DateTimeKind.Utc)]
+    [InlineData(DateTimeKind.Unspecified)]
+    public void NullableEfConverter_ShouldStoreUtcAndUnspecifiedValuesUnshifted_AsUtc(DateTimeKind kind)
+    {
+        var converter = new UtcNullableDateTimeValueConverter();
+        var value = new DateTime(2026, 3, 2, 19, 0, 0, kind);
+
+        var stored = (DateTime?)converter.ConvertToProvider(value);
+
+        stored.Should().Be(new DateTime(2026, 3, 2, 19, 0, 0, DateTimeKind.Utc));
+        stored!.Value.Kind.Should().Be(DateTimeKind.Utc);
+    }
 }

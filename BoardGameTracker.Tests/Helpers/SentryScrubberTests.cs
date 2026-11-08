@@ -180,6 +180,21 @@ public class SentryScrubberTests
         result.Message.Should().Be("GET /rsvp?linkId=[Filtered]");
     }
 
+    [Fact]
+    public void ScrubBreadcrumb_ShouldFilterTheData_AndFallBackToAnEmptyMessageAndDefaultType_WhenTheyAreMissing()
+    {
+        var breadcrumb = new Breadcrumb(null!, null!, new Dictionary<string, string> { ["to"] = "/auth-callback?code=abc" }, "navigation", BreadcrumbLevel.Info);
+
+        var result = SentryScrubber.ScrubBreadcrumb(breadcrumb);
+
+        result.Should().NotBeSameAs(breadcrumb);
+        result.Message.Should().BeEmpty();
+        result.Type.Should().Be("default");
+        result.Category.Should().Be("navigation");
+        result.Level.Should().Be(BreadcrumbLevel.Info);
+        result.Data!["to"].Should().Be("/auth-callback?code=[Filtered]");
+    }
+
     private static SentryTransaction CreateTransaction(string name)
     {
         var tracer = new TransactionTracer(DisabledHub.Instance, new TransactionContext(name, "http.server", isSampled: true, nameSource: TransactionNameSource.Route));

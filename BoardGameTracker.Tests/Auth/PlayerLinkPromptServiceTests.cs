@@ -348,6 +348,22 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CreatePlayerAsync_ShouldCreateAPlayerWithoutAnEmail_WhenTheAccountHasNoEmail()
+    {
+        var user = await CreateUserAsync(Constants.AuthRoles.User, email: null);
+        await AddPlayerAsync("Someone Else");
+        SetUpCreatePlayer("Mikhaël Regni", null);
+
+        await _service.CreatePlayerAsync(user.Id);
+
+        _playerServiceMock.Verify(x => x.Create(It.Is<CreatePlayerCommand>(c => c.Name == "Mikhaël Regni" && c.Email == null)), Times.Once);
+        _accountImagesMock.Verify(x => x.ReleaseAsync(null), Times.Once);
+        _accountImagesMock.Verify(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.Id == user.Id)), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, $"User {user.Id} created player {(await _scope.Context.Players.AsNoTracking().SingleAsync(p => p.Name == "Mikhaël Regni")).Id} for their account");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task CreatePlayerAsync_ShouldKeepTheDisplayName_WhenEveryNameIsTaken()
     {
         var user = await CreateUserAsync(Constants.AuthRoles.User, displayName: "Mikhaël Regni");

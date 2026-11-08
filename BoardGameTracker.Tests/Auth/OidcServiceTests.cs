@@ -364,6 +364,26 @@ public class OidcServiceTests : IDisposable
         VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData(" ")]
+    public async Task EndSessionAsync_ShouldReturnNull_WhenTheDiscoveryDocumentHasNoIssuer(string? issuer)
+    {
+        var (_, key) = await AddSessionAsync(DateTime.UtcNow.AddDays(1));
+        _configurationsMock.Setup(x => x.GetAsync("https://sso.example.com/realms/bgt", default)).ReturnsAsync(new OpenIdConnectConfiguration
+        {
+            Issuer = issuer,
+            EndSessionEndpoint = "https://sso.example.com/realms/bgt/protocol/openid-connect/logout",
+        });
+
+        var result = await _service.EndSessionAsync(key, "https://games.example.com");
+
+        result.Should().BeNull();
+        _configurationsMock.Verify(x => x.GetAsync("https://sso.example.com/realms/bgt", default), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Could not build the identity provider sign-out address for Keycloak");
+        VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task CleanupExpiredSessionsAsync_ShouldOnlyRemoveExpiredSessions()
     {
@@ -482,6 +502,25 @@ public class OidcServiceTests : IDisposable
 
         result.SigningCertificateExpiredOn.Should().Be(new DateTimeOffset(2026, 5, 8, 12, 0, 0, TimeSpan.Zero));
         result.SigningSupported.Should().BeTrue();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
+        _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData(null, "sig")]
+    [InlineData("RS256", null)]
+    public async Task TestDiscoveryAsync_ShouldReportAnExpiredSigningCertificate_WhenTheKeyLeavesOutItsAlgorithmOrUse(string? alg, string? use)
+    {
+        using var keys = new TestIdTokens();
+        using var expired = keys.Certificate(new DateTimeOffset(2025, 5, 8, 12, 0, 0, TimeSpan.Zero), new DateTimeOffset(2026, 5, 8, 12, 0, 0, TimeSpan.Zero));
+        SetupDiscovery(HttpStatusCode.OK, DiscoveryDocument(new[] { "RS256" }, $"{DiscoveryAuthority}/jwks"));
+        _documents[$"{DiscoveryAuthority}/jwks"] = (HttpStatusCode.OK, keys.JwksJsonWithCertificate(expired, alg, use));
+
+        var result = await _service.TestDiscoveryAsync(DiscoveryAuthority);
+
+        result.SigningCertificateExpiredOn.Should().Be(new DateTimeOffset(2026, 5, 8, 12, 0, 0, TimeSpan.Zero));
         _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(2));
         _configurationsMock.Verify(x => x.Invalidate(DiscoveryAuthority), Times.Once);
         VerifyNoOtherCalls();

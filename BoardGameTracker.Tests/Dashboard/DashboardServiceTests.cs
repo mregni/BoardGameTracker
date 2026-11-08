@@ -292,6 +292,29 @@ public class DashboardServiceTests
     }
 
     [Fact]
+    public async Task GetStatistics_ShouldReturnAWinnerWithAnEmptyNameAndNoImage_WhenThePlayerIsNotLoaded()
+    {
+        var session = new SessionBuilder()
+            .ForGame(new Game("Catan") { Id = 1 })
+            .EndingAt(DateTime.UtcNow)
+            .LastingMinutes(30)
+            .WithWinner(9)
+            .Build();
+
+        _sessionRepositoryMock.Setup(x => x.GetRecentSessions(5, Token)).ReturnsAsync([session]);
+
+        var result = await _sut.GetStatistics(null, Token);
+
+        var winner = result.RecentActivities.Should().ContainSingle().Which.Winners.Should().ContainSingle().Subject;
+        winner.Id.Should().Be(9);
+        winner.Name.Should().BeEmpty();
+        winner.Image.Should().BeNull();
+
+        VerifyGetStatisticsCalls();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task GetStatistics_ShouldReturnTheTeamResult_InsteadOfWinners_ForCoopSessions()
     {
         var session = new SessionBuilder()

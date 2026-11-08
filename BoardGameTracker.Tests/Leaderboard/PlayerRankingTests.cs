@@ -82,6 +82,23 @@ public class PlayerRankingTests
     }
 
     [Fact]
+    public void Rank_ShouldRankAPlayerWithoutSessionsLast_WhenRankingByWinRate()
+    {
+        var result = Rank(
+            LeaderboardRankBy.WinRate,
+            new Row { Name = "Ann", Wins = 0, Plays = 0 },
+            new Row { Name = "Ben", Wins = 1, Plays = 4 });
+
+        result.Select(x => (x.Rank, x.Name)).Should().Equal((1, "Ben"), (2, "Ann"));
+    }
+
+    [Fact]
+    public void WinRate_ShouldBeZero_WhenThePlayerHasNoSessions()
+    {
+        new PlayerStanding("Ann", 0, 0).WinRate.Should().Be(0);
+    }
+
+    [Fact]
     public void Rank_ShouldReturnNothing_ForNoPlayers()
     {
         Rank(LeaderboardRankBy.Wins).Should().BeEmpty();
