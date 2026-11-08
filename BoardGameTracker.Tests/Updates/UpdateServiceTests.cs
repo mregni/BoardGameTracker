@@ -494,5 +494,15 @@ public class UpdateServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData("1.x.0", "0.0.1", true)]
+    [InlineData("1.x.0", "0.0.0", false)]
+    [InlineData("0.0.1", "1.x.0", false)]
+    public void CompareVersions_ShouldTreatAnUnparsableVersionAsZero(string current, string latest, bool expected)
+    {
+        UpdateService.CompareVersions(current, latest).Should().Be(expected);
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 }

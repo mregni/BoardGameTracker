@@ -1000,6 +1000,18 @@ public class UserAdminServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ManageRoleByIdentityProviderAsync_ShouldThrowEntityNotFoundException_WhenUserDoesNotExist()
+    {
+        _userManagerMock.Setup(x => x.FindByIdAsync("missing-user")).ReturnsAsync((ApplicationUser?)null);
+
+        var act = () => _service.ManageRoleByIdentityProviderAsync("missing-user", "admin-1");
+
+        await act.Should().ThrowAsync<EntityNotFoundException>();
+        _userManagerMock.Verify(x => x.FindByIdAsync("missing-user"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task UpdateRoleAsync_ShouldMakeTheRoleALocalOverride_WhenItChanges()
     {
         var user = new ApplicationUser("jane", "jane@test.com") { Id = "user-2" };
