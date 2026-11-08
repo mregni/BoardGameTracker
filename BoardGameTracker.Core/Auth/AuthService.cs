@@ -241,13 +241,13 @@ public class AuthService : IAuthService
 
         var user = new ApplicationUser(request.Username, request.Email, request.Username);
         user.ConfirmEmail();
-        var result = await _userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
-        {
-            throw new ValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
-        }
+        (await _userManager.CreateAsync(user, request.Password)).ThrowIfFailed();
 
-        await _userManager.AddToRoleAsync(user, role);
+        if (!(await _userManager.AddToRoleAsync(user, role)).Succeeded)
+        {
+            await _userManager.DeleteAsync(user);
+            throw new DomainException(Constants.Errors.AccountUpdateFailed);
+        }
 
         if (request.CreatePlayer)
         {
@@ -257,13 +257,13 @@ public class AuthService : IAuthService
                 Email = request.Email
             });
             user.LinkPlayer(player.Id);
-            await _userManager.UpdateAsync(user);
+            await SaveRegisteredLinkAsync(user);
             await _playerAccountImageService.ApplyAccountImageAsync(user);
         }
         else if (request.PlayerId.HasValue)
         {
             user.LinkPlayer(request.PlayerId.Value);
-            await _userManager.UpdateAsync(user);
+            await SaveRegisteredLinkAsync(user);
             await _playerAccountImageService.ApplyAccountImageAsync(user);
         }
 
@@ -271,6 +271,14 @@ public class AuthService : IAuthService
 
         var roles = await _userManager.GetRolesAsync(user);
         return user.ToDto(roles);
+    }
+
+    private async Task SaveRegisteredLinkAsync(ApplicationUser user)
+    {
+        if (!(await _userManager.UpdateAsync(user)).Succeeded)
+        {
+            throw new DomainException(Constants.Errors.PlayerLinkUpdateFailed);
+        }
     }
 
     public async Task<ProfileResponse> GetProfileAsync(string userId)
@@ -312,7 +320,7 @@ public class AuthService : IAuthService
             }
         }
 
-        await _userManager.UpdateAsync(user);
+        (await _userManager.UpdateAsync(user)).ThrowIfFailed();
         await _playerAccountImageService.RelinkAsync(previousPlayerId, user);
 
         _logger.LogInformation("User {UserId} updated their profile", userId);
@@ -408,7 +416,7 @@ public class AuthService : IAuthService
         if (!result.Succeeded)
         {
             _logger.LogWarning("Failed password change attempt for user {UserId}", userId);
-            throw new ValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
+            result.ThrowIfFailed();
         }
 
         await _tokenService.RevokeAllUserTokensAsync(userId, "Password changed");
@@ -422,11 +430,7 @@ public class AuthService : IAuthService
 
         var tempPassword = GenerateTempPassword();
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var result = await _userManager.ResetPasswordAsync(user, token, tempPassword);
-        if (!result.Succeeded)
-        {
-            throw new ValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
-        }
+        (await _userManager.ResetPasswordAsync(user, token, tempPassword)).ThrowIfFailed();
 
         await _tokenService.RevokeAllUserTokensAsync(userId, "Password reset by admin");
         _logger.LogInformation("Admin reset password for user {Username}", user.UserName);

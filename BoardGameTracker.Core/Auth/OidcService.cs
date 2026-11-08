@@ -197,7 +197,13 @@ public class OidcService : IOidcService
         }
 
         user.UpdateLastLogin();
-        await _userManager.UpdateAsync(user);
+        var saved = await _userManager.UpdateAsync(user);
+        if (!saved.Succeeded)
+        {
+            _logger.LogError("Failed to save user {UserId} at sign-in via {Provider}: {Errors}", user.Id, provider.DisplayName, string.Join(", ", saved.Errors.Select(e => e.Code)));
+            throw new DomainException(Constants.Errors.OidcFailed);
+        }
+
         var sessionKey = StartSession(user, provider, identity);
         await _context.SaveChangesAsync();
         QueuePictureImport(user.Id, provider, identity.Claims);

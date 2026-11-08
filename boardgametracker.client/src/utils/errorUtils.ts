@@ -1,10 +1,9 @@
-import { isApiError } from "@/models";
+import { type ApiError, isApiError } from "@/models";
 import i18n from "@/utils/i18n";
 
 const REASON_PREFIX = "error.";
 
 const SERVER_TEXT_KEYS: Record<string, string> = {
-	"Incorrect password.": "error:auth.incorrect-password",
 	"The requested resource was not found.": "error:not-found",
 	"The resource was modified by another request. Please retry.": "error:conflict",
 	"Invalid BGG API key. Please check your API key in settings.": "error:bgg.invalid-api-key",
@@ -25,14 +24,18 @@ const NO_REASON_TEXTS = new Set([
 	"Unauthorized",
 ]);
 
-export const translateApiError = (message: string | undefined, fallbackKey = "error:something-went-wrong"): string => {
+export const translateApiError = (
+	message: string | undefined,
+	fallbackKey = "error:something-went-wrong",
+	params?: ApiError["params"],
+): string => {
 	const fallback = i18n.t(fallbackKey);
 	if (!message || NO_REASON_TEXTS.has(message)) {
 		return fallback;
 	}
 
 	if (message.startsWith(REASON_PREFIX)) {
-		return i18n.t(`error:${message.slice(REASON_PREFIX.length)}`, { defaultValue: fallback });
+		return i18n.t(`error:${message.slice(REASON_PREFIX.length)}`, { ...params, defaultValue: fallback });
 	}
 
 	return message in SERVER_TEXT_KEYS ? i18n.t(SERVER_TEXT_KEYS[message]) : message;
@@ -44,4 +47,6 @@ export const translateUrlError = (value: string | undefined, fallbackKey = "erro
 };
 
 export const apiErrorMessage = (error: unknown, fallbackKey: string): string =>
-	isApiError(error) && error.kind === "client" ? translateApiError(error.message, fallbackKey) : i18n.t(fallbackKey);
+	isApiError(error) && error.kind === "client"
+		? translateApiError(error.message, fallbackKey, error.params)
+		: i18n.t(fallbackKey);

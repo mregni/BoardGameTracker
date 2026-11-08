@@ -814,7 +814,7 @@ public class AuthServiceTests : IDisposable
     public async Task RegisterAsync_ShouldThrowValidationException_WhenCreationFails()
     {
         var request = new RegisterRequest("newuser", "new@test.com", "weak", null);
-        var identityErrors = new[] { new IdentityError { Description = "Password too short" }, new IdentityError { Description = "Username invalid" } };
+        var identityErrors = new[] { new IdentityErrorDescriber().PasswordTooShort(8), new IdentityErrorDescriber().InvalidUserName("newuser") };
 
         _userManagerMock.Setup(x => x.FindByNameAsync("newuser"))
             .ReturnsAsync((ApplicationUser?)null);
@@ -824,7 +824,7 @@ public class AuthServiceTests : IDisposable
         var act = () => _authService.RegisterAsync(request);
 
         await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("Password too short, Username invalid");
+            .WithMessage(Constants.Errors.PasswordTooShort);
 
         _userManagerMock.Verify(x => x.FindByNameAsync("newuser"), Times.Once);
         _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => IsNewAccount(u, "newuser", "new@test.com")), "weak"), Times.Once);
@@ -1113,6 +1113,47 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Verify(x => x.GetRolesAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser")), Times.Once);
         _playerAccountImageServiceMock.Verify(x => x.ApplyAccountImageAsync(It.Is<ApplicationUser>(u => u.PlayerId == 5)), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Information, "Admin created new user: newuser with role User");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RegisterAsync_ShouldRemoveTheNewUserAndReportTheFailure_WhenTheRoleCannotBeAdded()
+    {
+        var request = new RegisterRequest("newuser", "new@test.com", "password123", null);
+        _userManagerMock.Setup(x => x.FindByNameAsync("newuser")).ReturnsAsync((ApplicationUser?)null);
+        _userManagerMock.Setup(x => x.CreateAsync(It.Is<ApplicationUser>(u => IsNewAccount(u, "newuser", "new@test.com")), "password123")).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser"), Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Failed(new IdentityErrorDescriber().ConcurrencyFailure()));
+        _userManagerMock.Setup(x => x.DeleteAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser"))).ReturnsAsync(IdentityResult.Success);
+
+        var act = () => _authService.RegisterAsync(request);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.AccountUpdateFailed);
+        _userManagerMock.Verify(x => x.FindByNameAsync("newuser"), Times.Once);
+        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => IsNewAccount(u, "newuser", "new@test.com")), "password123"), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser"), Constants.AuthRoles.User), Times.Once);
+        _userManagerMock.Verify(x => x.DeleteAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser")), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RegisterAsync_ShouldReportTheFailure_WhenThePlayerLinkCannotBeSaved()
+    {
+        _context.Players.Add(new Player("Existing") { Id = 7 });
+        await _context.SaveChangesAsync();
+
+        var request = new RegisterRequest("newuser", "new@test.com", "password123", null, PlayerId: 7);
+        _userManagerMock.Setup(x => x.FindByNameAsync("newuser")).ReturnsAsync((ApplicationUser?)null);
+        _userManagerMock.Setup(x => x.CreateAsync(It.Is<ApplicationUser>(u => IsNewAccount(u, "newuser", "new@test.com")), "password123")).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser"), Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.UpdateAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser" && u.PlayerId == 7))).ReturnsAsync(IdentityResult.Failed(new IdentityErrorDescriber().ConcurrencyFailure()));
+
+        var act = () => _authService.RegisterAsync(request);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.PlayerLinkUpdateFailed);
+        _userManagerMock.Verify(x => x.FindByNameAsync("newuser"), Times.Once);
+        _userManagerMock.Verify(x => x.CreateAsync(It.Is<ApplicationUser>(u => IsNewAccount(u, "newuser", "new@test.com")), "password123"), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser"), Constants.AuthRoles.User), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser" && u.PlayerId == 7)), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -1760,7 +1801,7 @@ public class AuthServiceTests : IDisposable
         var userId = "user-id-123";
         var user = new ApplicationUser("testuser", "test@test.com");
         var request = new ChangePasswordRequest("wrongpassword", "newpassword");
-        var identityErrors = new[] { new IdentityError { Description = "Incorrect password" }, new IdentityError { Description = "Too short" } };
+        var identityErrors = new[] { new IdentityErrorDescriber().PasswordMismatch(), new IdentityErrorDescriber().PasswordTooShort(8) };
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
         _userManagerMock.Setup(x => x.HasPasswordAsync(user)).ReturnsAsync(true);
@@ -1770,7 +1811,7 @@ public class AuthServiceTests : IDisposable
         var act = () => _authService.ChangePasswordAsync(userId, request);
 
         await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("Incorrect password, Too short");
+            .WithMessage(Constants.Errors.IncorrectPassword);
 
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
@@ -1841,7 +1882,7 @@ public class AuthServiceTests : IDisposable
         var act = () => _authService.ResetPasswordAsync(userId);
 
         await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("Password reset failed");
+            .WithMessage(Constants.Errors.AccountUpdateFailed);
 
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.GeneratePasswordResetTokenAsync(user), Times.Once);
@@ -2190,7 +2231,7 @@ public class AuthServiceTests : IDisposable
         VerifyNoOtherCalls();
     }
 
-    [Fact(Skip = "BUG: UpdateProfileAsync ignores a failed UpdateAsync, sends the email-change notice and reports success")]
+    [Fact]
     public async Task UpdateProfileAsync_ShouldReportTheFailure_AndSendNoNotice_WhenTheUserCannotBeSaved()
     {
         var userId = "user-id-123";
@@ -2202,7 +2243,7 @@ public class AuthServiceTests : IDisposable
 
         var act = () => _authService.UpdateProfileAsync(userId, new UpdateProfileRequest("Name", "new@test.com", null, "current-password"));
 
-        await act.Should().ThrowAsync<ValidationException>().WithMessage("failed");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.AccountUpdateFailed);
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.CheckPasswordAsync(user, "current-password"), Times.Once);

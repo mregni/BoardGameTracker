@@ -4,6 +4,8 @@ public class ValidationException : Exception
 {
     public Dictionary<string, string[]> Errors { get; }
 
+    public IReadOnlyDictionary<string, object> Parameters { get; } = new Dictionary<string, object>();
+
     public ValidationException(string message)
         : base(message)
     {
@@ -11,6 +13,12 @@ public class ValidationException : Exception
         {
             { "General", [message]}
         };
+    }
+
+    public ValidationException(string message, IReadOnlyDictionary<string, object> parameters)
+        : this(message)
+    {
+        Parameters = parameters;
     }
 
     public ValidationException(Dictionary<string, string[]> errors)

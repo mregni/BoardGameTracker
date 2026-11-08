@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Ardalis.Specification;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
@@ -166,7 +167,7 @@ public class ManualServiceTests
     {
         var act = async () => await _manualService.UploadManuals(1, new List<IFormFile>());
 
-        await act.Should().ThrowAsync<ValidationException>().WithMessage("No files were provided.");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.ManualMissing);
         VerifyNoOtherCalls();
     }
 
@@ -177,7 +178,8 @@ public class ManualServiceTests
 
         var act = async () => await _manualService.UploadManuals(1, [disguised]);
 
-        await act.Should().ThrowAsync<ValidationException>().WithMessage("'evil.pdf' is not a PDF file.");
+        var thrown = await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.ManualNotPdf);
+        thrown.Which.Parameters.Should().Equal(new Dictionary<string, object> { ["fileName"] = "evil.pdf" });
         VerifyNoOtherCalls();
     }
 
@@ -199,7 +201,8 @@ public class ManualServiceTests
     {
         var act = async () => await _manualService.UploadManuals(1, [CreatePdfWithSignatureAt(1020)]);
 
-        await act.Should().ThrowAsync<ValidationException>().WithMessage("'rulebook.pdf' is not a PDF file.");
+        var thrown = await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.ManualNotPdf);
+        thrown.Which.Parameters.Should().Equal(new Dictionary<string, object> { ["fileName"] = "rulebook.pdf" });
         VerifyNoOtherCalls();
     }
 
@@ -210,15 +213,15 @@ public class ManualServiceTests
 
         var act = async () => await _manualService.UploadManuals(1, files);
 
-        await act.Should().ThrowAsync<ValidationException>().WithMessage("'b.txt' is not a PDF file.");
+        var thrown = await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.ManualNotPdf);
+        thrown.Which.Parameters.Should().Equal(new Dictionary<string, object> { ["fileName"] = "b.txt" });
         VerifyNoOtherCalls();
     }
 
     [Theory]
-    [InlineData("rulebook.txt", "application/pdf", 1024L, "'rulebook.txt' is not a PDF file.")]
-    [InlineData("rulebook.pdf", "text/plain", 1024L, "'rulebook.pdf' is not a PDF file.")]
-    [InlineData("empty.pdf", "application/pdf", 0L, "'empty.pdf' is empty.")]
-    [InlineData("big.pdf", "application/pdf", 200L * 1024 * 1024 + 1, "'big.pdf' exceeds the maximum size of 200 MB.")]
+    [InlineData("rulebook.txt", "application/pdf", 1024L, Constants.Errors.ManualNotPdf)]
+    [InlineData("rulebook.pdf", "text/plain", 1024L, Constants.Errors.ManualNotPdf)]
+    [InlineData("empty.pdf", "application/pdf", 0L, Constants.Errors.ManualEmpty)]
     public async Task UploadManuals_ShouldThrowAndWriteNothing_WhenFileIsInvalid(
         string fileName, string contentType, long length, string expectedMessage)
     {
@@ -226,7 +229,20 @@ public class ManualServiceTests
 
         var act = async () => await _manualService.UploadManuals(1, files);
 
-        await act.Should().ThrowAsync<ValidationException>().WithMessage(expectedMessage);
+        var thrown = await act.Should().ThrowAsync<ValidationException>().WithMessage(expectedMessage);
+        thrown.Which.Parameters.Should().Equal(new Dictionary<string, object> { ["fileName"] = fileName });
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UploadManuals_ShouldThrowAndWriteNothing_WhenAFileIsTooLarge()
+    {
+        var files = new List<IFormFile> { CreateFormFile("big.pdf", "application/pdf", 200L * 1024 * 1024 + 1) };
+
+        var act = async () => await _manualService.UploadManuals(1, files);
+
+        var thrown = await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.ManualTooLarge);
+        thrown.Which.Parameters.Should().Equal(new Dictionary<string, object> { ["fileName"] = "big.pdf", ["maxSize"] = 200L });
         VerifyNoOtherCalls();
     }
 

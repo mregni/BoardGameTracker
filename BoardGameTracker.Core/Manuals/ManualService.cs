@@ -1,3 +1,4 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
@@ -79,7 +80,7 @@ public class ManualService : IManualService
 
         if (files.Count == 0)
         {
-            throw new ValidationException("Files", "No files were provided.");
+            throw new ValidationException(Constants.Errors.ManualMissing);
         }
 
         foreach (var file in files)
@@ -256,26 +257,32 @@ public class ManualService : IManualService
     {
         if (file.Length == 0)
         {
-            throw new ValidationException("Files", $"'{file.FileName}' is empty.");
+            throw new ValidationException(Constants.Errors.ManualEmpty, FileParameters(file));
         }
 
         var isPdf = string.Equals(file.ContentType, PdfContentType, StringComparison.OrdinalIgnoreCase)
                     && string.Equals(Path.GetExtension(file.FileName), PdfExtension, StringComparison.OrdinalIgnoreCase);
         if (!isPdf)
         {
-            throw new ValidationException("Files", $"'{file.FileName}' is not a PDF file.");
+            throw new ValidationException(Constants.Errors.ManualNotPdf, FileParameters(file));
         }
 
         if (file.Length > MaxManualBytes)
         {
-            throw new ValidationException("Files", $"'{file.FileName}' exceeds the maximum size of {MaxManualBytes / (1024 * 1024)} MB.");
+            throw new ValidationException(Constants.Errors.ManualTooLarge, new Dictionary<string, object>
+            {
+                ["fileName"] = file.FileName,
+                ["maxSize"] = MaxManualBytes / (1024 * 1024)
+            });
         }
 
         if (!HasPdfSignature(file))
         {
-            throw new ValidationException("Files", $"'{file.FileName}' is not a PDF file.");
+            throw new ValidationException(Constants.Errors.ManualNotPdf, FileParameters(file));
         }
     }
+
+    private static Dictionary<string, object> FileParameters(IFormFile file) => new() { ["fileName"] = file.FileName };
 
     private static bool HasPdfSignature(IFormFile file)
     {

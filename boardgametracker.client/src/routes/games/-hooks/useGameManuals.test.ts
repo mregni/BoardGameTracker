@@ -4,11 +4,14 @@ import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { GameManual } from "@/models";
 
-const { successToast, errorToast, invalidateGame } = vi.hoisted(() => ({
+const { successToast, errorToast, invalidateGame, apiErrorMessage } = vi.hoisted(() => ({
 	successToast: vi.fn(),
 	errorToast: vi.fn(),
 	invalidateGame: vi.fn(() => Promise.resolve()),
+	apiErrorMessage: vi.fn((_error: unknown, fallbackKey: string) => fallbackKey),
 }));
+
+vi.mock("@/utils/errorUtils", () => ({ apiErrorMessage }));
 
 vi.mock("@/routes/-hooks/useToasts", () => ({
 	useToasts: () => ({ successToast, errorToast }),
@@ -168,12 +171,14 @@ describe("useGameManuals", () => {
 
 	it("shows an error toast and does not refresh when upload fails", async () => {
 		getGameManualsCallMock.mockResolvedValue([]);
-		uploadManualsCallMock.mockRejectedValue(new Error("upload failed"));
+		const error = new Error("upload failed");
+		uploadManualsCallMock.mockRejectedValue(error);
 
 		const { result } = await renderUseGameManuals();
 		act(() => result.current.uploadManuals([new File(["content"], "rules.pdf")]));
 
 		await waitFor(() => expect(errorToast).toHaveBeenCalledWith("game:manuals.upload-failed"));
+		expect(apiErrorMessage).toHaveBeenCalledWith(error, "game:manuals.upload-failed");
 		expect(invalidateGame).not.toHaveBeenCalled();
 		expect(successToast).not.toHaveBeenCalled();
 	});

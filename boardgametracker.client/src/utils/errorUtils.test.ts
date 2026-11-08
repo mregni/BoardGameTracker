@@ -4,6 +4,7 @@ import { apiErrorMessage, translateApiError, translateUrlError } from "./errorUt
 
 const translations: Record<string, string> = {
 	"error:auth.username-already-exists": "Username already exists",
+	"error:manual.not-pdf": '"{{fileName}}" is not a PDF file',
 	"error:something-went-wrong": "Something went wrong",
 	"error:not-found": "This item no longer exists",
 	"settings:save.failed": "Saving failed",
@@ -12,7 +13,8 @@ const translations: Record<string, string> = {
 
 vi.mock("@/utils/i18n", () => ({
 	default: {
-		t: (key: string, options?: { defaultValue?: string }) => translations[key] ?? options?.defaultValue ?? key,
+		t: (key: string, options?: { defaultValue?: string; fileName?: string }) =>
+			(translations[key] ?? options?.defaultValue ?? key).replace("{{fileName}}", options?.fileName ?? "{{fileName}}"),
 		exists: (key: string) => key in translations,
 	},
 }));
@@ -33,7 +35,13 @@ describe("translateApiError", () => {
 	});
 
 	it("returns plain messages untouched", () => {
-		expect(translateApiError("'rules.txt' is not a PDF file.")).toBe("'rules.txt' is not a PDF file.");
+		expect(translateApiError("Some plain server text")).toBe("Some plain server text");
+	});
+
+	it("fills the parameters the server sends into the translation", () => {
+		expect(translateApiError("error.manual.not-pdf", undefined, { fileName: "rules.txt" })).toBe(
+			'"rules.txt" is not a PDF file',
+		);
 	});
 
 	it("translates the plain texts the server sends", () => {
@@ -58,6 +66,11 @@ describe("apiErrorMessage", () => {
 		expect(apiErrorMessage(clientError("error.auth.username-already-exists"), "settings:save.failed")).toBe(
 			"Username already exists",
 		);
+	});
+
+	it("passes the parameters of client errors to the translation", () => {
+		const error: ApiError = { ...clientError("error.manual.not-pdf"), params: { fileName: "rules.txt" } };
+		expect(apiErrorMessage(error, "settings:save.failed")).toBe('"rules.txt" is not a PDF file');
 	});
 
 	it("uses the fallback for non-client errors", () => {

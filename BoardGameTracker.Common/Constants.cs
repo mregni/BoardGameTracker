@@ -53,6 +53,12 @@ public static class Constants
     {
         public const string UsernameAlreadyExists = "error.auth.username-already-exists";
         public const string UsernameRequired = "error.auth.username-required";
+        public const string InvalidUsername = "error.auth.invalid-username";
+        public const string EmailAlreadyExists = "error.auth.email-already-exists";
+        public const string InvalidEmail = "error.auth.invalid-email";
+        public const string PasswordTooShort = "error.auth.password-too-short";
+        public const string IncorrectPassword = "error.auth.incorrect-password";
+        public const string AccountUpdateFailed = "error.auth.account-update-failed";
         public const string LastSignInMethod = "error.auth.last-sign-in-method";
         public const string InvalidRole = "error.auth.invalid-role";
         public const string CannotChangeOidcPassword = "error.auth.cannot-change-oidc-password";
@@ -106,6 +112,10 @@ public static class Constants
         public const string ImageTooLarge = "error.image.too-large";
         public const string ImageUnsupportedFormat = "error.image.unsupported-format";
         public const string ProfileImageUpdateFailed = "error.image.profile-update-failed";
+        public const string ManualMissing = "error.manual.missing";
+        public const string ManualEmpty = "error.manual.empty";
+        public const string ManualNotPdf = "error.manual.not-pdf";
+        public const string ManualTooLarge = "error.manual.too-large";
         public const string InvalidResetToken = "error.auth.invalid-reset-token";
         public const string GameAlreadyOnLoan = "error.loan.game-already-on-loan";
         public const string LoanDueBeforeStart = "error.loan.due-before-start";

@@ -612,6 +612,7 @@ public class OidcFlowTests : IDisposable
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _idp.User = KnownUser("sub-1");
         _idp.User["groups"] = new[] { "Admins" };
+        _userManagerMock.Setup(x => x.AddToRoleAsync(user, "Admin")).ReturnsAsync(IdentityResult.Success);
 
         await LoginAsync();
 
@@ -634,6 +635,7 @@ public class OidcFlowTests : IDisposable
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _idp.User = KnownUser("sub-1");
         _idp.User["groups"] = new[] { "bgt-admins" };
+        _userManagerMock.Setup(x => x.AddToRoleAsync(user, "Admin")).ReturnsAsync(IdentityResult.Success);
 
         await LoginAsync();
 
@@ -984,6 +986,27 @@ public class OidcFlowTests : IDisposable
         _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
         _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
         _loggerMock.VerifyLog(LogLevel.Warning, "Disabled user user-linked tried to sign in via Example IdP");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldIssueNoTokens_WhenTheUserCannotBeSaved()
+    {
+        var user = LinkedUser();
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-1"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _idp.User = KnownUser("sub-1");
+        _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Failed(new IdentityErrorDescriber().ConcurrencyFailure()));
+
+        var act = () => LoginAsync();
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcFailed);
+        _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-linked logged in via Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Error, "Failed to save user user-linked at sign-in via Example IdP: ConcurrencyFailure");
         VerifyNoOtherCalls();
     }
 

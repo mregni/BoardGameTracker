@@ -65,6 +65,9 @@ function classifyError(error: AxiosError): ApiError {
 		}
 
 		const kind: ApiErrorKind = status >= 500 ? "server" : "client";
+		if (data && typeof data === "object" && "params" in data && data.params && typeof data.params === "object") {
+			return { kind, status, message, params: data.params as Record<string, string | number>, url };
+		}
 		return { kind, status, message, url };
 	}
 

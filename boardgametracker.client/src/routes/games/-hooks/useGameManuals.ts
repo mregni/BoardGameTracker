@@ -5,6 +5,7 @@ import { type GameManual, QUERY_KEYS } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { deleteManualCall, downloadManualCall, reindexManualCall, uploadManualsCall } from "@/services/manualService";
 import { getGameManuals } from "@/services/queries/manuals";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 const POLL_INTERVAL_MS = 3000;
 const MAX_STATUS_POLLS = 60;
@@ -42,8 +43,8 @@ export const useGameManuals = (gameId: number, pollWhileIndexing = false) => {
 			await invalidator.invalidateGame(gameId);
 			successToast("game:manuals.upload-success");
 		},
-		onError: () => {
-			errorToast("game:manuals.upload-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "game:manuals.upload-failed"));
 		},
 	});
 
