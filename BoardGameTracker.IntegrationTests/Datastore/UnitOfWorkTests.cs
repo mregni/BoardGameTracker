@@ -66,4 +66,51 @@ public class UnitOfWorkTests : IAsyncLifetime
             (await db.Set<ManualChunk>().CountAsync(c => c.ManualId == manualId, TestContext.Current.CancellationToken)).Should().Be(0);
         }
     }
+
+    [Fact]
+    public async Task BeginTransactionAsync_ShouldHideChangesFromOtherConnections_UntilTheyAreCommitted()
+    {
+        var token = TestContext.Current.CancellationToken;
+        await using (var scope = _fixture.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            await using var transaction = await unitOfWork.BeginTransactionAsync(token);
+            db.Locations.Add(new Location("Committed table"));
+            await unitOfWork.SaveChangesAsync(token);
+
+            (await CountLocationsAsync("Committed table")).Should().Be(0);
+
+            await transaction.CommitAsync(token);
+        }
+
+        (await CountLocationsAsync("Committed table")).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task BeginTransactionAsync_ShouldDiscardSavedChanges_WhenRolledBack()
+    {
+        var token = TestContext.Current.CancellationToken;
+        await using (var scope = _fixture.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            await using var transaction = await unitOfWork.BeginTransactionAsync(token);
+            db.Locations.Add(new Location("Rolled back table"));
+            await unitOfWork.SaveChangesAsync(token);
+
+            (await db.Locations.CountAsync(l => l.Name == "Rolled back table", token)).Should().Be(1);
+
+            await transaction.RollbackAsync(token);
+        }
+
+        (await CountLocationsAsync("Rolled back table")).Should().Be(0);
+    }
+
+    private async Task<int> CountLocationsAsync(string name)
+    {
+        await using var scope = _fixture.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+        return await db.Locations.CountAsync(l => l.Name == name, TestContext.Current.CancellationToken);
+    }
 }
