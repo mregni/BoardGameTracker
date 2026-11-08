@@ -3,6 +3,8 @@ name: Security Scanning
 on:
   pull_request:
     branches: [master]
+  push:
+    branches: [master]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -108,7 +110,29 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Cache Gitleaks
+        id: gitleaks-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.gitleaks
+          key: gitleaks-8.24.3-linux-x64
+
+      - name: Install Gitleaks
+        if: steps.gitleaks-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          image=ghcr.io/gitleaks/gitleaks@sha256:e1b35e12a8c6fa8901f060459cfb6b2fc4c484d3afbe3b029733a3bbfab07055
+          for attempt in 1 2 3 4 5; do
+            docker pull --quiet "$image" && break
+            [ "$attempt" -eq 5 ] && exit 1
+            sleep $((attempt * 15))
+          done
+          mkdir -p ~/.gitleaks
+          container=$(docker create "$image")
+          docker cp "$container:/usr/bin/gitleaks" ~/.gitleaks/gitleaks
+          docker rm "$container"
+
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RANGE: ${{ github.event_name == 'pull_request' && format('{0}..{1}', github.event.pull_request.base.sha, github.event.pull_request.head.sha) || format('{0}..{1}', github.event.before, github.sha) }}
+        run: ~/.gitleaks/gitleaks git --redact --verbose --exit-code 1 --log-opts="--no-merges --first-parent $RANGE"
