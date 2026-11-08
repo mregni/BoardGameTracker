@@ -20,9 +20,4 @@ public class GameCategory : HasId
         Name = name;
         Games = new List<Game>();
     }
-
-    public void UpdateName(string name)
-    {
-        Name = name;
-    }
 }
