@@ -2567,7 +2567,7 @@ public class GameNightServiceTests
         VerifyNoOtherCalls();
     }
 
-    [Fact(Skip = "BUG: the recipient cap counts invitees without an email address")]
+    [Fact]
     public async Task SendInvitesAsync_ShouldNotCountInviteesWithoutEmail_TowardsTheCap()
     {
         var noEmail = Enumerable.Range(100, 50).Select(i => RsvpWithPlayer(i, GameNightRsvpState.Pending, new Player($"Player {i}")));

@@ -249,6 +249,43 @@ public class BggImportServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task ImportGameFromBgg_ShouldDeleteTheDownloadedCover_WhenSavingFails()
+    {
+        var search = new BggSearch { BggId = 42, State = GameState.Owned, HasScoring = true };
+        var rawItem = new ThingResponse.Item { Id = 42, Image = "image.jpg", Type = "boardgame" };
+        var createdGame = new Game("Test Game");
+        createdGame.UpdateImage("/images/cover/42.webp");
+        var failure = new DbUpdateException("duplicate key value violates unique constraint");
+
+        _gameRepositoryMock
+            .Setup(x => x.GetGameByBggId(42))
+            .ReturnsAsync((Game?)null);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 42))))
+            .ReturnsAsync(CreateSucceededThingResponse([rawItem]));
+        _gameFactoryMock
+            .Setup(x => x.CreateFromBggAsync(rawItem, true, GameState.Owned, null, null, null))
+            .ReturnsAsync(createdGame);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ThrowsAsync(failure);
+
+        var action = async () => await _bggImportService.ImportGameFromBgg(search);
+
+        (await action.Should().ThrowAsync<DbUpdateException>()).Which.Should().BeSameAs(failure);
+
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(42), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 42))), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(rawItem, true, GameState.Owned, null, null, null), Times.Once);
+        _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage("/images/cover/42.webp"), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Searching BGG for game with id 42");
+        VerifyNoOtherCalls();
+    }
+
     [Theory]
     [InlineData(0d)]
     [InlineData(-5d)]
@@ -1371,6 +1408,59 @@ public class BggImportServiceTests
         _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
         VerifyImportLogs(1, 2);
         _loggerMock.VerifyLog(LogLevel.Warning, "Failed to import BGG game 100, skipping", factoryFailure);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportList_ShouldDeleteTheDownloadedCover_WhenAddingTheGameFails()
+    {
+        var addedDate = new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc);
+        var importGames = new List<ImportGame>
+        {
+            new() { Title = "Broken Game", BggId = 100, ImageUrl = "broken.jpg", State = GameState.Owned, AddedDate = addedDate },
+            new() { Title = "Working Game", BggId = 200, ImageUrl = "working.jpg", State = GameState.Owned, AddedDate = addedDate }
+        };
+        var brokenItem = new ThingResponse.Item { Id = 100, Image = "broken.jpg", Type = "boardgame" };
+        var workingItem = new ThingResponse.Item { Id = 200, Image = "working.jpg", Type = "boardgame" };
+        var brokenGame = new Game("Broken Game");
+        brokenGame.UpdateImage("/images/cover/100.webp");
+        var workingGame = new Game("Working Game");
+        workingGame.UpdateImage("/images/cover/200.webp");
+        var failure = new InvalidOperationException("tracking failed");
+
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 100, 200))))
+            .ReturnsAsync(CreateSucceededThingResponse([brokenItem, workingItem]));
+        _gameFactoryMock
+            .Setup(x => x.CreateFromBggAsync(brokenItem, false, GameState.Owned, null, addedDate, null))
+            .ReturnsAsync(brokenGame);
+        _gameFactoryMock
+            .Setup(x => x.CreateFromBggAsync(workingItem, false, GameState.Owned, null, addedDate, null))
+            .ReturnsAsync(workingGame);
+        _gameRepositoryMock
+            .Setup(x => x.CreateAsync(brokenGame))
+            .ThrowsAsync(failure);
+        _gameRepositoryMock
+            .Setup(x => x.CreateAsync(workingGame))
+            .ReturnsAsync(workingGame);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        await _bggImportService.ImportList(importGames);
+
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(100), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(200), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 100, 200))), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(brokenItem, false, GameState.Owned, null, addedDate, null), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(workingItem, false, GameState.Owned, null, addedDate, null), Times.Once);
+        _gameRepositoryMock.Verify(x => x.CreateAsync(brokenGame), Times.Once);
+        _gameRepositoryMock.Verify(x => x.CreateAsync(workingGame), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage("/images/cover/100.webp"), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        VerifyImportLogs(1, 2);
+        _loggerMock.VerifyLog(LogLevel.Warning, "Failed to import BGG game 100, skipping", failure);
         VerifyNoOtherCalls();
     }
 

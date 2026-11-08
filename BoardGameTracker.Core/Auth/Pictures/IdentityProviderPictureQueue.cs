@@ -10,7 +10,6 @@ public class IdentityProviderPictureQueue : IIdentityProviderPictureQueue
     private readonly Channel<IdentityProviderPictureImport> _channel = Channel.CreateBounded<IdentityProviderPictureImport>(new BoundedChannelOptions(Capacity)
     {
         SingleReader = true,
-        FullMode = BoundedChannelFullMode.DropWrite,
     });
 
     public bool Enqueue(IdentityProviderPictureImport import)

@@ -26,9 +26,9 @@ public class UtcDateTimeConverter : JsonConverter<DateTime>
     public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
     {
         // Always write as UTC in ISO 8601 format
-        var utcValue = value.Kind == DateTimeKind.Utc
-            ? value
-            : value.ToUniversalTime();
+        var utcValue = value.Kind == DateTimeKind.Local
+            ? value.ToUniversalTime()
+            : DateTime.SpecifyKind(value, DateTimeKind.Utc);
 
         writer.WriteStringValue(utcValue);
     }
@@ -65,9 +65,9 @@ public class UtcNullableDateTimeConverter : JsonConverter<DateTime?>
             return;
         }
 
-        var utcValue = value.Value.Kind == DateTimeKind.Utc
-            ? value.Value
-            : value.Value.ToUniversalTime();
+        var utcValue = value.Value.Kind == DateTimeKind.Local
+            ? value.Value.ToUniversalTime()
+            : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
 
         writer.WriteStringValue(utcValue);
     }
