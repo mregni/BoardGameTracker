@@ -69,8 +69,17 @@ public class BggImportService : IBggImportService
             search.AdditionDate,
             search.ShopUrl);
 
-        await _gameRepository.CreateAsync(game);
-        await _unitOfWork.SaveChangesAsync();
+        try
+        {
+            await _gameRepository.CreateAsync(game);
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch
+        {
+            _imageService.DeleteImage(game.Image);
+            throw;
+        }
+
         return game;
     }
 
@@ -156,6 +165,7 @@ public class BggImportService : IBggImportService
         {
             foreach (var importGame in toImport)
             {
+                Game? game = null;
                 try
                 {
                     if (!items.TryGetValue(importGame.BggId, out var item))
@@ -164,7 +174,7 @@ public class BggImportService : IBggImportService
                         continue;
                     }
 
-                    var game = await _gameFactory.CreateFromBggAsync(
+                    game = await _gameFactory.CreateFromBggAsync(
                         item,
                         importGame.HasScoring,
                         importGame.State,
@@ -180,6 +190,11 @@ public class BggImportService : IBggImportService
                 }
                 catch (Exception ex)
                 {
+                    if (game != null)
+                    {
+                        _imageService.DeleteImage(game.Image);
+                    }
+
                     _logger.LogWarning(ex, "Failed to import BGG game {BggId}, skipping", importGame.BggId);
                 }
             }

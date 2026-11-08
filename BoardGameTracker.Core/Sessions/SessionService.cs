@@ -150,14 +150,26 @@ public class SessionService : ISessionService
             throw new EntityNotFoundException(nameof(Session), command.Id);
         }
 
+        var gameChanged = command.GameId != existingSession.GameId;
+        if (gameChanged && !await _gameService.ExistsAsync(command.GameId))
+        {
+            throw new EntityNotFoundException(nameof(Game), command.GameId);
+        }
+
         await EnsurePlayersExistAsync(command.PlayerSessions.Select(ps => ps.PlayerId));
         await EnsureGameNightExistsAsync(command.GameNightId);
-        await EnsureCoopAllowedAsync(command.IsCoop, existingSession.IsCoop, existingSession.GameId);
+        await EnsureCoopAllowedAsync(command.IsCoop, existingSession.IsCoop && !gameChanged, command.GameId);
 
         var end = command.Start.AddMinutes(command.Minutes);
         existingSession.UpdateTimes(command.Start, end);
         existingSession.UpdateComment(command.Comment ?? string.Empty);
         existingSession.SetGameNight(command.GameNightId);
+
+        if (gameChanged)
+        {
+            existingSession.UpdateGame(command.GameId);
+            existingSession.Expansions.Clear();
+        }
 
         await SyncExpansions(existingSession, command.ExpansionIds);
         if (!command.IsCoop)

@@ -71,6 +71,11 @@ public class Session : HasId
         _end = end;
     }
 
+    public void UpdateGame(int gameId)
+    {
+        GameId = Guard.Against.NegativeOrZero(gameId);
+    }
+
     public void SetLocation(Location? location)
     {
         Location = location;

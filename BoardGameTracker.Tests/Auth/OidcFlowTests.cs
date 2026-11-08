@@ -1519,6 +1519,7 @@ public class OidcFlowTests : IDisposable
         _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
         _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, picture, preferred_username, sub] and user info claim types [email, name, picture, preferred_username, sub]");
         _loggerMock.VerifyLog(LogLevel.Information, $"Auto-provisioned user {_createdUser!.Id} from Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Warning, $"Skipped the identity provider picture of user {_createdUser!.Id} because the import queue is full");
         VerifyNoOtherCalls();
     }
 

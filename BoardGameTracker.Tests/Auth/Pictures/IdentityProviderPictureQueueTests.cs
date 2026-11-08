@@ -28,7 +28,7 @@ public class IdentityProviderPictureQueueTests
         queue.DequeueAsync(TestContext.Current.CancellationToken).AsTask().IsCompleted.Should().BeFalse();
     }
 
-    [Fact(Skip = "BUG: DropWrite makes TryWrite return true for a dropped import")]
+    [Fact]
     public void Enqueue_ShouldReturnFalse_WhenTheQueueIsFull()
     {
         var queue = new IdentityProviderPictureQueue();

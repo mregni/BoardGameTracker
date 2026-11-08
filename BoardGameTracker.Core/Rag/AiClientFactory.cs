@@ -12,6 +12,7 @@ namespace BoardGameTracker.Core.Rag;
 public class AiClientFactory : IAiClientFactory
 {
     public const string HttpClientName = "ai";
+    private const string KeylessServerApiKey = "no-key";
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IRagSettingsProvider _settingsProvider;
@@ -101,7 +102,7 @@ public class AiClientFactory : IAiClientFactory
     private static OpenAIClient CreateOpenAiClient(string baseUrl, string? apiKey)
     {
         var options = new OpenAIClientOptions { Endpoint = new Uri(baseUrl) };
-        return new OpenAIClient(new ApiKeyCredential(apiKey ?? string.Empty), options);
+        return new OpenAIClient(new ApiKeyCredential(string.IsNullOrWhiteSpace(apiKey) ? KeylessServerApiKey : apiKey), options);
     }
 
     private static bool IsOllama(string provider) =>
