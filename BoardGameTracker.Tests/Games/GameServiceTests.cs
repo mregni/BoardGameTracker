@@ -1990,14 +1990,18 @@ public class GameServiceTests
     }
 
     [Fact]
-    public async Task CreateWatchForGame_ShouldKeepTheLinkedWatch_WhenSavingFails()
+    public async Task CreateWatchForGame_ShouldPointTheLinkedWatchBack_WhenSavingFails()
     {
         const string watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
         var game = new Game("Brass", true) { Id = 1 };
         game.UpdateChangeDetectionWatchId(watchId);
+        game.UpdateShopUrl("https://old.example.com/brass");
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
         _changeDetectionClientMock
             .Setup(x => x.UpdateWatchAsync(watchId, "https://shop.example.com/brass", "Brass", _token))
+            .ReturnsAsync(ChangeDetectionStatus.Ok);
+        _changeDetectionClientMock
+            .Setup(x => x.UpdateWatchAsync(watchId, "https://old.example.com/brass", "Brass", CancellationToken.None))
             .ReturnsAsync(ChangeDetectionStatus.Ok);
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync(_token)).ThrowsAsync(new InvalidOperationException("db down"));
 
@@ -2006,8 +2010,66 @@ public class GameServiceTests
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("db down");
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
         _changeDetectionClientMock.Verify(x => x.UpdateWatchAsync(watchId, "https://shop.example.com/brass", "Brass", _token), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.UpdateWatchAsync(watchId, "https://old.example.com/brass", "Brass", CancellationToken.None), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(_token), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Debug, "Creating changedetection.io watch for game 1");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateWatchForGame_ShouldLogAWarning_WhenPointingTheLinkedWatchBackFails()
+    {
+        const string watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var failure = new HttpRequestException("gone");
+        var game = new Game("Brass", true) { Id = 1 };
+        game.UpdateChangeDetectionWatchId(watchId);
+        game.UpdateShopUrl("https://old.example.com/brass");
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
+        _changeDetectionClientMock
+            .Setup(x => x.UpdateWatchAsync(watchId, "https://shop.example.com/brass", "Brass", _token))
+            .ReturnsAsync(ChangeDetectionStatus.Ok);
+        _changeDetectionClientMock
+            .Setup(x => x.UpdateWatchAsync(watchId, "https://old.example.com/brass", "Brass", CancellationToken.None))
+            .ThrowsAsync(failure);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(_token)).ThrowsAsync(new InvalidOperationException("db down"));
+
+        var act = () => _gameService.CreateWatchForGame(1, "https://shop.example.com/brass", _token);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("db down");
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.UpdateWatchAsync(watchId, "https://shop.example.com/brass", "Brass", _token), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.UpdateWatchAsync(watchId, "https://old.example.com/brass", "Brass", CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(_token), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Creating changedetection.io watch for game 1");
+        _loggerMock.VerifyLog(LogLevel.Warning, $"Could not point price watch {watchId} back to its previous URL", failure);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateWatchForGame_ShouldLogAWarning_WhenChangeDetectionRefusesToPointTheLinkedWatchBack()
+    {
+        const string watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var game = new Game("Brass", true) { Id = 1 };
+        game.UpdateChangeDetectionWatchId(watchId);
+        game.UpdateShopUrl("https://old.example.com/brass");
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
+        _changeDetectionClientMock
+            .Setup(x => x.UpdateWatchAsync(watchId, "https://shop.example.com/brass", "Brass", _token))
+            .ReturnsAsync(ChangeDetectionStatus.Ok);
+        _changeDetectionClientMock
+            .Setup(x => x.UpdateWatchAsync(watchId, "https://old.example.com/brass", "Brass", CancellationToken.None))
+            .ReturnsAsync(ChangeDetectionStatus.Unreachable);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(_token)).ThrowsAsync(new InvalidOperationException("db down"));
+
+        var act = () => _gameService.CreateWatchForGame(1, "https://shop.example.com/brass", _token);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("db down");
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.UpdateWatchAsync(watchId, "https://shop.example.com/brass", "Brass", _token), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.UpdateWatchAsync(watchId, "https://old.example.com/brass", "Brass", CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(_token), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Creating changedetection.io watch for game 1");
+        _loggerMock.VerifyLog(LogLevel.Warning, $"Could not point price watch {watchId} back to its previous URL: Unreachable");
         VerifyNoOtherCalls();
     }
 

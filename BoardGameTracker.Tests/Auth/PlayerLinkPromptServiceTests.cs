@@ -142,7 +142,7 @@ public sealed class PlayerLinkPromptServiceTests : IDisposable
         VerifyNoOtherCalls();
     }
 
-    [Fact(Skip = "BUG: with InvariantGlobalization the player list sorts accented names after Z")]
+    [Fact]
     public async Task GetSuggestionsAsync_ShouldSortAccentedNamesAlphabetically()
     {
         var user = await CreateUserAsync(Constants.AuthRoles.User);

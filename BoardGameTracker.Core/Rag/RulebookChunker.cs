@@ -60,6 +60,10 @@ public class RulebookChunker : IRulebookChunker
             }
 
             start = Math.Max(end - OverlapChars, start + 1);
+            if (char.IsLowSurrogate(normalized[start]) && char.IsHighSurrogate(normalized[start - 1]))
+            {
+                start++;
+            }
         }
     }
 

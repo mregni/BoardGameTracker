@@ -66,11 +66,12 @@ public class PlayerService : IPlayerService
     public async Task<Player> Create(CreatePlayerCommand command)
     {
         _logger.LogDebug("Creating player {Name}", command.Name);
-        var name = await EnsureUniqueName(command.Name, null);
-        var player = new Player(name, command.Image, command.Email);
-        await _playerRepository.CreateAsync(player);
+        Player player;
         try
         {
+            var name = await EnsureUniqueName(command.Name, null);
+            player = new Player(name, command.Image, command.Email);
+            await _playerRepository.CreateAsync(player);
             await _unitOfWork.SaveChangesAsync();
         }
         catch (Exception)
@@ -108,9 +109,20 @@ public class PlayerService : IPlayerService
             throw new EntityNotFoundException(nameof(Player), command.Id);
         }
         
-        var name = await EnsureUniqueName(command.Name, command.Id);
         var previousImage = dbPlayer.Image;
         var newImage = string.IsNullOrEmpty(command.Image) ? null : command.Image;
+        var uploadedImage = newImage != previousImage ? newImage : null;
+        string name;
+        try
+        {
+            name = await EnsureUniqueName(command.Name, command.Id);
+        }
+        catch (ValidationException)
+        {
+            await _imageService.DeleteImageIfUnusedAsync(uploadedImage);
+            throw;
+        }
+
         string? accountImage = null;
         if (newImage != previousImage)
         {
@@ -135,9 +147,9 @@ public class PlayerService : IPlayerService
         catch (Exception)
         {
             _imageService.DeleteImage(accountImage);
-            if (newImage != null && newImage != previousImage)
+            if (uploadedImage != null)
             {
-                await _imageService.DeleteImageIfUnusedAsync(newImage);
+                await _imageService.DeleteImageIfUnusedAsync(uploadedImage);
             }
 
             throw;

@@ -168,7 +168,7 @@ public class AiClientFactoryTests
         VerifyNoOtherCalls();
     }
 
-    [Fact(Skip = "BUG: a blank API key crashes ApiKeyCredential, so a keyless OpenAI-compatible server cannot be used")]
+    [Fact]
     public async Task CreateChatClientAsync_ShouldWorkWithoutAnApiKey_ForALocalOpenAiCompatibleServer()
     {
         SetupSettings("openai", apiKey: null);
