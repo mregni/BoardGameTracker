@@ -256,11 +256,6 @@ public class SettingsService : ISettingsService
         };
     }
 
-    private static T ResolveValue<T>(Dictionary<string, string> configs, string key, T fallback = default!)
-    {
-        return ResolveValue(configs, key, fallback, out _);
-    }
-
     private static T ResolveValue<T>(Dictionary<string, string> configs, string key, T fallback, out bool fromEnvironment)
     {
         fromEnvironment = TryReadEnvironment<T>(EnvironmentVariableFor(key), out var envResult);

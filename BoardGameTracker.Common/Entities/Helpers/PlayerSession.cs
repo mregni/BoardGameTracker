@@ -27,11 +27,6 @@ public class PlayerSession
         Score = score;
     }
 
-    public void MarkAsFirstPlay()
-    {
-        FirstPlay = true;
-    }
-
     public void MarkAsWinner()
     {
         Won = true;

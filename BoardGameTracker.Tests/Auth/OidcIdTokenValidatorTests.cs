@@ -361,7 +361,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         VerifyRefreshedOnce();
         _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
-        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenSignatureKeyNotFoundException");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt is signed with an algorithm that BoardGameTracker does not accept; set a signing key at the identity provider so it signs with RS256 or ES256");
         VerifyNoOtherCalls();
     }
 
@@ -375,7 +375,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         VerifyRefreshedOnce();
         _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
-        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenInvalidSignatureException");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt is signed with an algorithm that BoardGameTracker does not accept; set a signing key at the identity provider so it signs with RS256 or ES256");
         VerifyNoOtherCalls();
     }
 
@@ -393,7 +393,7 @@ public class OidcIdTokenValidatorTests : IDisposable
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         _configurationsMock.Verify(x => x.RefreshAsync(Authority, default), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Information, "The id_token of https://idp.example.com/realms/bgt failed on its algorithm or signature; refetching the OIDC configuration and signing keys");
-        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenInvalidSignatureException");
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt is signed with an algorithm that BoardGameTracker does not accept; set a signing key at the identity provider so it signs with RS256 or ES256");
         VerifyNoOtherCalls();
     }
 
@@ -524,6 +524,16 @@ public class OidcIdTokenValidatorTests : IDisposable
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
         _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenInvalidAudienceException");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ShouldRejectAMalformedToken_WithoutTheAlgorithmHint()
+    {
+        var act = () => _validator.ValidateAsync(Authority, Configuration(_keys.PublicKey), ClientId, "not-a-jwt", Nonce);
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.OidcIdTokenInvalid);
+        _loggerMock.VerifyLog(LogLevel.Warning, "The id_token of https://idp.example.com/realms/bgt was rejected: SecurityTokenMalformedException");
         VerifyNoOtherCalls();
     }
 
