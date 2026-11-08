@@ -642,6 +642,22 @@ public class SettingsServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateSettingsAsync_ShouldStoreEmptyUrls_WhenTheUrlsAreSentAsNull()
+    {
+        var model = new UIResourceDto { PublicUrl = null!, ChangeDetectionBaseUrl = null! };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        await _settingsService.UpdateSettingsAsync(model);
+
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.PublicUrl, string.Empty), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.ChangeDetectionConfig.BaseUrl, string.Empty), Times.Once);
+        VerifySettingsSaved(new UIResourceDto());
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task UpdateSettingsAsync_ShouldClearChangeDetectionApiKey_WhenSubmittedKeyIsNull()
     {
         var model = new UIResourceDto { ChangeDetectionApiKey = null };

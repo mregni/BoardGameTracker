@@ -119,6 +119,42 @@ public class LazyBoardGameGeekClientTests
         VerifyNoOtherCalls();
     }
 
+    public static TheoryData<string, string, string> DelegatedEndpoints() => new()
+    {
+        { nameof(LazyBoardGameGeekClient.GetFamilyAsync), "/family", "id=5" },
+        { nameof(LazyBoardGameGeekClient.GetForumListAsync), "/forumlist", "id=5" },
+        { nameof(LazyBoardGameGeekClient.GetForumsAsync), "/forum", "id=5" },
+        { nameof(LazyBoardGameGeekClient.GetHotItemsAsync), "/hot", "type=boardgame" },
+        { nameof(LazyBoardGameGeekClient.GetPlaysAsync), "/plays", "username=reggi" },
+        { nameof(LazyBoardGameGeekClient.GetThreadsAsync), "/thread", "id=5" },
+        { nameof(LazyBoardGameGeekClient.GetUserAsync), "/user", "name=reggi" },
+    };
+
+    [Theory]
+    [MemberData(nameof(DelegatedEndpoints))]
+    public async Task Get_ShouldSendTheRequestWithTheApiKeyToItsOwnEndpoint(string method, string path, string query)
+    {
+        Task call = method switch
+        {
+            nameof(LazyBoardGameGeekClient.GetFamilyAsync) => _client.GetFamilyAsync(new FamilyRequest(5, "boardgamefamily")),
+            nameof(LazyBoardGameGeekClient.GetForumListAsync) => _client.GetForumListAsync(new ForumListRequest(5, "thing")),
+            nameof(LazyBoardGameGeekClient.GetForumsAsync) => _client.GetForumsAsync(new ForumsRequest(5)),
+            nameof(LazyBoardGameGeekClient.GetHotItemsAsync) => _client.GetHotItemsAsync(new HotItemsRequest("boardgame")),
+            nameof(LazyBoardGameGeekClient.GetPlaysAsync) => _client.GetPlaysAsync(new PlaysRequest("reggi")),
+            nameof(LazyBoardGameGeekClient.GetThreadsAsync) => _client.GetThreadsAsync(new ThreadsRequest(5)),
+            _ => _client.GetUserAsync(new UserRequest("reggi")),
+        };
+        await call;
+
+        var request = _sentRequests.Should().ContainSingle().Subject;
+        request.RequestUri!.AbsolutePath.Should().EndWith(path);
+        request.RequestUri.Query.Should().Contain(query);
+        request.Headers.Authorization!.ToString().Should().Be("Bearer test-api-key");
+        _httpClientFactoryCalls.Should().Be(1);
+        VerifySentRequests(1);
+        VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task SearchAsync_ShouldAskForTheQueryAtTheSearchEndpoint()
     {

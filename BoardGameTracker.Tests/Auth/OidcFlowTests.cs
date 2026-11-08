@@ -745,6 +745,26 @@ public class OidcFlowTests : IDisposable
     }
 
     [Fact]
+    public async Task CompleteLoginAsync_ShouldNotFillInAnEmail_WhenTheAccountHasNoEmailAtAll()
+    {
+        var user = SsoUser("anna", null, "Annie");
+        _context.ExternalLogins.Add(new ExternalLogin(user.Id, "idp", Authority, "sub-anna", "Old name"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _idp.User = new Dictionary<string, object> { ["sub"] = "sub-anna", ["preferred_username"] = "anna", ["name"] = "Anna Smith", ["email"] = "anna@example.com" };
+
+        await LoginAsync();
+
+        user.Email.Should().BeNull();
+        user.EmailConfirmed.Should().BeFalse();
+        VerifySignedIn("anna", SsoUserId);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(OidcService.HttpClientName), Times.Exactly(3));
+        _loggerMock.VerifyLog(LogLevel.Information, "Started OIDC Login flow at Example IdP");
+        _loggerMock.VerifyLog(LogLevel.Debug, "Sign-in via Example IdP received id_token claim types [aud, email, exp, iat, iss, name, nbf, nonce, preferred_username, sub] and user info claim types [email, name, preferred_username, sub]");
+        _loggerMock.VerifyLog(LogLevel.Information, "Existing OIDC user user-sso logged in via Example IdP");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task CompleteLoginAsync_ShouldNeverOverwriteADisplayNameOrEmailThatIsAlreadySet()
     {
         var user = SsoUser("anna", "anna@home.example.com", "Annie");
@@ -1817,7 +1837,7 @@ public class OidcFlowTests : IDisposable
         return user;
     }
 
-    private ApplicationUser SsoUser(string userName, string email, string? displayName)
+    private ApplicationUser SsoUser(string userName, string? email, string? displayName)
     {
         var user = new ApplicationUser(userName, email, displayName) { Id = SsoUserId };
         _context.Users.Add(user);

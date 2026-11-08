@@ -94,6 +94,17 @@ public class DataProtectionKeyEncryptionTests
     }
 
     [Fact]
+    public void Decrypt_ShouldFail_WhenTheValueElementIsMissing()
+    {
+        var element = new XElement("encryptedKey");
+
+        var act = () => Decryptor(new DataProtectionKeyMaterial(Secret)).Decrypt(element);
+
+        act.Should().Throw<CryptographicException>().WithMessage("The encrypted data protection key is malformed.");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public void Decrypt_ShouldFail_WhenTheVariableIsMissing()
     {
         var encrypted = new SecretXmlEncryptor(new DataProtectionKeyMaterial(Secret)).Encrypt(KeyElement);
