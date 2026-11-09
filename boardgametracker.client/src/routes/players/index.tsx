@@ -1,24 +1,26 @@
 import { noop } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import AlertTriangle from "@/assets/icons/alert-triangle.svg?react";
 import PlusIcon from "@/assets/icons/plus.svg?react";
 import Trophy from "@/assets/icons/trophy.svg?react";
 import Users from "@/assets/icons/users.svg?react";
-import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { SearchInputField } from "@/components/BgtForm";
+import { BgtImageCard } from "@/components/BgtImageCard/BgtImageCard";
+import { BgtCardList } from "@/components/BgtLayout/BgtCardList";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtSegmentedControl } from "@/components/BgtSegmentedControl/BgtSegmentedControl";
+import { BgtText } from "@/components/BgtText/BgtText";
 import { useDebouncedSearchQuery } from "@/hooks/useDebouncedSearchQuery";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getPlayersOverview } from "@/services/queries/players";
-import { PlayerRow } from "./-components/PlayerRow";
+import { toRelative } from "@/utils/dateUtils";
 import { usePlayersData } from "./-hooks/usePlayersData";
 import {
 	filterPlayers,
@@ -37,19 +39,19 @@ export const Route = createFileRoute("/players/")({
 	validateSearch: (search: Record<string, unknown>): PlayersSearch => parsePlayersSearch(search),
 });
 
-const SKELETON_ROWS = ["a", "b", "c", "d", "e", "f"];
+const SKELETON_TILES = ["a", "b", "c", "d", "e", "f"];
 
 const PlayersSkeleton = () => (
-	<ul aria-hidden="true" className="flex flex-col gap-2">
-		{SKELETON_ROWS.map((key) => (
-			<li key={key} className="h-[66px] rounded-[10px] border border-card-border bg-card motion-safe:animate-pulse" />
+	<BgtCardList aria-hidden="true">
+		{SKELETON_TILES.map((key) => (
+			<div key={key} className="aspect-square rounded-lg bg-card motion-safe:animate-pulse" />
 		))}
-	</ul>
+	</BgtCardList>
 );
 
 function RouteComponent() {
 	const { q, sort = "recent" } = Route.useSearch();
-	const { t } = useTranslation(["player", "common"]);
+	const { t, i18n } = useTranslation(["player", "common", "games"]);
 	const { canWrite } = usePermissions();
 	const navigate = useNavigate();
 	const { players, isLoading, isError, refetch } = usePlayersData();
@@ -84,6 +86,7 @@ function RouteComponent() {
 			),
 		[visiblePlayers],
 	);
+	const ordered = useMemo(() => [...played, ...notPlayed], [played, notPlayed]);
 
 	const sortOptions = PLAYER_SORTS.map((value) => ({ value, label: t(`list.sort-${value}`) }));
 	const addPlayer = () => navigate({ to: "/players/new" });
@@ -131,7 +134,7 @@ function RouteComponent() {
 				]}
 			></BgtPageHeader>
 			<BgtPageContent>
-				<div className="flex w-full max-w-3xl flex-col gap-4">
+				<div className="flex w-full flex-col gap-4">
 					<div className="flex flex-wrap items-center gap-2">
 						<div className="w-full sm:w-64 xl:w-[300px]">
 							<SearchInputField
@@ -166,48 +169,28 @@ function RouteComponent() {
 							</BgtButton>
 						</div>
 					) : (
-						<>
-							{played.length > 0 && (
-								<ul className="flex flex-col gap-2">
-									{played.map((x) => (
-										<PlayerRow key={x.id} player={x} sort={sort} />
-									))}
-								</ul>
-							)}
-							{notPlayed.length > 0 && (
-								<section aria-labelledby="players-not-played" className="mt-4 flex flex-col gap-3">
-									<div className="flex items-baseline justify-between gap-3">
-										<h2 id="players-not-played" className="text-sm font-semibold text-white/80">
-											{t("list.not-played")}
-										</h2>
-										{canWrite && (
-											<Link
-												to="/sessions/new"
-												className="rounded-sm text-sm text-primary-text hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-											>
-												{t("list.log-game")}
-											</Link>
-										)}
-									</div>
-									<ul className="flex flex-wrap gap-2">
-										{notPlayed.map((x) => (
-											<li key={x.id}>
-												<Link
-													to="/players/$playerId"
-													params={{ playerId: x.id }}
-													className="flex min-h-11 items-center gap-2 rounded-full border border-card-border bg-card py-1 pr-4 pl-1.5 text-sm text-white transition-colors hover:border-primary/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-												>
-													<span aria-hidden="true">
-														<BgtAvatar image={x.image} title={x.name} size="medium" />
-													</span>
-													{x.name}
-												</Link>
-											</li>
-										))}
-									</ul>
-								</section>
-							)}
-						</>
+						<BgtCardList>
+							{ordered.map((x) => (
+								<BgtImageCard
+									key={x.id}
+									title={x.name}
+									image={x.image}
+									link={`/players/${x.id}`}
+									meta={
+										x.playCount > 0 ? (
+											<BgtText size="1" className="text-card-value truncate">
+												{t("list.record", { wins: x.winCount, count: x.playCount })}
+												{sort === "recent" && x.lastPlayed && ` · ${toRelative(x.lastPlayed, i18n.language)}`}
+											</BgtText>
+										) : (
+											<BgtText size="1" color="white" opacity={50} className="truncate">
+												{t("games:never-played")}
+											</BgtText>
+										)
+									}
+								/>
+							))}
+						</BgtCardList>
 					)}
 				</div>
 			</BgtPageContent>

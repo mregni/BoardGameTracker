@@ -73,7 +73,6 @@
     "link-failed": "Kon het gekoppelde account niet wijzigen"
   },
   "list": {
-    "last-played": "laatst gespeeld",
     "record_one": "{{wins}} van {{count}} gewonnen",
     "record_other": "{{wins}} van {{count}} gewonnen",
     "sort": "Spelers sorteren",
@@ -83,12 +82,7 @@
     "no-match": "Geen spelers gevonden voor “{{query}}”",
     "clear": "Filter wissen",
     "error-title": "Spelers konden niet geladen worden",
-    "error-description": "De server antwoordde niet. Controleer of hij draait en probeer het opnieuw.",
-    "win-rate": "gewonnen",
-    "sessions_one": "sessie",
-    "sessions_other": "sessies",
-    "not-played": "Nog niet gespeeld",
-    "log-game": "Sessie toevoegen"
+    "error-description": "De server antwoordde niet. Controleer of hij draait en probeer het opnieuw."
   },
   "standing": {
     "ranked": "#{{rank}} van {{count}} op de ranglijst",
