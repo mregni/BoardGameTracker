@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 0
 
       - name: Git Semantic Version
-        uses: PaulHatch/semantic-version@502226b17e3e242e4befd0a45690fcbb27dd1373 # v6.0.3
+        uses: PaulHatch/semantic-version@5ae1354e589c5a67345fb2c6e65b025ff676d7c7 # v6.0.7
         id: versioning
         with:
           enable_prerelease_mode: true
@@ -56,7 +56,7 @@ jobs:
           cache-dependency-path: "**/packages.lock.json"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           package_json_file: boardgametracker.client/package.json
 
@@ -215,7 +215,7 @@ jobs:
         if: success() || failure()
 
       - name: Code Coverage Report
-        uses: danielpalme/ReportGenerator-GitHub-Action@d3ebf1f760f7d8ab92cc44d9bcfee7ad73722a31 # v5.5.11
+        uses: danielpalme/ReportGenerator-GitHub-Action@861674232075b2c6bd1405a04c4bb9b150653e81 # v5.5.12
         with:
           reports: "TestResults/**/coverage.opencover.xml;boardgametracker.client/coverage/lcov.info"
           targetdir: "coveragereport"
@@ -252,7 +252,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           package_json_file: docs/package.json
 
