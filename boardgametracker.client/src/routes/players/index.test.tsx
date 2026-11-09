@@ -21,9 +21,7 @@ vi.mock("@tanstack/react-router", () => ({
 		return { ...config, useSearch: () => mocks.search };
 	},
 	useNavigate: () => mocks.navigate,
-	Link: ({ children, to, params }: { children: React.ReactNode; to: string; params?: { playerId: number } }) => (
-		<a href={params ? to.replace("$playerId", String(params.playerId)) : to}>{children}</a>
-	),
+	Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
 }));
 
 vi.mock("@/hooks/usePermissions", () => ({
@@ -64,17 +62,27 @@ describe("Players overview", () => {
 		expect(queryClient.query).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ["players", "overview"] }));
 	});
 
-	it("lists players by most recent play and groups those who haven't played", async () => {
+	it("lists players by most recent play with those who haven't played last", async () => {
 		renderPage();
 
 		const links = await screen.findAllByRole("link");
-		expect(links.map((x) => x.getAttribute("href"))).toEqual([
-			"/players/2",
-			"/players/3",
-			"/sessions/new",
-			"/players/1",
-		]);
-		expect(screen.getByRole("heading", { name: "list.not-played" })).toBeInTheDocument();
+		expect(links.map((x) => x.getAttribute("href"))).toEqual(["/players/2", "/players/3", "/players/1"]);
+		expect(links[2]).toHaveTextContent("games:never-played");
+	});
+
+	it("shows the win record and when the player last played", async () => {
+		renderPage();
+
+		const [first] = await screen.findAllByRole("link");
+		expect(first).toHaveTextContent(/reggilist\.record · .+/);
+	});
+
+	it("leaves out the last played time when not sorting on recent", async () => {
+		mocks.search = { sort: "sessions" };
+		renderPage();
+
+		const [first] = await screen.findAllByRole("link");
+		expect(first).toHaveTextContent(/reggilist\.record$/);
 	});
 
 	it("follows the sort and query from the URL", async () => {

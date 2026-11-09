@@ -65,9 +65,9 @@ test("adds a player, shows it everywhere and deletes it again", async ({ page })
 
 	await page.goto("/players");
 	await expect(page.getByText(count(expected.playerCount + 1), { exact: true })).toBeVisible();
-	const section = page.getByRole("region", { name: "Not played yet" });
-	await expect(section.getByRole("link", { name })).toHaveAttribute("href", `/players/${id}`);
-	await expect(section.getByRole("link", { name: "Log a game" })).toHaveAttribute("href", "/sessions/new");
+	const tiles = page.getByRole("main").locator('a[href^="/players/"]');
+	await expect(tiles.last()).toHaveAccessibleName(`${name} Never played`);
+	await expect(tiles.last()).toHaveAttribute("href", `/players/${id}`);
 
 	await page.goto("/");
 	await expect(page.getByRole("link", { name: new RegExp(`^Players ${expected.playerCount + 1} `) })).toBeVisible();
@@ -76,7 +76,6 @@ test("adds a player, shows it everywhere and deletes it again", async ({ page })
 	await expect(page.getByText("Player deleted")).toBeVisible();
 	await expect(page.getByText(count(expected.playerCount), { exact: true })).toBeVisible();
 	await expect(page.getByRole("link", { name })).toHaveCount(0);
-	await expect(page.getByRole("region", { name: "Not played yet" })).toHaveCount(0);
 
 	await page.goto("/");
 	await expect(page.getByRole("link", { name: new RegExp(`^Players ${expected.playerCount} `) })).toBeVisible();
@@ -155,7 +154,7 @@ test("edits the name and email of a player", async ({ page }) => {
 	await dialog.getByRole("button", { name: "Cancel" }).click();
 
 	await page.goto("/players");
-	await expect(page.getByRole("region", { name: "Not played yet" }).getByRole("link", { name: renamed })).toBeVisible();
+	await expect(page.getByRole("main").getByRole("link", { name: `${renamed} Never played` })).toBeVisible();
 });
 
 test("keeps a player when editing is cancelled", async ({ page }) => {

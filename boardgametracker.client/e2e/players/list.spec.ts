@@ -1,11 +1,11 @@
 import type { Page } from "@playwright/test";
 import { expect, expectVisibleImagesToLoad, test } from "../support/fixtures";
-import { percent, playerId, relativeTime, statsOf } from "../support/playerStats";
+import { playerId, relativeTime, statsOf } from "../support/playerStats";
 import { expected, players } from "../support/seedData";
 
 const stats = players.map((name) => ({ name, ...statsOf(name) }));
 
-const rows = (page: Page) => page.getByRole("main").getByRole("listitem").getByRole("link");
+const rows = (page: Page) => page.getByRole("main").locator('a[href^="/players/"]');
 
 const record = (player: (typeof stats)[number]) => `${player.name} ${player.wins} of ${player.sessions} wins`;
 
@@ -32,12 +32,12 @@ test("orders the players on the last session they played", async ({ page }) => {
 	await expect(page.getByText(`${expected.playerCount} players`, { exact: true })).toBeVisible();
 	await expectRows(
 		page,
-		recent.map((player) => new RegExp(`^${record(player)} ${relativeTime(player.last.start)} last played$`)),
+		recent.map((player) => new RegExp(`^${record(player)} · ${relativeTime(player.last.start)}$`)),
 	);
 	await expectLinks(page, recent);
 });
 
-test("sorts on the name and shows the win rate", async ({ page }) => {
+test("sorts on the name", async ({ page }) => {
 	await page.goto("/players");
 
 	await page.getByRole("button", { name: "Name" }).click();
@@ -45,7 +45,7 @@ test("sorts on the name and shows the win rate", async ({ page }) => {
 	await expect(page).toHaveURL("/players?sort=name");
 	await expectRows(
 		page,
-		byName.map((player) => `${record(player)} ${percent(player.wins, player.sessions)} win rate`),
+		byName.map((player) => record(player)),
 	);
 	await expectLinks(page, byName);
 });
@@ -59,7 +59,7 @@ test("sorts on the sessions and goes back to recent", async ({ page }) => {
 	await expect(page).toHaveURL("/players?sort=sessions");
 	await expectRows(
 		page,
-		bySessions.map((player) => `${record(player)} ${player.sessions} sessions`),
+		bySessions.map((player) => record(player)),
 	);
 
 	await page.getByRole("button", { name: "Recent" }).click();
@@ -96,7 +96,7 @@ test("filters on part of a name, ignoring capitals", async ({ page }) => {
 	await expect(page.getByText(`${matches.length} of ${expected.playerCount} players`)).toBeVisible();
 	await expectRows(
 		page,
-		matches.map((player) => `${record(player)} ${percent(player.wins, player.sessions)} win rate`),
+		matches.map((player) => record(player)),
 	);
 });
 
@@ -202,7 +202,7 @@ test("counts a single player in the singular", async ({ page }) => {
 	await page.goto("/players?sort=sessions");
 
 	await expect(page.getByText("1 player", { exact: true })).toBeVisible();
-	await expectRows(page, [`${player.name} 1 of 1 win 1 session`]);
+	await expectRows(page, [`${player.name} 1 of 1 win`]);
 });
 
 test("explains when the players cannot be loaded and retries", async ({ page }) => {

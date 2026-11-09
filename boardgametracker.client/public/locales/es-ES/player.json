@@ -73,7 +73,6 @@
     "link-failed": "No se ha podido cambiar la cuenta vinculada"
   },
   "list": {
-    "last-played": "última partida",
     "record_one": "{{wins}} de {{count}} victoria",
     "record_other": "{{wins}} de {{count}} victorias",
     "sort": "Ordenar jugadores",
@@ -83,12 +82,7 @@
     "no-match": "Ningún jugador coincide con “{{query}}”",
     "clear": "Borrar filtro",
     "error-title": "No se pudieron cargar los jugadores",
-    "error-description": "El servidor no respondió. Comprueba que está en marcha e inténtalo de nuevo.",
-    "win-rate": "de victorias",
-    "sessions_one": "sesión",
-    "sessions_other": "sesiones",
-    "not-played": "Aún sin jugar",
-    "log-game": "Registrar una partida"
+    "error-description": "El servidor no respondió. Comprueba que está en marcha e inténtalo de nuevo."
   },
   "standing": {
     "ranked": "N.º {{rank}} de {{count}} en la clasificación",
