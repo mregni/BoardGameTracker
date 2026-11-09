@@ -131,6 +131,23 @@ describe("GameStaticSection", () => {
 		});
 	});
 
+	describe("BGG link", () => {
+		it("should link to the game on BoardGameGeek in a new tab when the BGG id is known", () => {
+			renderWithTheme(<GameStaticSection {...defaultProps} game={createGame({ bggId: 13 })} />);
+
+			const link = screen.getByRole("link", { name: "games:columns.bgg" });
+			expect(link).toHaveAttribute("href", "https://boardgamegeek.com/boardgame/13");
+			expect(link).toHaveAttribute("target", "_blank");
+			expect(link).toHaveAttribute("rel", "noopener noreferrer");
+		});
+
+		it("should not show the BGG link for a game without a BGG id", () => {
+			renderWithTheme(<GameStaticSection {...defaultProps} />);
+
+			expect(screen.queryByRole("link", { name: "games:columns.bgg" })).not.toBeInTheDocument();
+		});
+	});
+
 	describe("Categories", () => {
 		it("should render a badge per category", () => {
 			const game = createGame({

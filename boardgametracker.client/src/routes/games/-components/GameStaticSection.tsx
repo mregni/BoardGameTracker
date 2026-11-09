@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import List from "@/assets/icons/list.svg?react";
 import Package from "@/assets/icons/package.svg?react";
+import SquareOutIcon from "@/assets/icons/square-out.svg?react";
 import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
-import BgtButton from "@/components/BgtButton/BgtButton";
+import BgtButton, { buttonVariants } from "@/components/BgtButton/BgtButton";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { Game } from "@/models";
 import { RulebookChatButton } from "./RulebookChatButton";
@@ -22,7 +23,7 @@ const LONG_DESCRIPTION_LENGTH = 180;
 
 export const GameStaticSection = (props: Props) => {
 	const { game, manualCount, ragEnabled, onOpenManuals, onOpenExpansions } = props;
-	const { t } = useTranslation("game");
+	const { t } = useTranslation(["game", "games"]);
 	const navigate = useNavigate();
 	const [expanded, setExpanded] = useState(false);
 	const isLong = game.description.length > LONG_DESCRIPTION_LENGTH;
@@ -68,6 +69,17 @@ export const GameStaticSection = (props: Props) => {
 				)}
 			</div>
 			<div className="flex flex-wrap gap-2">
+				{game.bggId !== null && (
+					<a
+						href={`https://boardgamegeek.com/boardgame/${game.bggId}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						className={buttonVariants({ variant: "secondary", size: "1", className: "pointer-coarse:min-h-11" })}
+					>
+						<SquareOutIcon className="size-4" />
+						{t("games:columns.bgg")}
+					</a>
+				)}
 				<BgtButton
 					variant="secondary"
 					size="1"
