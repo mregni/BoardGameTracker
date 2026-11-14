@@ -437,4 +437,38 @@ public class LeaderboardServiceTests
         VerifyRowsLoaded(filter);
         VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task GetLeaderboardAsync_ShouldPickTheMostPointsAndTheHighestScore_FromTheScoredPlayers()
+    {
+        var filter = new LeaderboardFilter(GameId: 7, MinSessions: 1);
+        SetupRows(filter,
+        [
+            new LeaderboardRow(1, "Alice", null, 4, 2, 0, 100, 0, 180, 60),
+            new LeaderboardRow(2, "Bob", null, 3, 1, 0, 100, 0, 150, 90),
+            new LeaderboardRow(3, "Cara", null, 1, 0, 0, 30),
+        ]);
+
+        var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
+
+        result.MostPoints!.Name.Should().Be("Alice");
+        result.HighestScore!.Name.Should().Be("Bob");
+        result.Players.Single(x => x.Name == "Alice").Should().BeEquivalentTo(new { TotalScore = 180.0, BestScore = 60.0 });
+        VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLeaderboardAsync_ShouldLeaveThePointRecordsEmpty_WhenNoScoresAreKnown()
+    {
+        var filter = new LeaderboardFilter(MinSessions: 1);
+        SetupRows(filter, [new LeaderboardRow(1, "Alice", null, 4, 2, 0, 100)]);
+
+        var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
+
+        result.MostPoints.Should().BeNull();
+        result.HighestScore.Should().BeNull();
+        VerifyRowsLoaded(filter);
+        VerifyNoOtherCalls();
+    }
 }

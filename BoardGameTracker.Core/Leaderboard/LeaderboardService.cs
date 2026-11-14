@@ -75,6 +75,16 @@ public class LeaderboardService : ILeaderboardService
                 .OrderByDescending(x => x.MinutesPlayed)
                 .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault(),
+            MostPoints = entries
+                .Where(x => x.TotalScore.HasValue)
+                .OrderByDescending(x => x.TotalScore)
+                .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault(),
+            HighestScore = entries
+                .Where(x => x.BestScore.HasValue)
+                .OrderByDescending(x => x.BestScore)
+                .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault(),
         };
     }
 
@@ -91,5 +101,7 @@ public class LeaderboardService : ILeaderboardService
         PodiumCount = row.PodiumCount,
         WinPercentage = row.PlayCount == 0 ? 0 : 100.0 * row.WinCount / row.PlayCount,
         MinutesPlayed = Math.Round(row.MinutesPlayed),
+        TotalScore = row.TotalScore,
+        BestScore = row.BestScore,
     };
 }

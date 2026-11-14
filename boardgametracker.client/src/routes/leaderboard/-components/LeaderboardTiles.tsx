@@ -59,6 +59,26 @@ export const LeaderboardTiles = ({ leaderboard, podium }: Props) => {
 			entry: leaderboard.mostTimePlayed,
 			value: (entry) => duration(entry.minutesPlayed),
 		},
+		...(leaderboard.mostPoints
+			? [
+					{
+						key: "most-points",
+						title: t("highlights.most-points"),
+						entry: leaderboard.mostPoints,
+						value: (entry: LeaderboardEntry) => format.decimal(entry.totalScore),
+					},
+				]
+			: []),
+		...(leaderboard.highestScore
+			? [
+					{
+						key: "highest-score",
+						title: t("highlights.highest-score"),
+						entry: leaderboard.highestScore,
+						value: (entry: LeaderboardEntry) => format.decimal(entry.bestScore),
+					},
+				]
+			: []),
 	];
 
 	const shown = tiles.filter(

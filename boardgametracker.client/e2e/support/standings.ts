@@ -19,6 +19,7 @@ const percentFormat = new Intl.NumberFormat("en-US", { style: "percent", maximum
 export const percent = (fraction: number) => percentFormat.format(fraction);
 
 const oneDecimal = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
+export const decimal = (value: number) => oneDecimal.format(value);
 
 const roundedToEven = (value: number) => {
 	const scaled = value * 10;
@@ -51,6 +52,16 @@ const averageScore = (subset: Session[], name: string) => {
 		.map((session) => scoreOf(session, name))
 		.filter((score) => score !== null);
 	return scores.length === 0 ? "–" : oneDecimal.format(roundedToEven(sum(scores) / scores.length));
+};
+
+const pointsOf = (subset: Session[], name: string) => {
+	const scores = subset
+		.filter((session) => hasScoring(session) && !session.isCoop)
+		.map((session) => scoreOf(session, name))
+		.filter((score) => score !== null);
+	return scores.length === 0
+		? { totalScore: null, bestScore: null }
+		: { totalScore: sum(scores), bestScore: Math.max(...scores) };
 };
 
 export const headToHead = (one: string, two: string) => {
@@ -164,6 +175,7 @@ export const leaderboard = (subset: Session[], minimum: number, rankBy: RankBy) 
 			name,
 			...totals(name, subset),
 			podiums: sum(subset.map((session) => (podiumFinishers(session).includes(name) ? 1 : 0))),
+			...pointsOf(subset, name),
 		}))
 		.filter((entry) => entry.sessions > 0);
 	type Entry = (typeof entries)[number];
@@ -216,6 +228,16 @@ export const leaderboard = (subset: Session[], minimum: number, rankBy: RankBy) 
 			entries,
 			(x) => x.minutes > 0,
 			(a, b) => b.minutes - a.minutes || byName(a, b),
+		),
+		mostPoints: first(
+			entries,
+			(x) => x.totalScore !== null,
+			(a, b) => (b.totalScore ?? 0) - (a.totalScore ?? 0) || byName(a, b),
+		),
+		highestScore: first(
+			entries,
+			(x) => x.bestScore !== null,
+			(a, b) => (b.bestScore ?? 0) - (a.bestScore ?? 0) || byName(a, b),
 		),
 		totalWins: sum(entries.map((entry) => entry.wins)),
 		coopWins: sum(subset.filter((session) => session.isCoop && session.teamWon).map((x) => x.scores.length)),

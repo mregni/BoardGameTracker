@@ -32,6 +32,8 @@ const entry = (playerId: number, name: string, rank: number | null, isRanked = t
 	podiumCount: 1,
 	winPercentage: 40,
 	minutesPlayed: 600,
+	totalScore: null,
+	bestScore: null,
 	isRanked,
 	sessionsToRank: 0,
 });

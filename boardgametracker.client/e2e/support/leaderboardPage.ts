@@ -1,7 +1,17 @@
 import { expect, type Page } from "@playwright/test";
 import { subDays } from "date-fns";
 import { games } from "./seedData";
-import { between, brusselsDay, literal, percent, playerId, type RankBy, type Standing, short } from "./standings";
+import {
+	between,
+	brusselsDay,
+	decimal,
+	literal,
+	percent,
+	playerId,
+	type RankBy,
+	type Standing,
+	short,
+} from "./standings";
 
 const pinnedYearStart = brusselsDay(subDays(new Date(), 100));
 
@@ -126,7 +136,7 @@ const expectPodium = async (page: Page, standing: Standing) => {
 	}
 };
 
-const expectRecords = async (page: Page, standing: Standing) => {
+const expectRecords = async (page: Page, standing: Standing, gameTitle?: string) => {
 	const podium = podiumOf(standing);
 	const bestLabel = `Best win rate, min. ${standing.minimum}`;
 	const all = [
@@ -158,6 +168,24 @@ const expectRecords = async (page: Page, standing: Standing) => {
 			entry: standing.mostTime,
 			value: (x: Entry) => short(x.minutes),
 		},
+		...(gameTitle
+			? [
+					{
+						repeats: null,
+						title: "Most points",
+						text: "Most points",
+						entry: standing.mostPoints,
+						value: (x: Entry) => decimal(x.totalScore ?? 0),
+					},
+					{
+						repeats: null,
+						title: "Highest score",
+						text: "Highest score",
+						entry: standing.highestScore,
+						value: (x: Entry) => decimal(x.bestScore ?? 0),
+					},
+				].filter((tile) => tile.entry !== null)
+			: []),
 	];
 	const shown = all.filter(
 		(tile) =>
@@ -229,7 +257,7 @@ export const expectLeaderboard = async (page: Page, standing: Standing, gameTitl
 	await expect(page.getByRole("region", { name: "Records" })).toBeVisible();
 	await expectRanking(page, standing, gameTitle);
 	await expectPodium(page, standing);
-	await expectRecords(page, standing);
+	await expectRecords(page, standing, gameTitle);
 	await expectNobodyRanked(page, standing);
 	await expectRules(page, standing);
 };

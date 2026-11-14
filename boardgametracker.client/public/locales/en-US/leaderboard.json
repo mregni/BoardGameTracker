@@ -5,6 +5,8 @@
     "to": "To",
     "game": "Game",
     "all-games": "All games",
+    "category": "Category",
+    "all-categories": "All categories",
     "min-sessions": "Min. sessions",
     "min-sessions-value_one": "{{count}} session",
     "min-sessions-value_other": "{{count}} sessions",
@@ -20,6 +22,8 @@
     "most-sessions": "Most sessions",
     "best-win-rate": "Best win rate",
     "most-time": "Most time",
+    "most-points": "Most points",
+    "highest-score": "Highest score",
     "nobody-yet": "Nobody yet",
     "min-sessions": "min. {{count}}"
   },

@@ -13,6 +13,8 @@ const entry = (podiumCount: number): LeaderboardEntry => ({
 	podiumCount,
 	winPercentage: 40,
 	minutesPlayed: 600,
+	totalScore: null,
+	bestScore: null,
 	isRanked: true,
 	sessionsToRank: 0,
 });
@@ -22,6 +24,8 @@ const leaderboard = (overrides: Partial<Leaderboard> = {}): Leaderboard => ({
 	mostPlays: null,
 	bestWinRate: null,
 	mostTimePlayed: null,
+	mostPoints: null,
+	highestScore: null,
 	minimumSessions: 5,
 	minimumPlayersForPodium: 4,
 	rankBy: "wins",

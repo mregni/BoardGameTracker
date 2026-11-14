@@ -23,6 +23,7 @@ public class LeaderboardRepositoryTests : IAsyncLifetime
     private int _caraId;
     private int _daveId;
     private int _scoringId;
+    private int _strategyId;
 
     public LeaderboardRepositoryTests(IntegrationFixture fixture)
     {
@@ -41,6 +42,8 @@ public class LeaderboardRepositoryTests : IAsyncLifetime
         var bob = new Player("Bob");
         var cara = new Player("Cara");
         var dave = new Player("Dave");
+        var strategy = new GameCategory("Strategy");
+        scoring.AddCategory(strategy);
         db.AddRange(scoring, coop, alice, bob, cara, dave);
         await db.SaveChangesAsync();
 
@@ -63,6 +66,7 @@ public class LeaderboardRepositoryTests : IAsyncLifetime
         _caraId = cara.Id;
         _daveId = dave.Id;
         _scoringId = scoring.Id;
+        _strategyId = strategy.Id;
     }
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
@@ -152,6 +156,34 @@ public class LeaderboardRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetLeaderboardRows_ShouldOnlyCountGamesInTheChosenCategory()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+
+        var rows = await repository.GetLeaderboardRows(new LeaderboardFilter(CategoryId: _strategyId), TestContext.Current.CancellationToken);
+
+        rows.Should().HaveCount(4);
+        rows.Single(x => x.PlayerId == _aliceId).Should().BeEquivalentTo(new { PlayCount = 2, WinCount = 1 });
+        rows.Single(x => x.PlayerId == _caraId).Should().BeEquivalentTo(new { PlayCount = 1, WinCount = 0 });
+    }
+
+    [Fact]
+    public async Task GetLeaderboardRows_ShouldTotalTheScores_OnlyWhenOneGameIsChosen()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+
+        var forGame = await repository.GetLeaderboardRows(new LeaderboardFilter(GameId: _scoringId), TestContext.Current.CancellationToken);
+        var allGames = await repository.GetLeaderboardRows(new LeaderboardFilter(), TestContext.Current.CancellationToken);
+
+        forGame.Single(x => x.PlayerId == _aliceId).Should().BeEquivalentTo(new { TotalScore = 70.0, BestScore = 50.0 });
+        forGame.Single(x => x.PlayerId == _bobId).Should().BeEquivalentTo(new { TotalScore = 100.0, BestScore = 70.0 });
+        forGame.Single(x => x.PlayerId == _daveId).Should().BeEquivalentTo(new { TotalScore = 10.0, BestScore = 10.0 });
+        allGames.Should().OnlyContain(x => x.TotalScore == null && x.BestScore == null);
+    }
+
+    [Fact]
     public async Task GetLeaderboardRows_ShouldOnlyCountSessionsInsideThePeriod_IncludingBothEndDays()
     {
         await using var scope = _fixture.CreateScope();
@@ -213,6 +245,7 @@ public class LeaderboardRepositoryTests : IAsyncLifetime
     [InlineData("from=2026-05-01&to=2026-04-01")]
     [InlineData("minSessions=0")]
     [InlineData("gameId=0")]
+    [InlineData("categoryId=0")]
     public async Task LeaderboardEndpoint_ShouldRejectInvalidFilters(string query)
     {
         using var reader = await _fixture.CreateClientAsAsync("reader");
