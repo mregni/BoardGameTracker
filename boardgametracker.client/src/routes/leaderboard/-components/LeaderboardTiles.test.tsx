@@ -32,6 +32,8 @@ const entry = (overrides: Partial<LeaderboardEntry>): LeaderboardEntry => ({
 	podiumCount: 2,
 	winPercentage: 40,
 	minutesPlayed: 600,
+	totalScore: null,
+	bestScore: null,
 	isRanked: true,
 	sessionsToRank: 0,
 	...overrides,
@@ -42,6 +44,8 @@ const leaderboard = (overrides: Partial<Leaderboard> = {}): Leaderboard => ({
 	mostPlays: entry({ playerId: 3, name: "Kathleen", playCount: 142 }),
 	bestWinRate: entry({ playerId: 4, name: "reggi", winPercentage: 41.2 }),
 	mostTimePlayed: entry({ playerId: 5, name: "Anna", minutesPlayed: 7860 }),
+	mostPoints: null,
+	highestScore: null,
 	minimumSessions: 5,
 	minimumPlayersForPodium: 4,
 	rankBy: "wins",
@@ -75,6 +79,27 @@ describe("LeaderboardTiles", () => {
 		expect(screen.getAllByRole("listitem")).toHaveLength(3);
 		expect(screen.queryByText(hidden, { exact: false })).not.toBeInTheDocument();
 		expect(screen.getByText(shown)).toBeInTheDocument();
+	});
+
+	it("should add the point records when the leaderboard has them", () => {
+		renderWithTheme(
+			<LeaderboardTiles
+				leaderboard={leaderboard({
+					mostPoints: entry({ playerId: 8, name: "Bea", totalScore: 1250.5 }),
+					highestScore: entry({ playerId: 9, name: "Cas", bestScore: 98 }),
+				})}
+				podium={[]}
+			/>,
+		);
+
+		expect(screen.getByRole("link", { name: "highlights.most-points: Bea, 1,250.5" })).toHaveAttribute(
+			"href",
+			"/players/8",
+		);
+		expect(screen.getByRole("link", { name: "highlights.highest-score: Cas, 98" })).toHaveAttribute(
+			"href",
+			"/players/9",
+		);
 	});
 
 	it("should name the holder and the minimum on the win rate record", () => {

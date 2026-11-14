@@ -32,6 +32,8 @@ const entry = (overrides: Partial<LeaderboardEntry>): LeaderboardEntry => ({
 	podiumCount: 2,
 	winPercentage: 40,
 	minutesPlayed: 600,
+	totalScore: null,
+	bestScore: null,
 	isRanked: true,
 	sessionsToRank: 0,
 	...overrides,

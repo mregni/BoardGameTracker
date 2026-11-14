@@ -2986,6 +2986,16 @@
             }
           },
           {
+            "name": "categoryId",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
             "name": "minSessions",
             "in": "query",
             "schema": {
@@ -8228,6 +8238,12 @@
           "mostTimePlayed": {
             "$ref": "#/components/schemas/LeaderboardEntryDto"
           },
+          "mostPoints": {
+            "$ref": "#/components/schemas/LeaderboardEntryDto"
+          },
+          "highestScore": {
+            "$ref": "#/components/schemas/LeaderboardEntryDto"
+          },
           "minimumSessions": {
             "type": "integer",
             "format": "int32"
@@ -8301,6 +8317,16 @@
           "minutesPlayed": {
             "type": "number",
             "format": "double"
+          },
+          "totalScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "bestScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
           },
           "isRanked": {
             "type": "boolean"

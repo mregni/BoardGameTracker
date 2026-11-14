@@ -5,6 +5,8 @@
     "to": "Tot",
     "game": "Spel",
     "all-games": "Alle spellen",
+    "category": "Categorie",
+    "all-categories": "Alle categorieën",
     "min-sessions": "Min. sessies",
     "min-sessions-value_one": "{{count}} sessie",
     "min-sessions-value_other": "{{count}} sessies",
@@ -20,6 +22,8 @@
     "most-sessions": "Meeste sessies",
     "best-win-rate": "Beste winstpercentage",
     "most-time": "Meeste tijd",
+    "most-points": "Meeste punten",
+    "highest-score": "Hoogste score",
     "nobody-yet": "Nog niemand",
     "min-sessions": "min. {{count}}"
   },

@@ -214,6 +214,14 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
             .Select(x => new ScoredPlay(x.SessionId, x.PlayerId, x.Won, x.Score!.Value))
             .ToListAsync(cancellationToken);
 
+        var scores = filter.GameId.HasValue
+            ? await plays
+                .Where(x => x.Score != null && !x.Session.IsCoop && x.Session.Game.HasScoring)
+                .GroupBy(x => x.PlayerId)
+                .Select(g => new PlayerScores(g.Key, g.Sum(x => x.Score!.Value), g.Max(x => x.Score!.Value)))
+                .ToDictionaryAsync(x => x.PlayerId, cancellationToken)
+            : [];
+
         var podiums = scored
             .GroupBy(x => x.SessionId)
             .Select(session => session.ToList())
@@ -222,7 +230,7 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
             .ToDictionary(g => g.Key, g => g.Count());
 
         return totals
-            .Select(x => new LeaderboardRow(x.PlayerId, x.Name, x.Image, x.PlayCount, x.WinCount, podiums.GetValueOrDefault(x.PlayerId), x.MinutesPlayed, x.CoopWinCount))
+            .Select(x => new LeaderboardRow(x.PlayerId, x.Name, x.Image, x.PlayCount, x.WinCount, podiums.GetValueOrDefault(x.PlayerId), x.MinutesPlayed, x.CoopWinCount, scores.GetValueOrDefault(x.PlayerId)?.Total, scores.GetValueOrDefault(x.PlayerId)?.Best))
             .ToList();
     }
 
@@ -246,6 +254,12 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
         {
             var gameId = filter.GameId.Value;
             plays = plays.Where(x => x.Session.GameId == gameId);
+        }
+
+        if (filter.CategoryId.HasValue)
+        {
+            var categoryId = filter.CategoryId.Value;
+            plays = plays.Where(x => x.Session.Game.Categories.Any(c => c.Id == categoryId));
         }
 
         return plays;
@@ -273,4 +287,6 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
     }
 
     private sealed record ScoredPlay(int SessionId, int PlayerId, bool Won, double Score);
+
+    private sealed record PlayerScores(int PlayerId, double Total, double Best);
 }

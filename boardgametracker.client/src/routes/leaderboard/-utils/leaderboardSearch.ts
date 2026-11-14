@@ -17,6 +17,7 @@ export const leaderboardSearchSchema = z.object({
 	from: isoDate.optional().catch(undefined),
 	to: isoDate.optional().catch(undefined),
 	game: z.number().int().positive().optional().catch(undefined),
+	category: z.number().int().positive().optional().catch(undefined),
 	min: z
 		.number()
 		.refine((value) => (MIN_SESSION_OPTIONS as readonly number[]).includes(value))
@@ -51,10 +52,11 @@ export const toLeaderboardParams = (search: LeaderboardSearch, today: Date = new
 		...(from ? { from } : {}),
 		...(to ? { to } : {}),
 		...(search.game ? { gameId: search.game } : {}),
+		...(search.category ? { categoryId: search.category } : {}),
 		minSessions: search.min ?? DEFAULT_MIN_SESSIONS,
 		rankBy: search.rank ?? DEFAULT_RANK_BY,
 	};
 };
 
 export const hasActiveFilters = (search: LeaderboardSearch): boolean =>
-	(search.range !== undefined && search.range !== "all") || search.game !== undefined;
+	(search.range !== undefined && search.range !== "all") || search.game !== undefined || search.category !== undefined;

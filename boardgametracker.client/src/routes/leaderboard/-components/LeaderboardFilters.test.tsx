@@ -12,8 +12,16 @@ vi.mock("@/services/queries/settings", () => ({
 }));
 
 const games = [
-	{ id: 2, title: "Wingspan", image: "wingspan.webp" },
-	{ id: 1, title: "Azul", image: null },
+	{
+		id: 2,
+		title: "Wingspan",
+		image: "wingspan.webp",
+		categories: [
+			{ id: 5, name: "Card Game" },
+			{ id: 3, name: "Animals" },
+		],
+	},
+	{ id: 1, title: "Azul", image: null, categories: [{ id: 5, name: "Card Game" }] },
 ] as unknown as Game[];
 
 const renderFilters = (search: LeaderboardSearch = {}) => {
@@ -122,6 +130,28 @@ describe("LeaderboardFilters", () => {
 		await user.click(await screen.findByRole("option", { name: "filters.all-games" }));
 
 		expect(onChange).toHaveBeenCalledWith({ game: undefined });
+	});
+
+	it("should list every category once by name and pick one", async () => {
+		const user = userEvent.setup();
+		const onChange = renderFilters();
+
+		await user.click(screen.getByRole("combobox", { name: "filters.category" }));
+		const options = await screen.findAllByRole("option");
+		expect(options.map((option) => option.textContent)).toEqual(["filters.all-categories", "Animals", "Card Game"]);
+
+		await user.click(options[2]);
+		expect(onChange).toHaveBeenCalledWith({ category: 5 });
+	});
+
+	it("should clear the category when all categories is picked again", async () => {
+		const user = userEvent.setup();
+		const onChange = renderFilters({ category: 5 });
+
+		await user.click(screen.getByRole("combobox", { name: "filters.category" }));
+		await user.click(await screen.findByRole("option", { name: "filters.all-categories" }));
+
+		expect(onChange).toHaveBeenCalledWith({ category: undefined });
 	});
 
 	it("should offer 1, 3, 5 and 10 sessions with 5 as the default", async () => {

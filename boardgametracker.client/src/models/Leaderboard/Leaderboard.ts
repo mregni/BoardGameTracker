@@ -10,6 +10,8 @@ export interface LeaderboardEntry {
 	podiumCount: number;
 	winPercentage: number;
 	minutesPlayed: number;
+	totalScore: number | null;
+	bestScore: number | null;
 	isRanked: boolean;
 	sessionsToRank: number;
 }
@@ -19,6 +21,8 @@ export interface Leaderboard {
 	mostWins: LeaderboardEntry | null;
 	bestWinRate: LeaderboardEntry | null;
 	mostTimePlayed: LeaderboardEntry | null;
+	mostPoints: LeaderboardEntry | null;
+	highestScore: LeaderboardEntry | null;
 	minimumSessions: number;
 	minimumPlayersForPodium: number;
 	rankBy: LeaderboardRankBy;
@@ -33,6 +37,7 @@ export interface LeaderboardParams {
 	from?: string;
 	to?: string;
 	gameId?: number;
+	categoryId?: number;
 	minSessions: number;
 	rankBy: LeaderboardRankBy;
 }

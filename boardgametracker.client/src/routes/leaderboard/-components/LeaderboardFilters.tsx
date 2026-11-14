@@ -16,6 +16,7 @@ import {
 } from "../-utils/leaderboardSearch";
 
 const ALL_GAMES = 0;
+const ALL_CATEGORIES = 0;
 
 const RANK_BY_KEYS = {
 	wins: "filters.rank-by-wins",
@@ -33,7 +34,9 @@ export const LeaderboardFilters = ({ search, games, onChange }: Props) => {
 	const { t } = useTranslation("leaderboard");
 	const period: LeaderboardPeriod = search.range ?? "all";
 	const [moreOpen, setMoreOpen] = useState(false);
-	const activeMore = [search.game, search.min, search.rank].filter((value) => value !== undefined).length;
+	const activeMore = [search.game, search.category, search.min, search.rank].filter(
+		(value) => value !== undefined,
+	).length;
 
 	const periodLabels: Record<LeaderboardPeriod, string> = {
 		all: t("common:period.all-time"),
@@ -56,6 +59,16 @@ export const LeaderboardFilters = ({ search, games, onChange }: Props) => {
 		[games, t],
 	);
 
+	const categoryItems = useMemo<BgtSelectItem[]>(
+		() => [
+			{ value: ALL_CATEGORIES, label: t("filters.all-categories") },
+			...[...new Map(games.flatMap((game) => game.categories).map((category) => [category.id, category])).values()]
+				.sort((a, b) => a.name.localeCompare(b.name))
+				.map((category) => ({ value: category.id, label: category.name })),
+		],
+		[games, t],
+	);
+
 	const minItems = MIN_SESSION_OPTIONS.map((count) => ({
 		value: count,
 		label: t("filters.min-sessions-value", { count }),
@@ -73,7 +86,7 @@ export const LeaderboardFilters = ({ search, games, onChange }: Props) => {
 
 	return (
 		<div className="flex flex-col gap-3">
-			<div className="grid grid-cols-2 gap-3 xl:grid-cols-[minmax(0,auto)_minmax(0,1fr)_minmax(0,11rem)_minmax(0,11rem)] xl:items-end">
+			<div className="grid grid-cols-2 gap-3 xl:grid-cols-[minmax(0,auto)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,11rem)_minmax(0,11rem)] xl:items-end">
 				<fieldset className="col-span-2 min-w-0 md:col-span-1">
 					<legend className="p-0 text-[15px] font-medium leading-7">{t("common:period.label")}</legend>
 					<div className="grid h-11 grid-cols-4 gap-1 rounded-lg border border-primary/30 bg-background p-1 md:h-10">
@@ -133,6 +146,17 @@ export const LeaderboardFilters = ({ search, games, onChange }: Props) => {
 							value={search.game ?? ALL_GAMES}
 							hasSearch
 							onValueChange={(value) => onChange({ game: Number(value) === ALL_GAMES ? undefined : Number(value) })}
+						/>
+					</div>
+					<div className="col-span-2 min-w-0 md:col-span-1">
+						<BgtSelect
+							label={t("filters.category")}
+							items={categoryItems}
+							value={search.category ?? ALL_CATEGORIES}
+							hasSearch
+							onValueChange={(value) =>
+								onChange({ category: Number(value) === ALL_CATEGORIES ? undefined : Number(value) })
+							}
 						/>
 					</div>
 					<BgtSelect

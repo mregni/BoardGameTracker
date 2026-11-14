@@ -30,13 +30,13 @@ public class LeaderboardControllerTests
     {
         var from = new DateOnly(2026, 1, 1);
         var to = new DateOnly(2026, 12, 31);
-        var expectedFilter = new LeaderboardFilter(from, to, 4, 3, LeaderboardRankBy.WinRate);
+        var expectedFilter = new LeaderboardFilter(from, to, 4, 3, LeaderboardRankBy.WinRate, 9);
         var leaderboard = new LeaderboardDto { MinimumSessions = 3, RankBy = LeaderboardRankBy.WinRate };
         _leaderboardServiceMock
             .Setup(x => x.GetLeaderboardAsync(expectedFilter, TestContext.Current.CancellationToken))
             .ReturnsAsync(leaderboard);
 
-        var result = await _controller.GetLeaderboard(from, to, 4, 3, LeaderboardRankBy.WinRate, TestContext.Current.CancellationToken);
+        var result = await _controller.GetLeaderboard(from, to, 4, 9, 3, LeaderboardRankBy.WinRate, TestContext.Current.CancellationToken);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(leaderboard);
         _leaderboardServiceMock.Verify(x => x.GetLeaderboardAsync(expectedFilter, TestContext.Current.CancellationToken), Times.Once);
@@ -51,7 +51,7 @@ public class LeaderboardControllerTests
             .Setup(x => x.GetLeaderboardAsync(new LeaderboardFilter(), TestContext.Current.CancellationToken))
             .ReturnsAsync(leaderboard);
 
-        var result = await _controller.GetLeaderboard(null, null, null, cancellationToken: TestContext.Current.CancellationToken);
+        var result = await _controller.GetLeaderboard(null, null, null, null, cancellationToken: TestContext.Current.CancellationToken);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(leaderboard);
         _leaderboardServiceMock.Verify(x => x.GetLeaderboardAsync(new LeaderboardFilter(), TestContext.Current.CancellationToken), Times.Once);
@@ -61,7 +61,7 @@ public class LeaderboardControllerTests
     [Fact]
     public async Task GetLeaderboard_ShouldReturnBadRequest_WhenTheStartIsAfterTheEnd()
     {
-        var result = await _controller.GetLeaderboard(new DateOnly(2026, 5, 1), new DateOnly(2026, 4, 1), null, cancellationToken: TestContext.Current.CancellationToken);
+        var result = await _controller.GetLeaderboard(new DateOnly(2026, 5, 1), new DateOnly(2026, 4, 1), null, null, cancellationToken: TestContext.Current.CancellationToken);
 
         result.Should().BeOfType<BadRequestObjectResult>()
             .Which.Value.Should().BeOfType<ProblemDetails>()
@@ -83,7 +83,7 @@ public class LeaderboardControllerTests
             .Setup(x => x.GetLeaderboardAsync(expectedFilter, TestContext.Current.CancellationToken))
             .ReturnsAsync(leaderboard);
 
-        var result = await _controller.GetLeaderboard(from, to, null, cancellationToken: TestContext.Current.CancellationToken);
+        var result = await _controller.GetLeaderboard(from, to, null, null, cancellationToken: TestContext.Current.CancellationToken);
 
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(leaderboard);
         _leaderboardServiceMock.Verify(x => x.GetLeaderboardAsync(expectedFilter, TestContext.Current.CancellationToken), Times.Once);
