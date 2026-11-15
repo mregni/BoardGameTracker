@@ -50,6 +50,21 @@ Authentication is on by default. The container exits at startup with `JWT_SECRET
 
 The notes below apply to the next stable release after v0.2.181, and to the `beta` image today.
 
+### The container no longer runs as root
+
+The image now starts as user `1654` and no longer changes the owner of the mounted folders itself. `PUID` and `PGID` as environment variables have no effect any more; the compose files pass them to `user:` instead.
+
+- If you never set `PUID` / `PGID`, your folders already belong to `1654` and nothing changes.
+- If you set your own `PUID` / `PGID`, add a `user:` line with those ids to the `boardgametracker` service, or copy the new compose file:
+
+  ```yaml title="docker-compose.yml" ins='user: "1000:1000"'
+    boardgametracker:
+      image: uping/boardgametracker:latest
+      user: "1000:1000"
+  ```
+
+Without it the container stops at startup with `not writable by UID 1654` and names the folders. You can also give the folders to `1654` instead: `sudo chown -R 1654:1654 images logs manuals`.
+
 ### The database needs the `vector` extension
 
 The application stores rulebook embeddings for the rules assistant and requires the PostgreSQL `vector` extension. It checks for it before migrating and refuses to start with a clear error when it is missing.
