@@ -129,7 +129,7 @@ docker run -d \
 | `ADMIN_PASSWORD`  | -                  | ❌       | Password (at least 8 characters) of the `admin` account when no account exists yet; `admin` when empty |
 | `TZ`              | `UTC`              | ❌       | Timezone (e.g., `America/New_York`, `Asia/Tokyo`) |
 | `STATISTICS_ENABLED` | `false`         | ❌       | Send error reports to Sentry, plus a sample of server performance traces |
-| `PUID` / `PGID`   | `1654`             | ❌       | User and group that own the mounted `images`, `logs` and `manuals` folders |
+| `PUID` / `PGID`   | `1654`             | ❌       | User and group the container runs as (compose `user:`); they must own the mounted `images`, `logs` and `manuals` folders |
 
 Date format, time format, currency and language are set in the application under *Settings*. The full list, including email, reverse-proxy and rules-assistant settings, is in the [documentation](https://mregni.github.io/BoardGameTracker/getting-started/environment-variables/).
 

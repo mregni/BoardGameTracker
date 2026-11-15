@@ -23,16 +23,26 @@ import { Steps, Aside } from '@astrojs/starlight/components';
    - `DB_PASSWORD` — a password for the database.
    - `JWT_SECRET` and `DATA_PROTECTION_KEY` — each its own random value of at least 32 characters. Run `openssl rand -base64 48` once for each. Keep `DATA_PROTECTION_KEY` somewhere safe; see [Data protection key](/BoardGameTracker/getting-started/environment-variables/#data-protection-key).
    - `TZ` — your timezone, for example `Europe/Brussels`.
+   - `PUID` and `PGID` — your own user and group id (`id -u` and `id -g`). The container runs as that user and never as root.
 
    The application does not start while `JWT_SECRET` is empty or still starts with `CHANGEME`.
 
-3. Start the stack. This starts BoardGameTracker together with its PostgreSQL (`pgvector/pgvector:pg16`) database:
+3. Create the data folders and give them to that user, so the container can write to them:
+
+   ```sh title="Terminal"
+   mkdir -p images logs manuals
+   sudo chown -R "$(id -u):$(id -g)" images logs manuals
+   ```
+
+   Use the same ids as `PUID` and `PGID`. Without this step Docker creates the folders as root and the container stops at startup with `not writable by UID`.
+
+4. Start the stack. This starts BoardGameTracker together with its PostgreSQL (`pgvector/pgvector:pg16`) database:
 
    ```sh title="Terminal"
    docker compose up -d
    ```
 
-4. Open `http://localhost:5444` and sign in as `admin`, with the `ADMIN_PASSWORD` you set or `admin` when it is empty. Change the password straight away.
+5. Open `http://localhost:5444` and sign in as `admin`, with the `ADMIN_PASSWORD` you set or `admin` when it is empty. Change the password straight away.
 
 </Steps>
 
