@@ -518,8 +518,8 @@ public class PlayerRepositoryTests : IDisposable
 
         result.Should().BeEquivalentTo(new[]
         {
-            new LeaderboardRow(alice.Id, "Alice", null, 1, 1, 0, 30),
-            new LeaderboardRow(bob.Id, "Bob", null, 1, 0, 0, 30)
+            new LeaderboardRow(alice.Id, "Alice", null, 1, 1, 0, 30, 0, 10, 10),
+            new LeaderboardRow(bob.Id, "Bob", null, 1, 0, 0, 30, 0, 5, 5)
         });
         VerifyNoOtherCalls();
     }

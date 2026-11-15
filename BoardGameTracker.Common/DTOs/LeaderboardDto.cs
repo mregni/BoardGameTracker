@@ -8,6 +8,8 @@ public class LeaderboardDto
     public LeaderboardEntryDto? MostWins { get; set; }
     public LeaderboardEntryDto? BestWinRate { get; set; }
     public LeaderboardEntryDto? MostTimePlayed { get; set; }
+    public LeaderboardEntryDto? MostPoints { get; set; }
+    public LeaderboardEntryDto? HighestScore { get; set; }
     public int MinimumSessions { get; set; }
     public int MinimumPlayersForPodium { get; set; }
     public LeaderboardRankBy RankBy { get; set; }
@@ -29,6 +31,8 @@ public class LeaderboardEntryDto
     public int PodiumCount { get; set; }
     public double WinPercentage { get; set; }
     public double MinutesPlayed { get; set; }
+    public double? TotalScore { get; set; }
+    public double? BestScore { get; set; }
     public bool IsRanked { get; set; }
     public int SessionsToRank { get; set; }
 }

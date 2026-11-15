@@ -5,6 +5,8 @@
     "to": "Hasta",
     "game": "Juego",
     "all-games": "Todos los juegos",
+    "category": "Categoría",
+    "all-categories": "Todas las categorías",
     "min-sessions": "Mín. partidas",
     "min-sessions-value_one": "{{count}} partida",
     "min-sessions-value_other": "{{count}} partidas",
@@ -20,6 +22,8 @@
     "most-sessions": "Más partidas",
     "best-win-rate": "Mejor % de victorias",
     "most-time": "Más tiempo",
+    "most-points": "Más puntos",
+    "highest-score": "Puntuación más alta",
     "nobody-yet": "Nadie todavía",
     "min-sessions": "mín. {{count}}"
   },

@@ -28,6 +28,7 @@ public class LeaderboardController : ControllerBase
         [FromQuery] DateOnly? from,
         [FromQuery] DateOnly? to,
         [FromQuery, Range(1, int.MaxValue)] int? gameId,
+        [FromQuery, Range(1, int.MaxValue)] int? categoryId,
         [FromQuery, Range(1, 1000)] int minSessions = LeaderboardFilter.DefaultMinSessions,
         [FromQuery] LeaderboardRankBy rankBy = LeaderboardRankBy.Wins,
         CancellationToken cancellationToken = default)
@@ -41,7 +42,7 @@ public class LeaderboardController : ControllerBase
             });
         }
 
-        var filter = new LeaderboardFilter(from, to, gameId, minSessions, rankBy);
+        var filter = new LeaderboardFilter(from, to, gameId, minSessions, rankBy, categoryId);
         return Ok(await _leaderboardService.GetLeaderboardAsync(filter, cancellationToken));
     }
 }

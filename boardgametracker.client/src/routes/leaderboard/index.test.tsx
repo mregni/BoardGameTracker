@@ -41,7 +41,7 @@ vi.mock("@/services/leaderboardService", () => ({
 vi.mock("@/services/queries/games", () => ({
 	getGames: () => ({
 		queryKey: ["games"],
-		queryFn: () => Promise.resolve([{ id: 12, title: "Azul", image: null }]),
+		queryFn: () => Promise.resolve([{ id: 12, title: "Azul", image: null, categories: [] }]),
 	}),
 }));
 
@@ -64,6 +64,8 @@ const entry = (playerId: number, name: string, overrides: Partial<LeaderboardEnt
 	podiumCount: 1,
 	winPercentage: 40,
 	minutesPlayed: 120,
+	totalScore: null,
+	bestScore: null,
 	isRanked: true,
 	sessionsToRank: 0,
 	...overrides,
@@ -83,6 +85,8 @@ const leaderboard = (players: LeaderboardEntry[], overrides: Partial<Leaderboard
 		mostPlays: players[0] ?? null,
 		bestWinRate: ranked[0] ?? null,
 		mostTimePlayed: players[0] ?? null,
+		mostPoints: null,
+		highestScore: null,
 		minimumSessions: 5,
 		minimumPlayersForPodium: 4,
 		rankBy: "wins",

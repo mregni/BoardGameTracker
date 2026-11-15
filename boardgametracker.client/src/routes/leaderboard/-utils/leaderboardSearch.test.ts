@@ -37,6 +37,10 @@ describe("leaderboardSearch", () => {
 			});
 		});
 
+		it("should pass the category", () => {
+			expect(toLeaderboardParams({ category: 3 }, today)).toEqual({ categoryId: 3, minSessions: 5, rankBy: "wins" });
+		});
+
 		it("should use the current date when no date is given", () => {
 			expect(toLeaderboardParams({ range: "year" }).from).toMatch(/^\d{4}-01-01$/);
 		});
@@ -76,11 +80,12 @@ describe("leaderboardSearch", () => {
 	});
 
 	describe("hasActiveFilters", () => {
-		it("should only count the period and the game", () => {
+		it("should only count the period, the game and the category", () => {
 			expect(hasActiveFilters({})).toBe(false);
 			expect(hasActiveFilters({ range: "all", min: 10, rank: "sessions" })).toBe(false);
 			expect(hasActiveFilters({ range: "year" })).toBe(true);
 			expect(hasActiveFilters({ game: 2 })).toBe(true);
+			expect(hasActiveFilters({ category: 3 })).toBe(true);
 		});
 	});
 });

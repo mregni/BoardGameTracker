@@ -2577,6 +2577,7 @@ export interface paths {
                     from?: string;
                     to?: string;
                     gameId?: number;
+                    categoryId?: number;
                     minSessions?: number;
                     rankBy?: components["schemas"]["LeaderboardRankBy"];
                 };
@@ -5955,6 +5956,8 @@ export interface components {
             mostWins: components["schemas"]["LeaderboardEntryDto"];
             bestWinRate: components["schemas"]["LeaderboardEntryDto"];
             mostTimePlayed: components["schemas"]["LeaderboardEntryDto"];
+            mostPoints: components["schemas"]["LeaderboardEntryDto"];
+            highestScore: components["schemas"]["LeaderboardEntryDto"];
             /** Format: int32 */
             minimumSessions: number;
             /** Format: int32 */
@@ -5986,6 +5989,10 @@ export interface components {
             winPercentage: number;
             /** Format: double */
             minutesPlayed: number;
+            /** Format: double */
+            totalScore: number | null;
+            /** Format: double */
+            bestScore: number | null;
             isRanked: boolean;
             /** Format: int32 */
             sessionsToRank: number;
