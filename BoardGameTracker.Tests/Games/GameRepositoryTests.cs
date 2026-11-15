@@ -213,14 +213,41 @@ public class GameRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetTotalExpansionCount_ShouldCountTheExpansionsOfEveryGame()
+    public async Task GetTotalExpansionCount_ShouldCountTheOwnedExpansionsOfEveryGame()
     {
         var games = await SeedAsync(new Game("First"), new Game("Second"));
-        await SeedAsync(new Expansion("One", null, games[0].Id), new Expansion("Two", null, games[0].Id), new Expansion("Three", null, games[1].Id));
+        var wanted = new Expansion("Wanted", null, games[1].Id);
+        wanted.UpdateState(GameState.Wanted);
+        await SeedAsync(new Expansion("One", null, games[0].Id), new Expansion("Two", null, games[0].Id), new Expansion("Three", null, games[1].Id), wanted);
 
         var result = await _repository.GetTotalExpansionCount();
 
         result.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task GetExistingGameBggIds_ShouldReturnOnlyTheBggIdsOfGamesInTheCollection()
+    {
+        var catan = new Game("Catan");
+        catan.UpdateBggId(13);
+        var brass = new Game("Brass");
+        brass.UpdateBggId(224517);
+        await SeedAsync(catan, brass, new Game("Homemade"));
+
+        var result = await _repository.GetExistingGameBggIds([13, 13, 999]);
+
+        result.Should().Equal(13);
+    }
+
+    [Fact]
+    public async Task GetExistingExpansionBggIds_ShouldReturnEachKnownExpansionOnce()
+    {
+        var games = await SeedAsync(new Game("First"), new Game("Second"));
+        await SeedAsync(new Expansion("Seafarers", 325, games[0].Id), new Expansion("Seafarers again", 325, games[1].Id), new Expansion("Homemade", null, games[0].Id));
+
+        var result = await _repository.GetExistingExpansionBggIds([325, 926]);
+
+        result.Should().Equal(325);
     }
 
     [Fact]
@@ -232,13 +259,13 @@ public class GameRepositoryTests : IDisposable
         var result = await _repository.DeleteExpansion(game.Id, expansions[0].Id);
         await _context.SaveChangesAsync();
 
-        result.Should().BeTrue();
+        result!.Title.Should().Be("Removed");
         await using var verify = CreateContext();
         (await verify.Expansions.Select(x => x.Title).ToListAsync()).Should().Equal("Kept");
     }
 
     [Fact]
-    public async Task DeleteExpansion_ShouldReturnFalse_WhenTheExpansionBelongsToAnotherGame()
+    public async Task DeleteExpansion_ShouldReturnNull_WhenTheExpansionBelongsToAnotherGame()
     {
         var games = await SeedAsync(new Game("First"), new Game("Second"));
         var expansion = (await SeedAsync(new Expansion("Other game", null, games[1].Id)))[0];
@@ -246,20 +273,20 @@ public class GameRepositoryTests : IDisposable
         var result = await _repository.DeleteExpansion(games[0].Id, expansion.Id);
         await _context.SaveChangesAsync();
 
-        result.Should().BeFalse();
+        result.Should().BeNull();
         await using var verify = CreateContext();
         (await verify.Expansions.CountAsync()).Should().Be(1);
     }
 
     [Fact]
-    public async Task DeleteExpansion_ShouldReturnFalse_WhenTheGameDoesNotExist()
+    public async Task DeleteExpansion_ShouldReturnNull_WhenTheGameDoesNotExist()
     {
         var game = (await SeedAsync(new Game("Game")))[0];
         var expansion = (await SeedAsync(new Expansion("Expansion", null, game.Id)))[0];
 
         var result = await _repository.DeleteExpansion(game.Id + 1, expansion.Id);
 
-        result.Should().BeFalse();
+        result.Should().BeNull();
     }
 
     [Fact]

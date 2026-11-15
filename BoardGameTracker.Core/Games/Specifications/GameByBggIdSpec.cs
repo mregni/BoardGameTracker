@@ -7,6 +7,8 @@ public sealed class GameByBggIdSpec : SingleResultSpecification<Game>
 {
     public GameByBggIdSpec(int bggId)
     {
-        Query.Where(x => x.BggId == bggId);
+        Query
+            .Where(x => x.BggId == bggId)
+            .Include(x => x.Expansions);
     }
 }
