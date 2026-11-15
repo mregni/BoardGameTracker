@@ -1,8 +1,6 @@
 ---
 title: Upgrading
 description: How to move an existing BoardGameTracker install to a new release, and what to back up first.
-banner:
-  content: These docs follow the <code>beta</code> image. Until the next stable release after v0.2.181, <code>latest</code> lacks some of the features described here; use <code>uping/boardgametracker:beta</code> to get them.
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
@@ -38,7 +36,7 @@ To restore, recreate an empty database, load the dump with `psql`, put the folde
 | Tag | What you get |
 | --- | --- |
 | `uping/boardgametracker:latest` | The last stable release. |
-| `uping/boardgametracker:x.y` / `:x` | The latest stable release within a minor or major version, for example `0.2` or `0`. |
+| `uping/boardgametracker:x.y` / `:x` | The latest stable release within a minor or major version, for example `0.3` or `0`. |
 | `uping/boardgametracker:x.y.z` | A fixed version, for installs that should not move on their own. Beta builds get their own `x.y.z` tag too. |
 | `uping/boardgametracker:beta` | Every change merged to `master`, published automatically. May contain unfinished features. |
 
@@ -48,7 +46,7 @@ To restore, recreate an empty database, load the dump with `psql`, put the folde
 
 Authentication is on by default. The container exits at startup with `JWT_SECRET is not set` unless you either set `JWT_SECRET` to a random value of at least 32 characters, or set `AUTH_ENABLED=false` to run without login.
 
-The notes below apply to the next stable release after v0.2.181, and to the `beta` image today.
+The notes below are new in v0.3.0. Read all of them when you upgrade from v0.2.181 or older.
 
 ### The container no longer runs as root
 
@@ -114,9 +112,9 @@ Forwarded headers are only honoured when `TRUSTED_PROXIES` names your proxy (an 
 
 Single sign-on only works over HTTPS, `localhost` excepted. Over plain HTTP on another address the sign-in button disappears and a provider cannot be enabled. Behind a proxy, set `TRUSTED_PROXIES` and an `https` Public URL; see [Behind a reverse proxy](/BoardGameTracker/getting-started/proxy/#https). Local password login keeps working over HTTP.
 
-### Single sign-on redirect URIs changed (beta)
+### Single sign-on redirect URIs changed
 
-This only affects `beta` images on which single sign-on was already set up. The provider no longer has a short name, so the redirect URIs no longer contain it: register `<PUBLIC_URL>/api/auth/oidc/callback` and `<PUBLIC_URL>/api/auth/oidc/link-callback` at your identity provider, in place of the old `/api/auth/oidc/<name>/callback` and `/api/auth/oidc/<name>/link-callback`. **Settings → Single sign-on → Register at the provider** shows both. Until then, signing in through the provider fails with a redirect URI error at the provider. Linked accounts keep working, and old bookmarks to `/api/auth/oidc/<name>/login` still start the sign-in.
+This only affects installs that set up single sign-on on a `beta` image before v0.3.0; v0.2.181 had no single sign-on. The provider no longer has a short name, so the redirect URIs no longer contain it: register `<PUBLIC_URL>/api/auth/oidc/callback` and `<PUBLIC_URL>/api/auth/oidc/link-callback` at your identity provider, in place of the old `/api/auth/oidc/<name>/callback` and `/api/auth/oidc/<name>/link-callback`. **Settings → Single sign-on → Register at the provider** shows both. Until then, signing in through the provider fails with a redirect URI error at the provider. Linked accounts keep working, and old bookmarks to `/api/auth/oidc/<name>/login` still start the sign-in.
 
 ## Rolling back
 

@@ -56,8 +56,6 @@ BoardGameTracker is a self-hosted application designed for board game enthusiast
 
 ## Installation
 
-> **Note:** the documentation follows the `beta` image. Until the next stable release after v0.2.181, `latest` lacks some of the features described here; use `uping/boardgametracker:beta` to get them.
-
 ### Prerequisites
 - Docker with Docker Compose 2.24 or newer for the downloadable `docker-compose.yml` (older versions, such as some NAS container managers, reject its optional `.env` block; use the compose file on the [Docker](https://mregni.github.io/BoardGameTracker/getting-started/docker/) docs page instead)
 - PostgreSQL with the `vector` extension (the compose file runs `pgvector/pgvector:pg16`; plain `postgres:16` does not work)
