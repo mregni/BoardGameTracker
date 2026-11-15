@@ -96,4 +96,33 @@ docker run -d \
 - The container answers `GET /api/health` for health checks; the image already has a Docker health check on it.
 - The mounted folders are owned by user and group `1654` inside the container; see [`PUID` / `PGID`](/BoardGameTracker/getting-started/environment-variables/) to match your host user.
 
+## Running without root
+
+The container starts as root only to give the mounted folders to `PUID` / `PGID` and then drops to that user. To skip that step, run the container as your own user and give the folders to that user once on the host:
+
+```bash
+mkdir -p images logs manuals
+sudo chown -R 1000:1000 images logs manuals
+```
+
+```yaml
+services:
+  boardgametracker:
+    image: uping/boardgametracker:latest
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ./images:/app/images
+      - ./logs:/app/logs
+      - ./manuals:/app/manuals
+```
+
+Use your own user and group id instead of `1000:1000` (`id -u` and `id -g`). `PUID` and `PGID` are ignored in this mode. When one of the folders is not writable, the container stops at startup and names the folder.
+
 See [Upgrading](/BoardGameTracker/getting-started/upgrading/) before moving to a new release.

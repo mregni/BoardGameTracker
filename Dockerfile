@@ -82,7 +82,8 @@ WORKDIR /app
 ARG APK_CACHE_BUST
 RUN apk upgrade --no-cache && apk add --no-cache curl su-exec poppler-utils tzdata krb5-libs
 
-RUN mkdir -p /app/images /app/logs /app/manuals
+RUN mkdir -p /app/images /app/logs /app/manuals && \
+    chown "$APP_UID:$APP_UID" /app/images /app/logs /app/manuals
 
 # Copy published files from backend build stage
 COPY --from=backend-build /app/publish .

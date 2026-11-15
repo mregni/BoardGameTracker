@@ -11,12 +11,21 @@ case "$PGID" in
     ''|*[!0-9]*) echo "ERROR: PGID must be a number, got '$PGID'" >&2; exit 1 ;;
 esac
 
-echo "Starting with UID: $PUID, GID: $PGID"
-
 if [ "$(id -u)" != "0" ]; then
-    echo "Not running as root (UID $(id -u)); skipping user/group setup and privilege drop."
+    echo "Starting as UID: $(id -u), GID: $(id -g); PUID and PGID are ignored when the container does not run as root."
+    unwritable=""
+    for dir in /app/images /app/logs /app/manuals; do
+        [ -w "$dir" ] || unwritable="$unwritable $dir"
+    done
+    if [ -n "$unwritable" ]; then
+        echo "ERROR: not writable by UID $(id -u):$unwritable" >&2
+        echo "Give the mounted host folders to this user, for example: chown -R $(id -u):$(id -g) images logs manuals" >&2
+        exit 1
+    fi
     exec dotnet BoardGameTracker.Host.dll
 fi
+
+echo "Starting with UID: $PUID, GID: $PGID"
 
 group_name=$(getent group "$PGID" | cut -d: -f1)
 if [ -z "$group_name" ]; then
