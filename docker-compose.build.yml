@@ -8,6 +8,14 @@ services:
         ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-production}
         APK_CACHE_BUST: ${APK_CACHE_BUST:-}
     restart: unless-stopped
+    user: "${PUID:-1654}:${PGID:-1654}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       db:
         condition: service_healthy

@@ -80,7 +80,7 @@ ARG ASPNETCORE_HTTP_PORTS=5444
 WORKDIR /app
 
 ARG APK_CACHE_BUST
-RUN apk upgrade --no-cache && apk add --no-cache curl su-exec poppler-utils tzdata krb5-libs
+RUN apk upgrade --no-cache && apk add --no-cache curl poppler-utils tzdata krb5-libs
 
 RUN mkdir -p /app/images /app/logs /app/manuals && \
     chown "$APP_UID:$APP_UID" /app/images /app/logs /app/manuals
@@ -97,15 +97,13 @@ ENV ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
 ENV DOTNET_EnableDiagnostics=0
 ENV ASPNETCORE_HTTP_PORTS=${ASPNETCORE_HTTP_PORTS}
 
-# Default PUID/PGID (can be overridden at runtime)
-ENV PUID=1654
-ENV PGID=1654
-
 # Expose port
 EXPOSE 5444
 
 # Health check (follows the configured port)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl --fail "http://localhost:${ASPNETCORE_HTTP_PORTS%%;*}/api/health" || exit 1
+
+USER $APP_UID
 
 ENTRYPOINT ["/entrypoint.sh"]

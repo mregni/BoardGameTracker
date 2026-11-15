@@ -25,6 +25,14 @@ services:
   boardgametracker:
     image: uping/boardgametracker:latest
     restart: unless-stopped
+    user: "1654:1654"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       db:
         condition: service_healthy
@@ -72,6 +80,10 @@ This command starts the BoardGameTracker container on its own and needs a Postgr
 docker run -d \
     --name boardgametracker \
     --restart unless-stopped \
+    --user 1654:1654 \
+    --read-only --tmpfs /tmp \
+    --cap-drop ALL \
+    --security-opt no-new-privileges \
     -p 5444:5444 \
     -v ./images:/app/images \
     -v ./logs:/app/logs \
@@ -94,35 +106,15 @@ docker run -d \
 
 - The container listens on port `5444`. To publish it on another host port, change the left side of `5444:5444`, for example `8080:5444`.
 - The container answers `GET /api/health` for health checks; the image already has a Docker health check on it.
-- The mounted folders are owned by user and group `1654` inside the container; see [`PUID` / `PGID`](/BoardGameTracker/getting-started/environment-variables/) to match your host user.
+- The container never runs as root. It runs as the user given with `user:` (`--user` for `docker run`), or as `1654:1654` without one. Use your own ids (`id -u` and `id -g`) instead of `1654:1654` if you like, and see [`PUID` / `PGID`](/BoardGameTracker/getting-started/environment-variables/).
+- That user must be able to write to the mounted folders. Create them and give them to that user once before the first start:
 
-## Running without root
+  ```sh title="Terminal"
+  mkdir -p images logs manuals
+  sudo chown -R 1654:1654 images logs manuals
+  ```
 
-The container starts as root only to give the mounted folders to `PUID` / `PGID` and then drops to that user. To skip that step, run the container as your own user and give the folders to that user once on the host:
-
-```bash
-mkdir -p images logs manuals
-sudo chown -R 1000:1000 images logs manuals
-```
-
-```yaml
-services:
-  boardgametracker:
-    image: uping/boardgametracker:latest
-    user: "1000:1000"
-    read_only: true
-    tmpfs:
-      - /tmp
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    volumes:
-      - ./images:/app/images
-      - ./logs:/app/logs
-      - ./manuals:/app/manuals
-```
-
-Use your own user and group id instead of `1000:1000` (`id -u` and `id -g`). `PUID` and `PGID` are ignored in this mode. When one of the folders is not writable, the container stops at startup and names the folder.
+  When one of them is not writable, the container stops at startup and names the folder.
+- The container's own file system is read-only (`read_only`); only the mounted folders and `/tmp` are writable.
 
 See [Upgrading](/BoardGameTracker/getting-started/upgrading/) before moving to a new release.
