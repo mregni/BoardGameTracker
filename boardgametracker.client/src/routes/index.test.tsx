@@ -36,6 +36,7 @@ const statistics: DashboardStatistics = {
 	sessionsPlayed: 168,
 	totalPlayedTime: 9500,
 	totalCollectionValue: 1240,
+	expansionCollectionValue: null,
 	pricedGameCount: 31,
 	expansionsOwned: 4,
 	avgSessionTime: 57,

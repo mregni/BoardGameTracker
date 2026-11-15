@@ -4,7 +4,17 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GameState, type ImportGame } from "@/models";
 
+const defaultCollection = [
+	{ bggId: 1, title: "Already Owned", state: "owned", imageUrl: "", lastModified: "2024-01-01T00:00:00Z" },
+	{ bggId: 2, title: "Not Owned", state: "owned", imageUrl: "", lastModified: "2024-01-01T00:00:00Z" },
+];
+const defaultGames = [
+	{ bggId: 1, buyingPrice: 0, additionDate: "2024-01-01T00:00:00Z", hasScoring: true, expansions: [] },
+];
+
 const mocks = vi.hoisted(() => ({
+	collection: [] as unknown[],
+	games: [] as unknown[],
 	invalidateGameCreated: vi.fn(),
 	successToast: vi.fn(),
 	errorToast: vi.fn(),
@@ -15,35 +25,11 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/services/queries/games", () => ({
 	getBggCollection: (username: string) => ({
 		queryKey: ["bgg-collection-mock", username],
-		queryFn: () =>
-			Promise.resolve([
-				{
-					bggId: 1,
-					title: "Already Owned",
-					state: "owned",
-					imageUrl: "",
-					lastModified: "2024-01-01T00:00:00Z",
-				},
-				{
-					bggId: 2,
-					title: "Not Owned",
-					state: "owned",
-					imageUrl: "",
-					lastModified: "2024-01-01T00:00:00Z",
-				},
-			]),
+		queryFn: () => Promise.resolve(mocks.collection),
 	}),
 	getGames: () => ({
 		queryKey: ["games-mock"],
-		queryFn: () =>
-			Promise.resolve([
-				{
-					bggId: 1,
-					buyingPrice: 0,
-					additionDate: "2024-01-01T00:00:00Z",
-					hasScoring: true,
-				},
-			]),
+		queryFn: () => Promise.resolve(mocks.games),
 	}),
 }));
 
@@ -72,7 +58,7 @@ vi.mock("@/services/gameService", () => ({
 	importGamesCall: mocks.importGamesCall,
 }));
 
-import { IMPORT_BATCH_SIZE, useList } from "./useList";
+import { IMPORT_BATCH_SIZE, importBatches, useList } from "./useList";
 
 const importGame = (bggId: number): ImportGame => ({
 	title: `Game ${bggId}`,
@@ -85,6 +71,23 @@ const importGame = (bggId: number): ImportGame => ({
 	price: 0,
 	addedDate: new Date("2024-01-01"),
 	lastModified: new Date("2024-01-01"),
+	baseGameBggId: null,
+	baseGameTitle: null,
+});
+
+const bggItem = (
+	bggId: number,
+	title: string,
+	baseGameBggId: number | null = null,
+	baseGameTitle: string | null = null,
+) => ({
+	bggId,
+	title,
+	state: "owned",
+	imageUrl: "",
+	lastModified: "2024-01-01T00:00:00Z",
+	baseGameBggId,
+	baseGameTitle,
 });
 
 const createWrapper = () => {
@@ -106,7 +109,76 @@ const renderUseList = async () => {
 describe("useList", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mocks.collection = defaultCollection;
+		mocks.games = defaultGames;
 		mocks.importGamesCall.mockImplementation(() => Promise.resolve(true));
+	});
+
+	it("lists expansions under their base game and adds a base game that is missing", async () => {
+		mocks.collection = [
+			bggItem(21, "7 Wonders: Leaders", 20, "7 Wonders"),
+			bggItem(11, "Root: The Riverfolk Expansion", 10, "Root"),
+			bggItem(10, "Root"),
+		];
+		mocks.games = [];
+		const { result } = await renderUseList();
+
+		expect(result.current.games.map((g) => [g.bggId, g.title])).toEqual([
+			[20, "7 Wonders"],
+			[21, "7 Wonders: Leaders"],
+			[10, "Root"],
+			[11, "Root: The Riverfolk Expansion"],
+		]);
+		expect(result.current.games[0]).toMatchObject({ addedForExpansion: true, checked: false, baseGameBggId: null });
+	});
+
+	it("checks and locks the base game while one of its expansions is checked", async () => {
+		mocks.collection = [bggItem(10, "Root"), bggItem(11, "Root: The Riverfolk Expansion", 10, "Root")];
+		mocks.games = [];
+		const { result } = await renderUseList();
+
+		act(() => result.current.updateGame(11, { checked: true }));
+		expect(result.current.games.find((g) => g.bggId === 10)).toMatchObject({ checked: true, lockedByExpansion: true });
+
+		act(() => result.current.updateGame(11, { checked: false }));
+		expect(result.current.games.find((g) => g.bggId === 10)).toMatchObject({
+			checked: false,
+			lockedByExpansion: false,
+		});
+	});
+
+	it("keeps a base game from the collection as the header of its new expansions", async () => {
+		mocks.collection = [bggItem(11, "Root: The Riverfolk Expansion", 10, "Root")];
+		mocks.games = [
+			{ bggId: 10, title: "Root", image: "/images/cover/root.webp", state: "owned", hasScoring: true, expansions: [] },
+		];
+		const { result } = await renderUseList();
+
+		expect(result.current.games.map((g) => [g.bggId, g.inCollection])).toEqual([
+			[10, true],
+			[11, false],
+		]);
+		expect(result.current.games[0]).toMatchObject({ title: "Root", imageUrl: "/images/cover/root.webp" });
+
+		act(() => result.current.updateGame(11, { checked: true }));
+		expect(result.current.games[0]).toMatchObject({ checked: false, lockedByExpansion: false });
+	});
+
+	it("treats an expansion that is already imported as part of the collection", async () => {
+		mocks.collection = [bggItem(10, "Root"), bggItem(11, "Root: The Riverfolk Expansion", 10, "Root")];
+		mocks.games = [
+			{
+				bggId: 10,
+				title: "Root",
+				hasScoring: true,
+				expansions: [{ bggId: 11, buyingPrice: 35, additionDate: "2024-02-01T00:00:00Z" }],
+			},
+		];
+		const { result } = await renderUseList();
+
+		expect(result.current.games).toEqual([]);
+		act(() => result.current.setFilterCollected(false));
+		expect(result.current.games.find((g) => g.bggId === 11)).toMatchObject({ inCollection: true, price: 35 });
 	});
 
 	it("hides games already in the collection by default", async () => {
@@ -151,6 +223,17 @@ describe("useList", () => {
 
 		expect(result.current.games.find((g) => g.bggId === 1)?.checked).toBe(false);
 		expect(result.current.games.find((g) => g.bggId === 2)?.checked).toBe(true);
+	});
+
+	it("keeps a base game and its expansions in one batch, base game first", () => {
+		const expansion = (bggId: number) => ({ ...importGame(bggId), baseGameBggId: 1 });
+		const selected = [importGame(7), expansion(2), expansion(3), importGame(8), importGame(9), importGame(1)];
+
+		expect(importBatches(selected, 3).map((batch) => batch.map((game) => game.bggId))).toEqual([
+			[7],
+			[1, 2, 3],
+			[8, 9],
+		]);
 	});
 
 	it("imports the selection in small sequential batches and reports progress", async () => {

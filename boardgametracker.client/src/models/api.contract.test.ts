@@ -48,6 +48,7 @@ import type {
 	ShameStatistics,
 	StartRunningGame,
 	UpdateAttendance,
+	UpdateExpansion,
 } from "@/models";
 import type {
 	LoginRequest,
@@ -156,6 +157,7 @@ describe("API contract", () => {
 		coversApiKeys<Player, Schemas["CreatePlayerCommand"]>(true);
 		coversApiKeys<CreatePlayer, Omit<Schemas["CreatePlayerCommand"], "image">>(true);
 		sameKeys<CreateLocation, Schemas["CreateLocationCommand"]>(true);
+		sameKeys<UpdateExpansion, Schemas["UpdateExpansionCommand"]>(true);
 		sameKeys<CreateSession, Schemas["CreateSessionCommand"]>(true);
 		sameKeys<StartRunningGame, Schemas["StartRunningGameCommand"]>(true);
 		sameKeys<UpdateAttendance, Schemas["UpdateAttendanceCommand"]>(true);

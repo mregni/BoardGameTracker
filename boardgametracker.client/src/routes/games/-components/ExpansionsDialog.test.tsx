@@ -1,12 +1,29 @@
 import { describe, expect, it, vi } from "vitest";
+import { type Expansion, GameState } from "@/models";
 import { renderWithTheme, screen, userEvent, waitFor, within } from "@/test/test-utils";
 import { ExpansionsDialog } from "./ExpansionsDialog";
 
+const expansion = (id: number, title: string, overrides: Partial<Expansion> = {}): Expansion => ({
+	id,
+	title,
+	bggId: 100 + id,
+	gameId: 9,
+	image: null,
+	state: GameState.Owned,
+	buyingPrice: null,
+	soldPrice: null,
+	additionDate: null,
+	...overrides,
+});
+
 const renderDialog = (overrides: Partial<Parameters<typeof ExpansionsDialog>[0]> = {}) => {
 	const props = {
+		gamePrice: 45,
+		currency: "EUR",
+		onUpdateExpansion: vi.fn(),
 		expansions: [
-			{ id: 1, title: "Pearlbrook", bggId: 123 },
-			{ id: 2, title: "Homebrew", bggId: null },
+			expansion(1, "Pearlbrook", { buyingPrice: 28 }),
+			expansion(2, "Homebrew", { bggId: null, state: GameState.Wanted, buyingPrice: 10 }),
 		],
 		open: true,
 		close: vi.fn(),
@@ -84,5 +101,56 @@ describe("ExpansionsDialog", () => {
 
 		expect(onAddManualExpansion).toHaveBeenCalledWith("Spirecrest");
 		await waitFor(() => expect(input).toHaveValue(""));
+	});
+
+	it("sums the base game and the owned expansions", () => {
+		renderDialog();
+
+		const prices = screen.getByText("expansions.prices.base").closest("dl") as HTMLElement;
+		expect(within(prices).getByText(/45/)).toBeInTheDocument();
+		expect(within(prices).getByText(/28/)).toBeInTheDocument();
+		expect(within(prices).getByText(/73/)).toBeInTheDocument();
+	});
+
+	it("saves a new price when the field loses focus", async () => {
+		const user = userEvent.setup();
+		const { onUpdateExpansion } = renderDialog();
+
+		const price = screen.getByRole("textbox", { name: "price.label: Pearlbrook" });
+		await user.clear(price);
+		await user.type(price, "31,5");
+		await user.tab();
+
+		expect(onUpdateExpansion).toHaveBeenCalledWith(expect.objectContaining({ id: 1, buyingPrice: 31.5 }));
+	});
+
+	it("does not save when the price did not change", async () => {
+		const user = userEvent.setup();
+		const { onUpdateExpansion } = renderDialog();
+
+		await user.click(screen.getByRole("textbox", { name: "price.label: Pearlbrook" }));
+		await user.tab();
+
+		expect(onUpdateExpansion).not.toHaveBeenCalled();
+	});
+
+	it("asks for the sold price only for a sold expansion", () => {
+		renderDialog({ expansions: [expansion(1, "Pearlbrook", { state: GameState.Sold, soldPrice: 12 })] });
+
+		expect(screen.getByRole("textbox", { name: "update.sold-price.label: Pearlbrook" })).toHaveValue("12");
+	});
+
+	it("shows a reader the state and price as text, without fields or delete buttons", () => {
+		renderDialog({
+			canWrite: false,
+			expansions: [expansion(1, "Pearlbrook", { state: GameState.Sold, buyingPrice: 28, soldPrice: 12 })],
+		});
+
+		expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: /common:delete.button/ })).not.toBeInTheDocument();
+		expect(screen.getByText("game:state.sold")).toBeInTheDocument();
+		expect(screen.getByText("€28")).toBeInTheDocument();
+		expect(screen.getByText("€12")).toBeInTheDocument();
 	});
 });

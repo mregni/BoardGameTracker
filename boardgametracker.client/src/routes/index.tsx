@@ -124,6 +124,7 @@ function RouteComponent() {
 							collection={statistics.collection}
 							ownedGames={statistics.ownedGames}
 							totalCollectionValue={statistics.totalCollectionValue}
+							expansionCollectionValue={statistics.expansionCollectionValue}
 							pricedGameCount={statistics.pricedGameCount}
 							recentAddedGames={statistics.recentAddedGames}
 							currency={settings.currency}

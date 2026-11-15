@@ -1776,6 +1776,72 @@
       }
     },
     "/api/game/{id}/expansion/{expansionId}": {
+      "put": {
+        "tags": [
+          "Game"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "expansionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExpansionCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExpansionCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExpansionCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpansionDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpansionDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpansionDto"
+                }
+              }
+            }
+          }
+        }
+      },
       "delete": {
         "tags": [
           "Game"
@@ -6098,6 +6164,15 @@
           "lastModified": {
             "type": "string",
             "format": "date-time"
+          },
+          "baseGameBggId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "baseGameTitle": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -7010,6 +7085,11 @@
             "format": "double",
             "nullable": true
           },
+          "expansionCollectionValue": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "pricedGameCount": {
             "type": "integer",
             "format": "int32"
@@ -7197,6 +7277,28 @@
           "gameId": {
             "type": "integer",
             "format": "int32",
+            "nullable": true
+          },
+          "image": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "$ref": "#/components/schemas/GameState"
+          },
+          "buyingPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "soldPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "additionDate": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -8114,6 +8216,11 @@
           "addedDate": {
             "type": "string",
             "format": "date-time"
+          },
+          "baseGameBggId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -9982,6 +10089,34 @@
               "type": "integer",
               "format": "int32"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateExpansionCommand": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/GameState"
+          },
+          "buyingPrice": {
+            "maximum": 1.7976931348623157E+308,
+            "minimum": 0,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "soldPrice": {
+            "maximum": 1.7976931348623157E+308,
+            "minimum": 0,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "additionDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false

@@ -1,4 +1,4 @@
-import type { CreateGame, Expansion, ExpansionData, ExpansionUpdate } from "@/models/";
+import type { CreateGame, Expansion, ExpansionData, ExpansionUpdate, UpdateExpansion } from "@/models/";
 import type { ShameStatistics } from "@/models/Games/ShameStatistics";
 import type { BggSearch, Game, GamePrice, GameStatistics, ImportGame, Session, Shame } from "../models";
 import { axiosInstance } from "../utils/axiosInstance";
@@ -102,6 +102,12 @@ export const importGamesCall = (games: ImportGame[]): Promise<boolean> => {
 export const addManualExpansionCall = (gameId: number, title: string): Promise<Expansion> => {
 	return axiosInstance
 		.post<Expansion>(`${domain}/${gameId}/expansions/manual`, { title })
+		.then((response) => response.data);
+};
+
+export const updateExpansionCall = (gameId: number, id: number, expansion: UpdateExpansion): Promise<Expansion> => {
+	return axiosInstance
+		.put<Expansion>(`${domain}/${gameId}/expansion/${id}`, expansion)
 		.then((response) => response.data);
 };
 

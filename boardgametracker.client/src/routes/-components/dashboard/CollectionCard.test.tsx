@@ -19,6 +19,7 @@ const renderCard = (overrides: Partial<Parameters<typeof CollectionCard>[0]> = {
 			collection={collection}
 			ownedGames={41}
 			totalCollectionValue={1240}
+			expansionCollectionValue={null}
 			pricedGameCount={31}
 			recentAddedGames={[
 				{ id: 5, title: "Age of Inventors", image: null, additionDate: "2026-10-04T10:00:00", price: 40 },
@@ -61,6 +62,35 @@ describe("CollectionCard", () => {
 		renderCard({ totalCollectionValue: null });
 
 		expect(screen.getByText("collection.no-prices")).toBeInTheDocument();
+	});
+
+	it("still says there are no prices yet when the expansions add up to nothing", () => {
+		renderCard({ totalCollectionValue: null, expansionCollectionValue: 0 });
+
+		expect(screen.getByText("collection.no-prices")).toBeInTheDocument();
+	});
+
+	it("adds the expansions to what was paid and splits the amount in a second bar", () => {
+		renderCard({ expansionCollectionValue: 360 });
+
+		expect(screen.getByText(/1,600/)).toBeInTheDocument();
+		const split = screen.getByRole("img", { name: /collection.paid-base/ });
+		expect(split).toHaveAccessibleName(/collection.paid-expansions/);
+		expect(screen.getByText("collection.paid-base")).toBeInTheDocument();
+		expect(screen.getByText("collection.paid-expansions")).toBeInTheDocument();
+	});
+
+	it("leaves out the split bar when no expansion has a price", () => {
+		renderCard({ expansionCollectionValue: 0 });
+
+		expect(screen.queryByText("collection.paid-expansions")).not.toBeInTheDocument();
+	});
+
+	it("shows what was paid for expansions when only expansions have a price", () => {
+		renderCard({ totalCollectionValue: null, expansionCollectionValue: 45 });
+
+		expect(screen.queryByText("collection.no-prices")).not.toBeInTheDocument();
+		expect(screen.getByText("€45", { selector: "strong" })).toBeInTheDocument();
 	});
 
 	it("lists the recently added games with their dates", () => {

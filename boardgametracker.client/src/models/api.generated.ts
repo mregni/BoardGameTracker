@@ -1608,7 +1608,37 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                    expansionId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateExpansionCommand"];
+                    "text/json": components["schemas"]["UpdateExpansionCommand"];
+                    "application/*+json": components["schemas"]["UpdateExpansionCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ExpansionDto"];
+                        "application/json": components["schemas"]["ExpansionDto"];
+                        "text/json": components["schemas"]["ExpansionDto"];
+                    };
+                };
+            };
+        };
         post?: never;
         delete: {
             parameters: {
@@ -5243,6 +5273,9 @@ export interface components {
             state: components["schemas"]["GameState"];
             /** Format: date-time */
             lastModified: string;
+            /** Format: int32 */
+            baseGameBggId: number | null;
+            baseGameTitle: string | null;
         };
         BggSearch: {
             /** Format: int32 */
@@ -5547,6 +5580,8 @@ export interface components {
             totalPlayedTime: number;
             /** Format: double */
             totalCollectionValue: number | null;
+            /** Format: double */
+            expansionCollectionValue: number | null;
             /** Format: int32 */
             pricedGameCount: number;
             /** Format: int32 */
@@ -5610,6 +5645,14 @@ export interface components {
             bggId: number | null;
             /** Format: int32 */
             gameId: number | null;
+            image: string | null;
+            state: components["schemas"]["GameState"];
+            /** Format: double */
+            buyingPrice: number | null;
+            /** Format: double */
+            soldPrice: number | null;
+            /** Format: date-time */
+            additionDate: string | null;
         };
         ExternalLoginDto: {
             /** Format: int32 */
@@ -5918,6 +5961,8 @@ export interface components {
             price?: number | null;
             /** Format: date-time */
             addedDate?: string;
+            /** Format: int32 */
+            baseGameBggId?: number | null;
         };
         Int32CompareRow: {
             /** Format: int32 */
@@ -6587,6 +6632,15 @@ export interface components {
         };
         UpdateAttendanceCommand: {
             presentPlayerIds: number[];
+        };
+        UpdateExpansionCommand: {
+            state: components["schemas"]["GameState"];
+            /** Format: double */
+            buyingPrice: number | null;
+            /** Format: double */
+            soldPrice: number | null;
+            /** Format: date-time */
+            additionDate: string | null;
         };
         UpdateGameCommand: {
             title: string;

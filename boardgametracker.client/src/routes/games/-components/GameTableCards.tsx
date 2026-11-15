@@ -1,22 +1,27 @@
 import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { cx } from "class-variance-authority";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
+import CaretRight from "@/assets/icons/caret-right.svg?react";
 import SquareOutIcon from "@/assets/icons/square-out.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { BgtText } from "@/components/BgtText/BgtText";
-import type { BgtSelectItem, Game, GameState } from "@/models";
+import { type BgtSelectItem, type Expansion, type Game, GameState } from "@/models";
 import type { GamePrice } from "@/models/Games/GamePrice";
 import { toDisplay } from "@/utils/dateUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { formatDecimal, formatPriceOrEmpty } from "@/utils/numberUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
+import { collectionPrice } from "../-utils/gamesSearch";
 import { EditableNumberCell } from "./EditableNumberCell";
 import { EditableSelectCell } from "./EditableSelectCell";
 import { LivePrice, withStateChange } from "./LivePrice";
 import { TrackedPriceIcon } from "./TrackedPriceIcon";
 
 export type GameTableColumn = "language" | "state" | "buyingPrice";
+
+export const expansionEditKey = (expansionId: number) => -expansionId;
 
 interface Props {
 	games: Game[];
@@ -31,6 +36,7 @@ interface Props {
 	startEdit: (gameId: number, column: GameTableColumn) => void;
 	stopEdit: () => void;
 	updateGame: (game: Game) => void;
+	updateExpansion: (gameId: number, expansion: Expansion) => void;
 	readOnly?: boolean;
 	priceMap?: Map<number, GamePrice>;
 	uiLanguage?: string;
@@ -59,11 +65,19 @@ export const GameTableCards = (props: Props) => {
 		startEdit,
 		stopEdit,
 		updateGame,
+		updateExpansion,
 		readOnly = false,
 		priceMap,
 		uiLanguage,
 	} = props;
 	const { t } = useTranslation(["games", "game", "common"]);
+	const [openGames, setOpenGames] = useState<Set<number>>(new Set());
+	const toggleGame = (gameId: number) =>
+		setOpenGames((previous) => {
+			const next = new Set(previous);
+			if (!next.delete(gameId)) next.add(gameId);
+			return next;
+		});
 
 	if (isLoading) {
 		return <BgtLoadingSpinner />;
@@ -82,6 +96,26 @@ export const GameTableCards = (props: Props) => {
 			{games.map((game) => {
 				const livePrice = priceMap?.get(game.id);
 				const shopUrl = SafeHttpUrl(livePrice?.shopUrl ?? game.shopUrl);
+				const hasExpansions = game.expansions.length > 0;
+				const open = openGames.has(game.id);
+				const ownedExpansions = game.expansions.filter((expansion) => expansion.state === GameState.Owned).length;
+				const basePrice = (
+					<EditableNumberCell
+						readOnly={readOnly}
+						value={game.buyingPrice}
+						min={0}
+						prefix={currency}
+						format={(price) => formatPriceOrEmpty(price, currency, uiLanguage)}
+						editing={isEditing(game.id, "buyingPrice")}
+						onStartEdit={() => startEdit(game.id, "buyingPrice")}
+						onStopEdit={stopEdit}
+						onChange={(buyingPrice) => updateGame({ ...game, buyingPrice })}
+						ariaLabel={`${t("games:columns.price")}: ${game.title}`}
+						align="right"
+						size="sm"
+						className="h-9 w-full text-sm"
+					/>
+				);
 				return (
 					<li key={game.id} className="rounded-lg border border-card-border bg-card-black p-3 flex flex-col gap-1">
 						<Link
@@ -143,23 +177,95 @@ export const GameTableCards = (props: Props) => {
 									: "-"}
 							</Row>
 							<Row label={t("games:columns.price")}>
-								<EditableNumberCell
-									readOnly={readOnly}
-									value={game.buyingPrice}
-									min={0}
-									prefix={currency}
-									format={(price) => formatPriceOrEmpty(price, currency, uiLanguage)}
-									editing={isEditing(game.id, "buyingPrice")}
-									onStartEdit={() => startEdit(game.id, "buyingPrice")}
-									onStopEdit={stopEdit}
-									onChange={(buyingPrice) => updateGame({ ...game, buyingPrice })}
-									ariaLabel={`${t("games:columns.price")}: ${game.title}`}
-									align="right"
-									size="sm"
-									className="h-9 w-full text-sm"
-								/>
+								{hasExpansions ? (
+									<span className="inline-flex flex-col items-end pr-[9px]">
+										<span>{formatPriceOrEmpty(collectionPrice(game), currency, uiLanguage)}</span>
+										<span className="text-[11px] leading-3 text-white/60">
+											{t("games:table.collection-price", { count: ownedExpansions })}
+										</span>
+									</span>
+								) : (
+									basePrice
+								)}
 							</Row>
 						</div>
+						{hasExpansions && (
+							<div className="border-t border-card-border pt-1">
+								<button
+									type="button"
+									aria-expanded={open}
+									aria-label={t("games:table.toggle-expansions", { count: game.expansions.length, title: game.title })}
+									onClick={() => toggleGame(game.id)}
+									className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-primary-text"
+								>
+									<CaretRight
+										className={cx("size-3 motion-safe:transition-transform", open && "rotate-90")}
+										aria-hidden="true"
+									/>
+									{t("games:table.expansions", { count: game.expansions.length })}
+								</button>
+								{open && (
+									<ul className="flex flex-col gap-2 pb-1">
+										<li className="flex flex-col gap-1 rounded-md bg-primary/5 p-2">
+											<span className="flex items-center gap-2 text-sm font-medium">
+												<span className="rounded border border-primary/30 px-1 text-[10px] leading-4 text-stat-title">
+													{t("games:table.base-tag")}
+												</span>
+												{game.title}
+											</span>
+											<Row label={t("games:columns.price")}>{basePrice}</Row>
+										</li>
+										{game.expansions.map((expansion) => {
+											const key = expansionEditKey(expansion.id);
+											return (
+												<li key={expansion.id} className="flex flex-col gap-1 rounded-md bg-primary/5 p-2">
+													<span className="flex items-center gap-2 text-sm font-medium">
+														<BgtAvatar image={expansion.image} title={expansion.title} size="small" />
+														<span className="rounded border border-primary/30 px-1 text-[10px] leading-4 text-stat-title">
+															{t("games:table.expansion-tag")}
+														</span>
+														<span className="truncate">{expansion.title}</span>
+													</span>
+													<Row label={t("games:columns.state")}>
+														<EditableSelectCell
+															label={`${t("games:columns.state")}: ${expansion.title}`}
+															readOnly={readOnly}
+															value={expansion.state}
+															items={stateItems}
+															editing={isEditing(key, "state")}
+															onStartEdit={() => startEdit(key, "state")}
+															onStopEdit={stopEdit}
+															onChange={(state) =>
+																updateExpansion(game.id, { ...expansion, state: state as GameState })
+															}
+															align="right"
+															size="sm"
+														/>
+													</Row>
+													<Row label={t("games:columns.price")}>
+														<EditableNumberCell
+															readOnly={readOnly}
+															value={expansion.buyingPrice}
+															min={0}
+															prefix={currency}
+															format={(price) => formatPriceOrEmpty(price, currency, uiLanguage)}
+															editing={isEditing(key, "buyingPrice")}
+															onStartEdit={() => startEdit(key, "buyingPrice")}
+															onStopEdit={stopEdit}
+															onChange={(buyingPrice) => updateExpansion(game.id, { ...expansion, buyingPrice })}
+															ariaLabel={`${t("games:columns.price")}: ${expansion.title}`}
+															align="right"
+															size="sm"
+															className="h-9 w-full text-sm"
+														/>
+													</Row>
+												</li>
+											);
+										})}
+									</ul>
+								)}
+							</div>
+						)}
 						{(shopUrl || game.bggId) && (
 							<div className="flex justify-end gap-4 pt-1">
 								{shopUrl && (

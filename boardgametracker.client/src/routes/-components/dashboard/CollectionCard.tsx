@@ -14,6 +14,7 @@ interface Props {
 	collection: GameStateChart[];
 	ownedGames: number;
 	totalCollectionValue: number | null;
+	expansionCollectionValue: number | null;
 	pricedGameCount: number;
 	recentAddedGames: RecentGame[];
 	currency: string;
@@ -34,6 +35,7 @@ export const CollectionCard = (props: Props) => {
 		collection,
 		ownedGames,
 		totalCollectionValue,
+		expansionCollectionValue,
 		pricedGameCount,
 		recentAddedGames,
 		currency,
@@ -50,6 +52,18 @@ export const CollectionCard = (props: Props) => {
 		tone,
 	}));
 	const total = segments.reduce((sum, segment) => sum + segment.value, 0);
+	const expansionsPaid = expansionCollectionValue ?? 0;
+	const paid =
+		totalCollectionValue === null && expansionsPaid === 0 ? null : (totalCollectionValue ?? 0) + expansionsPaid;
+	const paidSegments: BgtProgressSegment[] = [
+		{ key: "base", label: t("collection.paid-base"), value: totalCollectionValue ?? 0, tone: "value" },
+		{
+			key: "expansions",
+			label: t("collection.paid-expansions"),
+			value: expansionsPaid,
+			color: "rgb(34 211 238 / 0.4)",
+		},
+	];
 
 	return (
 		<BgtCard className="gap-3">
@@ -84,17 +98,29 @@ export const CollectionCard = (props: Props) => {
 				)}
 				<div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm">
 					<span className="text-white/60">{t("collection.paid")}</span>
-					{totalCollectionValue === null ? (
+					{paid === null ? (
 						<span className="text-white/60">{t("collection.no-prices")}</span>
 					) : (
 						<span>
-							<strong className="text-card-value">{price(totalCollectionValue, currency)}</strong>{" "}
+							<strong className="text-card-value">{price(paid, currency)}</strong>{" "}
 							<span className="text-white/60">
 								· {t("collection.priced", { priced: integer(pricedGameCount), owned: integer(ownedGames) })}
 							</span>
 						</span>
 					)}
 				</div>
+				{expansionsPaid > 0 && (
+					<BgtProgressBar
+						size="xs"
+						gapped
+						legend
+						segments={paidSegments}
+						formatValue={(value) => price(value, currency)}
+						formatLabel={(summary) =>
+							summary.segments.map((segment) => `${segment.label} ${price(segment.value, currency)}`).join(", ")
+						}
+					/>
+				)}
 				{recentAddedGames.length > 0 && (
 					<div className="flex flex-col gap-1.5">
 						<h3 className="text-xs uppercase tracking-wider text-white/50">{t("collection.recently-added")}</h3>

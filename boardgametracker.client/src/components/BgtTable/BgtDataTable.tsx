@@ -34,6 +34,7 @@ export interface DataTableProps<T> {
 	widths?: (string | null)[];
 	meta?: TableMeta<T>;
 	enableSorting?: boolean;
+	rowClassName?: (row: T) => string | undefined;
 }
 
 const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
@@ -47,6 +48,7 @@ const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
 		noHeaders,
 		meta,
 		enableSorting = true,
+		rowClassName,
 	} = props;
 	const { t } = useTranslation();
 	const table = useReactTable({
@@ -117,7 +119,7 @@ const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
 
 	if (!isLoading && table.getRowModel().rows?.length) {
 		rows = table.getRowModel().rows.map((row) => (
-			<BgtTableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+			<BgtTableRow key={row.id} data-state={row.getIsSelected() && "selected"} className={rowClassName?.(row.original)}>
 				{row.getVisibleCells().map((cell, i) => {
 					const hideOnMobile = cell.column.columnDef.meta?.hideOnMobile;
 					return (

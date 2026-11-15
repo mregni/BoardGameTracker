@@ -81,7 +81,15 @@
     "empty": "Ningún juego coincide con los filtros seleccionados.",
     "total-price-owned": "Precio total (en propiedad)",
     "mean-price-owned_one": "Precio medio (en propiedad) · {{count}} juego con precio",
-    "mean-price-owned_other": "Precio medio (en propiedad) · {{count}} juegos con precio"
+    "mean-price-owned_other": "Precio medio (en propiedad) · {{count}} juegos con precio",
+    "expansions_one": "{{count}} expansion",
+    "expansions_other": "{{count}} expansions",
+    "collection-price_one": "incl. {{count}} expansion",
+    "collection-price_other": "incl. {{count}} expansions",
+    "base-tag": "BASE",
+    "expansion-tag": "EXP",
+    "toggle-expansions_one": "{{count}} expansion of {{title}}",
+    "toggle-expansions_other": "{{count}} expansions of {{title}}"
   },
   "in-stock": {
     "yes": "En stock",

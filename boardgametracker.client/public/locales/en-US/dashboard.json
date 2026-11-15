@@ -87,6 +87,8 @@
     "paid": "Paid for owned games",
     "priced": "{{priced}} of {{owned}} priced",
     "no-prices": "No prices yet",
-    "recently-added": "Recently added"
+    "recently-added": "Recently added",
+    "paid-base": "Base games",
+    "paid-expansions": "Expansions"
   }
 }
