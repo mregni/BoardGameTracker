@@ -310,11 +310,14 @@ export const GamesTableView = (props: Props) => {
 					const open = row.kind === "collection";
 					const only = dimmed?.get(game.id);
 					return (
-						<div className="flex flex-col items-start gap-0.5">
+						<div data-keep={only ? "" : undefined} className="flex flex-col items-start gap-0.5">
 							<Link
 								to="/games/$gameId"
 								params={{ gameId: game.id }}
-								className="flex items-center gap-2 underline-offset-2 hover:text-primary-text hover:underline"
+								className={cx(
+									"flex items-center gap-2 underline-offset-2 hover:text-primary-text hover:underline",
+									only && "opacity-45",
+								)}
 							>
 								<BgtAvatar image={game.image} title={game.title} size="small" />
 								<span>{game.title}</span>
@@ -643,7 +646,7 @@ export const GamesTableView = (props: Props) => {
 					: row.kind === "collection"
 						? "[&>td]:border-b-transparent"
 						: undefined,
-				row.kind === "collection" && dimmed?.has(row.game.id) && "[&>td>*]:opacity-45",
+				row.kind === "collection" && dimmed?.has(row.game.id) && "[&>td>*:not([data-keep])]:opacity-45",
 			),
 		[dimmed],
 	);
