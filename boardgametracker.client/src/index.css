@@ -65,6 +65,7 @@
   --animate-podium-rise: podium-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-box-land: box-land 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-box-glow: box-glow 0.9s ease-out;
+  --animate-content-in: rise-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-row-out: row-out 0.32s ease-in forwards;
   --animate-cell-light: cell-light 1s ease-out;
   --animate-tree-open: tree-open 0.22s ease-out;

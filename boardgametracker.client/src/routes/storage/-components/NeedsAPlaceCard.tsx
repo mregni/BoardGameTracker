@@ -59,7 +59,7 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 				<span
 					key={countFlash}
 					className={cx(
-						"rounded px-1 text-sm font-medium tabular-nums text-white/60",
+						"-mx-1 rounded px-1 text-sm font-medium tabular-nums text-white/60",
 						countFlash > 0 && "animate-value-flash",
 					)}
 				>

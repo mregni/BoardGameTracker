@@ -106,7 +106,7 @@ export const StorageContent = (props: Props) => {
 	return (
 		<section
 			aria-labelledby="storage-content-title"
-			className="min-w-0 motion-safe:animate-rise-in motion-reduce:animate-fade-in"
+			className="min-w-0 motion-safe:animate-content-in motion-reduce:animate-fade-in"
 		>
 			<nav aria-label={t("page.path")} className="flex flex-wrap items-center gap-1.5 text-sm text-white/60">
 				{crumbs.map((crumb, index) =>

@@ -19,18 +19,20 @@ const measure = (element: HTMLElement, root: HTMLElement): Box => {
 	return { x, y, width: element.offsetWidth, height: element.offsetHeight };
 };
 
-const timing = { duration: 320, easing: "cubic-bezier(0.16, 1, 0.3, 1)" };
+const timing = { id: "flip", duration: 320, easing: "cubic-bezier(0.16, 1, 0.3, 1)" };
 
 export const useFlip = (ref: RefObject<HTMLElement | null>, scope: number) => {
-	const previous = useRef<{ scope: number; boxes: Map<string, Box> } | null>(null);
+	const previous = useRef<{ scope: number; width: number; boxes: Map<string, Box> } | null>(null);
 
 	useLayoutEffect(() => {
 		const root = ref.current;
 		if (!root) return;
 		const elements = [...root.querySelectorAll<HTMLElement>("[data-box]")];
 		const boxes = new Map(elements.map((element) => [element.dataset.box ?? "", measure(element, root)]));
-		const before = previous.current?.scope === scope ? previous.current.boxes : null;
-		previous.current = { scope, boxes };
+		const width = window.innerWidth;
+		const same = previous.current?.scope === scope && previous.current.width === width;
+		const before = same ? previous.current?.boxes : null;
+		previous.current = { scope, width, boxes };
 		if (!before || typeof root.animate !== "function") return;
 		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -45,10 +47,15 @@ export const useFlip = (ref: RefObject<HTMLElement | null>, scope: number) => {
 			const sy = from.height / to.height;
 			const resized = Math.abs(sx - 1) > 0.01 || Math.abs(sy - 1) > 0.01;
 			if (!resized && Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
+			for (const running of element.getAnimations({ subtree: true })) {
+				if (running.id === "flip") running.cancel();
+			}
 			element.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` }, { transform: "none" }], {
 				...timing,
 				composite: "add",
 			});
+			const layer = Math.ceil(Math.hypot(dx, dy));
+			element.animate([{ zIndex: layer }, { zIndex: layer }], timing);
 			if (resized) {
 				for (const child of element.children) child.animate([{ opacity: 0 }, { opacity: 1 }], timing);
 			}
