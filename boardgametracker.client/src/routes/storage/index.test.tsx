@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	BoxOrientation,
 	type Game,
@@ -104,6 +104,10 @@ const renderPage = () => {
 };
 
 describe("Storage page", () => {
+	beforeAll(() => {
+		Element.prototype.scrollIntoView = vi.fn();
+	});
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mocks.canWrite = true;
