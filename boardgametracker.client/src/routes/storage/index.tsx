@@ -89,7 +89,7 @@ function RouteComponent() {
 	const [selectedKey, setSelectedKey] = useState<string | null>(null);
 	const [closed, setClosed] = useState<Set<string>>(new Set());
 	const [checked, setChecked] = useState<Set<number>>(new Set());
-	const [highlightId, setHighlightId] = useState<number | null>(null);
+	const [flashId, setFlashId] = useState<number | null>(null);
 	const [dialog, setDialog] = useState<Dialog | null>(null);
 
 	if (isLoading || gamesLoading) return <BgtLoadingSpinner />;
@@ -190,7 +190,7 @@ function RouteComponent() {
 	const pick = (hit: SearchHit) => {
 		if (!hit.place) {
 			setChecked((previous) => new Set(previous).add(hit.game.id));
-			setHighlightId(hit.game.id);
+			setFlashId(hit.game.id);
 			return;
 		}
 		const key =
@@ -285,7 +285,8 @@ function RouteComponent() {
 						<NeedsAPlaceCard
 							games={homeless}
 							checked={checked}
-							highlightId={highlightId}
+							flashId={flashId}
+							onFlashEnd={() => setFlashId(null)}
 							canWrite={canWrite}
 							onToggle={(gameId, isChecked) =>
 								setChecked((previous) => {

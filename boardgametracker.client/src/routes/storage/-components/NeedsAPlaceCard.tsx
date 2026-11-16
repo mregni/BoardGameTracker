@@ -1,4 +1,5 @@
 import { cx } from "class-variance-authority";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import CheckIcon from "@/assets/icons/check.svg?react";
 import InfoIcon from "@/assets/icons/info.svg?react";
@@ -11,14 +12,23 @@ import type { StoragePlace } from "@/utils/storage";
 interface Props {
 	games: Game[];
 	checked: Set<number>;
-	highlightId: number | null;
+	flashId: number | null;
+	onFlashEnd: () => void;
 	canWrite: boolean;
 	onToggle: (gameId: number, checked: boolean) => void;
 	onMove: (place: StoragePlace) => void;
 }
 
-export const NeedsAPlaceCard = ({ games, checked, highlightId, canWrite, onToggle, onMove }: Props) => {
+export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite, onToggle, onMove }: Props) => {
 	const { t } = useTranslation("storage");
+
+	useEffect(() => {
+		if (flashId === null) return;
+		const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		document
+			.querySelector(`[data-needs="${flashId}"]`)
+			?.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
+	}, [flashId]);
 
 	return (
 		<BgtCard aria-labelledby="needs-a-place-title">
@@ -39,9 +49,11 @@ export const NeedsAPlaceCard = ({ games, checked, highlightId, canWrite, onToggl
 						{games.map((game) => (
 							<li key={game.id} className="border-b border-card-border last:border-b-0">
 								<label
+									data-needs={game.id}
+									onAnimationEnd={flashId === game.id ? onFlashEnd : undefined}
 									className={cx(
-										"grid cursor-pointer grid-cols-[18px_36px_minmax(0,1fr)] items-center gap-2.5 px-0.5 py-1.5",
-										highlightId === game.id && "animate-pulse rounded bg-card-value/15",
+										"grid cursor-pointer grid-cols-[18px_36px_minmax(0,1fr)] items-center gap-2.5 rounded px-0.5 py-1.5",
+										flashId === game.id && "animate-value-flash",
 									)}
 								>
 									<input
