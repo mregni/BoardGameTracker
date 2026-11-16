@@ -37,6 +37,8 @@ using BoardGameTracker.Core.Loans;
 using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Locations;
 using BoardGameTracker.Core.Locations.Interfaces;
+using BoardGameTracker.Core.Storage;
+using BoardGameTracker.Core.Storage.Interfaces;
 using BoardGameTracker.Core.Maintenance;
 using BoardGameTracker.Core.Maintenance.Interfaces;
 using BoardGameTracker.Core.Manuals;
@@ -104,6 +106,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<ISessionService, SessionService>();
         serviceCollection.AddScoped<ISessionSuggestionService, SessionSuggestionService>();
         serviceCollection.AddScoped<ILocationService, LocationService>();
+        serviceCollection.AddScoped<IStorageService, StorageService>();
         serviceCollection.AddScoped<ILoanService, LoanService>();
         serviceCollection.AddScoped<IDashboardService, DashboardService>();
         serviceCollection.AddScoped<ILeaderboardService, LeaderboardService>();
@@ -126,6 +129,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IGameStatisticsRepository, GameStatisticsRepository>();
         serviceCollection.AddScoped<IPlayerRepository, PlayerRepository>();
         serviceCollection.AddScoped<ILocationRepository, LocationRepository>();
+        serviceCollection.AddScoped<IStorageRepository, StorageRepository>();
         serviceCollection.AddScoped<ISessionRepository, SessionRepository>();
         serviceCollection.AddScoped<IBadgeRepository, BadgeRepository>();
         serviceCollection.AddScoped<ICompareRepository, CompareRepository>();

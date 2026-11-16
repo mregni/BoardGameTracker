@@ -17,7 +17,11 @@ public static class ExpansionDtoExtensions
             State = expansion.State,
             BuyingPrice = expansion.BuyingPrice?.Amount,
             SoldPrice = expansion.SoldPrice?.Amount,
-            AdditionDate = expansion.AdditionDate
+            AdditionDate = expansion.AdditionDate,
+            StoredAtLocationId = expansion.StoredAtLocationId,
+            StorageLocationId = expansion.StorageLocationId,
+            StoragePosition = expansion.StoragePosition,
+            BoxOrientation = expansion.BoxOrientation
         };
     }
 
