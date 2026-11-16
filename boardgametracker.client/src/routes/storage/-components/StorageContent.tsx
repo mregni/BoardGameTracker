@@ -84,7 +84,7 @@ export const StorageContent = (props: Props) => {
 					/>
 				))
 			) : (
-				<span className="m-auto self-center text-[11px] text-white/30">{t("page.nothing-directly")}</span>
+				<span className="m-auto self-center text-xs text-white/50">{t("page.nothing-directly")}</span>
 			)}
 		</div>
 	);
@@ -234,7 +234,7 @@ export const StorageContent = (props: Props) => {
 												</span>
 												<span className="flex h-10 items-end gap-[3px] overflow-hidden" aria-hidden="true">
 													{inside.length === 0 ? (
-														<span className="text-xs text-white/40">{t("page.empty-slot")}</span>
+														<span className="text-xs text-white/50">{t("page.empty-slot")}</span>
 													) : (
 														inside
 															.slice(0, 8)

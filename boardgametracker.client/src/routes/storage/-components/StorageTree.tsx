@@ -103,7 +103,9 @@ export const StorageTree = ({ locations, nodes, items, current, open, onToggle, 
 							aria-hidden="true"
 						/>
 						<span className="min-w-0 flex-1 truncate">{row.name}</span>
-						<span className="text-xs font-normal tabular-nums text-white/60">{count || ""}</span>
+						<span className={cx("text-xs font-normal tabular-nums", isCurrent ? "text-white/85" : "text-white/60")}>
+							{count || ""}
+						</span>
 					</button>
 				</div>
 				{row.children.length > 0 && isOpen && (

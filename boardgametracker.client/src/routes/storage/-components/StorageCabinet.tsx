@@ -94,14 +94,14 @@ const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid }: SlotP
 			<legend className="sr-only">{name}</legend>
 			<span
 				aria-hidden="true"
-				className="pointer-events-none absolute right-1.5 top-1 text-[10px] font-medium tracking-wide text-white/40"
+				className="pointer-events-none absolute right-1.5 top-1 text-[11px] font-medium tracking-wide text-white/60"
 			>
 				{name}
 			</span>
 			{content.length > 0 ? (
 				content
 			) : (
-				<span className="m-auto self-center text-[11px] text-white/30">{t("page.empty-slot")}</span>
+				<span className="m-auto self-center text-xs text-white/50">{t("page.empty-slot")}</span>
 			)}
 		</fieldset>
 	);
