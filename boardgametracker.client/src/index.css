@@ -65,6 +65,9 @@
   --animate-podium-rise: podium-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-box-land: box-land 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-box-glow: box-glow 0.9s ease-out;
+  --animate-row-out: row-out 0.32s ease-in forwards;
+  --animate-cell-light: cell-light 1s ease-out;
+  --animate-tree-open: tree-open 0.22s ease-out;
 }
 
 @utility bg-hatch {
@@ -182,6 +185,37 @@
 @keyframes box-glow {
   from {
     box-shadow: 0 0 0 2px var(--color-card-value);
+  }
+}
+
+@keyframes row-out {
+  from {
+    max-height: 4rem;
+  }
+  40% {
+    opacity: 0;
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    border-color: transparent;
+  }
+}
+
+@keyframes tree-open {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+@keyframes cell-light {
+  from {
+    opacity: 0.2;
+  }
+  35% {
+    opacity: 1;
+    filter: brightness(1.6);
   }
 }
 

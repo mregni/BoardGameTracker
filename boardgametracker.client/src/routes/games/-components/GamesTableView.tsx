@@ -47,6 +47,8 @@ declare module "@tanstack/react-table" {
 		isEditing?: (id: number, column: GameTableColumn) => boolean;
 		isSelected?: (id: number) => boolean;
 		allSelected?: boolean;
+		isStored?: (id: number) => boolean;
+		storedDone?: (id: number) => void;
 	}
 }
 
@@ -86,6 +88,7 @@ export const GamesTableView = (props: Props) => {
 	const { nodes, locations } = useStorageData();
 	const { assignStorage } = useStorageActions();
 	const [selected, setSelected] = useState<Set<number>>(new Set());
+	const [stored, setStored] = useState<Set<number>>(new Set());
 	const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
 	const [openGames, setOpenGames] = useState<Set<number>>(new Set());
 	const stopEdit = useCallback(() => setEditingCell(null), []);
@@ -140,8 +143,15 @@ export const GamesTableView = (props: Props) => {
 			isEditing,
 			isSelected: (id: number) => selected.has(id) && selectable.includes(id),
 			allSelected: selectable.length > 0 && selectedIds.length === selectable.length,
+			isStored: (id: number) => stored.has(id),
+			storedDone: (id: number) =>
+				setStored((previous) => {
+					const next = new Set(previous);
+					next.delete(id);
+					return next;
+				}),
 		}),
-		[isEditing, selected, selectable, selectedIds],
+		[isEditing, selected, selectable, selectedIds, stored],
 	);
 	const toggleSelected = useCallback(
 		(gameId: number) =>
@@ -182,7 +192,10 @@ export const GamesTableView = (props: Props) => {
 				items: ids.map((id) => ({ type, id })),
 				locationId: place?.locationId ?? null,
 				storageLocationId: place?.storageLocationId ?? null,
-			}).catch(() => undefined),
+			}).then(
+				() => setStored(new Set(type === StorageItemType.Expansion ? ids.map(expansionEditKey) : ids)),
+				() => undefined,
+			),
 		[assignStorage],
 	);
 	const hasPrices = ownedPrices.pricedCount > 0;
@@ -447,6 +460,8 @@ export const GamesTableView = (props: Props) => {
 								className="max-w-60"
 								display={place ? shortPlace(place) : undefined}
 								editing={!!table.options.meta?.isEditing?.(key, "storage")}
+								flash={!!table.options.meta?.isStored?.(key)}
+								onFlashEnd={() => table.options.meta?.storedDone?.(key)}
 								onStartEdit={() => startEdit(key, "storage")}
 								onStopEdit={stopEdit}
 								onChange={(value) => store(StorageItemType.Expansion, [row.expansion.id], parsePlaceKey(value))}
@@ -468,6 +483,8 @@ export const GamesTableView = (props: Props) => {
 								className="max-w-60"
 								display={place ? shortPlace(place) : undefined}
 								editing={!!table.options.meta?.isEditing?.(row.game.id, "storage")}
+								flash={!!table.options.meta?.isStored?.(row.game.id)}
+								onFlashEnd={() => table.options.meta?.storedDone?.(row.game.id)}
 								onStartEdit={() => startEdit(row.game.id, "storage")}
 								onStopEdit={stopEdit}
 								onChange={(value) => store(StorageItemType.Game, [row.game.id], parsePlaceKey(value))}
@@ -689,7 +706,7 @@ export const GamesTableView = (props: Props) => {
 			{selectedIds.length > 0 && (
 				<section
 					aria-label={t("games:table.selection", { count: selectedIds.length })}
-					className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2"
+					className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 motion-safe:animate-rise-in motion-reduce:animate-fade-in"
 				>
 					<span className="text-sm">
 						<span className="font-bold tabular-nums text-card-value">{selectedIds.length}</span>{" "}

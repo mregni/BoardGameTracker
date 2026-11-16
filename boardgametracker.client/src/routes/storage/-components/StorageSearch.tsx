@@ -65,7 +65,9 @@ const SlotMap = ({ place, nodes }: { place: StoragePlace | null; nodes: StorageL
 						width={width - 2}
 						height={height - 2}
 						rx="1.5"
-						className={row === slot.row && column === slot.column ? "fill-card-value" : "fill-card-border"}
+						className={
+							row === slot.row && column === slot.column ? "animate-cell-light fill-card-value" : "fill-card-border"
+						}
 					/>
 				);
 			})}

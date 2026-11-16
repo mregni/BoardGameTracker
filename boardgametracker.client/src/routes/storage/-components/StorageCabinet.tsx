@@ -1,8 +1,9 @@
 import { cx } from "class-variance-authority";
-import { type DragEvent, type ReactNode, useState } from "react";
+import { type DragEvent, type ReactNode, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoxOrientation, StorageLayout, type StorageLocation } from "@/models";
 import { childrenOf, itemsAt, nodeName, type StorageItem, type StoragePlace } from "@/utils/storage";
+import { useFlip } from "../-hooks/useFlip";
 import { type RovingBoxes, useRovingBoxes } from "../-hooks/useRovingBoxes";
 import { StorageBox } from "./StorageBox";
 
@@ -91,7 +92,7 @@ const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid, roving 
 			}}
 			onDrop={drop}
 			className={cx(
-				"relative m-0 flex items-end gap-[3px] rounded-[3px] border-0 bg-page-black pointer-coarse:gap-1.5",
+				"relative m-0 flex items-end gap-[3px] rounded-[3px] border-0 bg-page-black transition-[background-color,box-shadow] duration-150 pointer-coarse:gap-1.5",
 				grid
 					? "min-h-[calc(var(--box)*1.45)] min-w-[calc(var(--box)*1.45)] max-w-[calc(var(--box)*3)] flex-wrap content-end p-1.5 pt-5"
 					: "min-h-[calc(var(--box)+26px)] min-w-[calc(var(--box)*4.4)] px-2 pt-5 shadow-[inset_0_-4px_0_rgb(255_255_255/0.07)]",
@@ -123,11 +124,14 @@ export const StorageCabinet = (props: Props) => {
 		itemsAt(items, { locationId: slot.locationId, storageLocationId: slot.id }).map((item) => item.key),
 	);
 	const roving = useRovingBoxes(keys, selectedKey);
+	const ref = useRef<HTMLFieldSetElement>(null);
+	useFlip(ref, cabinet.id);
 
 	return (
 		<fieldset
+			ref={ref}
 			onKeyDown={roving.onKeyDown}
-			className="m-0 inline-flex min-w-0 flex-col gap-2 rounded-md border-0 bg-wood p-2 shadow-[0_10px_24px_rgb(0_0_0/0.35)]"
+			className="relative m-0 inline-flex min-w-0 flex-col gap-2 rounded-md border-0 bg-wood p-2 shadow-[0_10px_24px_rgb(0_0_0/0.35)]"
 		>
 			<legend className="sr-only">{nodeName(cabinet, nodes, t)}</legend>
 			<p id={roving.hintId} className="sr-only">

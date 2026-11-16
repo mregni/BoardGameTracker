@@ -26,6 +26,7 @@ import {
 	ancestorsOf,
 	itemKey,
 	itemsAt,
+	itemsIn,
 	needsAPlace,
 	parsePlaceKey,
 	placeKey,
@@ -61,7 +62,7 @@ type Dialog =
 	| { kind: "edit"; node: StorageLocation }
 	| { kind: "edit-location"; location: Location }
 	| { kind: "move"; node: StorageLocation }
-	| { kind: "delete"; node: StorageLocation }
+	| { kind: "delete"; node: StorageLocation; keys: string[] }
 	| { kind: "new-location" };
 
 const reference = (item: StorageItem) => ({ type: item.type, id: item.id });
@@ -260,6 +261,7 @@ function RouteComponent() {
 						</aside>
 						{place && location && (
 							<StorageContent
+								key={placeKey(place)}
 								place={place}
 								location={location}
 								nodes={nodes}
@@ -272,7 +274,10 @@ function RouteComponent() {
 								onAdd={() => setDialog({ kind: "create", parent: place })}
 								onEdit={() => setDialog(node ? { kind: "edit", node } : { kind: "edit-location", location })}
 								onMove={() => node && setDialog({ kind: "move", node })}
-								onDelete={() => node && setDialog({ kind: "delete", node })}
+								onDelete={() =>
+									node &&
+									setDialog({ kind: "delete", node, keys: itemsIn(items, place, nodes).map((item) => item.key) })
+								}
 							/>
 						)}
 						<div className="flex flex-col gap-4 md:col-start-2 xl:sticky xl:top-6 xl:col-start-auto xl:max-h-[calc(100vh-48px)] xl:overflow-auto">
@@ -348,7 +353,10 @@ function RouteComponent() {
 						<DeleteStorageLocationDialog
 							node={dialog.node}
 							close={() => setDialog(null)}
-							onDeleted={() => go({ locationId: dialog.node.locationId, storageLocationId: dialog.node.parentId })}
+							onDeleted={() => {
+								go({ locationId: dialog.node.locationId, storageLocationId: dialog.node.parentId });
+								land(dialog.keys);
+							}}
 						/>
 					)}
 					{dialog?.kind === "new-location" && (

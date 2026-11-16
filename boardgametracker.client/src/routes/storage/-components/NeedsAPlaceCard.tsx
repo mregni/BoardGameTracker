@@ -1,11 +1,12 @@
 import { cx } from "class-variance-authority";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CheckIcon from "@/assets/icons/check.svg?react";
 import InfoIcon from "@/assets/icons/info.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { StoragePicker } from "@/components/BgtStorage/StoragePicker";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import type { Game } from "@/models";
 import type { StoragePlace } from "@/utils/storage";
 
@@ -21,6 +22,26 @@ interface Props {
 
 export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite, onToggle, onMove }: Props) => {
 	const { t } = useTranslation("storage");
+	const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
+	const [previous, setPrevious] = useState(games);
+	const [leaving, setLeaving] = useState<{ game: Game; index: number }[]>([]);
+	const [countFlash, setCountFlash] = useState(0);
+
+	if (previous.length !== games.length || previous.some((game, index) => game.id !== games[index].id)) {
+		const ids = new Set(games.map((game) => game.id));
+		const gone = previous.flatMap((game, index) => (ids.has(game.id) ? [] : [{ game, index }]));
+		setPrevious(games);
+		if (gone.length > 0) {
+			setCountFlash((count) => count + 1);
+			if (!reduced) setLeaving((rows) => [...rows.filter((row) => !ids.has(row.game.id)), ...gone]);
+		}
+	}
+
+	const rows = games.map((game) => ({ game, gone: false }));
+	for (const row of [...leaving].sort((a, b) => a.index - b.index)) {
+		rows.splice(Math.min(row.index, rows.length), 0, { game: row.game, gone: true });
+	}
+	const left = (gameId: number) => setLeaving((current) => current.filter((row) => row.game.id !== gameId));
 
 	useEffect(() => {
 		if (flashId === null) return;
@@ -35,9 +56,17 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 			<h2 id="needs-a-place-title" className="mb-2 flex items-center gap-2 tracking-wide">
 				<InfoIcon className="size-5 text-primary" aria-hidden="true" />
 				{t("inbox.title")}
-				<span className="text-sm font-medium tabular-nums text-white/60">{games.length}</span>
+				<span
+					key={countFlash}
+					className={cx(
+						"rounded px-1 text-sm font-medium tabular-nums text-white/60",
+						countFlash > 0 && "animate-value-flash",
+					)}
+				>
+					{games.length}
+				</span>
 			</h2>
-			{games.length === 0 ? (
+			{rows.length === 0 ? (
 				<p className="flex items-center gap-1.5 text-sm text-white/60">
 					<CheckIcon className="size-4 text-ok" aria-hidden="true" />
 					{t("inbox.done")}
@@ -46,8 +75,13 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 				<>
 					<p className="mb-2 text-sm text-white/60">{t("inbox.description")}</p>
 					<ul className="flex max-h-[45vh] flex-col overflow-y-auto">
-						{games.map((game) => (
-							<li key={game.id} className="border-b border-card-border last:border-b-0">
+						{rows.map(({ game, gone }) => (
+							<li
+								key={game.id}
+								inert={gone}
+								onAnimationEnd={(event) => gone && event.target === event.currentTarget && left(game.id)}
+								className={cx("border-b border-card-border last:border-b-0", gone && "overflow-hidden animate-row-out")}
+							>
 								<label
 									data-needs={game.id}
 									onAnimationEnd={flashId === game.id ? onFlashEnd : undefined}
@@ -59,7 +93,7 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 									<input
 										type="checkbox"
 										className="size-[18px] accent-primary"
-										checked={checked.has(game.id)}
+										checked={gone || checked.has(game.id)}
 										disabled={!canWrite}
 										onChange={(event) => onToggle(game.id, event.target.checked)}
 									/>

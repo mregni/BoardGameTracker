@@ -42,6 +42,7 @@ export const StorageBox = ({
 }: Props) => {
 	const { t } = useTranslation("storage");
 	const [over, setOver] = useState(false);
+	const [dragging, setDragging] = useState(false);
 	const landing = useContext(BoxLanding);
 	const landed = landing.keys.has(item.key);
 	const label = [boxLabel(item, t), item.isLoaned ? t("box.loaned-short") : null].filter(Boolean).join(" · ");
@@ -69,7 +70,9 @@ export const StorageBox = ({
 			onDragStart={(event) => {
 				event.dataTransfer.setData("text/plain", item.key);
 				event.dataTransfer.effectAllowed = "move";
+				setDragging(true);
 			}}
+			onDragEnd={() => setDragging(false)}
 			onDragOver={(event) => {
 				if (!onDropBefore) return;
 				event.preventDefault();
@@ -82,13 +85,14 @@ export const StorageBox = ({
 			onAnimationEnd={landed ? () => landing.done(item.key) : undefined}
 			style={{ backgroundColor: StringToHsl(item.title) }}
 			className={cx(
-				"relative flex flex-none scroll-mt-6 overflow-hidden rounded-[3px] text-left font-bold text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.55)] shadow-[inset_0_0_0_1px_rgb(255_255_255/0.1),0_1px_2px_rgb(0_0_0/0.4)]",
+				"relative flex flex-none scroll-mt-6 overflow-hidden rounded-[3px] text-left font-bold text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.55)] shadow-[inset_0_0_0_1px_rgb(255_255_255/0.1),0_1px_2px_rgb(0_0_0/0.4)] transition-[opacity,box-shadow] duration-150",
 				onDropBefore ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
 				shapes[orientation],
 				item.isLoaned && "grayscale brightness-50",
 				landed && "motion-safe:animate-box-land motion-reduce:animate-box-glow",
 				selected && "outline-2 outline-offset-2 outline-white",
-				over && "shadow-[-4px_0_0_0_var(--color-card-value)]",
+				over && "shadow-[inset_0_0_0_1px_rgb(255_255_255/0.1),-4px_0_0_0_var(--color-card-value)]",
+				dragging && "opacity-40",
 				"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text",
 			)}
 		>

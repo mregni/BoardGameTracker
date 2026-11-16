@@ -109,7 +109,9 @@ export const StorageTree = ({ locations, nodes, items, current, open, onToggle, 
 					</button>
 				</div>
 				{row.children.length > 0 && isOpen && (
-					<ul className="ml-[9px] border-l border-card-border pl-3.5">{row.children.map(render)}</ul>
+					<div className="grid grid-rows-[1fr] motion-safe:animate-tree-open">
+						<ul className="ml-[9px] overflow-hidden border-l border-card-border pl-3.5">{row.children.map(render)}</ul>
+					</div>
 				)}
 			</li>
 		);
