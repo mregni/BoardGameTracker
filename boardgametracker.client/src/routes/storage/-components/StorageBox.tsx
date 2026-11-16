@@ -12,6 +12,9 @@ interface Props {
 	orientation?: BoxOrientation;
 	large?: boolean;
 	onDropBefore?: (draggedKey: string, beforeKey: string) => void;
+	tabIndex?: 0 | -1;
+	describedBy?: string;
+	onFocusBox?: (key: string) => void;
 }
 
 const shapes: Record<BoxOrientation, string> = {
@@ -30,6 +33,9 @@ export const StorageBox = ({
 	orientation = item.orientation,
 	large,
 	onDropBefore,
+	tabIndex,
+	describedBy,
+	onFocusBox,
 }: Props) => {
 	const { t } = useTranslation("storage");
 	const [over, setOver] = useState(false);
@@ -47,7 +53,10 @@ export const StorageBox = ({
 	return (
 		<button
 			type="button"
-			aria-pressed={selected}
+			aria-current={selected ? "true" : undefined}
+			aria-describedby={describedBy}
+			tabIndex={tabIndex}
+			onFocus={() => onFocusBox?.(item.key)}
 			data-box={item.key}
 			aria-label={label}
 			title={label}

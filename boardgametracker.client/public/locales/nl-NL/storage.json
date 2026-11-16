@@ -110,7 +110,8 @@
     "new-storage": "New storage location",
     "no-locations-title": "No locations yet",
     "no-locations-description": "Storage starts with a location, like Home or Trailer. Add one, then split it into rooms, cabinets or boxes.",
-    "touch-hint": "Tap a box to turn it, move it to another place or change its order."
+    "touch-hint": "Tap a box to turn it, move it to another place or change its order.",
+    "keys-hint": "Use the arrow keys to move between boxes; Home and End jump to the first and last box."
   },
   "box": {
     "title": "Box",

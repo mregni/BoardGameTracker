@@ -19,6 +19,7 @@ import {
 	type StorageItem,
 	type StoragePlace,
 } from "@/utils/storage";
+import { useRovingBoxes } from "../-hooks/useRovingBoxes";
 import { StorageBox } from "./StorageBox";
 import { StorageCabinet } from "./StorageCabinet";
 import { layoutIcons } from "./StorageTree";
@@ -61,6 +62,10 @@ export const StorageContent = (props: Props) => {
 		(child) => child.layout !== StorageLayout.Slot,
 	);
 	const direct = itemsAt(items, place);
+	const roving = useRovingBoxes(
+		direct.map((item) => item.key),
+		selectedKey,
+	);
 	const total = itemsIn(items, place, nodes).length;
 	const crumbs: { place: StoragePlace; name: string }[] = [
 		{ place: { locationId: location.id, storageLocationId: null }, name: location.name },
@@ -72,7 +77,13 @@ export const StorageContent = (props: Props) => {
 	const canAddHere = !node || node.layout === StorageLayout.Free;
 
 	const bin = (
-		<div className="flex min-h-[84px] flex-wrap items-end gap-1.5 rounded-lg border border-dashed border-card-border bg-card-black/60 p-2.5">
+		<div
+			onKeyDown={roving.onKeyDown}
+			className="flex min-h-[84px] flex-wrap items-end gap-1.5 rounded-lg border border-dashed border-card-border bg-card-black/60 p-2.5"
+		>
+			<p id={roving.hintId} className="sr-only">
+				{t("page.keys-hint")}
+			</p>
 			{direct.length > 0 ? (
 				direct.map((item) => (
 					<StorageBox
@@ -81,6 +92,9 @@ export const StorageContent = (props: Props) => {
 						orientation={BoxOrientation.Front}
 						selected={item.key === selectedKey}
 						onSelect={onSelect}
+						tabIndex={roving.tabIndexFor(item.key)}
+						describedBy={roving.describedByFor(item.key)}
+						onFocusBox={roving.onFocusBox}
 					/>
 				))
 			) : (

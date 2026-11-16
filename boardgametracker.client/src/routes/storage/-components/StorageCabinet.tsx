@@ -3,6 +3,7 @@ import { type DragEvent, type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoxOrientation, StorageLayout, type StorageLocation } from "@/models";
 import { childrenOf, itemsAt, nodeName, type StorageItem, type StoragePlace } from "@/utils/storage";
+import { type RovingBoxes, useRovingBoxes } from "../-hooks/useRovingBoxes";
 import { StorageBox } from "./StorageBox";
 
 interface Props {
@@ -17,9 +18,10 @@ interface Props {
 interface SlotProps extends Omit<Props, "cabinet"> {
 	slot: StorageLocation;
 	grid: boolean;
+	roving: RovingBoxes;
 }
 
-const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid }: SlotProps) => {
+const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid, roving }: SlotProps) => {
 	const { t } = useTranslation("storage");
 	const [over, setOver] = useState(false);
 	const place: StoragePlace = { locationId: slot.locationId, storageLocationId: slot.id };
@@ -47,6 +49,9 @@ const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid }: SlotP
 						selected={item.key === selectedKey}
 						onSelect={onSelect}
 						onDropBefore={onMove ? (dragged, before) => onMove(dragged, slot, before) : undefined}
+						tabIndex={roving.tabIndexFor(item.key)}
+						describedBy={roving.describedByFor(item.key)}
+						onFocusBox={roving.onFocusBox}
 					/>
 				))}
 			</div>,
@@ -67,6 +72,9 @@ const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid }: SlotP
 				selected={item.key === selectedKey}
 				onSelect={onSelect}
 				onDropBefore={onMove ? (dragged, before) => onMove(dragged, slot, before) : undefined}
+				tabIndex={roving.tabIndexFor(item.key)}
+				describedBy={roving.describedByFor(item.key)}
+				onFocusBox={roving.onFocusBox}
 			/>,
 		);
 	}
@@ -108,22 +116,32 @@ const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid }: SlotP
 };
 
 export const StorageCabinet = (props: Props) => {
-	const { cabinet, nodes } = props;
+	const { cabinet, nodes, items, selectedKey } = props;
 	const { t } = useTranslation("storage");
 	const slots = childrenOf(nodes, cabinet.id);
 	const grid = cabinet.layout === StorageLayout.Grid;
+	const keys = slots.flatMap((slot) =>
+		itemsAt(items, { locationId: slot.locationId, storageLocationId: slot.id }).map((item) => item.key),
+	);
+	const roving = useRovingBoxes(keys, selectedKey);
 
 	return (
-		<fieldset className="m-0 inline-flex min-w-0 flex-col gap-2 rounded-md border-0 bg-wood p-2 shadow-[0_10px_24px_rgb(0_0_0/0.35)]">
+		<fieldset
+			onKeyDown={roving.onKeyDown}
+			className="m-0 inline-flex min-w-0 flex-col gap-2 rounded-md border-0 bg-wood p-2 shadow-[0_10px_24px_rgb(0_0_0/0.35)]"
+		>
 			<legend className="sr-only">{nodeName(cabinet, nodes, t)}</legend>
+			<p id={roving.hintId} className="sr-only">
+				{t("page.keys-hint")}
+			</p>
 			{grid ? (
 				<div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${cabinet.columns ?? 1}, auto)` }}>
 					{slots.map((slot) => (
-						<Slot key={slot.id} slot={slot} grid {...props} />
+						<Slot key={slot.id} slot={slot} grid roving={roving} {...props} />
 					))}
 				</div>
 			) : (
-				slots.map((slot) => <Slot key={slot.id} slot={slot} grid={false} {...props} />)
+				slots.map((slot) => <Slot key={slot.id} slot={slot} grid={false} roving={roving} {...props} />)
 			)}
 		</fieldset>
 	);

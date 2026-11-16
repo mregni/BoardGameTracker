@@ -190,6 +190,34 @@ describe("Storage page", () => {
 		});
 	});
 
+	it("gives a cabinet one tab stop and moves between boxes with the arrow keys", async () => {
+		const user = userEvent.setup();
+		mocks.games = [
+			...mocks.games,
+			game(6, "Azul", { storedAtLocationId: 1, storageLocationId: 13, storagePosition: 0 }),
+		];
+		mocks.search = { at: "1:11" };
+		renderPage();
+
+		const cabinet = (await screen.findAllByRole("group", { name: "storage:slot.shelf" }))[0].closest(
+			"fieldset:not([class*='bg-page-black'])",
+		) as HTMLElement;
+		const boxes = within(cabinet).getAllByRole("button", { name: /Wingspan|Pandemic|Azul/ });
+		expect(boxes.map((box) => box.tabIndex)).toEqual([0, -1, -1]);
+		expect(boxes[0]).toHaveAccessibleDescription("page.keys-hint");
+
+		boxes[0].focus();
+		await user.keyboard("{ArrowRight}");
+		expect(boxes[1]).toHaveFocus();
+		await user.keyboard("{End}");
+		expect(boxes[2]).toHaveFocus();
+		await user.keyboard("{Enter}");
+
+		expect(screen.getByRole("button", { name: "Azul" })).toHaveAttribute("aria-current", "true");
+		expect(screen.getByRole("button", { name: "Azul" })).toHaveAttribute("tabindex", "0");
+		expect(screen.getByRole("button", { name: "Wingspan" })).toHaveAttribute("tabindex", "-1");
+	});
+
 	it("opens the cabinet when the address points at one of its shelves", async () => {
 		mocks.search = { at: "1:12" };
 		renderPage();
