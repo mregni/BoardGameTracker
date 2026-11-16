@@ -10,7 +10,6 @@ interface Props {
 	selected: boolean;
 	onSelect: (item: StorageItem) => void;
 	orientation?: BoxOrientation;
-	large?: boolean;
 	onDropBefore?: (draggedKey: string, beforeKey: string) => void;
 	tabIndex?: 0 | -1;
 	describedBy?: string;
@@ -31,7 +30,6 @@ export const StorageBox = ({
 	selected,
 	onSelect,
 	orientation = item.orientation,
-	large,
 	onDropBefore,
 	tabIndex,
 	describedBy,
@@ -79,7 +77,6 @@ export const StorageBox = ({
 				"relative flex flex-none scroll-mt-6 overflow-hidden rounded-[3px] text-left font-bold text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.55)] shadow-[inset_0_0_0_1px_rgb(255_255_255/0.1),0_1px_2px_rgb(0_0_0/0.4)]",
 				onDropBefore ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
 				shapes[orientation],
-				large && orientation === BoxOrientation.Front && "size-[calc(var(--box)*1.05)]",
 				item.isLoaned && "grayscale brightness-50",
 				selected && "outline-2 outline-offset-2 outline-white",
 				over && "shadow-[-4px_0_0_0_var(--color-card-value)]",
