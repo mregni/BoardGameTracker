@@ -11,4 +11,5 @@ public class ImportGame
     public bool HasScoring { get; set; }
     public decimal? Price { get; set; }
     public DateTime AddedDate { get; set; }
+    public int? BaseGameBggId { get; set; }
 }

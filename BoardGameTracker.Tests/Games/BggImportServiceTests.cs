@@ -52,6 +52,9 @@ public class BggImportServiceTests
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _imageServiceMock = new Mock<IImageService>();
         _loggerMock = new Mock<ILogger<BggImportService>>();
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.Is<CollectionRequest>(r => IsExpansionCollection(r))))
+            .ReturnsAsync(CreateSucceededCollectionResponse([]));
 
         _bggImportService = new BggImportService(
             _bggClientMock.Object,
@@ -79,6 +82,28 @@ public class BggImportServiceTests
 
     private static bool IsBoardGameCollection(CollectionRequest request) =>
         request.RelativeUrl.ToString() == $"collection?username={UserName}&subtype=boardgame";
+
+    private static bool IsExpansionCollection(CollectionRequest request) =>
+        request.RelativeUrl.ToString() == $"collection?username={UserName}&subtype=boardgameexpansion";
+
+    private void VerifyExpansionCollectionRequested() =>
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.Is<CollectionRequest>(r => IsExpansionCollection(r))), Times.Once);
+
+    private static CollectionResponse.Item CollectionItem(int id, string name) => new()
+    {
+        ObjectId = id,
+        Name = name,
+        Status = new CollectionResponse.Status { Owned = true },
+        SubType = "boardgame"
+    };
+
+    private static ThingResponse.Item ExpansionThing(int id, string name, params (int Id, string Title)[] baseGames) => new()
+    {
+        Id = id,
+        Name = name,
+        Type = "boardgameexpansion",
+        Links = baseGames.Select(b => new ThingResponse.Link { Type = "boardgameexpansion", Id = b.Id, Value = b.Title }).ToList()
+    };
 
     private void VerifyStartLog() =>
         _loggerMock.VerifyLog(LogLevel.Information, $"Starting BGG collection import for user {UserName}");
@@ -547,6 +572,7 @@ public class BggImportServiceTests
         _bggClientMock.Verify(x => x.GetCollectionAsync(It.Is<CollectionRequest>(r => IsBoardGameCollection(r))), Times.Once);
         _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
         VerifyStartLog();
+        VerifyExpansionCollectionRequested();
         VerifyNoOtherCalls();
     }
 
@@ -593,6 +619,7 @@ public class BggImportServiceTests
         _bggClientMock.Verify(x => x.GetCollectionAsync(It.Is<CollectionRequest>(r => IsBoardGameCollection(r))), Times.Once);
         _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
         VerifyStartLog();
+        VerifyExpansionCollectionRequested();
         VerifyNoOtherCalls();
     }
 
@@ -637,6 +664,7 @@ public class BggImportServiceTests
         _bggClientMock.Verify(x => x.GetCollectionAsync(It.Is<CollectionRequest>(r => IsBoardGameCollection(r))), Times.Once);
         _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
         VerifyStartLog();
+        VerifyExpansionCollectionRequested();
         VerifyNoOtherCalls();
     }
 
@@ -677,6 +705,7 @@ public class BggImportServiceTests
         _bggClientMock.Verify(x => x.GetCollectionAsync(It.Is<CollectionRequest>(r => IsBoardGameCollection(r))), Times.Once);
         _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
         VerifyStartLog();
+        VerifyExpansionCollectionRequested();
         VerifyNoOtherCalls();
     }
 
@@ -735,6 +764,7 @@ public class BggImportServiceTests
         _bggClientMock.Verify(x => x.GetCollectionAsync(It.Is<CollectionRequest>(r => IsBoardGameCollection(r))), Times.Once);
         _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
         VerifyStartLog();
+        VerifyExpansionCollectionRequested();
         VerifyNoOtherCalls();
     }
 
@@ -1689,6 +1719,280 @@ public class BggImportServiceTests
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
         VerifyImportLogs(1, 1);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region Expansions
+
+    [Fact]
+    public async Task ImportBggCollection_ShouldListExpansionsUnderTheirBaseGame()
+    {
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.Is<CollectionRequest>(r => IsBoardGameCollection(r))))
+            .ReturnsAsync(CreateSucceededCollectionResponse([
+                CollectionItem(101, "Catan"),
+                CollectionItem(201, "Catan: Seafarers"),
+                CollectionItem(202, "Lost Promo"),
+                CollectionItem(203, "Seven Wonders: Leaders"),
+                CollectionItem(204, "Catan: Cities")
+            ]));
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.Is<CollectionRequest>(r => IsExpansionCollection(r))))
+            .ReturnsAsync(CreateSucceededCollectionResponse([CollectionItem(201, "x"), CollectionItem(202, "x"), CollectionItem(203, "x"), CollectionItem(204, "x")]));
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 204, 201, 202, 203))))
+            .ReturnsAsync(CreateSucceededThingResponse([
+                ExpansionThing(204, "Catan: Cities", (101, "Catan"), (500, "Catan Junior")),
+                ExpansionThing(201, "Catan: Seafarers", (999, "Catan Histories"), (101, "Catan")),
+                ExpansionThing(203, "Seven Wonders: Leaders", (300, "7 Wonders"))
+            ]));
+        _gameRepositoryMock
+            .Setup(x => x.GetExistingGameBggIds(It.IsAny<IEnumerable<int>>()))
+            .ReturnsAsync([500]);
+
+        var result = await _bggImportService.ImportBggCollection(UserName);
+
+        result.Select(x => (x.BggId, x.BaseGameBggId, x.BaseGameTitle)).Should().Equal(
+            (101, null, null),
+            (204, 500, "Catan Junior"),
+            (201, 101, "Catan"),
+            (203, 300, "7 Wonders"));
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.Is<CollectionRequest>(r => IsBoardGameCollection(r))), Times.Once);
+        VerifyExpansionCollectionRequested();
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 204, 201, 202, 203))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetExistingGameBggIds(It.Is<IEnumerable<int>>(ids => ids.OrderBy(i => i).SequenceEqual(new[] { 101, 300, 500, 999 }))), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        VerifyStartLog();
+        _loggerMock.VerifyLog(LogLevel.Warning, "No base game found on BGG for expansion 202, leaving it out");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportList_ShouldAddAnExpansionToTheBaseGameInTheCollection()
+    {
+        var addedDate = new DateTime(2024, 5, 10, 0, 0, 0, DateTimeKind.Utc);
+        var catan = new Game("Catan") { Id = 10 };
+        var item = ExpansionThing(201, "Catan: Seafarers", (101, "Catan"));
+        var expansion = new Expansion("Catan: Seafarers", 201, catan);
+        _gameRepositoryMock.Setup(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>())).ReturnsAsync([]);
+        _gameRepositoryMock.Setup(x => x.GetGameByBggId(101)).ReturnsAsync(catan);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 201))))
+            .ReturnsAsync(CreateSucceededThingResponse([item]));
+        _gameFactoryMock
+            .Setup(x => x.CreateExpansionFromBggAsync(item, catan, GameState.Owned, 20m, addedDate))
+            .ReturnsAsync(expansion);
+
+        await _bggImportService.ImportList([
+            new ImportGame { Title = "Catan: Seafarers", BggId = 201, ImageUrl = "", State = GameState.Owned, Price = 20m, AddedDate = addedDate, BaseGameBggId = 101 }
+        ]);
+
+        catan.Expansions.Should().ContainSingle().Which.Should().BeSameAs(expansion);
+        _gameRepositoryMock.Verify(x => x.GetExistingExpansionBggIds(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 201 }))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(101), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 201))), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateExpansionFromBggAsync(item, catan, GameState.Owned, 20m, addedDate), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        VerifyImportLogs(1, 1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportList_ShouldImportAMissingBaseGame_WithTheStateOfItsExpansion()
+    {
+        var addedDate = new DateTime(2024, 5, 10, 0, 0, 0, DateTimeKind.Utc);
+        var baseItem = new ThingResponse.Item { Id = 300, Name = "7 Wonders", Type = "boardgame" };
+        var item = ExpansionThing(203, "7 Wonders: Leaders", (300, "7 Wonders"));
+        var sevenWonders = new Game("7 Wonders", state: GameState.Wanted);
+        var expansion = new Expansion("7 Wonders: Leaders", 203, sevenWonders);
+        _gameRepositoryMock.Setup(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>())).ReturnsAsync([]);
+        _gameRepositoryMock.Setup(x => x.GetGameByBggId(300)).ReturnsAsync((Game?)null);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 300, 203))))
+            .ReturnsAsync(CreateSucceededThingResponse([baseItem, item]));
+        _gameFactoryMock
+            .Setup(x => x.CreateFromBggAsync(baseItem, false, GameState.Wanted, null, addedDate, null))
+            .ReturnsAsync(sevenWonders);
+        _gameRepositoryMock.Setup(x => x.CreateAsync(sevenWonders)).ReturnsAsync(sevenWonders);
+        _gameFactoryMock
+            .Setup(x => x.CreateExpansionFromBggAsync(item, sevenWonders, GameState.Wanted, null, addedDate))
+            .ReturnsAsync(expansion);
+
+        await _bggImportService.ImportList([
+            new ImportGame { Title = "7 Wonders: Leaders", BggId = 203, ImageUrl = "", State = GameState.Wanted, AddedDate = addedDate, BaseGameBggId = 300 }
+        ]);
+
+        sevenWonders.Expansions.Should().ContainSingle().Which.Should().BeSameAs(expansion);
+        _gameRepositoryMock.Verify(x => x.GetExistingExpansionBggIds(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 203 }))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(300), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 300, 203))), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(baseItem, false, GameState.Wanted, null, addedDate, null), Times.Once);
+        _gameRepositoryMock.Verify(x => x.CreateAsync(sevenWonders), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateExpansionFromBggAsync(item, sevenWonders, GameState.Wanted, null, addedDate), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        VerifyImportLogs(1, 1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportList_ShouldSkipAnExpansionThatIsAlreadyImported()
+    {
+        _gameRepositoryMock.Setup(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>())).ReturnsAsync([201]);
+
+        await _bggImportService.ImportList([
+            new ImportGame { Title = "Catan: Seafarers", BggId = 201, ImageUrl = "", State = GameState.Owned, BaseGameBggId = 101 }
+        ]);
+
+        _gameRepositoryMock.Verify(x => x.GetExistingExpansionBggIds(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 201 }))), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "BGG expansion with id 201 already imported, skipping");
+        VerifyImportLogs(0, 1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportList_ShouldDeleteTheExpansionCovers_WhenSavingFails()
+    {
+        var catan = new Game("Catan") { Id = 10 };
+        var item = ExpansionThing(201, "Catan: Seafarers", (101, "Catan"));
+        var expansion = new Expansion("Catan: Seafarers", 201, catan);
+        expansion.UpdateImage("/images/cover/201.webp");
+        _gameRepositoryMock.Setup(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>())).ReturnsAsync([]);
+        _gameRepositoryMock.Setup(x => x.GetGameByBggId(101)).ReturnsAsync(catan);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 201))))
+            .ReturnsAsync(CreateSucceededThingResponse([item]));
+        _gameFactoryMock
+            .Setup(x => x.CreateExpansionFromBggAsync(item, catan, GameState.Owned, null, default(DateTime)))
+            .ReturnsAsync(expansion);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ThrowsAsync(new InvalidOperationException("db down"));
+
+        var act = () => _bggImportService.ImportList([
+            new ImportGame { Title = "Catan: Seafarers", BggId = 201, ImageUrl = "", State = GameState.Owned, BaseGameBggId = 101 }
+        ]);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("db down");
+        _gameRepositoryMock.Verify(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(101), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 201))), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateExpansionFromBggAsync(item, catan, GameState.Owned, null, default(DateTime)), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage("/images/cover/201.webp"), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Importing 1 games from BGG");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportGameFromBgg_ShouldAddAnExpansionToItsBaseGame_WhenTheBaseGameIsInTheCollection()
+    {
+        var added = new DateTime(2024, 5, 10, 0, 0, 0, DateTimeKind.Utc);
+        var search = new BggSearch { BggId = 201, State = GameState.Owned, Price = 25, AdditionDate = added };
+        var catan = new Game("Catan") { Id = 10 };
+        var item = ExpansionThing(201, "Catan: Seafarers", (101, "Catan"));
+        var expansion = new Expansion("Catan: Seafarers", 201, catan);
+        _gameRepositoryMock.Setup(x => x.GetGameByBggId(201)).ReturnsAsync((Game?)null);
+        _bggClientMock.Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 201)))).ReturnsAsync(CreateSucceededThingResponse([item]));
+        _gameRepositoryMock.Setup(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>())).ReturnsAsync([]);
+        _gameRepositoryMock.Setup(x => x.GetGameByBggId(101)).ReturnsAsync(catan);
+        _gameFactoryMock.Setup(x => x.CreateExpansionFromBggAsync(item, catan, GameState.Owned, 25m, added)).ReturnsAsync(expansion);
+
+        var result = await _bggImportService.ImportGameFromBgg(search);
+
+        result.Should().BeSameAs(catan);
+        catan.Expansions.Should().ContainSingle().Which.Should().BeSameAs(expansion);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(201), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 201))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetExistingExpansionBggIds(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 201 }))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(101), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateExpansionFromBggAsync(item, catan, GameState.Owned, 25m, added), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Searching BGG for game with id 201");
+        _loggerMock.VerifyLog(LogLevel.Information, "Imported BGG expansion 201 into game 10");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportGameFromBgg_ShouldImportTheFirstRealBaseGame_WhenTheBaseGameIsMissing()
+    {
+        var search = new BggSearch { BggId = 203, State = GameState.Wanted, HasScoring = true };
+        var item = ExpansionThing(203, "7 Wonders: Leaders", (300, "7 Wonders: Cities"), (301, "7 Wonders"));
+        var notABaseGame = new ThingResponse.Item { Id = 300, Name = "7 Wonders: Cities", Type = "boardgameexpansion" };
+        var baseItem = new ThingResponse.Item { Id = 301, Name = "7 Wonders", Type = "boardgame" };
+        var sevenWonders = new Game("7 Wonders", true, GameState.Wanted);
+        var expansion = new Expansion("7 Wonders: Leaders", 203, sevenWonders);
+        _gameRepositoryMock.Setup(x => x.GetGameByBggId(It.IsAny<int>())).ReturnsAsync((Game?)null);
+        _bggClientMock.Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 203)))).ReturnsAsync(CreateSucceededThingResponse([item]));
+        _bggClientMock.Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 300)))).ReturnsAsync(CreateSucceededThingResponse([notABaseGame]));
+        _bggClientMock.Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 301)))).ReturnsAsync(CreateSucceededThingResponse([baseItem]));
+        _gameRepositoryMock.Setup(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>())).ReturnsAsync([]);
+        _gameFactoryMock.Setup(x => x.CreateFromBggAsync(baseItem, true, GameState.Wanted, null, null, null)).ReturnsAsync(sevenWonders);
+        _gameRepositoryMock.Setup(x => x.CreateAsync(sevenWonders)).ReturnsAsync(sevenWonders);
+        _gameFactoryMock.Setup(x => x.CreateExpansionFromBggAsync(item, sevenWonders, GameState.Wanted, null, null)).ReturnsAsync(expansion);
+
+        var result = await _bggImportService.ImportGameFromBgg(search);
+
+        result.Should().BeSameAs(sevenWonders);
+        sevenWonders.Expansions.Should().ContainSingle().Which.Should().BeSameAs(expansion);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(203), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(300), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(301), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 203))), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 300))), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 301))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(baseItem, true, GameState.Wanted, null, null, null), Times.Once);
+        _gameRepositoryMock.Verify(x => x.CreateAsync(sevenWonders), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateExpansionFromBggAsync(item, sevenWonders, GameState.Wanted, null, null), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Searching BGG for game with id 203");
+        _loggerMock.VerifyLog(LogLevel.Information, "Imported BGG expansion 203 into game 0");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportGameFromBgg_ShouldThrowDomainException_WhenTheExpansionIsAlreadyImported()
+    {
+        var item = ExpansionThing(201, "Catan: Seafarers", (101, "Catan"));
+        _gameRepositoryMock.Setup(x => x.GetGameByBggId(201)).ReturnsAsync((Game?)null);
+        _bggClientMock.Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 201)))).ReturnsAsync(CreateSucceededThingResponse([item]));
+        _gameRepositoryMock.Setup(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>())).ReturnsAsync([201]);
+
+        var act = () => _bggImportService.ImportGameFromBgg(new BggSearch { BggId = 201, State = GameState.Owned });
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.ExpansionAlreadyExists);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(201), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 201))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Searching BGG for game with id 201");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportGameFromBgg_ShouldReturnNull_WhenAnExpansionHasNoBaseGameOnBgg()
+    {
+        var item = ExpansionThing(201, "Lost Promo");
+        _gameRepositoryMock.Setup(x => x.GetGameByBggId(201)).ReturnsAsync((Game?)null);
+        _bggClientMock.Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 201)))).ReturnsAsync(CreateSucceededThingResponse([item]));
+        _gameRepositoryMock.Setup(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>())).ReturnsAsync([]);
+
+        var result = await _bggImportService.ImportGameFromBgg(new BggSearch { BggId = 201, State = GameState.Owned });
+
+        result.Should().BeNull();
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(201), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 201))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetExistingExpansionBggIds(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Searching BGG for game with id 201");
+        _loggerMock.VerifyLog(LogLevel.Warning, "No base game found on BGG for expansion 201");
         VerifyNoOtherCalls();
     }
 

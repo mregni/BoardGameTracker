@@ -48,6 +48,47 @@ public class ManualExpansionTests
     }
 
     [Fact]
+    public async Task Expansion_ShouldKeepItsOwnStatePricesAndDate()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var created = await user.PostAsJsonAsync("/api/game", new CreateGameCommand { Title = "Catan", State = GameState.Owned, HasScoring = false });
+        var game = await created.Content.ReadFromJsonAsync<GameDto>(IntegrationFixture.Json);
+        var added = await user.PostAsJsonAsync($"/api/game/{game!.Id}/expansions/manual", new CreateExpansionCommand { Title = "Seafarers" });
+        var expansion = await added.Content.ReadFromJsonAsync<ExpansionDto>(IntegrationFixture.Json);
+        expansion!.State.Should().Be(GameState.Owned);
+        expansion.AdditionDate.Should().NotBeNull();
+
+        var date = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+        var updated = await user.PutAsJsonAsync($"/api/game/{game.Id}/expansion/{expansion.Id}", new UpdateExpansionCommand
+        {
+            State = GameState.ForTrade,
+            BuyingPrice = 30.5m,
+            AdditionDate = date
+        });
+
+        updated.StatusCode.Should().Be(HttpStatusCode.OK, await updated.Content.ReadAsStringAsync());
+        var loaded = await user.GetFromJsonAsync<GameDto>($"/api/game/{game.Id}", IntegrationFixture.Json);
+        var stored = loaded!.Expansions.Should().ContainSingle().Subject;
+        stored.State.Should().Be(GameState.ForTrade);
+        stored.BuyingPrice.Should().Be(30.5m);
+        stored.SoldPrice.Should().BeNull();
+        stored.AdditionDate.Should().Be(date);
+
+        var missing = await user.PutAsJsonAsync($"/api/game/{game.Id}/expansion/{expansion.Id + 1000}", new UpdateExpansionCommand { State = GameState.Owned });
+        missing.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task UpdateExpansion_ShouldRequireWriteAccess()
+    {
+        using var reader = await _fixture.CreateClientAsAsync("reader");
+
+        var response = await reader.PutAsJsonAsync("/api/game/1/expansion/1", new UpdateExpansionCommand { State = GameState.Owned });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task ManualExpansion_ShouldRequireWriteAccess()
     {
         using var reader = await _fixture.CreateClientAsAsync("reader");

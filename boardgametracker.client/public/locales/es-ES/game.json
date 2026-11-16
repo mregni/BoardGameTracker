@@ -14,7 +14,9 @@
     "duplicate": "El juego ya existe",
     "deleted": "Juego eliminado",
     "updated": "Juego guardado",
-    "update-failed": "Error al actualizar el juego"
+    "update-failed": "Error al actualizar el juego",
+    "expansion-created": "Added as an expansion of {{title}}",
+    "expansion-update-failed": "Failed updating the expansion"
   },
   "added-date": {
     "label": "Fecha de incorporación",
@@ -59,6 +61,11 @@
       "description": "¿No está en BoardGameGeek? Añade la expansión por su nombre.",
       "placeholder": "Nombre de la expansión",
       "add": "Añadir"
+    },
+    "prices": {
+      "base": "Base game",
+      "expansions": "Expansions owned",
+      "together": "Together"
     }
   },
   "manuals": {

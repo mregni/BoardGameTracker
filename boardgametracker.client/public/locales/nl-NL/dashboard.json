@@ -87,6 +87,8 @@
     "paid": "Betaald voor spellen in bezit",
     "priced": "{{priced}} van {{owned}} met prijs",
     "no-prices": "Nog geen prijzen",
-    "recently-added": "Recent toegevoegd"
+    "recently-added": "Recent toegevoegd",
+    "paid-base": "Base games",
+    "paid-expansions": "Expansions"
   }
 }

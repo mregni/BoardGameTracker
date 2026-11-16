@@ -81,7 +81,15 @@
     "empty": "No games match the selected filters.",
     "total-price-owned": "Total price (owned)",
     "mean-price-owned_one": "Mean price (owned) · {{count}} priced game",
-    "mean-price-owned_other": "Mean price (owned) · {{count}} priced games"
+    "mean-price-owned_other": "Mean price (owned) · {{count}} priced games",
+    "expansions_one": "{{count}} expansion",
+    "expansions_other": "{{count}} expansions",
+    "collection-price_one": "incl. {{count}} expansion",
+    "collection-price_other": "incl. {{count}} expansions",
+    "base-tag": "BASE",
+    "expansion-tag": "EXP",
+    "toggle-expansions_one": "{{count}} expansion of {{title}}",
+    "toggle-expansions_other": "{{count}} expansions of {{title}}"
   },
   "in-stock": {
     "yes": "In stock",

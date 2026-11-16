@@ -124,6 +124,35 @@ public class PostgresSemanticsTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task ExpansionPrices_ShouldRoundTrip_AndOnlyOwnedOnesCountTowardsTheTotal()
+    {
+        await using var scope = _fixture.CreateScope();
+        var statistics = scope.ServiceProvider.GetRequiredService<IGameStatisticsRepository>();
+        var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+        var game = new Game("Catan");
+        db.Add(game);
+        await db.SaveChangesAsync();
+
+        (await statistics.GetTotalPayedForExpansionsAsync()).Should().Be(0m);
+
+        var owned = new Expansion("Seafarers", 325, game.Id);
+        owned.UpdateBuyingPrice(30.5m);
+        var sold = new Expansion("Traders", 926, game.Id);
+        sold.UpdateBuyingPrice(25m);
+        sold.UpdateSoldPrice(12m);
+        sold.UpdateState(GameState.Sold);
+        db.AddRange(owned, sold);
+        await db.SaveChangesAsync();
+
+        (await statistics.GetTotalPayedForExpansionsAsync()).Should().Be(30.5m);
+        await using var verify = _fixture.CreateScope();
+        var stored = await verify.ServiceProvider.GetRequiredService<MainDbContext>().Expansions.SingleAsync(x => x.BggId == 926);
+        stored.State.Should().Be(GameState.Sold);
+        stored.BuyingPrice!.Amount.Should().Be(25m);
+        stored.SoldPrice!.Amount.Should().Be(12m);
+    }
+
+    [Fact]
     public async Task GetGamesOverviewList_ShouldLoadLoans_SoLentGamesAreMarkedAsLoaned()
     {
         await using var scope = _fixture.CreateScope();

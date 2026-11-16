@@ -11,6 +11,7 @@ using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.ChangeDetection.Interfaces;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
 using BoardGameTracker.Core.Images.Interfaces;
@@ -25,6 +26,7 @@ public class GameService : IGameService
 {
     private const int BggThingBatchSize = 20;
     private readonly IGameRepository _gameRepository;
+    private readonly IGameFactory _gameFactory;
     private readonly IReadRepository<Session> _sessionRepository;
     private readonly IBoardGameGeekXmlApi2Client _bggClient;
     private readonly ISettingsService _settingsService;
@@ -37,6 +39,7 @@ public class GameService : IGameService
 
     public GameService(
         IGameRepository gameRepository,
+        IGameFactory gameFactory,
         IReadRepository<Session> sessionRepository,
         IImageService imageService,
         IManualService manualService,
@@ -48,6 +51,7 @@ public class GameService : IGameService
         ILogger<GameService> logger)
     {
         _gameRepository = gameRepository;
+        _gameFactory = gameFactory;
         _sessionRepository = sessionRepository;
         _imageService = imageService;
         _manualService = manualService;
@@ -89,17 +93,22 @@ public class GameService : IGameService
     public async Task Delete(int id)
     {
         _logger.LogDebug("Deleting game {GameId}", id);
-        var game = await _gameRepository.GetByIdAsync(id);
+        var game = await _gameRepository.SingleOrDefaultAsync(new GameWithExpansionsSpec(id));
         if (game == null)
         {
             throw new EntityNotFoundException(nameof(Game), id);
         }
 
         var manuals = await _manualService.GetManualsForGame(game.Id);
+        var expansionImages = game.Expansions.Select(x => x.Image).ToList();
         await _gameRepository.DeleteAsync(game.Id);
         await _unitOfWork.SaveChangesAsync();
 
         await _imageService.DeleteImageIfUnusedAsync(game.Image);
+        foreach (var image in expansionImages)
+        {
+            await _imageService.DeleteImageIfUnusedAsync(image);
+        }
         _manualService.DeleteManualFiles(manuals);
         await DeleteWatchQuietlyAsync(game.ChangeDetectionWatchId);
         _logger.LogInformation("Game {GameId} deleted", id);
@@ -314,6 +323,8 @@ public class GameService : IGameService
             game.RemoveExpansion(expansion);
         }
 
+        var added = new List<Expansion>();
+
         var newExpansionsIds = expansionIds
             .Where(x => !game.Expansions.Select(y => y.BggId).Contains(x))
             .Distinct()
@@ -327,10 +338,30 @@ public class GameService : IGameService
                 continue;
             }
 
-            game.AddExpansion(new Expansion(item.Name, item.Id, game.Id));
+            var expansion = await _gameFactory.CreateExpansionFromBggAsync(item, game);
+            game.AddExpansion(expansion);
+            added.Add(expansion);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        try
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch
+        {
+            foreach (var expansion in added)
+            {
+                _imageService.DeleteImage(expansion.Image);
+            }
+
+            throw;
+        }
+
+        foreach (var expansion in expansionsToRemove)
+        {
+            await _imageService.DeleteImageIfUnusedAsync(expansion.Image);
+        }
+
         return game.Expansions.ToList();
     }
 
@@ -393,15 +424,37 @@ public class GameService : IGameService
         return expansions;
     }
 
+    public async Task<Expansion> UpdateExpansion(int gameId, int expansionId, UpdateExpansionCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        _logger.LogDebug("Updating expansion {ExpansionId} of game {GameId}", expansionId, gameId);
+        var game = await _gameRepository.SingleOrDefaultAsync(new GameWithExpansionsSpec(gameId));
+        var expansion = game?.Expansions.FirstOrDefault(x => x.Id == expansionId);
+        if (expansion == null)
+        {
+            throw new EntityNotFoundException(nameof(Expansion), expansionId);
+        }
+
+        expansion.UpdateState(command.State);
+        expansion.UpdateBuyingPrice(command.BuyingPrice);
+        expansion.UpdateSoldPrice(command.SoldPrice);
+        expansion.UpdateAdditionDate(command.AdditionDate);
+
+        await _unitOfWork.SaveChangesAsync();
+        return expansion;
+    }
+
     public async Task DeleteExpansion(int gameId, int expansionId)
     {
         _logger.LogDebug("Deleting expansion {ExpansionId} from game {GameId}", expansionId, gameId);
-        if (!await _gameRepository.DeleteExpansion(gameId, expansionId))
+        var expansion = await _gameRepository.DeleteExpansion(gameId, expansionId);
+        if (expansion == null)
         {
             throw new EntityNotFoundException(nameof(Expansion), expansionId);
         }
 
         await _unitOfWork.SaveChangesAsync();
+        await _imageService.DeleteImageIfUnusedAsync(expansion.Image);
     }
 
     public async Task<GamePriceDto?> GetGamePriceAsync(

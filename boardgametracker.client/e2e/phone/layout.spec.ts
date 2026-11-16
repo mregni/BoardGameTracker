@@ -15,6 +15,7 @@ import {
 	tablet,
 } from "../support/phone";
 import {
+	expansions,
 	expected,
 	gameNights,
 	games,
@@ -341,9 +342,17 @@ test("shows the games table as a list of cards with every game", async ({ page }
 	await expect(page.getByRole("main").getByRole("table")).toBeHidden();
 	await expect(list).toHaveCount(expected.gameCount);
 	await expect(list.getByRole("link")).toHaveText(titles);
+	const collections = new Set(expansions.map((expansion) => expansion.game));
 	for (const [index, title] of titles.entries()) {
 		const price = games.find((game) => game.title === title)?.buyingPrice;
-		if (price) await expect(list.nth(index).getByRole("button", { name: `€${price}`, exact: true })).toBeVisible();
+		if (!price) continue;
+		const card = list.nth(index);
+		if (collections.has(title)) {
+			await expect(card.getByText(`€${price}`, { exact: true })).toBeVisible();
+			await expect(card.getByRole("button", { name: `€${price}`, exact: true })).toHaveCount(0);
+		} else {
+			await expect(card.getByRole("button", { name: `€${price}`, exact: true })).toBeVisible();
+		}
 	}
 });
 

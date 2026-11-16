@@ -214,6 +214,7 @@ public class ImageService : IImageService
 
         var inUse = await _context.Players.AnyAsync(p => p.Image == image)
             || await _context.Games.AnyAsync(g => g.Image == image)
+            || await _context.Expansions.AnyAsync(e => e.Image == image)
             || await _context.Users.AnyAsync(u => u.ProfileImage == image);
         if (inUse)
         {

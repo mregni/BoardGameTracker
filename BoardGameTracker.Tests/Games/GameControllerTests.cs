@@ -410,6 +410,29 @@ public class GameControllerTests
 
     #endregion
 
+    #region UpdateExpansion Tests
+
+    [Fact]
+    public async Task UpdateExpansion_ShouldReturnTheUpdatedExpansion()
+    {
+        var command = new UpdateExpansionCommand { State = GameState.ForTrade, BuyingPrice = 30m };
+        var expansion = new Expansion("Seafarers", 325, 1) { Id = 7 };
+        expansion.UpdateState(GameState.ForTrade);
+        expansion.UpdateBuyingPrice(30m);
+        _gameServiceMock.Setup(x => x.UpdateExpansion(1, 7, command)).ReturnsAsync(expansion);
+
+        var result = await _controller.UpdateExpansion(1, 7, command);
+
+        var dto = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeAssignableTo<ExpansionDto>().Subject;
+        dto.Id.Should().Be(7);
+        dto.State.Should().Be(GameState.ForTrade);
+        dto.BuyingPrice.Should().Be(30m);
+        _gameServiceMock.Verify(x => x.UpdateExpansion(1, 7, command), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
     #region DeleteGameExpansions Tests
 
     [Fact]

@@ -147,9 +147,10 @@ function RouteComponent() {
 				cell: ({ row }) => (
 					<BgtSimpleCheckbox
 						id={`import-${row.original.bggId}`}
-						disabled={row.original.inCollection}
+						disabled={row.original.inCollection || row.original.lockedByExpansion}
 						label={""}
 						aria-label={row.original.title}
+						aria-describedby={row.original.lockedByExpansion ? `import-locked-${row.original.bggId}` : undefined}
 						checked={row.original.checked}
 						onCheckedChange={(state) => {
 							updateGame(row.original.bggId, { checked: state });
@@ -161,18 +162,55 @@ function RouteComponent() {
 			{
 				accessorKey: "1",
 				cell: ({ row }) => (
-					<BgtAvatar
-						title={row.original.title}
-						image={row.original.imageUrl}
-						size="large"
-						disabled={row.original.inCollection}
-					/>
+					<div
+						className={cx(
+							row.original.baseGameBggId != null && [
+								"relative pl-6",
+								"before:absolute before:left-2 before:-top-3 before:-bottom-3 before:w-px before:bg-card-border",
+								"after:absolute after:left-2 after:top-1/2 after:h-px after:w-3 after:bg-card-border",
+							],
+						)}
+					>
+						<BgtAvatar
+							title={row.original.title}
+							image={row.original.imageUrl}
+							size={row.original.baseGameBggId != null ? "medium" : "large"}
+							disabled={row.original.inCollection}
+						/>
+					</div>
 				),
 				header: "",
 			},
 			{
 				accessorKey: "2",
-				cell: ({ row }) => <div className={cx(row.original.inCollection && "text-gray-400")}>{row.original.title}</div>,
+				cell: ({ row }) => (
+					<div className="flex flex-col gap-1">
+						<span className={cx("flex items-center gap-2", row.original.inCollection && "text-gray-400")}>
+							{row.original.baseGameBggId != null && (
+								<span className="rounded border border-primary/30 px-1 text-[10px] leading-4 tracking-wider text-stat-title">
+									{t("bgg-import:expansion-tag")}
+								</span>
+							)}
+							{row.original.title}
+						</span>
+						{row.original.inCollection && row.original.baseGameBggId == null && (
+							<span className="text-xs font-normal text-white/60">{t("bgg-import:in-collection")}</span>
+						)}
+						{row.original.addedForExpansion && (
+							<span
+								id={`import-locked-${row.original.bggId}`}
+								className="inline-flex w-fit items-center rounded-full border border-warn/50 bg-warn/10 px-2 py-0.5 text-xs font-medium text-warn"
+							>
+								{t("bgg-import:added-for-expansion")}
+							</span>
+						)}
+						{row.original.lockedByExpansion && !row.original.addedForExpansion && (
+							<span id={`import-locked-${row.original.bggId}`} className="text-xs font-normal text-white/60">
+								{t("bgg-import:needed-by-expansion")}
+							</span>
+						)}
+					</div>
+				),
 				header: t("name"),
 			},
 			{
@@ -223,14 +261,17 @@ function RouteComponent() {
 			},
 			{
 				accessorKey: "6",
-				cell: ({ row }) => (
-					<BgtSimpleSwitch
-						label={t("game:scoring.label")}
-						value={row.original.hasScoring}
-						disabled={row.original.inCollection}
-						onChange={(value) => updateGame(row.original.bggId, { hasScoring: value })}
-					/>
-				),
+				cell: ({ row }) =>
+					row.original.baseGameBggId != null ? (
+						<span className="text-sm font-normal text-white/60">{t("bgg-import:scoring-from-base")}</span>
+					) : (
+						<BgtSimpleSwitch
+							label={t("game:scoring.label")}
+							value={row.original.hasScoring}
+							disabled={row.original.inCollection}
+							onChange={(value) => updateGame(row.original.bggId, { hasScoring: value })}
+						/>
+					),
 				header: t("scoring"),
 			},
 			{
@@ -322,6 +363,7 @@ function RouteComponent() {
 								noDataMessage={t("no-data")}
 								enableSorting={false}
 								widths={["w-[48px]", "w-[70px]", null, "w-[100px]"]}
+								rowClassName={(game) => (game.baseGameBggId != null ? "bg-card-black/60" : undefined)}
 							/>
 						</SelectAllContext.Provider>
 

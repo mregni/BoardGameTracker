@@ -5,6 +5,7 @@ import { removeCreatedData } from "../support/gameNights";
 import { openGames, pick } from "../support/gamesPage";
 import {
 	coopGame,
+	expansions,
 	expected,
 	games,
 	linkedPlayer,
@@ -111,7 +112,9 @@ test("uploads, downloads and deletes a manual", async ({ page }) => {
 });
 
 test("changes the price inline in the table and updates the total", async ({ page }) => {
-	const game = games.find((x) => x.state === "owned" && x.buyingPrice !== null) ?? games[0];
+	const collections = new Set(expansions.map((expansion) => expansion.game));
+	const game =
+		games.find((x) => x.state === "owned" && x.buyingPrice !== null && !collections.has(x.title)) ?? games[0];
 	const raised = (game.buyingPrice ?? 0) + 10;
 	const total = (value: number) => `Total price (owned): €${value.toLocaleString("en-US")}`;
 	await openGames(page);

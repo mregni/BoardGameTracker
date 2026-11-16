@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => ({
 	retry: vi.fn(),
 	search: {} as Record<string, unknown>,
 	navigate: vi.fn(),
+	updateExpansion: vi.fn(),
+	updateGame: vi.fn(),
 }));
 
 vi.mock("./-components/GameTableCards", async (importOriginal) => {
@@ -40,7 +42,11 @@ vi.mock("./-hooks/useGamesData", () => ({
 }));
 
 vi.mock("./-hooks/useInlineGameUpdate", () => ({
-	useInlineGameUpdate: () => ({ updateGame: vi.fn() }),
+	useInlineGameUpdate: () => ({ updateGame: mocks.updateGame }),
+}));
+
+vi.mock("./-hooks/useInlineExpansionUpdate", () => ({
+	useInlineExpansionUpdate: () => ({ updateExpansion: mocks.updateExpansion }),
 }));
 
 vi.mock("@/services/queries/settings", () => ({
@@ -230,5 +236,71 @@ describe("Games table inline editing", () => {
 		fireEvent.keyDown(priceCell(1).getByRole("textbox"), { key: "Escape" });
 
 		expect(priceCell(1).queryByRole("textbox")).not.toBeInTheDocument();
+	});
+});
+
+describe("Games table with expansions", () => {
+	const expansion = (id: number, title: string, state: GameState, buyingPrice: number | null) => ({
+		id,
+		title,
+		state,
+		buyingPrice,
+		bggId: 300 + id,
+		gameId: 1,
+		image: null,
+		soldPrice: null,
+		additionDate: null,
+	});
+	const catan = () => ({
+		...game(1, 35),
+		title: "Catan",
+		expansions: [expansion(7, "Seafarers", GameState.Owned, 30), expansion(8, "Traders", GameState.Wanted, 25)],
+	});
+	const table = () => within(screen.getByRole("table"));
+
+	it("shows the collection as one row with the base game and owned expansions together", async () => {
+		mocks.games = [catan()];
+		mocks.hideCards = true;
+		renderTable();
+
+		expect(await within(await screen.findByRole("table")).findByText("€65")).toBeInTheDocument();
+		expect(table().getByText("games:table.collection-price")).toBeInTheDocument();
+		expect(table().queryByRole("button", { name: "games:columns.price: Catan" })).not.toBeInTheDocument();
+		expect(table().queryByText("Seafarers")).not.toBeInTheDocument();
+		expect(screen.getAllByText("€65", { selector: "span.font-bold" })).toHaveLength(2);
+	});
+
+	it("opens the collection into a base game row and a row per expansion", async () => {
+		mocks.games = [catan()];
+		mocks.hideCards = true;
+		renderTable();
+		await screen.findAllByText("€65");
+
+		await userEvent.click(table().getByRole("button", { name: "games:table.toggle-expansions" }));
+
+		expect(table().getByRole("button", { name: "games:table.toggle-expansions" })).toHaveAttribute(
+			"aria-expanded",
+			"true",
+		);
+		expect(table().getByText("games:table.base-tag")).toBeInTheDocument();
+		expect(table().getAllByText("games:table.expansion-tag")).toHaveLength(2);
+		expect(table().getByText("Seafarers")).toBeInTheDocument();
+		expect(table().getByText("€30")).toBeInTheDocument();
+	});
+
+	it("saves a new price of an expansion from its row", async () => {
+		mocks.games = [catan()];
+		mocks.hideCards = true;
+		renderTable();
+		await screen.findAllByText("€65");
+		await userEvent.click(table().getByRole("button", { name: "games:table.toggle-expansions" }));
+
+		const row = table().getByText("Seafarers").closest("tr") as HTMLElement;
+		fireEvent.click(within(row.children[8] as HTMLElement).getByRole("button"));
+		const input = table().getByRole("textbox", { name: "games:columns.price: Seafarers" });
+		fireEvent.change(input, { target: { value: "32" } });
+		fireEvent.keyDown(input, { key: "Enter" });
+
+		expect(mocks.updateExpansion).toHaveBeenCalledWith(1, expect.objectContaining({ id: 7, buyingPrice: 32 }));
 	});
 });

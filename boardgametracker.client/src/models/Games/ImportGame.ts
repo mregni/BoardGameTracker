@@ -11,4 +11,8 @@ export interface ImportGame {
 	price: number;
 	addedDate: Date;
 	lastModified: Date;
+	baseGameBggId: number | null;
+	baseGameTitle: string | null;
+	addedForExpansion?: boolean;
+	lockedByExpansion?: boolean;
 }

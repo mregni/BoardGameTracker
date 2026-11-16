@@ -282,6 +282,24 @@ public class GameStatisticsRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task GetTotalPayedForExpansionsAsync_ShouldOnlyUseOwnedExpansionsWithAPrice()
+    {
+        var game = (await SeedAsync(Priced("Catan", 35m)))[0];
+        var owned = new Expansion("Seafarers", null, game.Id);
+        owned.UpdateBuyingPrice(30m);
+        var alsoOwned = new Expansion("Cities", null, game.Id);
+        alsoOwned.UpdateBuyingPrice(12.5m);
+        var sold = new Expansion("Traders", null, game.Id);
+        sold.UpdateBuyingPrice(25m);
+        sold.UpdateState(GameState.Sold);
+        await SeedAsync(owned, alsoOwned, sold, new Expansion("Without price", null, game.Id));
+
+        (await _repository.GetTotalPayedForExpansionsAsync()).Should().Be(42.5m);
+        (await _repository.GetTotalPayedAsync()).Should().Be(35m);
+    }
+
+
+    [Fact]
     public async Task CountPricedOwnedGamesAsync_ShouldBeZero_WhenNoOwnedGameHasAPrice()
     {
         await SeedAsync(Priced("Owned without price", null), Priced("Wanted", 100m, GameState.Wanted));

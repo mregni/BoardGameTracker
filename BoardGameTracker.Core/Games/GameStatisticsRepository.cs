@@ -137,6 +137,14 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .SumAsync(x => (decimal?)x.BuyingPrice!.Amount, cancellationToken);
     }
 
+    public async Task<decimal?> GetTotalPayedForExpansionsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Expansions
+            .AsNoTracking()
+            .Where(x => x.State == GameState.Owned && x.BuyingPrice != null)
+            .SumAsync(x => (decimal?)x.BuyingPrice!.Amount, cancellationToken);
+    }
+
     public Task<List<GameStateChart>> GetGameStateCounts(CancellationToken cancellationToken = default)
     {
         return _context.Games

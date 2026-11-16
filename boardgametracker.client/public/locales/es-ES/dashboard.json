@@ -87,6 +87,8 @@
     "paid": "Pagado por juegos en propiedad",
     "priced": "{{priced}} de {{owned}} con precio",
     "no-prices": "Aún no hay precios",
-    "recently-added": "Añadidos recientemente"
+    "recently-added": "Añadidos recientemente",
+    "paid-base": "Base games",
+    "paid-expansions": "Expansions"
   }
 }

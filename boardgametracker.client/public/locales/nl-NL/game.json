@@ -14,7 +14,9 @@
     "duplicate": "Spel bestaat al",
     "deleted": "Spel verwijderd",
     "updated": "Spel opgeslagen",
-    "update-failed": "Spel bijwerken mislukt"
+    "update-failed": "Spel bijwerken mislukt",
+    "expansion-created": "Added as an expansion of {{title}}",
+    "expansion-update-failed": "Failed updating the expansion"
   },
   "added-date": {
     "label": "Toegevoegd op",
@@ -59,6 +61,11 @@
       "description": "Niet op BoardGameGeek? Voeg de uitbreiding toe op naam.",
       "placeholder": "Naam van de uitbreiding",
       "add": "Toevoegen"
+    },
+    "prices": {
+      "base": "Base game",
+      "expansions": "Expansions owned",
+      "together": "Together"
     }
   },
   "manuals": {

@@ -64,6 +64,74 @@ public class GameFactoryTests
         _gameRepositoryMock.Verify(x => x.GetOrCreatePeopleAsync(It.Is<IEnumerable<PersonKey>>(k => k.SequenceEqual(_people))), Times.Once);
     }
 
+    #region CreateExpansionFromBggAsync Tests
+
+    [Fact]
+    public async Task CreateExpansionFromBggAsync_ShouldCreateTheExpansionWithItsCover()
+    {
+        var game = new Game("Catan") { Id = 4 };
+        var added = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+        var item = new ThingResponse.Item { Id = 12345, Name = "Catan: Seafarers", Image = "https://cf.geekdo-images.com/seafarers.jpg" };
+        _imageServiceMock.Setup(x => x.DownloadImage(item.Image, BggId)).ReturnsAsync("/images/cover/12345.webp");
+
+        var expansion = await _factory.CreateExpansionFromBggAsync(item, game, GameState.ForTrade, 30m, added);
+
+        expansion.Title.Should().Be("Catan: Seafarers");
+        expansion.BggId.Should().Be(12345);
+        expansion.Game.Should().BeSameAs(game);
+        expansion.GameId.Should().Be(4);
+        expansion.Image.Should().Be("/images/cover/12345.webp");
+        expansion.State.Should().Be(GameState.ForTrade);
+        expansion.BuyingPrice!.Amount.Should().Be(30m);
+        expansion.AdditionDate.Should().Be(added);
+        _imageServiceMock.Verify(x => x.DownloadImage(item.Image, BggId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateExpansionFromBggAsync_ShouldStoreNoCover_WhenTheDownloadFails()
+    {
+        var item = new ThingResponse.Item { Id = 12345, Name = "Catan: Seafarers" };
+        _imageServiceMock.Setup(x => x.DownloadImage(string.Empty, BggId)).ReturnsAsync(string.Empty);
+
+        var expansion = await _factory.CreateExpansionFromBggAsync(item, new Game("Catan") { Id = 4 });
+
+        expansion.Image.Should().BeNull();
+        expansion.State.Should().Be(GameState.Owned);
+        expansion.BuyingPrice.Should().BeNull();
+        _imageServiceMock.Verify(x => x.DownloadImage(string.Empty, BggId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateExpansionFromBggAsync_ShouldDeleteTheCover_WhenTheExpansionCannotBeCreated()
+    {
+        var item = new ThingResponse.Item { Id = 12345, Name = "Catan: Seafarers", Image = "https://cf.geekdo-images.com/seafarers.jpg" };
+        _imageServiceMock.Setup(x => x.DownloadImage(item.Image, BggId)).ReturnsAsync("/images/cover/12345.webp");
+
+        var act = () => _factory.CreateExpansionFromBggAsync(item, new Game("Catan") { Id = 4 }, GameState.Owned, -5m);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        _imageServiceMock.Verify(x => x.DownloadImage(item.Image, BggId), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage("/images/cover/12345.webp"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(0, "Seafarers")]
+    [InlineData(12345, "")]
+    public async Task CreateExpansionFromBggAsync_ShouldThrow_WhenBggGivesNoNameOrId(int id, string name)
+    {
+        var item = new ThingResponse.Item { Id = id, Name = name };
+
+        var act = () => _factory.CreateExpansionFromBggAsync(item, new Game("Catan") { Id = 4 });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
     #region CreateFromBggAsync Tests
 
     [Theory]

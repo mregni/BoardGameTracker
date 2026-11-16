@@ -9,7 +9,7 @@ The sections below follow the order of the application's sidebar. Everything tha
 
 ## Dashboard
 
-The dashboard shows your collection at a glance: number of games, players and sessions, collection value and average cost (owned games only), total and average play time, expansions owned, the most played games, recent activity, recently added games and a chart of your games by state. When your account is linked to a player you also get a personal welcome card with your own statistics.
+The dashboard shows your collection at a glance: number of games, players and sessions, collection value and average cost (owned games and owned expansions, with a bar that splits the amount between both), total and average play time, expansions owned, the most played games, recent activity, recently added games and a chart of your games by state. When your account is linked to a player you also get a personal welcome card with your own statistics.
 
 ## Log session
 
@@ -29,13 +29,15 @@ Sessions can be edited and deleted from a game's, a player's or a location's ses
 
 Your collection. Games can be added in three ways:
 
-- **BoardGameGeek import** — enter the BGG id, pick the state (owned, wanted, ...) and the price; title, image, players, play time, categories and mechanics are filled in. Needs a [BGG API key](/BoardGameTracker/getting-started/environment-variables/), entered under *Settings → Integrations*.
-- **BGG collection import** — enter a BGG username and tick the games you want; games that are already in the collection are skipped.
+- **BoardGameGeek import** — enter the BGG id, pick the state (owned, wanted, ...) and the price; title, image, players, play time, categories and mechanics are filled in. When the id belongs to an expansion, it is added to its base game instead; a base game that is not in the collection yet is imported first, with the same state. Needs a [BGG API key](/BoardGameTracker/getting-started/environment-variables/), entered under *Settings → Integrations*.
+- **BGG collection import** — enter a BGG username and tick the games you want; games that are already in the collection are skipped. Expansions are listed under their base game. Ticking an expansion ticks its base game too when that game is not in the collection yet, and it is imported with it.
 - **Manual** — fill in the form yourself. Player count and play time are ranges, so enter both ends or leave both empty.
 
 Each game has a state (*owned*, *wanted*, *for trade*, *previously owned*, *sold*) and a **scoring** switch. Turn scoring off for games without points: sessions then only record who won, and the score charts stay hidden. For co-operative games switch on *Can be played co-op*, and optionally *New sessions start as co-op*; a co-op session records a team result instead of a winner per player.
 
 The game page shows statistics (plays, total play time, price per play, best score, top players), the last sessions, expansions, the uploaded rulebooks (*Manuals*) and, once the rules assistant is enabled, an *Ask the manual* button. In the *Table view* of Games you can edit language, state and price inline.
+
+Expansions have their own state, price and date added, and those picked from BoardGameGeek get their own cover. Edit them in the *Expansions* dialog of the game page, or in the table view: a game with expansions is one row whose price is the base game and its owned expansions together; open it to edit the base game and each expansion on their own row. The price per play and the Shelf of Shame keep using the price of the base game.
 
 <Aside type="tip">
 Ratings (0-10), weight (0-5) and, for a *sold* game, the price it was sold for can be edited on the game's update page.

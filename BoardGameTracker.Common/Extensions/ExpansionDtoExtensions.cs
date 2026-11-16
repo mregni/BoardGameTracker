@@ -12,7 +12,12 @@ public static class ExpansionDtoExtensions
             Id = expansion.Id,
             Title = expansion.Title,
             BggId = expansion.BggId,
-            GameId = expansion.GameId
+            GameId = expansion.GameId,
+            Image = expansion.Image,
+            State = expansion.State,
+            BuyingPrice = expansion.BuyingPrice?.Amount,
+            SoldPrice = expansion.SoldPrice?.Amount,
+            AdditionDate = expansion.AdditionDate
         };
     }
 

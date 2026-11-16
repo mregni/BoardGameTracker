@@ -12,6 +12,7 @@ using BoardGameTracker.Core.ChangeDetection.Interfaces;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games;
+using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
 using BoardGameTracker.Core.Images.Interfaces;
@@ -39,6 +40,7 @@ public class GameServiceTests
 
     private readonly CancellationToken _token = new CancellationTokenSource().Token;
     private readonly Mock<IGameRepository> _gameRepositoryMock;
+    private readonly Mock<IGameFactory> _gameFactoryMock;
     private readonly Mock<IReadRepository<Session>> _sessionRepositoryMock;
     private readonly Mock<IBoardGameGeekXmlApi2Client> _bggClientMock;
     private readonly Mock<ISettingsService> _settingsServiceMock;
@@ -53,6 +55,10 @@ public class GameServiceTests
     public GameServiceTests()
     {
         _gameRepositoryMock = new Mock<IGameRepository>();
+        _gameFactoryMock = new Mock<IGameFactory>();
+        _gameFactoryMock
+            .Setup(x => x.CreateExpansionFromBggAsync(It.IsAny<ThingResponse.Item>(), It.IsAny<Game>(), GameState.Owned, null, null))
+            .ReturnsAsync((ThingResponse.Item item, Game game, GameState _, decimal? _, DateTime? _) => new Expansion(item.Name, item.Id, game));
         _sessionRepositoryMock = new Mock<IReadRepository<Session>>();
         _bggClientMock = new Mock<IBoardGameGeekXmlApi2Client>();
         _settingsServiceMock = new Mock<ISettingsService>();
@@ -66,6 +72,7 @@ public class GameServiceTests
 
         _gameService = new GameService(
             _gameRepositoryMock.Object,
+            _gameFactoryMock.Object,
             _sessionRepositoryMock.Object,
             _imageServiceMock.Object,
             _manualServiceMock.Object,
@@ -80,6 +87,7 @@ public class GameServiceTests
     private void VerifyNoOtherCalls()
     {
         _gameRepositoryMock.VerifyNoOtherCalls();
+        _gameFactoryMock.VerifyNoOtherCalls();
         _sessionRepositoryMock.VerifyNoOtherCalls();
         _bggClientMock.VerifyNoOtherCalls();
         _imageServiceMock.VerifyNoOtherCalls();
@@ -674,7 +682,7 @@ public class GameServiceTests
         game.UpdateImage("game-image.png");
 
         _gameRepositoryMock
-            .Setup(x => x.GetByIdAsync(gameId))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, gameId)), CancellationToken.None))
             .ReturnsAsync(game);
 
         _gameRepositoryMock
@@ -695,7 +703,7 @@ public class GameServiceTests
         _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("game-image.png"), Times.Once);
         _manualServiceMock.Verify(x => x.GetManualsForGame(gameId), Times.Once);
         _manualServiceMock.Verify(x => x.DeleteManualFiles(manuals), Times.Once);
-        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, gameId)), CancellationToken.None), Times.Once);
         _gameRepositoryMock.Verify(x => x.DeleteAsync(gameId), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Debug, $"Deleting game {gameId}");
@@ -713,7 +721,7 @@ public class GameServiceTests
         game.UpdateChangeDetectionWatchId(watchId);
         var manuals = new List<Manual>();
 
-        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
+        _gameRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None)).ReturnsAsync(game);
         _gameRepositoryMock.Setup(x => x.DeleteAsync(1)).ReturnsAsync(true);
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
         _manualServiceMock.Setup(x => x.GetManualsForGame(1)).ReturnsAsync(manuals);
@@ -721,7 +729,7 @@ public class GameServiceTests
 
         await _gameService.Delete(1);
 
-        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None), Times.Once);
         _gameRepositoryMock.Verify(x => x.DeleteAsync(1), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync(null), Times.Once);
@@ -740,14 +748,14 @@ public class GameServiceTests
         var gameId = 999;
 
         _gameRepositoryMock
-            .Setup(x => x.GetByIdAsync(gameId))
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, gameId)), CancellationToken.None))
             .ReturnsAsync((Game?)null);
 
         var action = async () => await _gameService.Delete(gameId);
 
         await action.Should().ThrowAsync<EntityNotFoundException>().Where(e => e.EntityType == nameof(Game) && (int)e.EntityId == gameId);
 
-        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, gameId)), CancellationToken.None), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Debug, $"Deleting game {gameId}");
         VerifyNoOtherCalls();
     }
@@ -1192,6 +1200,113 @@ public class GameServiceTests
 
     #endregion
 
+    [Fact]
+    public async Task UpdateGameExpansions_ShouldDeleteTheDownloadedCovers_WhenSavingFails()
+    {
+        var game = new Game("Test Game") { Id = 1 };
+        var cover = new Expansion("New", 101, game);
+        cover.UpdateImage("/images/cover/101.webp");
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None))
+            .ReturnsAsync(game);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsExpansions(r, 101))))
+            .ReturnsAsync(CreateSucceededThingResponse([CreateThingItem(101, "New")]));
+        _gameFactoryMock
+            .Setup(x => x.CreateExpansionFromBggAsync(It.Is<ThingResponse.Item>(i => i.Id == 101), game, GameState.Owned, null, null))
+            .ReturnsAsync(cover);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ThrowsAsync(new InvalidOperationException("db down"));
+
+        var act = () => _gameService.UpdateGameExpansions(1, [101]);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("db down");
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsExpansions(r, 101))), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateExpansionFromBggAsync(It.Is<ThingResponse.Item>(i => i.Id == 101), game, GameState.Owned, null, null), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage("/images/cover/101.webp"), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Updating expansions for game 1");
+        VerifyApiKeyRead();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateExpansion_ShouldChangeStatePricesAndDate_AndSave()
+    {
+        var game = new Game("Catan") { Id = 1 };
+        var expansion = new Expansion("Seafarers", 325, 1) { Id = 7 };
+        game.AddExpansion(expansion);
+        var added = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None))
+            .ReturnsAsync(game);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+
+        var result = await _gameService.UpdateExpansion(1, 7, new UpdateExpansionCommand
+        {
+            State = GameState.Sold,
+            BuyingPrice = 30m,
+            SoldPrice = 18.5m,
+            AdditionDate = added
+        });
+
+        result.Should().BeSameAs(expansion);
+        expansion.State.Should().Be(GameState.Sold);
+        expansion.BuyingPrice!.Amount.Should().Be(30m);
+        expansion.SoldPrice!.Amount.Should().Be(18.5m);
+        expansion.AdditionDate.Should().Be(added);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Updating expansion 7 of game 1");
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UpdateExpansion_ShouldThrowEntityNotFoundException_WhenTheGameOrExpansionIsMissing(bool gameExists)
+    {
+        var game = gameExists ? new Game("Catan") { Id = 1 } : null;
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None))
+            .ReturnsAsync(game);
+
+        var act = () => _gameService.UpdateExpansion(1, 7, new UpdateExpansionCommand { State = GameState.Owned });
+
+        await act.Should().ThrowAsync<EntityNotFoundException>().Where(e => e.EntityType == nameof(Expansion) && (int)e.EntityId == 7);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Updating expansion 7 of game 1");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Delete_ShouldRemoveTheCoversOfItsExpansions()
+    {
+        var game = new Game("Catan") { Id = 1 };
+        var withCover = new Expansion("Seafarers", 325, 1);
+        withCover.UpdateImage("/images/cover/325.webp");
+        game.AddExpansion(withCover);
+        game.AddExpansion(new Expansion("Homemade", null, 1));
+        var manuals = new List<Manual>();
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None))
+            .ReturnsAsync(game);
+        _manualServiceMock.Setup(x => x.GetManualsForGame(1)).ReturnsAsync(manuals);
+
+        await _gameService.Delete(1);
+
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None), Times.Once);
+        _gameRepositoryMock.Verify(x => x.DeleteAsync(1), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("/images/cover/325.webp"), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync(null), Times.Exactly(2));
+        _manualServiceMock.Verify(x => x.GetManualsForGame(1), Times.Once);
+        _manualServiceMock.Verify(x => x.DeleteManualFiles(manuals), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Debug, "Deleting game 1");
+        _loggerMock.VerifyLog(LogLevel.Information, "Game 1 deleted");
+        VerifyNoOtherCalls();
+    }
+
     #region DeleteExpansion Tests
 
     [Fact]
@@ -1200,9 +1315,11 @@ public class GameServiceTests
         var gameId = 1;
         var expansionId = 5;
 
+        var expansion = new Expansion("Seafarers", 325, gameId) { Id = expansionId };
+        expansion.UpdateImage("/images/cover/seafarers.webp");
         _gameRepositoryMock
             .Setup(x => x.DeleteExpansion(gameId, expansionId))
-            .ReturnsAsync(true);
+            .ReturnsAsync(expansion);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -1212,6 +1329,7 @@ public class GameServiceTests
 
         _gameRepositoryMock.Verify(x => x.DeleteExpansion(gameId, expansionId), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync("/images/cover/seafarers.webp"), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Debug, $"Deleting expansion {expansionId} from game {gameId}");
         VerifyNoOtherCalls();
     }
@@ -1221,7 +1339,7 @@ public class GameServiceTests
     {
         _gameRepositoryMock
             .Setup(x => x.DeleteExpansion(1, 5))
-            .ReturnsAsync(false);
+            .ReturnsAsync((Expansion?)null);
 
         var act = () => _gameService.DeleteExpansion(1, 5);
 
@@ -1601,6 +1719,7 @@ public class GameServiceTests
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Debug, $"Updating expansions for game {gameId}");
         VerifyApiKeyRead();
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync(null), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -1637,6 +1756,7 @@ public class GameServiceTests
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Debug, $"Updating expansions for game {gameId}");
         VerifyApiKeyRead();
+        _gameFactoryMock.Verify(x => x.CreateExpansionFromBggAsync(It.Is<ThingResponse.Item>(i => i.Id == expansionBggId), game, GameState.Owned, null, null), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -1729,6 +1849,8 @@ public class GameServiceTests
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Debug, $"Updating expansions for game {gameId}");
         VerifyApiKeyRead();
+        _gameFactoryMock.Verify(x => x.CreateExpansionFromBggAsync(It.Is<ThingResponse.Item>(i => i.Id == 101), game, GameState.Owned, null, null), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateExpansionFromBggAsync(It.Is<ThingResponse.Item>(i => i.Id == 102), game, GameState.Owned, null, null), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -1785,6 +1907,7 @@ public class GameServiceTests
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Debug, $"Updating expansions for game {gameId}");
         VerifyApiKeyRead();
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync(null), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -2150,13 +2273,13 @@ public class GameServiceTests
         var game = new Game("Brass") { Id = 1 };
         game.UpdateChangeDetectionWatchId(watchId);
         var manuals = new List<Manual>();
-        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
+        _gameRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None)).ReturnsAsync(game);
         _manualServiceMock.Setup(x => x.GetManualsForGame(1)).ReturnsAsync(manuals);
         _changeDetectionClientMock.Setup(x => x.DeleteWatchAsync(watchId, CancellationToken.None)).ThrowsAsync(failure);
 
         await _gameService.Delete(1);
 
-        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None), Times.Once);
         _gameRepositoryMock.Verify(x => x.DeleteAsync(1), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync(null), Times.Once);
@@ -2175,14 +2298,14 @@ public class GameServiceTests
         var game = new Game("Brass") { Id = 1 };
         game.UpdateImage("/images/cover/brass.webp");
         var manuals = new List<Manual>();
-        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
+        _gameRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None)).ReturnsAsync(game);
         _manualServiceMock.Setup(x => x.GetManualsForGame(1)).ReturnsAsync(manuals);
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ThrowsAsync(new InvalidOperationException("db down"));
 
         var act = () => _gameService.Delete(1);
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("db down");
-        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<GameWithExpansionsSpec>(s => Targets(s, 1)), CancellationToken.None), Times.Once);
         _gameRepositoryMock.Verify(x => x.DeleteAsync(1), Times.Once);
         _manualServiceMock.Verify(x => x.GetManualsForGame(1), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
@@ -2428,6 +2551,7 @@ public class GameServiceTests
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Debug, "Updating expansions for game 1");
         VerifyApiKeyRead();
+        _gameFactoryMock.Verify(x => x.CreateExpansionFromBggAsync(It.IsAny<ThingResponse.Item>(), game, GameState.Owned, null, null), Times.Exactly(result.Count));
         VerifyNoOtherCalls();
     }
 
@@ -2451,6 +2575,8 @@ public class GameServiceTests
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Debug, "Updating expansions for game 1");
         VerifyApiKeyRead();
+        _gameFactoryMock.Verify(x => x.CreateExpansionFromBggAsync(It.Is<ThingResponse.Item>(i => i.Id == 101), game, GameState.Owned, null, null), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImageIfUnusedAsync(null), Times.Once);
         VerifyNoOtherCalls();
     }
 

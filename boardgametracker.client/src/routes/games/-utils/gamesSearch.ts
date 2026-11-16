@@ -105,8 +105,20 @@ export const pickWheelGames = (
 		.slice(0, max)
 		.map(({ game }) => game);
 
+export const ownedExpansionsPrice = (game: Game): number =>
+	game.expansions
+		.filter((expansion) => expansion.state === GameState.Owned)
+		.reduce((sum, expansion) => sum + (expansion.buyingPrice ?? 0), 0);
+
+export const collectionPrice = (game: Game): number | null => {
+	const expansions = ownedExpansionsPrice(game);
+	return game.buyingPrice == null && expansions === 0 ? null : (game.buyingPrice ?? 0) + expansions;
+};
+
 export const ownedPriceStats = (games: Game[]) => {
-	const priced = games.filter((game) => game.state === GameState.Owned && (game.buyingPrice ?? 0) > 0);
-	const total = priced.reduce((sum, game) => sum + (game.buyingPrice ?? 0), 0);
-	return { total, mean: priced.length > 0 ? total / priced.length : 0, pricedCount: priced.length };
+	const prices = games
+		.map((game) => (game.state === GameState.Owned ? (game.buyingPrice ?? 0) : 0) + ownedExpansionsPrice(game))
+		.filter((price) => price > 0);
+	const total = prices.reduce((sum, price) => sum + price, 0);
+	return { total, mean: prices.length > 0 ? total / prices.length : 0, pricedCount: prices.length };
 };

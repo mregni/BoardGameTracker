@@ -109,4 +109,35 @@ public class GameFactory : IGameFactory
             throw;
         }
     }
+
+    public async Task<Expansion> CreateExpansionFromBggAsync(ThingResponse.Item item, Game game, GameState state = GameState.Owned, decimal? price = null, DateTime? additionDate = null)
+    {
+        if (string.IsNullOrWhiteSpace(item.Name) || item.Id <= 0)
+        {
+            throw new InvalidOperationException("Expansion must have a valid name and id from BGG");
+        }
+
+        var imageUrl = await _imageService.DownloadImage(
+            item.Image ?? string.Empty,
+            item.Id.ToString(CultureInfo.InvariantCulture));
+
+        try
+        {
+            var expansion = new Expansion(item.Name, item.Id, game);
+            expansion.UpdateImage(imageUrl);
+            expansion.UpdateState(state);
+            expansion.UpdateBuyingPrice(price);
+            if (additionDate.HasValue)
+            {
+                expansion.UpdateAdditionDate(additionDate.Value);
+            }
+
+            return expansion;
+        }
+        catch
+        {
+            _imageService.DeleteImage(imageUrl);
+            throw;
+        }
+    }
 }
