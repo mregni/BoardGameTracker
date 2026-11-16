@@ -221,7 +221,7 @@ export const GameTableCards = (props: Props) => {
 									<ul className="flex flex-col gap-2 pb-1">
 										<li className="flex flex-col gap-1 rounded-md bg-primary/5 p-2">
 											<span className="flex items-center gap-2 text-sm font-medium">
-												<span className="rounded border border-primary/30 px-1 text-[10px] leading-4 text-stat-title">
+												<span className="rounded border border-primary/30 px-1 text-[11px] leading-4 tracking-wider text-stat-title">
 													{t("games:table.base-tag")}
 												</span>
 												{game.title}
@@ -234,7 +234,7 @@ export const GameTableCards = (props: Props) => {
 												<li key={expansion.id} className="flex flex-col gap-1 rounded-md bg-primary/5 p-2">
 													<span className="flex items-center gap-2 text-sm font-medium">
 														<BgtAvatar image={expansion.image} title={expansion.title} size="small" />
-														<span className="rounded border border-primary/30 px-1 text-[10px] leading-4 text-stat-title">
+														<span className="rounded border border-primary/30 px-1 text-[11px] leading-4 tracking-wider text-stat-title">
 															{t("games:table.expansion-tag")}
 														</span>
 														<span className="truncate">{expansion.title}</span>

@@ -388,7 +388,7 @@ function RouteComponent() {
 									state={expansion.state === GameState.Owned ? undefined : expansion.state}
 									onClick={() => setQuickView({ gameId: x.id, expansionId: expansion.id })}
 									tag={
-										<span className="rounded border border-white/30 bg-background/85 px-1.5 text-[10px] font-bold leading-4 tracking-wider text-stat-title">
+										<span className="rounded border border-white/30 bg-background/85 px-1.5 text-[11px] font-bold leading-4 tracking-wider text-stat-title">
 											{t("table.expansion-tag")}
 										</span>
 									}

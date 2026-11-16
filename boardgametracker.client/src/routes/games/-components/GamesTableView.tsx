@@ -249,7 +249,7 @@ export const GamesTableView = (props: Props) => {
 				)}
 			>
 				<BgtAvatar image={image} title={title} size="small" />
-				<span className="rounded border border-primary/30 px-1 text-[10px] leading-4 tracking-wider text-stat-title">
+				<span className="rounded border border-primary/30 px-1 text-[11px] leading-4 tracking-wider text-stat-title">
 					{tag}
 				</span>
 				{children ?? <span className="font-medium">{title}</span>}
