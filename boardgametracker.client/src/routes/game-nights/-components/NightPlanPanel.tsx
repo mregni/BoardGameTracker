@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
+import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtText } from "@/components/BgtText/BgtText";
@@ -20,8 +21,6 @@ interface Props {
 	showGames: boolean;
 	onManageRsvps: () => void;
 }
-
-const chip = "inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold";
 
 const bringAlong = (game: Game, locationId: number) => {
 	if (!canStore(game.state)) return null;
@@ -49,12 +48,20 @@ export const NightPlanPanel = ({ gameNight, games, canWrite, showGames, onManage
 				<span className="wrap-anywhere">
 					{place ? placeLabel(place, nodes, locations, t) : t("storage:place.none")}
 				</span>
-				{status === "loaned" && <span className={cx(chip, "bg-white/10 text-white/70")}>{t("planned.loaned")}</span>}
-				{status === "bring" && <span className={cx(chip, "bg-warn/15 text-warn")}>{t("planned.bring-along")}</span>}
+				{status === "loaned" && (
+					<BgtBadge color="neutral" size="sm">
+						{t("planned.loaned")}
+					</BgtBadge>
+				)}
+				{status === "bring" && (
+					<BgtBadge color="warn" size="sm">
+						{t("planned.bring-along")}
+					</BgtBadge>
+				)}
 				{status === "here" && (
-					<span className={cx(chip, "bg-ok/15 text-ok")}>
+					<BgtBadge color="ok" size="sm">
 						{t("planned.at-location", { location: gameNight.location.name })}
-					</span>
+					</BgtBadge>
 				)}
 			</span>
 		);
@@ -97,7 +104,9 @@ export const NightPlanPanel = ({ gameNight, games, canWrite, showGames, onManage
 							<NightSectionTitle id="planned-games">{t("planned.title")}</NightSectionTitle>
 						</div>
 						{toBring > 0 && (
-							<span className={cx(chip, "bg-warn/15 text-warn")}>{t("planned.to-bring", { count: toBring })}</span>
+							<BgtBadge color="warn" size="sm" className="shrink-0">
+								{t("planned.to-bring", { count: toBring })}
+							</BgtBadge>
 						)}
 					</div>
 					{plannedGames.length === 0 ? (

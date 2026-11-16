@@ -3,38 +3,50 @@ import type { ComponentPropsWithoutRef } from "react";
 
 import CloseIcon from "@/assets/icons/x.svg?react";
 
-const badgeVariants = cva("group px-3 py-1 rounded-full text-xs flex flex-row gap-2 border", {
-	variants: {
-		variant: {
-			soft: "",
+const badgeVariants = cva(
+	"group rounded-full text-xs inline-flex flex-row items-center gap-2 border whitespace-nowrap",
+	{
+		variants: {
+			variant: {
+				soft: "",
+			},
+			color: {
+				green: "text-card-value bg-[#34FFAA1F]",
+				red: "text-error-dark bg-error-dark/20 border-error-dark/30",
+				primary: "text-chip-selected bg-primary/20 border-primary/30",
+				ok: "text-ok bg-ok/15 border-ok/30",
+				warn: "text-warn bg-warn/15 border-warn/30",
+				neutral: "text-white/75 bg-white/10 border-white/15",
+			},
+			size: {
+				default: "px-3 py-1",
+				sm: "px-2 py-0.5 font-semibold",
+			},
+			interactive: {
+				true: "cursor-pointer",
+				false: "",
+			},
 		},
-		color: {
-			green: "text-card-value bg-[#34FFAA1F]",
-			red: "text-error-dark bg-error-dark/20 border-error-dark/30",
-			primary: "text-chip-selected bg-primary/20 border-primary/30",
-		},
-		interactive: {
-			true: "cursor-pointer",
-			false: "",
+		defaultVariants: {
+			variant: "soft",
+			color: "green",
+			size: "default",
+			interactive: false,
 		},
 	},
-	defaultVariants: {
-		variant: "soft",
-		color: "green",
-		interactive: false,
-	},
-});
+);
 
-interface Props extends Omit<ComponentPropsWithoutRef<"div">, "color">, VariantProps<typeof badgeVariants> {
+interface Props extends Omit<ComponentPropsWithoutRef<"span">, "color">, VariantProps<typeof badgeVariants> {
 	onClose?: () => void;
 }
 
 export const BgtBadge = (props: Props) => {
-	const { className, children, variant, color, onClick, onClose, ...rest } = props;
+	const { className, children, variant, color, size, onClick, onClose, ...rest } = props;
 
 	const badgeClasses = badgeVariants({
 		variant,
 		color,
+		size,
 		interactive: !!onClick,
 		className,
 	});
@@ -45,7 +57,7 @@ export const BgtBadge = (props: Props) => {
 	};
 
 	return (
-		<div
+		<span
 			className={badgeClasses}
 			onClick={onClick}
 			onKeyDown={
@@ -53,7 +65,7 @@ export const BgtBadge = (props: Props) => {
 					? (e: React.KeyboardEvent) => {
 							if (e.key === "Enter" || e.key === " ") {
 								e.preventDefault();
-								onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+								onClick(e as unknown as React.MouseEvent<HTMLSpanElement>);
 							}
 						}
 					: undefined
@@ -64,6 +76,6 @@ export const BgtBadge = (props: Props) => {
 		>
 			{children}
 			{onClose && <CloseIcon onClick={handleClose} className="cursor-pointer" />}
-		</div>
+		</span>
 	);
 };

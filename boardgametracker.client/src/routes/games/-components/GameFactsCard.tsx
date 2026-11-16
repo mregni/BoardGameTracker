@@ -10,6 +10,7 @@ import Coins from "@/assets/icons/coins.svg?react";
 import Target from "@/assets/icons/target.svg?react";
 import User from "@/assets/icons/user.svg?react";
 import Users from "@/assets/icons/users.svg?react";
+import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { useDurationRange } from "@/hooks/useDurationRange";
@@ -138,9 +139,9 @@ export const GameFactsCard = (props: Props) => {
 								canStore(game.state) && <span className="font-normal text-white/50">{t("storage:place.none")}</span>
 							)}
 							{game.isLoaned && (
-								<span className="rounded-full bg-card-light px-2 py-0.5 text-xs font-semibold text-gray-400">
+								<BgtBadge color="neutral" size="sm">
 									{t("game:state.on-loan")}
-								</span>
+								</BgtBadge>
 							)}
 							{storedElsewhere > 0 && (
 								<span className="text-sm font-normal text-white/60">

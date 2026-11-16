@@ -242,6 +242,7 @@ export const StorageContent = (props: Props) => {
 																<img
 																	key={item.key}
 																	src={item.image ?? undefined}
+																	loading="lazy"
 																	alt=""
 																	className="h-10 w-[30px] flex-none rounded-[3px] bg-white/5 object-cover"
 																/>

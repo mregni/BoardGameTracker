@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import PackageIcon from "@/assets/icons/package.svg?react";
 import XIcon from "@/assets/icons/x.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
+import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtFieldLabel } from "@/components/BgtForm";
@@ -91,7 +92,9 @@ export const BoxInspector = (props: Props) => {
 					</div>
 				</div>
 				{item.isLoaned && (
-					<p className="w-fit rounded-full border border-warn/40 px-2 py-0.5 text-xs text-warn">{t("box.loaned")}</p>
+					<BgtBadge color="neutral" size="sm" className="w-fit">
+						{t("box.loaned")}
+					</BgtBadge>
 				)}
 				<dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
 					<dt className="text-white/60">{t("box.stored-in")}</dt>

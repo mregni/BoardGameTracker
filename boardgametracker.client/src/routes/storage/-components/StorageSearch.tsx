@@ -3,6 +3,7 @@ import { type KeyboardEvent, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
+import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
 import { type Expansion, type Game, type Location, StorageLayout, type StorageLocation } from "@/models";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { canStore, placeLabel, placeOf, type StoragePlace } from "@/utils/storage";
@@ -188,9 +189,9 @@ export const StorageSearch = ({ games, nodes, locations, onPick }: Props) => {
 												</span>
 											)}
 											{!hit.expansion && hit.game.isLoaned && (
-												<span className="ml-1.5 rounded-full border border-warn/40 px-1.5 text-xs text-warn">
+												<BgtBadge color="neutral" size="sm" className="ml-1.5">
 													{t("box.loaned-short")}
-												</span>
+												</BgtBadge>
 											)}
 										</span>
 									</span>
