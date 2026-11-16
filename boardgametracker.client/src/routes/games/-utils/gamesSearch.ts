@@ -3,6 +3,8 @@ import {
 	type AgeBucket,
 	type GameSort,
 	type GamesFilterSearch,
+	type GameType,
+	NO_STORAGE,
 	PLAY_TIMES,
 	PLAYER_COUNTS,
 	type WeightBucket,
@@ -12,6 +14,7 @@ const WEIGHT_BUCKETS: WeightBucket[] = ["light", "medium", "heavy"];
 const AGE_BUCKETS: AgeBucket[] = ["0-6", "7-9", "10-12", "13plus"];
 export const GAME_SORTS: GameSort[] = ["title", "plays", "last-played", "added", "rating", "weight"];
 const GAME_STATES = Object.values(GameState) as string[];
+const GAME_TYPES: GameType[] = ["expansions", "any"];
 
 const parsePositiveInt = (value: unknown): number | undefined => {
 	const parsed = Number(value);
@@ -44,6 +47,11 @@ export const parseGamesSearch = (search: Record<string, unknown>): GamesFilterSe
 		state: GAME_STATES.includes(search.state as string) ? (search.state as GameState) : undefined,
 		language: parseText(search.language),
 		inStock: search.inStock === true || search.inStock === "true" ? true : undefined,
+		storage:
+			typeof search.storage === "string" && (search.storage === NO_STORAGE || /^\d+:\d*$/.test(search.storage))
+				? search.storage
+				: undefined,
+		type: GAME_TYPES.includes(search.type as GameType) ? (search.type as GameType) : undefined,
 		sort: sort !== "title" && GAME_SORTS.includes(sort) ? sort : undefined,
 	};
 };

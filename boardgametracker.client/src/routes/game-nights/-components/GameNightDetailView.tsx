@@ -160,7 +160,13 @@ export const GameNightDetailView = (props: Props) => {
 			)}
 
 			{!isNightPast(gameNight) && (
-				<NightPlanPanel gameNight={gameNight} canWrite={canWrite} showGames={isPlanned} onManageRsvps={onManageRsvps} />
+				<NightPlanPanel
+					gameNight={gameNight}
+					games={games}
+					canWrite={canWrite}
+					showGames={isPlanned}
+					onManageRsvps={onManageRsvps}
+				/>
 			)}
 		</div>
 	);

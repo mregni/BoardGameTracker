@@ -9,17 +9,20 @@ import Refresh from "@/assets/icons/refresh.svg?react";
 import SquareOutIcon from "@/assets/icons/square-out.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
+import { StoragePicker } from "@/components/BgtStorage/StoragePicker";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
 import { useDurationRange } from "@/hooks/useDurationRange";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useStorageActions, useStorageData } from "@/hooks/useStorage";
 import { useTimeouts } from "@/hooks/useTimeouts";
-import { type Expansion, type Game, type GamePrice, GameState, QUERY_KEYS } from "@/models";
+import { type Expansion, type Game, type GamePrice, GameState, QUERY_KEYS, StorageItemType } from "@/models";
 import { getTrackedPricesCall } from "@/services/gameService";
 import { toDisplay } from "@/utils/dateUtils";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
 import { formatDecimal, formatPrice, formatPriceOrEmpty } from "@/utils/numberUtils";
 import { formatRange as formatValueRange } from "@/utils/rangeUtils";
+import { allPlaces, canStore, parsePlaceKey, placeKey, placeLabel, placeOf, type StoragePlace } from "@/utils/storage";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { useInlineExpansionUpdate } from "../-hooks/useInlineExpansionUpdate";
 import { useInlineGameUpdate } from "../-hooks/useInlineGameUpdate";
@@ -33,6 +36,8 @@ import { TrackedPriceIcon } from "./TrackedPriceIcon";
 declare module "@tanstack/react-table" {
 	interface TableMeta<TData extends RowData> {
 		isEditing?: (id: number, column: GameTableColumn) => boolean;
+		isSelected?: (id: number) => boolean;
+		allSelected?: boolean;
 	}
 }
 
@@ -49,8 +54,11 @@ type GameRow =
 
 const isGameLine = (row: GameRow) => row.kind === "game" || row.kind === "base";
 
+const NO_PLACE = "none";
+
 interface Props {
 	games: Game[];
+	dimmed?: Map<number, number[]>;
 	priceMap: Map<number, GamePrice>;
 	showLivePrices: boolean;
 	inStock: boolean;
@@ -61,11 +69,14 @@ interface Props {
 }
 
 export const GamesTableView = (props: Props) => {
-	const { games, priceMap, showLivePrices, inStock, onInStockChange, currency, uiLanguage, dateFormat } = props;
+	const { games, dimmed, priceMap, showLivePrices, inStock, onInStockChange, currency, uiLanguage, dateFormat } = props;
 	const { t, i18n } = useTranslation(["games", "game", "common"]);
 	const { canWrite } = usePermissions();
 	const { updateGame } = useInlineGameUpdate();
 	const { updateExpansion } = useInlineExpansionUpdate();
+	const { nodes, locations } = useStorageData();
+	const { assignStorage } = useStorageActions();
+	const [selected, setSelected] = useState<Set<number>>(new Set());
 	const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
 	const [openGames, setOpenGames] = useState<Set<number>>(new Set());
 	const stopEdit = useCallback(() => setEditingCell(null), []);
@@ -74,7 +85,6 @@ export const GamesTableView = (props: Props) => {
 		(gameId: number, column: EditingCell["column"]) => editingCell?.gameId === gameId && editingCell.column === column,
 		[editingCell],
 	);
-	const tableMeta = useMemo(() => ({ isEditing }), [isEditing]);
 	const toggleGame = useCallback(
 		(gameId: number) =>
 			setOpenGames((previous) => {
@@ -110,12 +120,76 @@ export const GamesTableView = (props: Props) => {
 		[durationRange],
 	);
 
-	const ownedPrices = useMemo(() => ownedPriceStats(games), [games]);
+	const ownedPrices = useMemo(() => ownedPriceStats(games.filter((game) => !dimmed?.has(game.id))), [games, dimmed]);
+	const selectable = useMemo(
+		() => games.filter((game) => canStore(game.state) && !dimmed?.has(game.id)).map((game) => game.id),
+		[games, dimmed],
+	);
+	const selectedIds = useMemo(() => selectable.filter((id) => selected.has(id)), [selectable, selected]);
+	const tableMeta = useMemo(
+		() => ({
+			isEditing,
+			isSelected: (id: number) => selected.has(id) && selectable.includes(id),
+			allSelected: selectable.length > 0 && selectedIds.length === selectable.length,
+		}),
+		[isEditing, selected, selectable, selectedIds],
+	);
+	const toggleSelected = useCallback(
+		(gameId: number) =>
+			setSelected((previous) => {
+				const next = new Set(previous);
+				if (!next.delete(gameId)) next.add(gameId);
+				return next;
+			}),
+		[],
+	);
+
+	const placeItems = useMemo(
+		() =>
+			allPlaces(nodes, locations).map((place) => ({
+				value: placeKey(place),
+				label:
+					place.storageLocationId === null
+						? t("storage:place.somewhere-in", { name: placeLabel(place, nodes, locations, t) })
+						: placeLabel(place, nodes, locations, t),
+			})),
+		[nodes, locations, t],
+	);
+	const gamePlaceItems = useMemo(
+		() => [{ value: NO_PLACE, label: t("storage:place.none") }, ...placeItems],
+		[placeItems, t],
+	);
+	const expansionPlaceItems = useMemo(
+		() => [{ value: NO_PLACE, label: t("storage:place.in-base-box") }, ...placeItems],
+		[placeItems, t],
+	);
+	const store = useCallback(
+		(type: StorageItemType, ids: number[], place: StoragePlace | null) =>
+			assignStorage({
+				items: ids.map((id) => ({ type, id })),
+				locationId: place?.locationId ?? null,
+				storageLocationId: place?.storageLocationId ?? null,
+			}).catch(() => undefined),
+		[assignStorage],
+	);
 	const hasPrices = ownedPrices.pricedCount > 0;
 
 	const rows = useMemo(
 		() =>
 			games.flatMap((game): GameRow[] => {
+				const only = dimmed?.get(game.id);
+				if (only) {
+					const shown = game.expansions.filter((expansion) => only.includes(expansion.id));
+					return [
+						{ kind: "collection", game },
+						...shown.map((expansion, index) => ({
+							kind: "expansion" as const,
+							game,
+							expansion,
+							last: index === shown.length - 1,
+						})),
+					];
+				}
 				if (game.expansions.length === 0 || !openGames.has(game.id)) {
 					return [{ kind: "game", game }];
 				}
@@ -130,7 +204,7 @@ export const GamesTableView = (props: Props) => {
 					})),
 				];
 			}),
-		[games, openGames],
+		[games, openGames, dimmed],
 	);
 
 	const stateEditItems = useMemo(
@@ -173,6 +247,40 @@ export const GamesTableView = (props: Props) => {
 
 	const columns: ColumnDef<GameRow>[] = useMemo(
 		() => [
+			...(canWrite
+				? [
+						{
+							id: "select",
+							header: ({ table }: { table: { options: { meta?: { allSelected?: boolean } } } }) => (
+								<input
+									type="checkbox"
+									className="size-4 accent-primary align-middle"
+									aria-label={t("games:table.select-all")}
+									checked={!!table.options.meta?.allSelected}
+									onChange={(event) => setSelected(event.target.checked ? new Set(selectable) : new Set())}
+								/>
+							),
+							enableSorting: false,
+							cell: ({
+								row: { original: row },
+								table,
+							}: {
+								row: { original: GameRow };
+								table: { options: { meta?: { isSelected?: (id: number) => boolean } } };
+							}) =>
+								row.kind === "game" || row.kind === "collection" ? (
+									<input
+										type="checkbox"
+										className="size-4 accent-primary align-middle"
+										aria-label={t("games:table.select", { title: row.game.title })}
+										disabled={!selectable.includes(row.game.id)}
+										checked={!!table.options.meta?.isSelected?.(row.game.id)}
+										onChange={() => toggleSelected(row.game.id)}
+									/>
+								) : null,
+						},
+					]
+				: []),
 			{
 				id: "title",
 				header: t("games:columns.title"),
@@ -187,6 +295,7 @@ export const GamesTableView = (props: Props) => {
 					}
 					const livePrice = priceMap.get(game.id);
 					const open = row.kind === "collection";
+					const only = dimmed?.get(game.id);
 					return (
 						<div className="flex flex-col items-start gap-0.5">
 							<Link
@@ -198,7 +307,8 @@ export const GamesTableView = (props: Props) => {
 								<span>{game.title}</span>
 								{game.changeDetectionWatchId && <TrackedPriceIcon livePrice={livePrice} />}
 							</Link>
-							{game.expansions.length > 0 && (
+							{only && <span className="ml-9 text-xs text-white/60">{t("games:table.stored-elsewhere")}</span>}
+							{game.expansions.length > 0 && !only && (
 								<button
 									type="button"
 									aria-expanded={open}
@@ -299,6 +409,55 @@ export const GamesTableView = (props: Props) => {
 							onStopEdit={stopEdit}
 							onChange={(state) => updateGame(withStateChange(row.game, state as GameState, priceMap.get(row.game.id)))}
 						/>
+					);
+				},
+				meta: { hideOnMobile: true },
+			},
+			{
+				id: "storage",
+				header: t("games:columns.storage"),
+				cell: ({ row: { original: row }, table }) => {
+					if (row.kind === "expansion") {
+						const key = expansionEditKey(row.expansion.id);
+						if (!canStore(row.expansion.state)) return <span className="text-white/40">-</span>;
+						const place = placeOf(row.expansion);
+						return (
+							<EditableSelectCell
+								label={`${t("games:columns.storage")}: ${row.expansion.title}`}
+								readOnly={!canWrite}
+								value={place ? placeKey(place) : NO_PLACE}
+								items={expansionPlaceItems}
+								hasSearch
+								editing={!!table.options.meta?.isEditing?.(key, "storage")}
+								onStartEdit={() => startEdit(key, "storage")}
+								onStopEdit={stopEdit}
+								onChange={(value) => store(StorageItemType.Expansion, [row.expansion.id], parsePlaceKey(value))}
+							/>
+						);
+					}
+					if (row.kind === "collection" && (openGames.has(row.game.id) || dimmed?.has(row.game.id))) return null;
+					if (!canStore(row.game.state)) return <span className="text-white/40">-</span>;
+					const place = placeOf(row.game);
+					const elsewhere = row.game.expansions.filter((expansion) => placeOf(expansion) !== null).length;
+					return (
+						<span className="flex flex-col items-start">
+							<EditableSelectCell
+								label={`${t("games:columns.storage")}: ${row.game.title}`}
+								readOnly={!canWrite}
+								value={place ? placeKey(place) : NO_PLACE}
+								items={gamePlaceItems}
+								hasSearch
+								editing={!!table.options.meta?.isEditing?.(row.game.id, "storage")}
+								onStartEdit={() => startEdit(row.game.id, "storage")}
+								onStopEdit={stopEdit}
+								onChange={(value) => store(StorageItemType.Game, [row.game.id], parsePlaceKey(value))}
+							/>
+							{row.kind !== "base" && elsewhere > 0 && (
+								<span className="pl-[9px] text-[11px] leading-3 text-white/60">
+									{t("games:table.expansions-elsewhere", { count: elsewhere })}
+								</span>
+							)}
+						</span>
 					);
 				},
 				meta: { hideOnMobile: true },
@@ -437,18 +596,38 @@ export const GamesTableView = (props: Props) => {
 			canWrite,
 			toggleGame,
 			subRowTitle,
+			dimmed,
+			openGames,
+			selectable,
+			toggleSelected,
+			gamePlaceItems,
+			expansionPlaceItems,
+			store,
 		],
 	);
 
-	const columnWidths: (string | null)[] = [null, null, null, null, null, "w-52", "w-52"];
+	const columnWidths: (string | null)[] = [
+		...(canWrite ? ["w-10"] : []),
+		null,
+		null,
+		null,
+		null,
+		null,
+		"w-52",
+		"w-52",
+		"w-56",
+	];
 	const rowClassName = useCallback(
 		(row: GameRow) =>
-			row.kind === "base" || row.kind === "expansion"
-				? "bg-card-black/70 [&>td]:py-2"
-				: row.kind === "collection"
-					? "[&>td]:border-b-transparent"
-					: undefined,
-		[],
+			cx(
+				row.kind === "base" || row.kind === "expansion"
+					? "bg-card-black/70 [&>td]:py-2"
+					: row.kind === "collection"
+						? "[&>td]:border-b-transparent"
+						: undefined,
+				row.kind === "collection" && dimmed?.has(row.game.id) && "[&>td>*]:opacity-45",
+			),
+		[dimmed],
 	);
 
 	return (
@@ -485,6 +664,31 @@ export const GamesTableView = (props: Props) => {
 						</div>
 					)}
 				</div>
+			)}
+			{selectedIds.length > 0 && (
+				<section
+					aria-label={t("games:table.selection", { count: selectedIds.length })}
+					className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2"
+				>
+					<span className="text-sm">
+						<span className="font-bold tabular-nums text-card-value">{selectedIds.length}</span>{" "}
+						{t("games:table.selected", { count: selectedIds.length })}
+					</span>
+					<BgtButton variant="cancel" size="1" onClick={() => setSelected(new Set())}>
+						{t("games:table.clear-selection")}
+					</BgtButton>
+					<StoragePicker
+						className="min-w-60 flex-1 md:flex-none"
+						value={null}
+						placeholder={t("games:table.move-to-storage")}
+						aria-label={t("games:table.move-to-storage")}
+						canCreate
+						onChange={(place) => {
+							if (!place) return;
+							void store(StorageItemType.Game, selectedIds, place).then(() => setSelected(new Set()));
+						}}
+					/>
+				</section>
 			)}
 			<div className="hidden md:block">
 				<BgtDataTable

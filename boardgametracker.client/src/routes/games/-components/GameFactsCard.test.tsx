@@ -1,7 +1,61 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { BoxOrientation, type Game, GameState } from "@/models";
+import { BoxOrientation, type Expansion, type Game, GameState, StorageLayout } from "@/models";
 import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { GameFactsCard } from "./GameFactsCard";
+
+vi.mock("@tanstack/react-router", () => ({
+	Link: ({
+		children,
+		to,
+		search,
+		className,
+	}: {
+		children: React.ReactNode;
+		to: string;
+		search: { at: string };
+		className?: string;
+	}) => (
+		<a href={`${to}?at=${search.at}`} className={className}>
+			{children}
+		</a>
+	),
+}));
+
+vi.mock("@/hooks/useStorage", () => ({
+	useStorageData: () => ({
+		nodes: [
+			{
+				id: 5,
+				name: "Kallax",
+				locationId: 1,
+				parentId: null,
+				layout: StorageLayout.Free,
+				rows: null,
+				columns: null,
+				row: null,
+				column: null,
+			},
+		],
+		locations: [{ id: 1, name: "Home", playCount: 0, gameNightCount: 0, storedCount: 1, lastPlayed: null }],
+	}),
+}));
+
+const createExpansion = (id: number, overrides: Partial<Expansion> = {}): Expansion => ({
+	id,
+	title: `Expansion ${id}`,
+	bggId: null,
+	gameId: 3,
+	image: null,
+	state: GameState.Owned,
+	buyingPrice: null,
+	soldPrice: null,
+	additionDate: null,
+	storedAtLocationId: null,
+	storageLocationId: null,
+	storagePosition: 0,
+	boxOrientation: BoxOrientation.Front,
+	...overrides,
+});
 
 const createGame = (overrides: Partial<Game> = {}): Game => ({
 	id: 3,
@@ -62,7 +116,9 @@ describe("GameFactsCard", () => {
 		});
 
 		it("should hide your copy when there is nothing to show", () => {
-			renderWithTheme(<GameFactsCard {...defaultProps} game={createGame({ buyingPrice: null })} />);
+			renderWithTheme(
+				<GameFactsCard {...defaultProps} game={createGame({ buyingPrice: null, state: GameState.Wanted })} />,
+			);
 
 			expect(screen.queryByRole("heading", { name: "game:facts.your-copy" })).not.toBeInTheDocument();
 		});
@@ -234,6 +290,56 @@ describe("GameFactsCard", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} />);
 
 			expect(screen.queryByText("statistics:in-collection")).not.toBeInTheDocument();
+		});
+	});
+
+	describe("Storage", () => {
+		it("should link to the place the game is stored at", () => {
+			renderWithTheme(
+				<GameFactsCard {...defaultProps} game={createGame({ storedAtLocationId: 1, storageLocationId: 5 })} />,
+			);
+
+			expect(screen.getByText("storage:title")).toBeInTheDocument();
+			expect(screen.getByRole("link", { name: "Home › Kallax" })).toHaveAttribute("href", "/storage?at=1:5");
+		});
+
+		it("should say an owned game without a place has no storage location", () => {
+			renderWithTheme(<GameFactsCard {...defaultProps} />);
+
+			expect(screen.getByText("storage:place.none")).toBeInTheDocument();
+			expect(screen.queryByRole("link")).not.toBeInTheDocument();
+		});
+
+		it("should leave the row out for a game that cannot be stored", () => {
+			renderWithTheme(<GameFactsCard {...defaultProps} game={createGame({ state: GameState.Wanted })} />);
+
+			expect(screen.queryByText("storage:title")).not.toBeInTheDocument();
+		});
+
+		it("should mark a loaned game next to its place", () => {
+			renderWithTheme(<GameFactsCard {...defaultProps} game={createGame({ storedAtLocationId: 1, isLoaned: true })} />);
+
+			expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
+			expect(screen.getByText("game:state.on-loan")).toBeInTheDocument();
+		});
+
+		it("should count the expansions stored outside the base game's box", () => {
+			renderWithTheme(
+				<GameFactsCard
+					{...defaultProps}
+					game={createGame({
+						expansions: [createExpansion(1, { storedAtLocationId: 1 }), createExpansion(2)],
+					})}
+				/>,
+			);
+
+			expect(screen.getByText("· game:storage.expansions-elsewhere")).toBeInTheDocument();
+		});
+
+		it("should not count anything when every expansion is in the box", () => {
+			renderWithTheme(<GameFactsCard {...defaultProps} game={createGame({ expansions: [createExpansion(1)] })} />);
+
+			expect(screen.queryByText(/expansions-elsewhere/)).not.toBeInTheDocument();
 		});
 	});
 

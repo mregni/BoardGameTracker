@@ -27,5 +27,18 @@ describe("LocationTile", () => {
 		);
 
 		expect(screen.getByText("tile.no-sessions")).toBeInTheDocument();
+		expect(screen.getByText("tile.stored")).toBeInTheDocument();
+	});
+
+	it("shows how many games are stored there next to the sessions", () => {
+		renderWithTheme(
+			<LocationTile
+				location={{ id: 3, name: "Thuis", playCount: 9, gameNightCount: 0, storedCount: 12, lastPlayed: null }}
+			/>,
+		);
+
+		expect(screen.getByText("12")).toBeInTheDocument();
+		expect(screen.getByText("tile.stored")).toBeInTheDocument();
+		expect(screen.getByText("tile.sessions")).toBeInTheDocument();
 	});
 });

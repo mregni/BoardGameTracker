@@ -61,7 +61,20 @@
     "clear": "Clear filters",
     "remove": "Remove filter {{name}}",
     "group-game": "Game",
-    "group-copy": "Your copy"
+    "group-copy": "Your copy",
+    "storage": {
+      "label": "Storage",
+      "none": "No storage location",
+      "chip": "Storage: {{name}}",
+      "hint": "Counts include expansions with a place of their own."
+    },
+    "type": {
+      "label": "Type",
+      "base": "Base games",
+      "expansions": "Expansions",
+      "any": "Base games + expansions",
+      "switched": "Type switched to Base games + expansions because a storage location is selected."
+    }
   },
   "columns": {
     "title": "Title",
@@ -75,7 +88,8 @@
     "rating": "Rating",
     "added": "Added",
     "bgg": "BGG",
-    "current-price": "Current price"
+    "current-price": "Current price",
+    "storage": "Storage"
   },
   "table": {
     "empty": "No games match the selected filters.",
@@ -89,7 +103,18 @@
     "base-tag": "BASE",
     "expansion-tag": "EXP",
     "toggle-expansions_one": "{{count}} expansion of {{title}}",
-    "toggle-expansions_other": "{{count}} expansions of {{title}}"
+    "toggle-expansions_other": "{{count}} expansions of {{title}}",
+    "select-all": "Select every game",
+    "select": "Select {{title}}",
+    "selection_one": "{{count}} game selected",
+    "selection_other": "{{count}} games selected",
+    "selected_one": "selected",
+    "selected_other": "selected",
+    "clear-selection": "Clear",
+    "move-to-storage": "Move to storage…",
+    "stored-elsewhere": "Stored elsewhere · not counted",
+    "expansions-elsewhere_one": "{{count}} expansion stored elsewhere",
+    "expansions-elsewhere_other": "{{count}} expansions stored elsewhere"
   },
   "in-stock": {
     "yes": "In stock",
@@ -145,5 +170,11 @@
     "none-owned": "No owned game is available right now. Lent games stay off the wheel.",
     "to-games": "Go to your games",
     "vetoed": "{{title}} is off the wheel. Spinning again…"
+  },
+  "count-split": "{{games}} games, {{expansions}} expansions",
+  "expansion-card": "Expansion · {{title}}",
+  "quick-view": {
+    "expansion-of": "Expansion of",
+    "open": "Open {{title}}"
   }
 }

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { noop, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import {
@@ -34,15 +34,11 @@ export const DeleteStorageLocationDialog = ({ node, close, onDeleted }: Props) =
 	const items = itemsIn(storageItems(games), { locationId: node.locationId, storageLocationId: node.id }, nodes);
 	const target = placeLabel({ locationId: node.locationId, storageLocationId: node.parentId }, nodes, locations, t);
 
-	const confirm = async () => {
-		try {
-			await deleteStorageLocation(node.id);
+	const confirm = () =>
+		deleteStorageLocation(node.id).then(() => {
 			onDeleted?.();
 			close();
-		} catch {
-			// the mutation already shows the error
-		}
-	};
+		}, noop);
 
 	return (
 		<BgtDialog open onClose={close}>

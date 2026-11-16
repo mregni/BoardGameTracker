@@ -148,5 +148,6 @@
     "custom": "Personalizado"
   },
   "edit-named": "Editar {{name}}",
-  "clear-search": "Borrar búsqueda"
+  "clear-search": "Borrar búsqueda",
+  "storage": "Storage"
 }

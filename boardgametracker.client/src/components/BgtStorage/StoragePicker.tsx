@@ -14,6 +14,7 @@ interface Props {
 	value: StoragePlace | null;
 	onChange: (place: StoragePlace | null) => void;
 	noneLabel?: string;
+	placeholder?: string;
 	label?: string;
 	"aria-label"?: string;
 	disabled?: boolean;
@@ -26,7 +27,7 @@ interface Props {
 }
 
 export const StoragePicker = (props: Props) => {
-	const { value, onChange, noneLabel, canCreate = false, ...selectProps } = props;
+	const { value, onChange, noneLabel, placeholder, canCreate = false, ...selectProps } = props;
 	const { t } = useTranslation("storage");
 	const { nodes, locations } = useStorageData();
 	const [creating, setCreating] = useState<"storage" | "location" | null>(null);
@@ -59,9 +60,9 @@ export const StoragePicker = (props: Props) => {
 			<BgtSimpleSelect
 				{...selectProps}
 				hasSearch
-				placeholder={t("picker.placeholder")}
+				placeholder={placeholder ?? t("picker.placeholder")}
 				items={items}
-				value={value ? placeKey(value) : noneLabel ? NONE : undefined}
+				value={value ? placeKey(value) : noneLabel ? NONE : ""}
 				onValueChange={select}
 			/>
 			{creating === "storage" && (

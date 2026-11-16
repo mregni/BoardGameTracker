@@ -61,7 +61,20 @@
     "clear": "Filters wissen",
     "remove": "Filter {{name}} verwijderen",
     "group-game": "Spel",
-    "group-copy": "Jouw exemplaar"
+    "group-copy": "Jouw exemplaar",
+    "storage": {
+      "label": "Storage",
+      "none": "No storage location",
+      "chip": "Storage: {{name}}",
+      "hint": "Counts include expansions with a place of their own."
+    },
+    "type": {
+      "label": "Type",
+      "base": "Base games",
+      "expansions": "Expansions",
+      "any": "Base games + expansions",
+      "switched": "Type switched to Base games + expansions because a storage location is selected."
+    }
   },
   "columns": {
     "title": "Titel",
@@ -75,7 +88,8 @@
     "rating": "Beoordeling",
     "added": "Toegevoegd",
     "bgg": "BGG",
-    "current-price": "Huidige prijs"
+    "current-price": "Huidige prijs",
+    "storage": "Storage"
   },
   "table": {
     "empty": "Geen spellen die aan de gekozen filters voldoen.",
@@ -89,7 +103,18 @@
     "base-tag": "BASE",
     "expansion-tag": "EXP",
     "toggle-expansions_one": "{{count}} expansion of {{title}}",
-    "toggle-expansions_other": "{{count}} expansions of {{title}}"
+    "toggle-expansions_other": "{{count}} expansions of {{title}}",
+    "select-all": "Select every game",
+    "select": "Select {{title}}",
+    "selection_one": "{{count}} game selected",
+    "selection_other": "{{count}} games selected",
+    "selected_one": "selected",
+    "selected_other": "selected",
+    "clear-selection": "Clear",
+    "move-to-storage": "Move to storage…",
+    "stored-elsewhere": "Stored elsewhere · not counted",
+    "expansions-elsewhere_one": "{{count}} expansion stored elsewhere",
+    "expansions-elsewhere_other": "{{count}} expansions stored elsewhere"
   },
   "in-stock": {
     "yes": "Op voorraad",
@@ -145,5 +170,11 @@
     "none-owned": "Er is nu geen spel in bezit beschikbaar. Uitgeleende spellen komen niet op het wiel.",
     "to-games": "Naar je spellen",
     "vetoed": "{{title}} is van het wiel. Opnieuw draaien…"
+  },
+  "count-split": "{{games}} games, {{expansions}} expansions",
+  "expansion-card": "Expansion · {{title}}",
+  "quick-view": {
+    "expansion-of": "Expansion of",
+    "open": "Open {{title}}"
   }
 }

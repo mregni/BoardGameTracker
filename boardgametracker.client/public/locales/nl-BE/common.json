@@ -148,5 +148,6 @@
     "custom": "Aangepast"
   },
   "edit-named": "{{name}} bewerken",
-  "clear-search": "Zoekopdracht wissen"
+  "clear-search": "Zoekopdracht wissen",
+  "storage": "Storage"
 }

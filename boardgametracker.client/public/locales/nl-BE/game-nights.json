@@ -235,7 +235,12 @@
     "title": "Geplande spellen",
     "played": "gespeeld",
     "playing": "wordt nu gespeeld",
-    "start-game": "Start {{game}}"
+    "start-game": "Start {{game}}",
+    "bring-along": "Bring along",
+    "at-location": "At {{location}}",
+    "loaned": "Loaned",
+    "to-bring_one": "{{count}} to bring along",
+    "to-bring_other": "{{count}} to bring along"
   },
   "end": {
     "button": "Avond afsluiten",

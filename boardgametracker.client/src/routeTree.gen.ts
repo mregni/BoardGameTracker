@@ -36,6 +36,7 @@ import { Route as PlayersNewRouteImport } from './routes/players/new'
 import { Route as SessionsNewRouteImport } from './routes/sessions/new'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as ShamesIndexRouteImport } from './routes/shames/index'
+import { Route as StorageIndexRouteImport } from './routes/storage/index'
 import { Route as GamesGameIdSessionsRouteImport } from './routes/games/$gameId_.sessions'
 import { Route as GamesGameIdUpdateRouteImport } from './routes/games/$gameId_.update'
 import { Route as GamesImportStartRouteImport } from './routes/games/import/start'
@@ -178,6 +179,11 @@ const ShamesIndexRoute = ShamesIndexRouteImport.update({
   path: '/shames/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StorageIndexRoute = StorageIndexRouteImport.update({
+  id: '/storage/',
+  path: '/storage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GamesGameIdSessionsRoute = GamesGameIdSessionsRouteImport.update({
   id: '/games/$gameId_/sessions',
   path: '/games/$gameId/sessions',
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/players/': typeof PlayersIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/shames/': typeof ShamesIndexRoute
+  '/storage/': typeof StorageIndexRoute
   '/games/$gameId/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId/update': typeof GamesGameIdUpdateRoute
   '/games/import/start': typeof GamesImportStartRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/players': typeof PlayersIndexRoute
   '/settings': typeof SettingsIndexRoute
   '/shames': typeof ShamesIndexRoute
+  '/storage': typeof StorageIndexRoute
   '/games/$gameId/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId/update': typeof GamesGameIdUpdateRoute
   '/games/import/start': typeof GamesImportStartRoute
@@ -313,6 +321,7 @@ export interface FileRoutesById {
   '/players/': typeof PlayersIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/shames/': typeof ShamesIndexRoute
+  '/storage/': typeof StorageIndexRoute
   '/games/$gameId_/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId_/update': typeof GamesGameIdUpdateRoute
   '/games/import/start': typeof GamesImportStartRoute
@@ -350,6 +359,7 @@ export interface FileRouteTypes {
     | '/players/'
     | '/settings/'
     | '/shames/'
+    | '/storage/'
     | '/games/$gameId/sessions'
     | '/games/$gameId/update'
     | '/games/import/start'
@@ -385,6 +395,7 @@ export interface FileRouteTypes {
     | '/players'
     | '/settings'
     | '/shames'
+    | '/storage'
     | '/games/$gameId/sessions'
     | '/games/$gameId/update'
     | '/games/import/start'
@@ -421,6 +432,7 @@ export interface FileRouteTypes {
     | '/players/'
     | '/settings/'
     | '/shames/'
+    | '/storage/'
     | '/games/$gameId_/sessions'
     | '/games/$gameId_/update'
     | '/games/import/start'
@@ -453,6 +465,7 @@ export interface RootRouteChildren {
   PlayersIndexRoute: typeof PlayersIndexRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
   ShamesIndexRoute: typeof ShamesIndexRoute
+  StorageIndexRoute: typeof StorageIndexRoute
   GamesGameIdSessionsRoute: typeof GamesGameIdSessionsRoute
   GamesGameIdUpdateRoute: typeof GamesGameIdUpdateRoute
   GamesImportStartRoute: typeof GamesImportStartRoute
@@ -653,6 +666,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShamesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/storage/': {
+      id: '/storage/'
+      path: '/storage'
+      fullPath: '/storage/'
+      preLoaderRoute: typeof StorageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/games/$gameId_/sessions': {
       id: '/games/$gameId_/sessions'
       path: '/games/$gameId/sessions'
@@ -746,6 +766,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlayersIndexRoute: PlayersIndexRoute,
   SettingsIndexRoute: SettingsIndexRoute,
   ShamesIndexRoute: ShamesIndexRoute,
+  StorageIndexRoute: StorageIndexRoute,
   GamesGameIdSessionsRoute: GamesGameIdSessionsRoute,
   GamesGameIdUpdateRoute: GamesGameIdUpdateRoute,
   GamesImportStartRoute: GamesImportStartRoute,

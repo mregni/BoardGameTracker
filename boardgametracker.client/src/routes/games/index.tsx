@@ -17,24 +17,38 @@ import { BgtText } from "@/components/BgtText/BgtText";
 import { useDebouncedSearchQuery } from "@/hooks/useDebouncedSearchQuery";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePermissions } from "@/hooks/usePermissions";
-import { GameState } from "@/models";
+import { useStorageData } from "@/hooks/useStorage";
+import { type Expansion, type Game as GameModel, GameState, StorageLayout } from "@/models";
 import { getGames, getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { toRelative } from "@/utils/dateUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
+import {
+	allPlaces,
+	canStore,
+	isPlacedIn,
+	itemsIn,
+	needsAPlace,
+	parsePlaceKey,
+	placeKey,
+	placeLabel,
+	placeOf,
+	storageItems,
+} from "@/utils/storage";
 import { NoGamesEmptyPage } from "../-components/NoGamesEmptyPage";
+import { ExpansionQuickView } from "./-components/ExpansionQuickView";
 import {
 	ActiveFilterChips,
 	filterGames,
 	type GameSort,
 	type GamesFilterSearch,
 	GamesFilters,
+	NO_STORAGE,
 } from "./-components/GamesFilters";
 import { GamesTableView } from "./-components/GamesTableView";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
 import { useGamesData } from "./-hooks/useGamesData";
 import {
-	filterByTitle,
 	GAME_SORTS,
 	hasActiveFilters,
 	isPlayable,
@@ -54,12 +68,15 @@ export const Route = createFileRoute("/games/")({
 
 function RouteComponent() {
 	const search = Route.useSearch();
-	const { view, q, category, players, playTime, weight, age, state, language, inStock, sort } = search;
+	const { view, q, category, players, playTime, weight, age, state, language, inStock, storage, type, sort } = search;
 	const { t } = useTranslation(["games", "common"]);
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { games, isLoading, isError, retry } = useGamesData();
 	const { canWrite } = usePermissions();
 	const [showFilters, setShowFilters] = useState(false);
+	const [typeSwitched, setTypeSwitched] = useState(false);
+	const [quickView, setQuickView] = useState<{ gameId: number; expansionId: number } | null>(null);
+	const { nodes, locations } = useStorageData();
 	const isDesktop = useMediaQuery("(min-width: 48rem)");
 	const filtersCollapsed = !showFilters && !isDesktop;
 
@@ -90,18 +107,116 @@ function RouteComponent() {
 		[trackedPricesQuery.data],
 	);
 
-	const filteredGames = useMemo(() => {
-		const result = filterByTitle(games, q).filter(
-			(game) =>
-				(category === undefined || game.categories.some((cat) => cat.name === category)) &&
-				(state === undefined || game.state === state) &&
-				(language === undefined || (language === LANGUAGE_NONE ? !game.language : game.language === language)) &&
-				(!inStock || !showLivePrices || priceMap.get(game.id)?.inStock === true),
-		);
-		return sortGames(filterGames(result, { playerCount: players, maxPlayTime: playTime, weight, age }), sort);
-	}, [games, q, category, players, playTime, weight, age, state, language, inStock, showLivePrices, priceMap, sort]);
+	const storageFilterItems = useMemo(() => {
+		const stored = storageItems(games);
+		return [
+			{ value: NO_STORAGE, label: `${t("filters.storage.none")} (${needsAPlace(games).length})` },
+			...allPlaces(nodes, locations)
+				.filter((place) => nodes.find((node) => node.id === place.storageLocationId)?.layout !== StorageLayout.Slot)
+				.map((place) => ({
+					value: placeKey(place),
+					label: `${placeLabel(place, nodes, locations, t)} (${itemsIn(stored, place, nodes).length})`,
+				})),
+		];
+	}, [games, nodes, locations, t]);
+	const target = storage && storage !== NO_STORAGE ? parsePlaceKey(storage) : null;
+	const storageName =
+		storage === NO_STORAGE ? t("filters.storage.none") : target ? placeLabel(target, nodes, locations, t) : undefined;
 
-	const activeFilterCount = [category, players, playTime, weight, age, state, language, inStock].filter(
+	const { filteredGames, dimmed, expansionCards } = useMemo(() => {
+		const goal = storage && storage !== NO_STORAGE ? parsePlaceKey(storage) : null;
+		const needle = q?.trim().toLowerCase() ?? "";
+		const titleMatches = (title: string) => title.toLowerCase().includes(needle);
+		const stateMatches = (value: GameState) => state === undefined || value === state;
+		const inTarget = (item: GameModel | Expansion) => goal === null || isPlacedIn(placeOf(item), goal, nodes);
+		const candidates = filterGames(
+			games.filter(
+				(game) =>
+					(category === undefined || game.categories.some((cat) => cat.name === category)) &&
+					(language === undefined || (language === LANGUAGE_NONE ? !game.language : game.language === language)) &&
+					(!inStock || !showLivePrices || priceMap.get(game.id)?.inStock === true),
+			),
+			{ playerCount: players, maxPlayTime: playTime, weight, age },
+		);
+		const expansionsOf = (game: GameModel) =>
+			storage === NO_STORAGE
+				? []
+				: game.expansions.filter(
+						(expansion) =>
+							(titleMatches(expansion.title) || titleMatches(game.title)) &&
+							stateMatches(expansion.state) &&
+							inTarget(expansion),
+					);
+		const base = candidates.filter(
+			(game) =>
+				titleMatches(game.title) &&
+				stateMatches(game.state) &&
+				(storage === NO_STORAGE ? canStore(game.state) && placeOf(game) === null : inTarget(game)),
+		);
+		const extra = new Map<number, number[]>();
+		if (goal) {
+			for (const game of candidates) {
+				const matching = base.includes(game) ? [] : expansionsOf(game);
+				if (matching.length > 0)
+					extra.set(
+						game.id,
+						matching.map((expansion) => expansion.id),
+					);
+			}
+		}
+		return {
+			filteredGames: sortGames([...base, ...candidates.filter((game) => extra.has(game.id))], sort),
+			dimmed: extra,
+			expansionCards: candidates
+				.flatMap((game) => expansionsOf(game).map((expansion) => ({ game, expansion })))
+				.sort((a, b) => a.expansion.title.localeCompare(b.expansion.title)),
+		};
+	}, [
+		games,
+		q,
+		category,
+		players,
+		playTime,
+		weight,
+		age,
+		state,
+		language,
+		inStock,
+		showLivePrices,
+		priceMap,
+		sort,
+		storage,
+		nodes,
+	]);
+
+	const showBase = type !== "expansions";
+	const showExpansions = type === "expansions" || type === "any";
+	const cards = [
+		...(showBase ? filteredGames.filter((game) => !dimmed.has(game.id)) : []).map((game) => ({
+			game,
+			expansion: null as Expansion | null,
+		})),
+		...(showExpansions ? expansionCards : []),
+	];
+	if (showBase && showExpansions && (sort ?? "title") === "title") {
+		cards.sort((a, b) => (a.expansion?.title ?? a.game.title).localeCompare(b.expansion?.title ?? b.game.title));
+	}
+	const shownCount = view === "table" ? filteredGames.length - dimmed.size : cards.length;
+	const expansionCount = view === "table" ? 0 : cards.filter((card) => card.expansion).length;
+	const quickViewGame = games.find((game) => game.id === quickView?.gameId);
+	const quickViewExpansion = quickViewGame?.expansions.find((expansion) => expansion.id === quickView?.expansionId);
+
+	const changeFilters = (partial: Partial<GamesFilterSearch>) => {
+		if ("type" in partial) setTypeSwitched(false);
+		if (partial.storage && partial.storage !== NO_STORAGE && type === undefined && view !== "table") {
+			setTypeSwitched(true);
+			updateSearch({ ...partial, type: "any" });
+			return;
+		}
+		updateSearch(partial);
+	};
+
+	const activeFilterCount = [category, players, playTime, weight, age, state, language, inStock, storage, type].filter(
 		(value) => value !== undefined,
 	).length;
 
@@ -176,22 +291,34 @@ function RouteComponent() {
 						)}
 					>
 						<div id="games-filters" inert={filtersCollapsed} className="overflow-hidden md:overflow-visible">
-							<GamesFilters categories={categories} search={search} onChange={updateSearch} />
+							<GamesFilters
+								categories={categories}
+								storageItems={storageFilterItems}
+								showType={view !== "table"}
+								search={search}
+								onChange={changeFilters}
+							/>
 						</div>
 					</div>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:flex-1" aria-live="polite">
-						{filteredGames.length > 0 ? (
+						{shownCount > 0 ? (
 							<BgtText size="3" color="white" opacity={70} weight="medium">
-								{t("count", { count: filteredGames.length })}
+								{t("count", { count: shownCount })}
+								{expansionCount > 0 &&
+									` · ${t("count-split", { games: shownCount - expansionCount, expansions: expansionCount })}`}
 							</BgtText>
 						) : (
 							<BgtText size="3" color="white" opacity={70}>
 								{t("filters.no-match")}
 							</BgtText>
 						)}
-						<ActiveFilterChips search={search} onRemove={(key) => updateSearch({ [key]: undefined })} />
+						<ActiveFilterChips
+							search={search}
+							storageName={storageName}
+							onRemove={(key) => changeFilters({ [key]: undefined })}
+						/>
 						{hasActiveFilters(search) && (
 							<button
 								type="button"
@@ -227,9 +354,15 @@ function RouteComponent() {
 						</div>
 					</div>
 				</div>
-				{filteredGames.length === 0 ? null : view === "table" ? (
+				{typeSwitched && type === "any" && (
+					<p role="status" className="text-sm text-white/70">
+						{t("filters.type.switched")}
+					</p>
+				)}
+				{shownCount === 0 ? null : view === "table" ? (
 					<GamesTableView
 						games={filteredGames}
+						dimmed={dimmed}
 						priceMap={priceMap}
 						showLivePrices={showLivePrices}
 						inStock={inStock === true}
@@ -240,34 +373,63 @@ function RouteComponent() {
 					/>
 				) : (
 					<BgtCardList>
-						{filteredGames.map((x) => (
-							<BgtImageCard
-								key={x.id}
-								title={x.title}
-								image={x.image}
-								state={x.state === GameState.Owned && !x.isLoaned ? undefined : x.state}
-								isLoaned={x.isLoaned}
-								link={`/games/${x.id}`}
-								meta={
-									x.playCount > 0 ? (
-										<BgtText size="1" className="text-card-value truncate">
-											{t("plays", { count: x.playCount })}
-											{x.lastPlayed && ` · ${toRelative(x.lastPlayed, uiLanguage)}`}
-										</BgtText>
-									) : (
+						{cards.map(({ game: x, expansion }) =>
+							expansion ? (
+								<BgtImageCard
+									key={`expansion-${expansion.id}`}
+									title={expansion.title}
+									image={expansion.image}
+									state={expansion.state === GameState.Owned ? undefined : expansion.state}
+									onClick={() => setQuickView({ gameId: x.id, expansionId: expansion.id })}
+									tag={
+										<span className="rounded border border-white/30 bg-background/85 px-1.5 text-[10px] font-bold leading-4 tracking-wider text-stat-title">
+											{t("table.expansion-tag")}
+										</span>
+									}
+									meta={
 										<BgtText size="1" color="white" opacity={50} className="truncate">
-											{t("never-played")}
+											{t("expansion-card", { title: x.title })}
 										</BgtText>
-									)
-								}
-								badge={
-									x.changeDetectionWatchId ? (
-										<TrackedPriceIcon livePrice={priceMap.get(x.id)} variant="overlay" />
-									) : undefined
-								}
-							/>
-						))}
+									}
+								/>
+							) : (
+								<BgtImageCard
+									key={x.id}
+									title={x.title}
+									image={x.image}
+									state={x.state === GameState.Owned && !x.isLoaned ? undefined : x.state}
+									isLoaned={x.isLoaned}
+									link={`/games/${x.id}`}
+									meta={
+										x.playCount > 0 ? (
+											<BgtText size="1" className="text-card-value truncate">
+												{t("plays", { count: x.playCount })}
+												{x.lastPlayed && ` · ${toRelative(x.lastPlayed, uiLanguage)}`}
+											</BgtText>
+										) : (
+											<BgtText size="1" color="white" opacity={50} className="truncate">
+												{t("never-played")}
+											</BgtText>
+										)
+									}
+									badge={
+										x.changeDetectionWatchId ? (
+											<TrackedPriceIcon livePrice={priceMap.get(x.id)} variant="overlay" />
+										) : undefined
+									}
+								/>
+							),
+						)}
 					</BgtCardList>
+				)}
+				{quickViewGame && quickViewExpansion && (
+					<ExpansionQuickView
+						game={quickViewGame}
+						expansion={quickViewExpansion}
+						canWrite={canWrite}
+						currency={settingsQuery.data?.currency}
+						close={() => setQuickView(null)}
+					/>
 				)}
 			</BgtPageContent>
 		</BgtPage>

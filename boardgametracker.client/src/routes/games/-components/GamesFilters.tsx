@@ -1,3 +1,4 @@
+import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import CloseIcon from "@/assets/icons/x.svg?react";
 import { BgtSimpleSelect } from "@/components/BgtForm/BgtSimpleSelect";
@@ -8,6 +9,8 @@ import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_
 export type WeightBucket = "light" | "medium" | "heavy";
 export type AgeBucket = "0-6" | "7-9" | "10-12" | "13plus";
 export type GameSort = "title" | "plays" | "last-played" | "added" | "rating" | "weight";
+export type GameType = "expansions" | "any";
+export const NO_STORAGE = "none";
 
 export interface GameFilterState {
 	playerCount?: number;
@@ -27,6 +30,8 @@ export interface GamesFilterSearch {
 	state?: GameState;
 	language?: string;
 	inStock?: boolean;
+	storage?: string;
+	type?: GameType;
 	sort?: GameSort;
 }
 
@@ -73,7 +78,17 @@ export const filterGames = (games: Game[], filters: GameFilterState): Game[] => 
 	});
 };
 
-export type ActiveFilterKey = "category" | "players" | "playTime" | "weight" | "age" | "state" | "language" | "inStock";
+export type ActiveFilterKey =
+	| "category"
+	| "players"
+	| "playTime"
+	| "weight"
+	| "age"
+	| "state"
+	| "language"
+	| "inStock"
+	| "storage"
+	| "type";
 
 const languageLabel = (t: (key: string) => string, language: string, uiLanguage: string) => {
 	if (language === LANGUAGE_NONE) return t("game:language.none");
@@ -83,10 +98,11 @@ const languageLabel = (t: (key: string) => string, language: string, uiLanguage:
 
 interface ActiveFilterChipsProps {
 	search: GamesFilterSearch;
+	storageName?: string;
 	onRemove: (key: ActiveFilterKey) => void;
 }
 
-export const ActiveFilterChips = ({ search, onRemove }: ActiveFilterChipsProps) => {
+export const ActiveFilterChips = ({ search, storageName, onRemove }: ActiveFilterChipsProps) => {
 	const { t, i18n } = useTranslation(["games", "game"]);
 
 	const chips: { key: ActiveFilterKey; name?: string; value?: string }[] = [
@@ -118,6 +134,8 @@ export const ActiveFilterChips = ({ search, onRemove }: ActiveFilterChipsProps) 
 			value: search.language && languageLabel(t, search.language, i18n.language),
 		},
 		{ key: "inStock", value: search.inStock ? t("games:filters.in-stock-only") : undefined },
+		{ key: "storage", name: t("games:filters.storage.label"), value: search.storage && storageName },
+		{ key: "type", name: t("games:filters.type.label"), value: search.type && t(`games:filters.type.${search.type}`) },
 	];
 
 	return (
@@ -145,12 +163,14 @@ export const ActiveFilterChips = ({ search, onRemove }: ActiveFilterChipsProps) 
 
 interface Props {
 	categories: string[];
+	storageItems: BgtSelectItem[];
+	showType: boolean;
 	search: GamesFilterSearch;
 	onChange: (partial: Partial<GamesFilterSearch>) => void;
 }
 
 export const GamesFilters = (props: Props) => {
-	const { categories, search, onChange } = props;
+	const { categories, storageItems, showType, search, onChange } = props;
 	const { t, i18n } = useTranslation(["games", "game"]);
 
 	const withAny = (items: BgtSelectItem[]): BgtSelectItem[] => [
@@ -176,6 +196,11 @@ export const GamesFilters = (props: Props) => {
 			label: languageLabel(t, code, i18n.language),
 		})),
 	);
+
+	const typeItems = (["base", "expansions", "any"] as const).map((value) => ({
+		value,
+		label: t(`games:filters.type.${value}`),
+	}));
 
 	const select = (
 		placeholder: string,
@@ -223,7 +248,10 @@ export const GamesFilters = (props: Props) => {
 			</fieldset>
 			<fieldset
 				aria-label={t("games:filters.group-copy")}
-				className="grid grid-cols-2 gap-2 min-w-0 xl:flex-2 xl:border-l xl:border-primary/20 xl:pl-2"
+				className={cx(
+					"grid gap-2 min-w-0 xl:border-l xl:border-primary/20 xl:pl-2",
+					showType ? "grid-cols-2 md:grid-cols-4 xl:flex-4" : "grid-cols-3 xl:flex-3",
+				)}
 			>
 				{select(t("games:columns.state"), search.state, stateItems, (value) =>
 					onChange({ state: value as GameState | undefined }),
@@ -234,6 +262,23 @@ export const GamesFilters = (props: Props) => {
 					languageItems,
 					(value) => onChange({ language: value === undefined ? undefined : String(value) }),
 					true,
+				)}
+				{select(
+					t("games:filters.storage.label"),
+					search.storage,
+					withAny(storageItems),
+					(value) => onChange({ storage: value === undefined ? undefined : String(value) }),
+					true,
+				)}
+				{showType && (
+					<BgtSimpleSelect
+						className="w-full"
+						aria-label={t("games:filters.type.label")}
+						valuePrefix={t("games:filters.type.label")}
+						value={search.type ?? "base"}
+						items={typeItems}
+						onValueChange={(next) => onChange({ type: next === "base" ? undefined : (next as GameType) })}
+					/>
 				)}
 			</fieldset>
 		</div>

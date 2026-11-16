@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { BoxOrientation, type Game, GameState } from "@/models";
+import { BoxOrientation, type Game, GameState, StorageItemType } from "@/models";
 import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
+import type { StoragePlace } from "@/utils/storage";
 import { GameForm } from "./GameForm";
 
 const mocks = vi.hoisted(() => ({
@@ -8,6 +9,29 @@ const mocks = vi.hoisted(() => ({
 	back: vi.fn(),
 	navigate: vi.fn(),
 	watchConfigured: false,
+	assignStorage: vi.fn(),
+}));
+
+vi.mock("@/hooks/useStorage", () => ({
+	useStorageActions: () => ({ assignStorage: mocks.assignStorage, isPending: false }),
+}));
+
+vi.mock("@/components/BgtStorage/StoragePicker", () => ({
+	StoragePicker: (props: {
+		label: string;
+		value: StoragePlace | null;
+		onChange: (place: StoragePlace | null) => void;
+		disabled: boolean;
+	}) => (
+		<button
+			type="button"
+			aria-label={props.label}
+			disabled={props.disabled}
+			onClick={() => props.onChange({ locationId: 1, storageLocationId: 5 })}
+		>
+			{props.value ? `${props.value.locationId}:${props.value.storageLocationId}` : "storage:place.none"}
+		</button>
+	),
 }));
 
 vi.mock("@/services/queries/settings", () => ({
@@ -159,6 +183,53 @@ describe("GameForm", () => {
 		await user.click(screen.getByRole("button", { name: /common:back/ }));
 
 		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/3", replace: true });
+	});
+
+	it("offers the game's current storage location", () => {
+		renderForm(createGame({ storedAtLocationId: 1, storageLocationId: 7 }));
+
+		expect(screen.getByRole("button", { name: "storage:picker.label" })).toHaveTextContent("1:7");
+	});
+
+	it("only lets an owned or for trade game have a storage location", () => {
+		renderForm(createGame({ state: GameState.Wanted }));
+
+		const picker = screen.getByRole("button", { name: "storage:picker.label" });
+		expect(picker).toBeDisabled();
+		expect(picker).toHaveTextContent("storage:place.none");
+	});
+
+	it("stores the game at the picked place after it is saved, outside the game command", async () => {
+		const user = userEvent.setup();
+		mocks.assignStorage.mockResolvedValue(undefined);
+		const onClick = vi.fn().mockResolvedValue(createGame({ id: 42 }));
+		renderWithProviders(
+			<GameForm onClick={onClick} buttonText="Save" disabled={false} game={createGame()} title="Edit" backTo="/" />,
+		);
+
+		await user.click(screen.getByRole("button", { name: "storage:picker.label" }));
+		await user.click(screen.getByRole("button", { name: "Save" }));
+
+		await waitFor(() =>
+			expect(mocks.assignStorage).toHaveBeenCalledWith({
+				items: [{ type: StorageItemType.Game, id: 42 }],
+				locationId: 1,
+				storageLocationId: 5,
+			}),
+		);
+		expect(onClick.mock.calls[0][0]).not.toHaveProperty("storage");
+		expect(onClick.mock.invocationCallOrder[0]).toBeLessThan(mocks.assignStorage.mock.invocationCallOrder[0]);
+	});
+
+	it("leaves storage alone when the place did not change", async () => {
+		const user = userEvent.setup();
+		mocks.assignStorage.mockClear();
+		const { onClick } = renderForm(createGame({ storedAtLocationId: 1, storageLocationId: 7 }));
+
+		await user.click(screen.getByRole("button", { name: "Save" }));
+
+		await waitFor(() => expect(onClick).toHaveBeenCalledTimes(1));
+		expect(mocks.assignStorage).not.toHaveBeenCalled();
 	});
 
 	it("assumes a game added by hand is one you own", () => {

@@ -1,4 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
+import { noop } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
@@ -7,12 +8,14 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
-import type { Game, GamePrice } from "@/models";
+import { useStorageActions } from "@/hooks/useStorage";
+import { type Game, type GamePrice, StorageItemType } from "@/models";
 import { type CreateGame, CreateGameSchema } from "@/models/Games/CreateGame";
 import { GameState } from "@/models/Games/GameState";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
+import { canStore, placeKey, placeOf, type StoragePlace } from "@/utils/storage";
 import { zodValidator } from "@/utils/zodValidator";
 import { useBack } from "../../-hooks/useBack";
 import { useGameForm } from "../-hooks/useGameForm";
@@ -26,7 +29,7 @@ import { GameFormTimeFields } from "./GameFormTimeFields";
 import { GameFormUpdateFields } from "./GameFormUpdateFields";
 
 interface Props {
-	onClick: (data: CreateGame) => Promise<void>;
+	onClick: (data: CreateGame) => Promise<Game>;
 	buttonText: string;
 	disabled: boolean;
 	game?: Game;
@@ -41,6 +44,9 @@ export const GameForm = (props: Props) => {
 	const { t } = useTranslation(["game", "common"]);
 	const goBack = useBack(backTo);
 	const { poster, setPoster, uploadPoster } = useImageUpload(game?.image);
+	const { assignStorage } = useStorageActions();
+	const currentPlace = game ? placeOf(game) : null;
+	const keyOf = (place: StoragePlace | null) => (place ? placeKey(place) : "");
 
 	const form = useAppForm({
 		...gameFormOpts,
@@ -67,6 +73,7 @@ export const GameForm = (props: Props) => {
 			rating: game?.rating ?? undefined,
 			weight: game?.weight ?? undefined,
 			soldPrice: game?.soldPrice ?? undefined,
+			storage: currentPlace,
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = CreateGameSchema.parse({
@@ -74,7 +81,14 @@ export const GameForm = (props: Props) => {
 				coopByDefault: value.hasCoopMode && value.coopByDefault,
 			});
 			validatedData.image = await uploadPoster(poster);
-			await onClick(validatedData);
+			const saved = await onClick(validatedData);
+			const place = canStore(validatedData.state) ? value.storage : null;
+			if (keyOf(place) === keyOf(currentPlace)) return;
+			await assignStorage({
+				items: [{ type: StorageItemType.Game, id: saved.id }],
+				locationId: place?.locationId ?? null,
+				storageLocationId: place?.storageLocationId ?? null,
+			}).catch(noop);
 		},
 	});
 

@@ -2,7 +2,6 @@ import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { Game } from "@/models";
-import type { CreateGame } from "@/models/Games/CreateGame";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getSettings } from "@/services/queries/settings";
 import { GameForm } from "./-components/GameForm";
@@ -25,16 +24,12 @@ function RouteComponent() {
 	};
 
 	const { saveGame, isLoading } = useNewGame({ onSuccess });
-	const save = async (game: CreateGame) => {
-		await saveGame(game);
-	};
-
 	return (
 		<GameForm
 			buttonText={t("new.save")}
 			title={t("new.manual.title")}
 			backTo="/games/add"
-			onClick={save}
+			onClick={saveGame}
 			disabled={isLoading}
 		/>
 	);

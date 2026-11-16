@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -39,14 +40,11 @@ export const MoveStorageLocationDialog = ({ node, close }: Props) => {
 	const [target, setTarget] = useState<StoragePlace>(current);
 	const name = nodeName(node, nodes, t);
 
-	const confirm = async () => {
-		try {
-			await moveStorageLocation({ id: node.id, locationId: target.locationId, parentId: target.storageLocationId });
-			close();
-		} catch {
-			// the mutation already shows the error
-		}
-	};
+	const confirm = () =>
+		moveStorageLocation({ id: node.id, locationId: target.locationId, parentId: target.storageLocationId }).then(
+			close,
+			noop,
+		);
 
 	return (
 		<BgtDialog open onClose={close}>
