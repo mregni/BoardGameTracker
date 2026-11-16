@@ -22,7 +22,16 @@ import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
 import { formatDecimal, formatPrice, formatPriceOrEmpty } from "@/utils/numberUtils";
 import { formatRange as formatValueRange } from "@/utils/rangeUtils";
-import { allPlaces, canStore, parsePlaceKey, placeKey, placeLabel, placeOf, type StoragePlace } from "@/utils/storage";
+import {
+	allPlaces,
+	canStore,
+	parsePlaceKey,
+	placeKey,
+	placeLabel,
+	placeNames,
+	placeOf,
+	type StoragePlace,
+} from "@/utils/storage";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { useInlineExpansionUpdate } from "../-hooks/useInlineExpansionUpdate";
 import { useInlineGameUpdate } from "../-hooks/useInlineGameUpdate";
@@ -153,6 +162,10 @@ export const GamesTableView = (props: Props) => {
 						? t("storage:place.somewhere-in", { name: placeLabel(place, nodes, locations, t) })
 						: placeLabel(place, nodes, locations, t),
 			})),
+		[nodes, locations, t],
+	);
+	const shortPlace = useCallback(
+		(place: StoragePlace) => placeNames(place, nodes, locations, t).slice(-2).join(" › "),
 		[nodes, locations, t],
 	);
 	const gamePlaceItems = useMemo(
@@ -428,6 +441,8 @@ export const GamesTableView = (props: Props) => {
 								value={place ? placeKey(place) : NO_PLACE}
 								items={expansionPlaceItems}
 								hasSearch
+								className="max-w-60"
+								display={place ? shortPlace(place) : undefined}
 								editing={!!table.options.meta?.isEditing?.(key, "storage")}
 								onStartEdit={() => startEdit(key, "storage")}
 								onStopEdit={stopEdit}
@@ -447,6 +462,8 @@ export const GamesTableView = (props: Props) => {
 								value={place ? placeKey(place) : NO_PLACE}
 								items={gamePlaceItems}
 								hasSearch
+								className="max-w-60"
+								display={place ? shortPlace(place) : undefined}
 								editing={!!table.options.meta?.isEditing?.(row.game.id, "storage")}
 								onStartEdit={() => startEdit(row.game.id, "storage")}
 								onStopEdit={stopEdit}
@@ -603,6 +620,7 @@ export const GamesTableView = (props: Props) => {
 			gamePlaceItems,
 			expansionPlaceItems,
 			store,
+			shortPlace,
 		],
 	);
 

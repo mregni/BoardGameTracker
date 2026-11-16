@@ -84,10 +84,10 @@ const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid }: SlotP
 			}}
 			onDrop={drop}
 			className={cx(
-				"relative m-0 flex min-w-0 items-end gap-[3px] rounded-[3px] border-0 bg-page-black",
+				"relative m-0 flex items-end gap-[3px] rounded-[3px] border-0 bg-page-black",
 				grid
-					? "size-[calc(var(--box)*1.45)] overflow-hidden p-1.5"
-					: "min-h-[calc(var(--box)+10px)] min-w-[calc(var(--box)*4.4)] px-2 pt-1.5 shadow-[inset_0_-4px_0_rgb(255_255_255/0.07)]",
+					? "min-h-[calc(var(--box)*1.45)] min-w-[calc(var(--box)*1.45)] max-w-[calc(var(--box)*3)] flex-wrap content-end p-1.5 pt-4"
+					: "min-h-[calc(var(--box)+22px)] min-w-[calc(var(--box)*4.4)] px-2 pt-4 shadow-[inset_0_-4px_0_rgb(255_255_255/0.07)]",
 				over && "bg-card-value/10 shadow-[inset_0_0_0_1px_var(--color-card-value)]",
 			)}
 		>

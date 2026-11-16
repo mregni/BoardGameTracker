@@ -24,7 +24,7 @@ const plural = (count: number, word: string) => `${count} ${word}${count === 1 ?
 
 const tiles = (page: Page) => page.getByRole("main").getByRole("link");
 const tileName = (name: string, sessionCount = playedAt(name).length) =>
-	`${name} ${plural(sessionCount, "session")} · last played today`;
+	`${name} ${plural(sessionCount, "session")} · last played today 0 games stored`;
 const expectTiles = async (page: Page, names: string[]) => {
 	await expect(tiles(page)).toHaveCount(names.length);
 	for (const [index, name] of names.entries()) {
@@ -158,13 +158,15 @@ test.describe("other data", () => {
 
 	test("leaves out the last played date of an unused location and says when it was long ago", async ({ page }) => {
 		await patchList(page, () => [
-			{ id: 1, name: clubhouse, playCount: 0, lastPlayed: null },
-			{ id: 2, name: cafe, playCount: 1, lastPlayed: subDays(new Date(), 21).toISOString() },
+			{ id: 1, name: clubhouse, playCount: 0, storedCount: 0, lastPlayed: null },
+			{ id: 2, name: cafe, playCount: 1, storedCount: 1, lastPlayed: subDays(new Date(), 21).toISOString() },
 		]);
 		await openList(page);
 
-		await expect(tiles(page).nth(0)).toHaveAccessibleName(`${cafe} 1 session · last played 3 weeks ago`);
-		await expect(tiles(page).nth(1)).toHaveAccessibleName(`${clubhouse} No sessions yet`);
+		await expect(tiles(page).nth(0)).toHaveAccessibleName(
+			`${cafe} 1 session · last played 3 weeks ago 1 game stored`,
+		);
+		await expect(tiles(page).nth(1)).toHaveAccessibleName(`${clubhouse} No sessions yet 0 games stored`);
 	});
 
 	test.describe("when loading fails", () => {
@@ -302,7 +304,7 @@ for (const name of locations) {
 
 			await expect(main.getByText(`Last played today · ${played[0].game}`)).toBeVisible();
 			await expect(main).toContainText(
-				`Sessions${played.length}Games played${gameCount}Players${playerCount}Play time${duration(minutes)}`,
+				`Sessions${played.length}Games stored0Games played${gameCount}Players${playerCount}Play time${duration(minutes)}`,
 			);
 		});
 

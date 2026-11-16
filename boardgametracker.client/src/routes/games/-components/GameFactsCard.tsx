@@ -125,27 +125,29 @@ export const GameFactsCard = (props: Props) => {
 				)}
 				{(place !== null || canStore(game.state) || storedElsewhere > 0) && (
 					<FactRow icon={Archive} label={t("storage:title")}>
-						{place ? (
-							<Link
-								to="/storage"
-								search={{ at: placeKey(place) }}
-								className="min-w-0 text-right text-primary-text underline-offset-4 hover:underline"
-							>
-								{placeLabel(place, nodes, locations, t)}
-							</Link>
-						) : (
-							canStore(game.state) && <span className="font-normal text-white/50">{t("storage:place.none")}</span>
-						)}
-						{game.isLoaned && (
-							<span className="rounded-full bg-card-light px-2 py-0.5 text-xs font-semibold text-gray-400">
-								{t("game:state.on-loan")}
-							</span>
-						)}
-						{storedElsewhere > 0 && (
-							<span className="text-sm font-normal text-white/60">
-								· {t("game:storage.expansions-elsewhere", { count: storedElsewhere })}
-							</span>
-						)}
+						<span className="flex min-w-0 flex-col items-end gap-1 text-right">
+							{place ? (
+								<Link
+									to="/storage"
+									search={{ at: placeKey(place) }}
+									className="min-w-0 text-right text-primary-text underline-offset-4 hover:underline"
+								>
+									{placeLabel(place, nodes, locations, t)}
+								</Link>
+							) : (
+								canStore(game.state) && <span className="font-normal text-white/50">{t("storage:place.none")}</span>
+							)}
+							{game.isLoaned && (
+								<span className="rounded-full bg-card-light px-2 py-0.5 text-xs font-semibold text-gray-400">
+									{t("game:state.on-loan")}
+								</span>
+							)}
+							{storedElsewhere > 0 && (
+								<span className="text-sm font-normal text-white/60">
+									{t("game:storage.expansions-elsewhere", { count: storedElsewhere })}
+								</span>
+							)}
+						</span>
 					</FactRow>
 				)}
 				{!!game.additionDate && (

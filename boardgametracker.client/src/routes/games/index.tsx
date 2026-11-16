@@ -305,9 +305,9 @@ function RouteComponent() {
 					<div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:flex-1" aria-live="polite">
 						{shownCount > 0 ? (
 							<BgtText size="3" color="white" opacity={70} weight="medium">
-								{t("count", { count: shownCount })}
-								{expansionCount > 0 &&
-									` · ${t("count-split", { games: shownCount - expansionCount, expansions: expansionCount })}`}
+								{expansionCount > 0
+									? `${t("count", { count: shownCount - expansionCount })}, ${t("count-expansions", { count: expansionCount })}`
+									: t("count", { count: shownCount })}
 							</BgtText>
 						) : (
 							<BgtText size="3" color="white" opacity={70}>

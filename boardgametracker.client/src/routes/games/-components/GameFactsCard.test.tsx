@@ -333,7 +333,7 @@ describe("GameFactsCard", () => {
 				/>,
 			);
 
-			expect(screen.getByText("· game:storage.expansions-elsewhere")).toBeInTheDocument();
+			expect(screen.getByText("game:storage.expansions-elsewhere")).toBeInTheDocument();
 		});
 
 		it("should not count anything when every expansion is in the box", () => {

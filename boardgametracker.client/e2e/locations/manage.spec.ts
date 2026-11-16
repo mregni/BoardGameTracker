@@ -69,15 +69,15 @@ test("adds a location, renames it and deletes it again", async ({ page }) => {
 
 	await expect(toast(page, "Location added")).toBeVisible();
 	await expect(page.getByRole("dialog")).toBeHidden();
-	await expect(tile(page, name)).toHaveAccessibleName(`${name} No sessions yet`);
+	await expect(tile(page, name)).toHaveAccessibleName(`${name} No sessions yet 0 games stored`);
 	await expect(sidebarLink(page, `Locations ${locations.length + 1}`)).toBeVisible();
 
 	await tile(page, name).click();
 	const main = page.getByRole("main");
 	await expect(main.getByRole("heading", { name, level: 1 })).toBeVisible();
 	await expect(main.getByText("No sessions here yet")).toBeVisible();
-	await expect(main).toContainText("Sessions0Games played0Players0Play time0 min");
-	await expect(main.getByText("Choose this location when you log a session and it shows up here.")).toBeVisible();
+	await expect(main.getByText("Nothing is stored here yet.")).toBeVisible();
+	await expect(main.getByText("No sessions played here yet.")).toBeVisible();
 	await expect(main.getByRole("heading", { name: "Most played here" })).toHaveCount(0);
 	await expect(main.getByRole("heading", { name: "Top winners here" })).toHaveCount(0);
 
@@ -170,7 +170,7 @@ test("refuses to delete a location with a session until the session is gone", as
 		await page.goto(`/locations/${location.id}`);
 		const main = page.getByRole("main");
 		await expect(main.getByText(`Last played 2 days ago · ${game.title}`)).toBeVisible();
-		await expect(main).toContainText(`Sessions1Games played1Players2Play time${duration(minutes)}`);
+		await expect(main).toContainText(`Sessions1Games stored0Games played1Players2Play time${duration(minutes)}`);
 		await expect(main.getByRole("link", { name: `${game.title} 1 session` })).toBeVisible();
 		await expect(main.getByRole("link", { name: `${players[0]} 1 win` })).toBeVisible();
 		await expect(

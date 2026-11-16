@@ -171,10 +171,11 @@
     "to-games": "Go to your games",
     "vetoed": "{{title}} is off the wheel. Spinning again…"
   },
-  "count-split": "{{games}} games, {{expansions}} expansions",
   "expansion-card": "Expansion · {{title}}",
   "quick-view": {
     "expansion-of": "Expansion of",
     "open": "Open {{title}}"
-  }
+  },
+  "count-expansions_one": "{{count}} expansion",
+  "count-expansions_other": "{{count}} expansions"
 }
