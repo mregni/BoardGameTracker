@@ -120,7 +120,7 @@ export const BoxInspector = (props: Props) => {
 							<BgtSegmentedControl
 								aria-label={t("orientation.label")}
 								size="sm"
-								className="pointer-coarse:[&>button]:min-h-11 pointer-coarse:[&>button]:min-w-11"
+								className="flex [&>button]:flex-1 pointer-coarse:[&>button]:min-h-11"
 								value={item.orientation}
 								onChange={onOrientation}
 								options={[BoxOrientation.Front, BoxOrientation.Side, BoxOrientation.Flat].map((value) => ({
