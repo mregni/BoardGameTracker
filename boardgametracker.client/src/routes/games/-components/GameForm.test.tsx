@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { type Game, GameState } from "@/models";
+import { BoxOrientation, type Game, GameState } from "@/models";
 import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
 import { GameForm } from "./GameForm";
 
@@ -62,6 +62,10 @@ const createGame = (overrides: Partial<Game> = {}): Game => ({
 	buyingPrice: 45.5,
 	soldPrice: null,
 	additionDate: null,
+	storedAtLocationId: null,
+	storageLocationId: null,
+	storagePosition: 0,
+	boxOrientation: BoxOrientation.Front,
 	playCount: 0,
 	lastPlayed: null,
 	...overrides,

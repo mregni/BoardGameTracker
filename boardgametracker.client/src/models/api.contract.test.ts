@@ -47,6 +47,7 @@ import type {
 	ShameGameNight,
 	ShameStatistics,
 	StartRunningGame,
+	StorageLocation,
 	UpdateAttendance,
 	UpdateExpansion,
 } from "@/models";
@@ -65,6 +66,18 @@ import type { ExternalLogin, OidcDiscoveryResult, OidcProviderConfig, OidcSetup 
 import type { Loan } from "@/models/Loan/Loan";
 import type { IntegrationStatus } from "@/models/Settings/IntegrationStatus";
 import type { VersionInfo } from "@/models/Settings/VersionInfo";
+import type {
+	ArrangeStorage,
+	AssignStorage,
+	BoxOrientation,
+	CreateStorageLocation,
+	MoveStorageLocation,
+	StorageItemReference,
+	StorageItemType,
+	StorageLayout,
+	UpdateBoxOrientation,
+	UpdateStorageLocation,
+} from "@/models/Storage/StorageLocation";
 import type { components } from "./api.generated";
 
 type Schemas = components["schemas"];
@@ -99,6 +112,7 @@ describe("API contract", () => {
 		sameKeys<Expansion, Schemas["ExpansionDto"]>(true);
 		sameKeys<Location, Schemas["LocationDto"]>(true);
 		sameKeys<LocationStatistics, Schemas["LocationStatisticsDto"]>(true);
+		sameKeys<StorageLocation, Schemas["StorageLocationDto"]>(true);
 		sameKeys<PlayerOverview, Schemas["PlayerOverviewDto"]>(true);
 		sameKeys<Loan, Schemas["LoanDto"]>(true);
 		sameKeys<GameNight, Schemas["GameNightDto"]>(true);
@@ -158,6 +172,13 @@ describe("API contract", () => {
 		coversApiKeys<CreatePlayer, Omit<Schemas["CreatePlayerCommand"], "image">>(true);
 		sameKeys<CreateLocation, Schemas["CreateLocationCommand"]>(true);
 		sameKeys<UpdateExpansion, Schemas["UpdateExpansionCommand"]>(true);
+		sameKeys<CreateStorageLocation, Schemas["CreateStorageLocationCommand"]>(true);
+		sameKeys<UpdateStorageLocation, Schemas["UpdateStorageLocationCommand"]>(true);
+		sameKeys<MoveStorageLocation, Schemas["MoveStorageLocationCommand"]>(true);
+		sameKeys<StorageItemReference, Schemas["StorageItemReference"]>(true);
+		sameKeys<AssignStorage, Schemas["AssignStorageCommand"]>(true);
+		sameKeys<ArrangeStorage, Schemas["ArrangeStorageCommand"]>(true);
+		sameKeys<UpdateBoxOrientation, Schemas["UpdateBoxOrientationCommand"]>(true);
 		sameKeys<CreateSession, Schemas["CreateSessionCommand"]>(true);
 		sameKeys<StartRunningGame, Schemas["StartRunningGameCommand"]>(true);
 		sameKeys<UpdateAttendance, Schemas["UpdateAttendanceCommand"]>(true);
@@ -168,6 +189,9 @@ describe("API contract", () => {
 	it("keeps the string enums aligned", () => {
 		sameValues<Schemas["GameState"], `${Game["state"]}`>(true);
 		sameValues<Schemas["BadgeType"], `${Badge["type"]}`>(true);
+		sameValues<Schemas["StorageLayout"], `${StorageLayout}`>(true);
+		sameValues<Schemas["BoxOrientation"], `${BoxOrientation}`>(true);
+		sameValues<Schemas["StorageItemType"], `${StorageItemType}`>(true);
 		sameValues<Schemas["CompareOutcome"], CompareGame["lastOutcome"]>(true);
 		sameValues<Schemas["GameNightStatisticsPeriod"], `${GameNightStatisticsPeriod}`>(true);
 		sameValues<Schemas["IntegrationKind"], IntegrationStatus["integration"]>(true);

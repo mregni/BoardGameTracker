@@ -22,6 +22,7 @@ const namespaces = [
 	"error",
 	"not-found",
 	"location",
+	"storage",
 	"statistics",
 	"sessions",
 	"settings",

@@ -1,3 +1,4 @@
+import type { BoxOrientation } from "../Storage/StorageLocation";
 import type { Expansion } from "./Expansion";
 import type { GameState } from "./GameState";
 import type { PersonType } from "./PersonType";
@@ -31,6 +32,10 @@ export interface Game {
 	buyingPrice: number | null;
 	soldPrice: number | null;
 	additionDate: Date | null;
+	storedAtLocationId: number | null;
+	storageLocationId: number | null;
+	storagePosition: number;
+	boxOrientation: BoxOrientation;
 	playCount: number;
 	lastPlayed: Date | null;
 }

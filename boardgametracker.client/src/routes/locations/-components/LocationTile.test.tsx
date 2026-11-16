@@ -9,7 +9,9 @@ vi.mock("@tanstack/react-router", () => ({
 describe("LocationTile", () => {
 	it("links to the location detail page with the session count", () => {
 		renderWithTheme(
-			<LocationTile location={{ id: 3, name: "Thuis", playCount: 9, gameNightCount: 0, lastPlayed: null }} />,
+			<LocationTile
+				location={{ id: 3, name: "Thuis", playCount: 9, gameNightCount: 0, storedCount: 0, lastPlayed: null }}
+			/>,
 		);
 
 		expect(screen.getByRole("link")).toHaveAttribute("href", "/locations/3");
@@ -19,7 +21,9 @@ describe("LocationTile", () => {
 
 	it("says there are no sessions yet for an unused location", () => {
 		renderWithTheme(
-			<LocationTile location={{ id: 4, name: "Bij Kathleen", playCount: 0, gameNightCount: 0, lastPlayed: null }} />,
+			<LocationTile
+				location={{ id: 4, name: "Bij Kathleen", playCount: 0, gameNightCount: 0, storedCount: 0, lastPlayed: null }}
+			/>,
 		);
 
 		expect(screen.getByText("tile.no-sessions")).toBeInTheDocument();

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { type Expansion, GameState } from "@/models";
+import { BoxOrientation, type Expansion, GameState } from "@/models";
 import { renderWithTheme, screen, userEvent, waitFor, within } from "@/test/test-utils";
 import { ExpansionsDialog } from "./ExpansionsDialog";
 
@@ -13,6 +13,10 @@ const expansion = (id: number, title: string, overrides: Partial<Expansion> = {}
 	buyingPrice: null,
 	soldPrice: null,
 	additionDate: null,
+	storedAtLocationId: null,
+	storageLocationId: null,
+	storagePosition: 0,
+	boxOrientation: BoxOrientation.Front,
 	...overrides,
 });
 

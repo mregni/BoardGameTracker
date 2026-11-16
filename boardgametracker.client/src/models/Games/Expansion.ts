@@ -1,3 +1,4 @@
+import type { BoxOrientation } from "../Storage/StorageLocation";
 import type { GameState } from "./GameState";
 
 export interface Expansion {
@@ -10,6 +11,10 @@ export interface Expansion {
 	buyingPrice: number | null;
 	soldPrice: number | null;
 	additionDate: Date | null;
+	storedAtLocationId: number | null;
+	storageLocationId: number | null;
+	storagePosition: number;
+	boxOrientation: BoxOrientation;
 }
 
 export interface ExpansionUpdate {
