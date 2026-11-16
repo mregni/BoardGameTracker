@@ -226,7 +226,9 @@ function RouteComponent() {
 			/>
 			<BgtPageContent>
 				<StorageSearch games={games} nodes={nodes} locations={locations} onPick={pick} />
-				<div className="grid items-start gap-4 md:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)_300px]">
+				<div
+					className={`grid items-start gap-4 md:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)_300px] ${selected ? "max-md:pb-[55dvh]" : ""}`}
+				>
 					<aside
 						aria-label={t("page.tree")}
 						className="sticky top-6 max-h-[calc(100vh-48px)] overflow-auto rounded-lg border border-primary/20 bg-primary/10 p-2.5 max-md:hidden"
