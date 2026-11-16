@@ -46,6 +46,14 @@ describe("NeedsAPlaceCard", () => {
 		expect(screen.queryByText("inbox.done")).not.toBeInTheDocument();
 
 		fireEvent.animationEnd(screen.getByRole("listitem", { hidden: true }));
+		expect(screen.getByRole("status")).toHaveTextContent("inbox.done");
+		expect(screen.getByRole("status")).toHaveTextContent("inbox.put-away");
+	});
+
+	it("stays quiet when nothing needed a place to begin with", () => {
+		renderWithProviders(card([]));
+
 		expect(screen.getByText("inbox.done")).toBeInTheDocument();
+		expect(screen.queryByRole("status")).not.toBeInTheDocument();
 	});
 });

@@ -66,6 +66,8 @@
   --animate-box-land: box-land 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-box-glow: box-glow 0.9s ease-out;
   --animate-content-in: rise-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-done-pop: done-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+  --animate-done-ring: done-ring 0.9s ease-out 0.25s backwards;
   --animate-row-out: row-out 0.32s ease-in forwards;
   --animate-cell-light: cell-light 1s ease-out;
   --animate-tree-open: tree-open 0.22s ease-out;
@@ -186,6 +188,27 @@
 @keyframes box-glow {
   from {
     box-shadow: 0 0 0 2px var(--color-card-value);
+  }
+}
+
+@keyframes done-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-20deg);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+}
+
+@keyframes done-ring {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
   }
 }
 

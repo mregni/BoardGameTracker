@@ -26,6 +26,7 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 	const [previous, setPrevious] = useState(games);
 	const [leaving, setLeaving] = useState<{ game: Game; index: number }[]>([]);
 	const [countFlash, setCountFlash] = useState(0);
+	const [putAway, setPutAway] = useState(0);
 
 	if (previous.length !== games.length || previous.some((game, index) => game.id !== games[index].id)) {
 		const ids = new Set(games.map((game) => game.id));
@@ -33,6 +34,7 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 		setPrevious(games);
 		if (gone.length > 0) {
 			setCountFlash((count) => count + 1);
+			setPutAway((count) => count + gone.length);
 			if (!reduced) setLeaving((rows) => [...rows.filter((row) => !ids.has(row.game.id)), ...gone]);
 		}
 	}
@@ -66,7 +68,23 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 					{games.length}
 				</span>
 			</h2>
-			{rows.length === 0 ? (
+			{rows.length === 0 && putAway > 0 ? (
+				<div role="status" className="flex items-center gap-3 rounded-lg bg-ok/10 p-3">
+					<span className="relative grid size-9 flex-none place-items-center">
+						<span
+							aria-hidden="true"
+							className="absolute inset-0 rounded-full border-2 border-ok opacity-0 motion-safe:animate-done-ring"
+						/>
+						<span className="grid size-9 place-items-center rounded-full bg-ok/20 text-ok motion-safe:animate-done-pop">
+							<CheckIcon className="size-5" aria-hidden="true" />
+						</span>
+					</span>
+					<span className="min-w-0">
+						<span className="block font-semibold">{t("inbox.done")}</span>
+						<span className="text-sm text-white/70">{t("inbox.put-away", { count: putAway })}</span>
+					</span>
+				</div>
+			) : rows.length === 0 ? (
 				<p className="flex items-center gap-1.5 text-sm text-white/60">
 					<CheckIcon className="size-4 text-ok" aria-hidden="true" />
 					{t("inbox.done")}

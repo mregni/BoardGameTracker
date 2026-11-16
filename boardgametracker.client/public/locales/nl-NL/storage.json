@@ -135,6 +135,8 @@
     "title": "Needs a place",
     "description": "Owned games and games for trade without a storage location.",
     "done": "Every owned game has a place.",
+    "put-away_one": "{{count}} game found its place just now.",
+    "put-away_other": "{{count}} games found their place just now.",
     "move_one": "Move {{count}} game to…",
     "move_other": "Move {{count}} games to…",
     "select": "Select games to move"
