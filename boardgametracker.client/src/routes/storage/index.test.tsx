@@ -215,6 +215,24 @@ describe("Storage page", () => {
 		expect(mocks.navigate).toHaveBeenCalledWith({ search: { at: "1:11" } });
 	});
 
+	it("announces how many games the search found", async () => {
+		const user = userEvent.setup();
+		renderPage();
+		const search = await screen.findByRole("combobox", { name: "page.search" });
+		const status = screen.getByRole("status");
+		expect(status).toBeEmptyDOMElement();
+
+		await user.type(search, "pand");
+		expect(status).toHaveTextContent("page.found");
+
+		await user.clear(search);
+		await user.type(search, "zzz");
+		expect(status).toHaveTextContent("page.not-found");
+
+		await user.keyboard("{Escape}");
+		expect(status).toBeEmptyDOMElement();
+	});
+
 	it("only shows reading controls to readers", async () => {
 		mocks.canWrite = false;
 		mocks.search = { at: "1:11" };

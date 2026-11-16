@@ -135,6 +135,10 @@ export const StorageSearch = ({ games, nodes, locations, onPick }: Props) => {
 					className="min-w-0 flex-1 bg-transparent text-base text-white outline-none"
 				/>
 			</label>
+			<p role="status" className="sr-only">
+				{expanded &&
+					(hits.length > 0 ? t("page.found", { count: hits.length }) : t("page.not-found", { query: query.trim() }))}
+			</p>
 			{expanded && (
 				<div className="absolute inset-x-0 top-[calc(100%+6px)] z-20 max-h-[70vh] overflow-auto rounded-lg border border-card-border bg-card p-1.5 shadow-xl">
 					{hits.length > 0 && (
