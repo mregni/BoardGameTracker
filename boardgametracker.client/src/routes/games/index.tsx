@@ -32,6 +32,7 @@ import {
 	parsePlaceKey,
 	placeKey,
 	placeLabel,
+	placeNames,
 	placeOf,
 	storageItems,
 } from "@/utils/storage";
@@ -110,12 +111,17 @@ function RouteComponent() {
 	const storageFilterItems = useMemo(() => {
 		const stored = storageItems(games);
 		return [
-			{ value: NO_STORAGE, label: `${t("filters.storage.none")} (${needsAPlace(games).length})` },
+			{
+				value: NO_STORAGE,
+				label: `${t("filters.storage.none")} (${needsAPlace(games).length})`,
+				triggerLabel: t("filters.storage.none"),
+			},
 			...allPlaces(nodes, locations)
 				.filter((place) => nodes.find((node) => node.id === place.storageLocationId)?.layout !== StorageLayout.Slot)
 				.map((place) => ({
 					value: placeKey(place),
 					label: `${placeLabel(place, nodes, locations, t)} (${itemsIn(stored, place, nodes).length})`,
+					triggerLabel: placeNames(place, nodes, locations, t).at(-1),
 				})),
 		];
 	}, [games, nodes, locations, t]);

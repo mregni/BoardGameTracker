@@ -221,10 +221,10 @@ export const GamesFilters = (props: Props) => {
 	);
 
 	return (
-		<div className="flex flex-col xl:flex-row gap-2">
+		<div className="flex flex-col 2xl:flex-row gap-2">
 			<fieldset
 				aria-label={t("games:filters.group-game")}
-				className="grid grid-cols-2 md:grid-cols-5 gap-2 min-w-0 xl:flex-5"
+				className="grid grid-cols-2 md:grid-cols-5 gap-2 min-w-0 2xl:flex-5"
 			>
 				{select(
 					t("games:filters.category"),
@@ -249,8 +249,10 @@ export const GamesFilters = (props: Props) => {
 			<fieldset
 				aria-label={t("games:filters.group-copy")}
 				className={cx(
-					"grid gap-2 min-w-0 xl:border-l xl:border-primary/20 xl:pl-2",
-					showType ? "grid-cols-2 md:grid-cols-4 xl:flex-4" : "grid-cols-3 xl:flex-3",
+					"grid gap-2 min-w-0 2xl:border-l 2xl:border-primary/20 2xl:pl-2",
+					showType
+						? "grid-cols-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)] 2xl:flex-[4.5]"
+						: "grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.5fr)] 2xl:flex-[3.5]",
 				)}
 			>
 				{select(t("games:columns.state"), search.state, stateItems, (value) =>
