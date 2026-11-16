@@ -49,8 +49,7 @@
     "shrink_one": "{{count}} game or expansion on a removed shelf or cell moves to {{name}} itself.",
     "shrink_other": "{{count}} games and expansions on removed shelves or cells move to {{name}} itself.",
     "create": "Create",
-    "save": "Save",
-    "name-required": "Give the storage location a name"
+    "save": "Save"
   },
   "move": {
     "title": "Move {{name}}",

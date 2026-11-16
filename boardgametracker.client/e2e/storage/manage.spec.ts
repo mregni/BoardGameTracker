@@ -7,7 +7,8 @@ const [clubhouse] = locations;
 const game = games[5];
 const cabinet = "E2E Kallax";
 
-const option = (page: Page, name: string | RegExp) => page.getByRole("option", { name });
+const option = (page: Page, name: string | RegExp) =>
+	page.getByRole("option", { name, exact: typeof name === "string" });
 
 test.afterEach(async ({ request }) => {
 	const api = await adminApi(request);

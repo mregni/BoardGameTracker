@@ -34,9 +34,14 @@ export const useStorageActions = () => {
 		onSettled: () => invalidator.invalidateStorage(),
 	};
 
-	const create = useMutation({ mutationFn: addStorageLocationCall, ...shared });
+	const create = useMutation({
+		mutationFn: addStorageLocationCall,
+		onSuccess: () => successToast("storage:notifications.created"),
+		...shared,
+	});
 	const update = useMutation({
 		mutationFn: ({ id, ...rest }: UpdateStorageLocation & { id: number }) => updateStorageLocationCall(id, rest),
+		onSuccess: () => successToast("storage:notifications.saved"),
 		...shared,
 	});
 	const move = useMutation({
