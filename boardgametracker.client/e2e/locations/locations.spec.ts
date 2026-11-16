@@ -163,9 +163,7 @@ test.describe("other data", () => {
 		]);
 		await openList(page);
 
-		await expect(tiles(page).nth(0)).toHaveAccessibleName(
-			`${cafe} 1 session · last played 3 weeks ago 1 game stored`,
-		);
+		await expect(tiles(page).nth(0)).toHaveAccessibleName(`${cafe} 1 session · last played 3 weeks ago 1 game stored`);
 		await expect(tiles(page).nth(1)).toHaveAccessibleName(`${clubhouse} No sessions yet 0 games stored`);
 	});
 
