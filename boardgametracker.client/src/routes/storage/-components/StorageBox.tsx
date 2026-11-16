@@ -82,7 +82,7 @@ export const StorageBox = ({
 			) : (
 				<span
 					className={cx(
-						"text-[9px] leading-[10px] pointer-coarse:text-[11px] pointer-coarse:leading-3",
+						"text-[11px] leading-3",
 						orientation === BoxOrientation.Front && "line-clamp-3 px-1 py-[3px]",
 						orientation === BoxOrientation.Side &&
 							"max-h-[calc(var(--box)-6px)] truncate [transform:rotate(180deg)] [writing-mode:vertical-rl]",

@@ -182,7 +182,7 @@ export const StorageContent = (props: Props) => {
 			</div>
 			{node && isCabinet(node) ? (
 				<>
-					<div className="overflow-x-auto pb-3 pt-1 [--box:64px] [--spine:18px] xl:[--box:72px] xl:[--spine:20px] pointer-coarse:[--spine:28px]">
+					<div className="overflow-x-auto pb-3 pt-1 [--box:64px] [--spine:20px] xl:[--box:72px] xl:[--spine:22px] pointer-coarse:[--spine:28px]">
 						<StorageCabinet
 							cabinet={node}
 							nodes={nodes}
@@ -201,14 +201,14 @@ export const StorageContent = (props: Props) => {
 						</Hint>
 					)}
 					{direct.length > 0 && (
-						<div className="mt-5 [--box:64px] [--spine:18px] pointer-coarse:[--spine:28px]">
+						<div className="mt-5 [--box:64px] [--spine:20px] pointer-coarse:[--spine:28px]">
 							<h3 className="mb-2.5 text-sm font-bold tracking-wide">{t("page.stored-directly", { name })}</h3>
 							{bin}
 						</div>
 					)}
 				</>
 			) : (
-				<div className="[--box:64px] [--spine:18px] pointer-coarse:[--spine:28px]">
+				<div className="[--box:64px] [--spine:20px] pointer-coarse:[--spine:28px]">
 					{kids.length > 0 && (
 						<>
 							<h3 className="mb-2.5 text-sm font-bold tracking-wide">{t("page.storage-locations")}</h3>
