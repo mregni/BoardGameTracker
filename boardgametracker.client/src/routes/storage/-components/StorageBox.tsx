@@ -1,5 +1,5 @@
 import { cx } from "class-variance-authority";
-import { type DragEvent, useState } from "react";
+import { createContext, type DragEvent, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoxOrientation } from "@/models";
 import type { StorageItem } from "@/utils/storage";
@@ -15,6 +15,11 @@ interface Props {
 	describedBy?: string;
 	onFocusBox?: (key: string) => void;
 }
+
+export const BoxLanding = createContext<{ keys: Set<string>; done: (key: string) => void }>({
+	keys: new Set(),
+	done: () => undefined,
+});
 
 const shapes: Record<BoxOrientation, string> = {
 	[BoxOrientation.Front]: "size-(--box) items-end",
@@ -37,6 +42,8 @@ export const StorageBox = ({
 }: Props) => {
 	const { t } = useTranslation("storage");
 	const [over, setOver] = useState(false);
+	const landing = useContext(BoxLanding);
+	const landed = landing.keys.has(item.key);
 	const label = [boxLabel(item, t), item.isLoaned ? t("box.loaned-short") : null].filter(Boolean).join(" · ");
 	const showCover = orientation === BoxOrientation.Front && item.image;
 
@@ -72,12 +79,14 @@ export const StorageBox = ({
 			onDragLeave={() => setOver(false)}
 			onDrop={drop}
 			onClick={() => onSelect(item)}
+			onAnimationEnd={landed ? () => landing.done(item.key) : undefined}
 			style={{ backgroundColor: StringToHsl(item.title) }}
 			className={cx(
 				"relative flex flex-none scroll-mt-6 overflow-hidden rounded-[3px] text-left font-bold text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.55)] shadow-[inset_0_0_0_1px_rgb(255_255_255/0.1),0_1px_2px_rgb(0_0_0/0.4)]",
 				onDropBefore ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
 				shapes[orientation],
 				item.isLoaned && "grayscale brightness-50",
+				landed && "motion-safe:animate-box-land motion-reduce:animate-box-glow",
 				selected && "outline-2 outline-offset-2 outline-white",
 				over && "shadow-[-4px_0_0_0_var(--color-card-value)]",
 				"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text",

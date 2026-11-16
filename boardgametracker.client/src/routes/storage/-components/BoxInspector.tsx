@@ -59,7 +59,7 @@ export const BoxInspector = (props: Props) => {
 			onKeyDown={(event) => {
 				if (event.key === "Escape") onClose();
 			}}
-			className="max-md:fixed max-md:inset-x-0 max-md:bottom-(--bottom-nav-h) max-md:z-30 max-md:max-h-[55dvh] max-md:overflow-y-auto max-md:rounded-t-2xl max-md:rounded-b-none max-md:border-x-0 max-md:border-b-0 max-md:border-primary/30 max-md:bg-card max-md:shadow-[0_-12px_32px_rgb(0_0_0/0.5)]"
+			className="max-md:motion-safe:animate-sheet-in max-md:fixed max-md:inset-x-0 max-md:bottom-(--bottom-nav-h) max-md:z-30 max-md:max-h-[55dvh] max-md:overflow-y-auto max-md:rounded-t-2xl max-md:rounded-b-none max-md:border-x-0 max-md:border-b-0 max-md:border-primary/30 max-md:bg-card max-md:shadow-[0_-12px_32px_rgb(0_0_0/0.5)]"
 		>
 			<div className="flex flex-col gap-4">
 				<div className="flex items-center justify-between gap-2">

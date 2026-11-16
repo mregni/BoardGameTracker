@@ -63,6 +63,8 @@
   --animate-float: float 4s ease-in-out infinite;
   --animate-shimmer: shimmer 1.6s linear infinite;
   --animate-podium-rise: podium-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-box-land: box-land 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-box-glow: box-glow 0.9s ease-out;
 }
 
 @utility bg-hatch {
@@ -165,6 +167,21 @@
   }
   to {
     transform: translateX(120%);
+  }
+}
+
+@keyframes box-land {
+  from {
+    transform: translateY(-0.375rem) scale(1.06);
+    box-shadow:
+      0 0 0 2px var(--color-card-value),
+      0 8px 16px rgb(0 0 0 / 0.45);
+  }
+}
+
+@keyframes box-glow {
+  from {
+    box-shadow: 0 0 0 2px var(--color-card-value);
   }
 }
 
