@@ -99,7 +99,11 @@ export const StorageContent = (props: Props) => {
 						</span>
 					) : (
 						<span key={crumb.name} className="flex items-center gap-1.5">
-							<button type="button" onClick={() => onGo(crumb.place)} className="text-primary-text hover:underline">
+							<button
+								type="button"
+								onClick={() => onGo(crumb.place)}
+								className="text-primary-text hover:underline pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center"
+							>
 								{crumb.name}
 							</button>
 							<span aria-hidden="true" className="text-white/40">
@@ -139,7 +143,7 @@ export const StorageContent = (props: Props) => {
 				{canWrite && (
 					<div className="flex items-center gap-1">
 						{canAddHere && (
-							<BgtButton size="1" onClick={props.onAdd}>
+							<BgtButton size="1" className="pointer-coarse:min-h-11" onClick={props.onAdd}>
 								<PlusIcon className="size-4" aria-hidden="true" />
 								{t("page.add-here")}
 							</BgtButton>
@@ -147,6 +151,7 @@ export const StorageContent = (props: Props) => {
 						<BgtIconButton
 							icon={<PencilIcon className="size-4" />}
 							intent="subtile"
+							className="pointer-coarse:size-11"
 							onClick={props.onEdit}
 							aria-label={t("page.edit", { name })}
 						/>
@@ -156,6 +161,7 @@ export const StorageContent = (props: Props) => {
 									<BgtIconButton
 										icon={<LeftRightArrowIcon className="size-4" />}
 										intent="subtile"
+										className="pointer-coarse:size-11"
 										onClick={props.onMove}
 										aria-label={t("page.move", { name })}
 									/>
@@ -164,6 +170,7 @@ export const StorageContent = (props: Props) => {
 									<BgtIconButton
 										icon={<TrashIcon className="size-4" />}
 										intent="subtile-danger"
+										className="pointer-coarse:size-11"
 										onClick={props.onDelete}
 										aria-label={t("page.delete", { name })}
 									/>
@@ -175,7 +182,7 @@ export const StorageContent = (props: Props) => {
 			</div>
 			{node && isCabinet(node) ? (
 				<>
-					<div className="overflow-x-auto pb-3 pt-1 [--box:64px] [--spine:18px] xl:[--box:72px] xl:[--spine:20px]">
+					<div className="overflow-x-auto pb-3 pt-1 [--box:64px] [--spine:18px] xl:[--box:72px] xl:[--spine:20px] pointer-coarse:[--spine:28px]">
 						<StorageCabinet
 							cabinet={node}
 							nodes={nodes}
@@ -185,16 +192,23 @@ export const StorageContent = (props: Props) => {
 							onMove={canWrite ? onMoveBox : undefined}
 						/>
 					</div>
-					{canWrite && <Hint>{t(node.layout === StorageLayout.Grid ? "page.drag-hint-grid" : "page.drag-hint")}</Hint>}
+					{canWrite && (
+						<Hint>
+							<span className="pointer-coarse:hidden">
+								{t(node.layout === StorageLayout.Grid ? "page.drag-hint-grid" : "page.drag-hint")}
+							</span>
+							<span className="hidden pointer-coarse:inline">{t("page.touch-hint")}</span>
+						</Hint>
+					)}
 					{direct.length > 0 && (
-						<div className="mt-5 [--box:64px] [--spine:18px]">
+						<div className="mt-5 [--box:64px] [--spine:18px] pointer-coarse:[--spine:28px]">
 							<h3 className="mb-2.5 text-sm font-bold tracking-wide">{t("page.stored-directly", { name })}</h3>
 							{bin}
 						</div>
 					)}
 				</>
 			) : (
-				<div className="[--box:64px] [--spine:18px]">
+				<div className="[--box:64px] [--spine:18px] pointer-coarse:[--spine:28px]">
 					{kids.length > 0 && (
 						<>
 							<h3 className="mb-2.5 text-sm font-bold tracking-wide">{t("page.storage-locations")}</h3>

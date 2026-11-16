@@ -85,7 +85,7 @@ export const StorageTree = ({ locations, nodes, items, current, open, onToggle, 
 							aria-expanded={isOpen}
 							aria-label={t(isOpen ? "page.collapse" : "page.expand", { name: row.name })}
 							onClick={() => onToggle(key)}
-							className="flex size-6 flex-none items-center justify-center text-white/50"
+							className="flex size-6 flex-none items-center justify-center text-white/50 pointer-coarse:size-11"
 						>
 							<CaretRightIcon className={cx("size-3 transition-transform", isOpen && "rotate-90")} />
 						</button>
@@ -96,7 +96,7 @@ export const StorageTree = ({ locations, nodes, items, current, open, onToggle, 
 						type="button"
 						aria-current={isCurrent ? "true" : undefined}
 						onClick={() => onGo(row.place)}
-						className="flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left font-[inherit]"
+						className="flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left font-[inherit] pointer-coarse:min-h-11"
 					>
 						<Icon
 							className={cx("size-4 flex-none", isCurrent ? "text-white" : "text-primary-text")}

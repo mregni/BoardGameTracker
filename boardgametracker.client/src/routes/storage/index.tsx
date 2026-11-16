@@ -269,7 +269,10 @@ function RouteComponent() {
 									earlier: selectedIndex > 0,
 									later: selectedIndex >= 0 && selectedIndex < slotItems.length - 1,
 								}}
-								onClose={() => setSelectedKey(null)}
+								onClose={() => {
+									document.querySelector<HTMLElement>(`[data-box="${selected.key}"]`)?.focus();
+									setSelectedKey(null);
+								}}
 								onOrientation={(orientation: BoxOrientation) =>
 									void actions.updateBoxOrientation({ item: reference(selected), orientation }).catch(noop)
 								}

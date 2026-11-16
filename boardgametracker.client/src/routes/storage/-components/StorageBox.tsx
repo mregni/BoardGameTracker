@@ -48,6 +48,7 @@ export const StorageBox = ({
 		<button
 			type="button"
 			aria-pressed={selected}
+			data-box={item.key}
 			aria-label={label}
 			title={label}
 			draggable={!!onDropBefore}
@@ -66,7 +67,7 @@ export const StorageBox = ({
 			onClick={() => onSelect(item)}
 			style={{ backgroundColor: StringToHsl(item.title) }}
 			className={cx(
-				"relative flex flex-none overflow-hidden rounded-[3px] text-left font-bold text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.55)] shadow-[inset_0_0_0_1px_rgb(255_255_255/0.1),0_1px_2px_rgb(0_0_0/0.4)]",
+				"relative flex flex-none scroll-mt-6 overflow-hidden rounded-[3px] text-left font-bold text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.55)] shadow-[inset_0_0_0_1px_rgb(255_255_255/0.1),0_1px_2px_rgb(0_0_0/0.4)]",
 				onDropBefore ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
 				shapes[orientation],
 				large && orientation === BoxOrientation.Front && "size-[calc(var(--box)*1.05)]",
@@ -81,7 +82,7 @@ export const StorageBox = ({
 			) : (
 				<span
 					className={cx(
-						"text-[9px] leading-[10px]",
+						"text-[9px] leading-[10px] pointer-coarse:text-[11px] pointer-coarse:leading-3",
 						orientation === BoxOrientation.Front && "line-clamp-3 px-1 py-[3px]",
 						orientation === BoxOrientation.Side &&
 							"max-h-[calc(var(--box)-6px)] truncate [transform:rotate(180deg)] [writing-mode:vertical-rl]",
