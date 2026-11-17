@@ -243,7 +243,7 @@ function RouteComponent() {
 				<BoxLanding.Provider value={landing}>
 					<StorageSearch games={games} nodes={nodes} locations={locations} onPick={pick} />
 					<div
-						className={`grid items-start gap-4 md:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)_300px] ${selected ? "max-md:pb-[55dvh]" : ""}`}
+						className={`grid items-start gap-4 md:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)_300px] 2xl:grid-cols-[300px_minmax(0,1fr)_max(400px,28vw)] ${selected ? "max-md:pb-[55dvh]" : ""}`}
 					>
 						<aside
 							aria-label={t("page.tree")}

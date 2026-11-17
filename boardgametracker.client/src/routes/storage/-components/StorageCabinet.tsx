@@ -81,7 +81,10 @@ const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid, roving 
 	flush();
 
 	return (
-		<fieldset
+		// biome-ignore lint/a11y/useSemanticElements: a fieldset does not stretch its content, so boxes could not sit on the shelf floor
+		<div
+			role="group"
+			aria-label={name}
 			onDragOver={(event) => {
 				if (!onMove) return;
 				event.preventDefault();
@@ -92,14 +95,13 @@ const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid, roving 
 			}}
 			onDrop={drop}
 			className={cx(
-				"relative m-0 flex items-end gap-[3px] rounded-[3px] border-0 bg-page-black transition-[background-color,box-shadow] duration-150 pointer-coarse:gap-1.5",
+				"relative flex items-end gap-[3px] rounded-[3px] border-0 bg-page-black transition-[background-color,box-shadow] duration-150 pointer-coarse:gap-1.5",
 				grid
-					? "min-h-[calc(var(--box)*1.45)] min-w-[calc(var(--box)*1.45)] max-w-[calc(var(--box)*3)] flex-wrap content-end p-1.5 pt-5"
+					? "min-h-[calc(var(--box)*1.45)] min-w-[calc(var(--box)*1.45)] max-w-[calc(var(--box)*4+24px)] flex-wrap content-end p-1.5 pt-5"
 					: "min-h-[calc(var(--box)+26px)] min-w-[calc(var(--box)*4.4)] px-2 pt-5 shadow-[inset_0_-4px_0_rgb(255_255_255/0.07)]",
 				over && "bg-card-value/10 shadow-[inset_0_0_0_1px_var(--color-card-value)]",
 			)}
 		>
-			<legend className="sr-only">{name}</legend>
 			<span
 				aria-hidden="true"
 				className="pointer-events-none absolute right-1.5 top-1 text-[11px] font-medium tracking-wide text-white/60"
@@ -109,9 +111,11 @@ const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid, roving 
 			{content.length > 0 ? (
 				content
 			) : (
-				<span className="m-auto self-center text-xs text-white/50">{t("page.empty-slot")}</span>
+				<span className="pointer-events-none absolute inset-0 grid place-items-center text-xs text-white/50">
+					{t("page.empty-slot")}
+				</span>
 			)}
-		</fieldset>
+		</div>
 	);
 };
 
