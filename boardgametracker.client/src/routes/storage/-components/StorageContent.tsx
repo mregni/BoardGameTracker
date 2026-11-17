@@ -77,10 +77,7 @@ export const StorageContent = (props: Props) => {
 	const canAddHere = !node || node.layout === StorageLayout.Free;
 
 	const bin = (
-		<div
-			onKeyDown={roving.onKeyDown}
-			className="flex min-h-[84px] flex-wrap items-end gap-1.5 rounded-lg border border-dashed border-card-border bg-card-black/60 p-2.5"
-		>
+		<div className="flex min-h-[84px] flex-wrap items-end gap-1.5 rounded-lg border border-dashed border-card-border bg-card-black/60 p-2.5">
 			<p id={roving.hintId} className="sr-only">
 				{t("page.keys-hint")}
 			</p>
@@ -95,6 +92,7 @@ export const StorageContent = (props: Props) => {
 						tabIndex={roving.tabIndexFor(item.key)}
 						describedBy={roving.describedByFor(item.key)}
 						onFocusBox={roving.onFocusBox}
+						onKeyDown={roving.onKeyDown}
 					/>
 				))
 			) : (

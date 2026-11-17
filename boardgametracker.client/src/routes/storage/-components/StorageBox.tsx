@@ -1,5 +1,5 @@
 import { cx } from "class-variance-authority";
-import { createContext, type DragEvent, useContext, useState } from "react";
+import { createContext, type DragEvent, type KeyboardEvent, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoxOrientation } from "@/models";
 import type { StorageItem } from "@/utils/storage";
@@ -14,6 +14,7 @@ interface Props {
 	tabIndex?: 0 | -1;
 	describedBy?: string;
 	onFocusBox?: (key: string) => void;
+	onKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
 }
 
 export const BoxLanding = createContext<{ keys: Set<string>; done: (key: string) => void }>({
@@ -39,6 +40,7 @@ export const StorageBox = ({
 	tabIndex,
 	describedBy,
 	onFocusBox,
+	onKeyDown,
 }: Props) => {
 	const { t } = useTranslation("storage");
 	const [over, setOver] = useState(false);
@@ -63,6 +65,7 @@ export const StorageBox = ({
 			aria-describedby={describedBy}
 			tabIndex={tabIndex}
 			onFocus={() => onFocusBox?.(item.key)}
+			onKeyDown={onKeyDown}
 			data-box={item.key}
 			aria-label={label}
 			title={label}

@@ -30,7 +30,7 @@ export const useRovingBoxes = (keys: string[], selectedKey: string | null): Rovi
 		event.preventDefault();
 		const next = keys[Math.max(0, Math.min(keys.length - 1, step(index, keys.length - 1)))];
 		setFocused(next);
-		event.currentTarget.querySelector<HTMLElement>(`[data-box="${next}"]`)?.focus();
+		document.querySelector<HTMLElement>(`[data-box="${next}"]`)?.focus();
 	};
 
 	return {

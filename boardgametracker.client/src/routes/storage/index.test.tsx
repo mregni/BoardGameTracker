@@ -218,6 +218,26 @@ describe("Storage page", () => {
 		expect(screen.getByRole("button", { name: "Wingspan" })).toHaveAttribute("tabindex", "-1");
 	});
 
+	it("moves between the boxes stored directly in a room with the arrow keys", async () => {
+		const user = userEvent.setup();
+		mocks.games = [...mocks.games, game(6, "Azul", { storedAtLocationId: 1 })];
+		renderPage();
+
+		const skull = await screen.findByRole("button", { name: "Skull" });
+		const azul = screen.getByRole("button", { name: "Azul" });
+		expect([azul.tabIndex, skull.tabIndex]).toEqual([0, -1]);
+
+		azul.focus();
+		await user.keyboard("{ArrowDown}");
+		expect(skull).toHaveFocus();
+		await user.keyboard("{ArrowRight}");
+		expect(skull).toHaveFocus();
+		await user.keyboard("{Home}");
+		expect(azul).toHaveFocus();
+		await user.keyboard("a");
+		expect(azul).toHaveFocus();
+	});
+
 	it("opens the cabinet when the address points at one of its shelves", async () => {
 		mocks.search = { at: "1:12" };
 		renderPage();

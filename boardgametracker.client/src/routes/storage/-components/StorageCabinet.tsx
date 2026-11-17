@@ -53,6 +53,7 @@ const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid, roving 
 						tabIndex={roving.tabIndexFor(item.key)}
 						describedBy={roving.describedByFor(item.key)}
 						onFocusBox={roving.onFocusBox}
+						onKeyDown={roving.onKeyDown}
 					/>
 				))}
 			</div>,
@@ -75,6 +76,7 @@ const Slot = ({ slot, nodes, items, selectedKey, onSelect, onMove, grid, roving 
 				tabIndex={roving.tabIndexFor(item.key)}
 				describedBy={roving.describedByFor(item.key)}
 				onFocusBox={roving.onFocusBox}
+				onKeyDown={roving.onKeyDown}
 			/>,
 		);
 	}
@@ -134,7 +136,6 @@ export const StorageCabinet = (props: Props) => {
 	return (
 		<fieldset
 			ref={ref}
-			onKeyDown={roving.onKeyDown}
 			className="relative m-0 inline-flex min-w-0 flex-col gap-2 rounded-md border-0 bg-wood p-2 shadow-[0_10px_24px_rgb(0_0_0/0.35)]"
 		>
 			<legend className="sr-only">{nodeName(cabinet, nodes, t)}</legend>
