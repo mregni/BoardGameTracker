@@ -38,6 +38,7 @@ import { useGameActions } from "./-hooks/useGameActions";
 import { useGameData } from "./-hooks/useGameData";
 import { useGameManuals } from "./-hooks/useGameManuals";
 import { useGameModals } from "./-hooks/useGameModals";
+import { useInlineExpansionUpdate } from "./-hooks/useInlineExpansionUpdate";
 import { useInlineGameUpdate } from "./-hooks/useInlineGameUpdate";
 import { ExpansionSelectorModal } from "./-modals/ExpansionSelectorModal";
 
@@ -85,6 +86,7 @@ function RouteComponent() {
 	const trackPriceDialog = useModalState();
 	const { manuals = [] } = useGameManuals(gameId);
 	const { updateGame } = useInlineGameUpdate();
+	const { updateExpansion } = useInlineExpansionUpdate();
 	const { playerById } = usePlayerById();
 	const { data: loans } = useQuery({ ...getLoans(), enabled: !!game?.isLoaned });
 	const activeLoan = loans?.find((loan) => loan.gameId === gameId && loan.isActive);
@@ -255,6 +257,9 @@ function RouteComponent() {
 								uiLanguage={settings.uiLanguage}
 							/>
 							<ExpansionsDialog
+								gamePrice={game.buyingPrice}
+								currency={settings.currency}
+								onUpdateExpansion={(expansion) => updateExpansion(game.id, expansion)}
 								expansions={game.expansions}
 								open={expansionsDialog.isOpen}
 								close={expansionsDialog.hide}

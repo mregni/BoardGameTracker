@@ -135,6 +135,7 @@ public class DashboardServiceTests
         _sessionRepositoryMock.Verify(x => x.GetTotalPlayTime(Token), Times.Once);
         _sessionRepositoryMock.Verify(x => x.GetMeanPlayTime(Token), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetTotalPayedAsync(Token), Times.Once);
+        _gameStatisticsRepositoryMock.Verify(x => x.GetTotalPayedForExpansionsAsync(Token), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.CountPricedOwnedGamesAsync(Token), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetTotalExpansionCount(Token), Times.Once);
         _sessionRepositoryMock.Verify(x => x.CountAsync(StartedSince(MonthStartUtc), Token), Times.Once);
@@ -183,6 +184,7 @@ public class DashboardServiceTests
         _sessionRepositoryMock.Setup(x => x.CountAsync(Token)).ReturnsAsync(100);
         _sessionRepositoryMock.Setup(x => x.GetTotalPlayTime(Token)).ReturnsAsync(5000.0);
         _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPayedAsync(Token)).ReturnsAsync(887.5m);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPayedForExpansionsAsync(Token)).ReturnsAsync(120m);
         _gameStatisticsRepositoryMock.Setup(x => x.CountPricedOwnedGamesAsync(Token)).ReturnsAsync(25);
         _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount(Token)).ReturnsAsync(15);
         _sessionRepositoryMock.Setup(x => x.GetMeanPlayTime(Token)).ReturnsAsync(50.0);
@@ -196,6 +198,7 @@ public class DashboardServiceTests
         result.SessionsPlayed.Should().Be(100);
         result.TotalPlayedTime.Should().Be(5000.0);
         result.TotalCollectionValue.Should().Be(887.5m);
+        result.ExpansionCollectionValue.Should().Be(120m);
         result.PricedGameCount.Should().Be(25);
         result.ExpansionsOwned.Should().Be(15);
         result.AvgSessionTime.Should().Be(50.0);
@@ -234,6 +237,7 @@ public class DashboardServiceTests
         var result = await _sut.GetStatistics(null, Token);
 
         result.TotalCollectionValue.Should().BeNull();
+        result.ExpansionCollectionValue.Should().BeNull();
         result.PricedGameCount.Should().Be(0);
 
         VerifyGetStatisticsCalls();
@@ -647,6 +651,7 @@ public class DashboardServiceTests
         _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGamesSince(4, localYearStartUtc, Token), Times.Exactly(2));
         _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGames(4, Token), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetTotalPayedAsync(Token), Times.Once);
+        _gameStatisticsRepositoryMock.Verify(x => x.GetTotalPayedForExpansionsAsync(Token), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.CountPricedOwnedGamesAsync(Token), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetGameStateCounts(Token), Times.Once);
         _gameRepositoryMock.Verify(x => x.CountAsync(Token), Times.Once);
@@ -677,6 +682,7 @@ public class DashboardServiceTests
         _sessionRepositoryMock.Setup(x => x.GetTotalPlayTime(Token)).ReturnsAsync(0);
         _sessionRepositoryMock.Setup(x => x.GetMeanPlayTime(Token)).ReturnsAsync(0);
         _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPayedAsync(Token)).ReturnsAsync((decimal?)null);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPayedForExpansionsAsync(Token)).ReturnsAsync((decimal?)null);
         _gameStatisticsRepositoryMock.Setup(x => x.CountPricedOwnedGamesAsync(Token)).ReturnsAsync(0);
         _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount(Token)).ReturnsAsync(0);
         _sessionRepositoryMock.Setup(x => x.CountAsync(StartedSince(MonthStartUtc), Token)).ReturnsAsync(0);

@@ -73,6 +73,7 @@ public class DashboardService : IDashboardService
         var sessionsPlayed = await _sessionRepository.CountAsync(cancellationToken);
         var totalPlayedTime = await _sessionRepository.GetTotalPlayTime(cancellationToken);
         var totalCollectionValue = await _gameStatisticsRepository.GetTotalPayedAsync(cancellationToken);
+        var expansionCollectionValue = await _gameStatisticsRepository.GetTotalPayedForExpansionsAsync(cancellationToken);
         var pricedGameCount = await _gameStatisticsRepository.CountPricedOwnedGamesAsync(cancellationToken);
         var expansionsOwned = await _gameRepository.GetTotalExpansionCount(cancellationToken);
         var avgSessionTime = await _sessionRepository.GetMeanPlayTime(cancellationToken);
@@ -100,6 +101,7 @@ public class DashboardService : IDashboardService
             SessionsPlayed = sessionsPlayed,
             TotalPlayedTime = totalPlayedTime,
             TotalCollectionValue = totalCollectionValue,
+            ExpansionCollectionValue = expansionCollectionValue,
             PricedGameCount = pricedGameCount,
             ExpansionsOwned = expansionsOwned,
             AvgSessionTime = avgSessionTime,

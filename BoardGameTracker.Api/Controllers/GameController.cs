@@ -202,6 +202,16 @@ public class GameController : ControllerBase
         return Created((string?)null, expansion.ToDto());
     }
 
+    [HttpPut]
+    [Route("{id:int}/expansion/{expansionId:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<ExpansionDto>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateExpansion(int id, int expansionId, [FromBody] UpdateExpansionCommand command)
+    {
+        var expansion = await _gameService.UpdateExpansion(id, expansionId, command);
+        return Ok(expansion.ToDto());
+    }
+
     [HttpDelete]
     [Route("{id:int}/expansion/{expansionId:int}")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]

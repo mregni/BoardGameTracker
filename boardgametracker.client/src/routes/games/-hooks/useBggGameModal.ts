@@ -22,9 +22,13 @@ export const useBggGameModal = ({ onSuccess }: Props) => {
 
 	const addGameMutation = useMutation({
 		mutationFn: addGameWithBggCall,
-		async onSuccess(data) {
+		async onSuccess(data, search) {
 			await invalidator.invalidateGameCreated();
-			successToast("game:notifications.created");
+			if (String(data.bggId) === search.bggId.trim()) {
+				successToast("game:notifications.created");
+			} else {
+				successToast("game:notifications.expansion-created", undefined, { title: data.title });
+			}
 			onSuccess?.(data);
 		},
 		onError: (error) => {

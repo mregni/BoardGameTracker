@@ -9,9 +9,13 @@ The sections below follow the order of the application's sidebar. Everything tha
 
 ## Dashboard
 
-The dashboard shows your collection at a glance: number of games, players and sessions, collection value and average cost (owned games only), total and average play time, expansions owned, the most played games, recent activity, recently added games and a chart of your games by state. When your account is linked to a player you also get a personal welcome card with your own statistics.
+![Dashboard](../../assets/screenshots/dashboard.png)
+
+The dashboard shows your collection at a glance: number of games, players and sessions, collection value and average cost (owned games and owned expansions, with a bar that splits the amount between both), total and average play time, expansions owned, the most played games, recent activity, recently added games and a chart of your games by state. When your account is linked to a player you also get a personal welcome card with your own statistics.
 
 ## Log session
+
+![Log session form](../../assets/screenshots/log-session.png)
 
 *Log session* records a play. The form works the same on a phone and on a desktop:
 
@@ -27,15 +31,23 @@ Sessions can be edited and deleted from a game's, a player's or a location's ses
 
 ## Games
 
+![Games in the grid view](../../assets/screenshots/games.png)
+
 Your collection. Games can be added in three ways:
 
-- **BoardGameGeek import** — enter the BGG id, pick the state (owned, wanted, ...) and the price; title, image, players, play time, categories and mechanics are filled in. Needs a [BGG API key](/BoardGameTracker/getting-started/environment-variables/), entered under *Settings → Integrations*.
-- **BGG collection import** — enter a BGG username and tick the games you want; games that are already in the collection are skipped.
+- **BoardGameGeek import** — enter the BGG id, pick the state (owned, wanted, ...) and the price; title, image, players, play time, categories and mechanics are filled in. When the id belongs to an expansion, it is added to its base game instead; a base game that is not in the collection yet is imported first, with the same state. Needs a [BGG API key](/BoardGameTracker/getting-started/environment-variables/), entered under *Settings → Integrations*.
+- **BGG collection import** — enter a BGG username and tick the games you want; games that are already in the collection are skipped. Expansions are listed under their base game. Ticking an expansion ticks its base game too when that game is not in the collection yet, and it is imported with it.
 - **Manual** — fill in the form yourself. Player count and play time are ranges, so enter both ends or leave both empty.
 
 Each game has a state (*owned*, *wanted*, *for trade*, *previously owned*, *sold*) and a **scoring** switch. Turn scoring off for games without points: sessions then only record who won, and the score charts stay hidden. For co-operative games switch on *Can be played co-op*, and optionally *New sessions start as co-op*; a co-op session records a team result instead of a winner per player.
 
 The game page shows statistics (plays, total play time, price per play, best score, top players), the last sessions, expansions, the uploaded rulebooks (*Manuals*) and, once the rules assistant is enabled, an *Ask the manual* button. In the *Table view* of Games you can edit language, state and price inline.
+
+![Game page](../../assets/screenshots/game-detail.png)
+
+![Games in the table view](../../assets/screenshots/games-table.png)
+
+Expansions have their own state, price and date added, and those picked from BoardGameGeek get their own cover. Edit them in the *Expansions* dialog of the game page, or in the table view: a game with expansions is one row whose price is the base game and its owned expansions together; open it to edit the base game and each expansion on their own row. The price per play and the Shelf of Shame keep using the price of the base game.
 
 <Aside type="tip">
 Ratings (0-10), weight (0-5) and, for a *sold* game, the price it was sold for can be edited on the game's update page.
@@ -49,22 +61,32 @@ The *Table view* adds a *Current price* column, an *In stock only* filter and a 
 
 ## Players
 
+![Players overview](../../assets/screenshots/players.png)
+
 Players are the people you play with; they exist independently of user accounts. The overview shows each player as a tile with their win rate and number of sessions, most active players first; use the filter to find someone by name. Give a player an email address to send them game-night invitations.
 
 A player page shows win rate, favourite games, play time, recent sessions, the games the player has on loan and the **badges** the player earned. Badges are awarded when a session is saved:
+
+![Player page](../../assets/screenshots/player-detail.png)
 
 - One-off badges: *First Try* (win a game on the first play), *Photo Finish* (win by two points or less), *Almost there* (lose by two points or less), *Marathon Runner* (a session of four hours or more), *Learning Curve* (three improving scores in a row), *Monthly Goal* (20 sessions in a calendar month) and *Consistent Schedule* (a Saturday game ten weeks in a row).
 - Tiered badges (green, blue, red, gold) count sessions, different games, wins, hours played, win percentage, solo sessions, winning streaks and different opponents.
 
 ## Shelf of Shame
 
+![Shelf of Shame](../../assets/screenshots/shelf-of-shame.png)
+
 On by default. It lists owned games that have not been played in the configured number of months (games bought more recently than that are not shamed), with the money sitting on the shelf. Switch it off or change the threshold (6 months by default) under *Settings → Shelf of Shame*.
 
 ## Player vs player
 
+![Head-to-head comparison of two players](../../assets/screenshots/player-vs-player.png)
+
 Pick two players to see how they do against each other; the page opens on the two players with the most games together, and the swap button exchanges the sides. The record counts every game they played together: wins for each player, games someone else won (a competitive game both players won counts for both) and co-op games on the same team, with the team's wins and losses. Co-op games never count as a win for one player against the other and don't break a winning streak. Below it are the last ten results with the current winning streak, the time spent together, the most played game and the closest finish, a per-game list with wins, average scores and the last result (sorted by most played or biggest lead), each player's best and worst games (games played together at least three times), the recent games together, and both players' overall stats in a collapsed table.
 
 ## Leaderboard
+
+![Leaderboard](../../assets/screenshots/leaderboard.png)
 
 Ranks every player with at least one session by wins, then win rate, then number of plays; players with the same record share a rank. The table also shows podiums (top three finishes in scoring sessions of four or more players) and time played. The highlight cards above it name the player with the most wins, the most plays, the most time at the table and the best win rate; the win rate only counts players with at least five plays.
 
@@ -76,6 +98,8 @@ Open *Rules chat* in the sidebar (or *Ask the manual* on a game page), pick a ga
 
 ## Game nights
 
+![Upcoming game nights](../../assets/screenshots/game-nights.png)
+
 On by default; switch it off under *Settings → Game nights*. A game night has a host, a date and time, a location, suggested games and invited players; the location is picked from the ones under *Locations*.
 
 The page is split into **Upcoming** and **Past**. Each upcoming night is a card with the date, how far away it is (*Tomorrow · 19:30*), the location, the host, the games the host suggests, the notes and a bar showing how many players are coming, maybe, have not answered or are not coming. From the card you can *Copy invite link*, *Email invites*, edit or delete the night.
@@ -84,17 +108,25 @@ The page is split into **Upcoming** and **Past**. Each upcoming night is a card 
 
 Before a night opens, its page shows the plan: when it starts, the RSVPs with *Manage RSVPs*, and the planned games. Starting, logging and finishing games and *End night* become available 12 hours before the start time. The RSVPs stay on the page until the night is over.
 
+![Game night page](../../assets/screenshots/game-night-detail.png)
+
 ### Managing RSVPs
+
+![Manage RSVPs dialog](../../assets/screenshots/game-night-rsvps.png)
 
 *Manage RSVPs* on a card lists every invited player with a *Coming* / *Maybe* / *No answer* / *Not coming* switch, so you can record answers you got by message or in person. The host is always coming. Use × to remove a player from the night, *Invite more players* to add someone, and copy the invite link from the same dialog. Hosts can still change answers after the night has taken place.
 
 ### The invite link
+
+![Public RSVP page](../../assets/screenshots/rsvp.png)
 
 Every game night has a public invite link that players open without an account. The page shows the date, location, host and notes, who is coming (grouped into *Coming*, *Maybe*, *No answer* and *Not coming*), the games you might play and their rulebooks. To answer, a player picks their name under *Who are you?*, chooses *Coming*, *Maybe* or *Not coming* and presses *Send answer*. The host sees *Maybe* apart from players who haven't answered, and only *Coming* counts as attending. *Change answer* lets them pick again. A signed-in user linked to an invited player finds that player already picked. The link keeps accepting answers while the night is in progress and stops once the night has ended or is 12 hours past its start.
 
 When email is configured and the host's player has an email address, the host gets a mail when someone answers (at most one per invitee every five minutes; the host's own answer is not mailed). Turn on *Require authentication for RSVPs* if the link should only work for signed-in users. The invite link and the invitation emails use the **Public URL** setting under *Settings → General*, so set that to the address your players use. Invitations are not sent while it is empty.
 
 ## Loans
+
+![Loans](../../assets/screenshots/loans.png)
 
 Track which game is lent to whom. The cards at the top count the games on loan, overdue, due this week and returned.
 
@@ -108,7 +140,11 @@ The places you play, such as your living room, a friend's house or the local gam
 
 Open a location to see the sessions, games and players played there and the total play time, followed by its sessions, newest first, with the winners and duration (*Show all* lists every session). Edit and delete the location from this page. A location that a session or a game night still uses cannot be deleted: the page says what is linked to it, so move those to another location first.
 
+![Location page](../../assets/screenshots/location-detail.png)
+
 ## Settings
+
+![General settings](../../assets/screenshots/settings-general.png)
 
 - **General** — language, date and time format, currency and the Public URL.
 - **Account** — your profile, password and linked player; admins also manage users here.

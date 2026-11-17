@@ -20,6 +20,7 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
+    "screenshots": "playwright test --project screenshots",
     "export:openapi": "node scripts/export-openapi.mjs",
     "generate:api": "openapi-typescript openapi/swagger.json --properties-required-by-default -o src/models/api.generated.ts"
   },

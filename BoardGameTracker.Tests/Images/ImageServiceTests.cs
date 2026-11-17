@@ -476,6 +476,7 @@ public class ImageServiceTests : IDisposable
     [Theory]
     [InlineData("player")]
     [InlineData("game")]
+    [InlineData("expansion")]
     [InlineData("user")]
     public async Task DeleteImageIfUnusedAsync_ShouldKeepTheFile_WhenAnotherRecordUsesIt(string owner)
     {
@@ -489,6 +490,11 @@ public class ImageServiceTests : IDisposable
                 var game = new Game("Other");
                 game.UpdateImage(imagePath);
                 _context.Games.Add(game);
+                break;
+            case "expansion":
+                var expansion = new Expansion("Other", null, new Game("Base"));
+                expansion.UpdateImage(imagePath);
+                _context.Expansions.Add(expansion);
                 break;
             default:
                 var user = new ApplicationUser("other", "other@test.com");

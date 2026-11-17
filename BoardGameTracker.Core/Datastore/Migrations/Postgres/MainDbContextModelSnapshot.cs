@@ -9,7 +9,7 @@ using Pgvector;
 
 #nullable disable
 
-namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
+namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 {
     [DbContext(typeof(MainDbContext))]
     partial class MainDbContextModelSnapshot : ModelSnapshot
@@ -735,10 +735,19 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("AdditionDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int?>("BggId")
                         .HasColumnType("integer");
 
                     b.Property<int>("GameId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("text");
+
+                    b.Property<int>("State")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
@@ -1612,7 +1621,47 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.Price", "BuyingPrice", b1 =>
+                        {
+                            b1.Property<int>("ExpansionId")
+                                .HasColumnType("integer");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("BuyingPrice");
+
+                            b1.HasKey("ExpansionId");
+
+                            b1.ToTable("Expansions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ExpansionId");
+                        });
+
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.Price", "SoldPrice", b1 =>
+                        {
+                            b1.Property<int>("ExpansionId")
+                                .HasColumnType("integer");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("SoldPrice");
+
+                            b1.HasKey("ExpansionId");
+
+                            b1.ToTable("Expansions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ExpansionId");
+                        });
+
+                    b.Navigation("BuyingPrice");
+
                     b.Navigation("Game");
+
+                    b.Navigation("SoldPrice");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Game", b =>

@@ -107,6 +107,27 @@ public class GameRepository : EfRepository<Game>, IGameRepository
         return SingleOrDefaultAsync(new GameByBggIdSpec(bggId));
     }
 
+    public Task<List<int>> GetExistingGameBggIds(IEnumerable<int> bggIds)
+    {
+        var ids = bggIds.Distinct().ToList();
+        return _context.Games
+            .AsNoTracking()
+            .Where(x => x.BggId != null && ids.Contains(x.BggId.Value))
+            .Select(x => x.BggId!.Value)
+            .ToListAsync();
+    }
+
+    public Task<List<int>> GetExistingExpansionBggIds(IEnumerable<int> bggIds)
+    {
+        var ids = bggIds.Distinct().ToList();
+        return _context.Expansions
+            .AsNoTracking()
+            .Where(x => x.BggId != null && ids.Contains(x.BggId.Value))
+            .Select(x => x.BggId!.Value)
+            .Distinct()
+            .ToListAsync();
+    }
+
     public Task<List<Game>> GetGamesOverviewList()
     {
         return ListAsync(new GamesOverviewSpec());
@@ -143,10 +164,10 @@ public class GameRepository : EfRepository<Game>, IGameRepository
 
     public Task<int> GetTotalExpansionCount(CancellationToken cancellationToken = default)
     {
-        return _context.Expansions.CountAsync(cancellationToken);
+        return _context.Expansions.CountAsync(x => x.State == GameState.Owned, cancellationToken);
     }
 
-    public async Task<bool> DeleteExpansion(int gameId, int expansionId)
+    public async Task<Expansion?> DeleteExpansion(int gameId, int expansionId)
     {
         var game = await _context.Games
             .Include(x => x.Expansions)
@@ -155,11 +176,11 @@ public class GameRepository : EfRepository<Game>, IGameRepository
         var expansion = game?.Expansions.FirstOrDefault(e => e.Id == expansionId);
         if (game == null || expansion == null)
         {
-            return false;
+            return null;
         }
 
         game.RemoveExpansion(expansion);
-        return true;
+        return expansion;
     }
 
     public Task<List<Game>> GetRecentlyAddedGames(int count, CancellationToken cancellationToken = default)

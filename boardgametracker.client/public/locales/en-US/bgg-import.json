@@ -1,3 +1,8 @@
 {
-  "title": "Import games from BoardGameGeek"
+  "title": "Import games from BoardGameGeek",
+  "expansion-tag": "EXP",
+  "in-collection": "In your collection",
+  "added-for-expansion": "Added for its expansion",
+  "needed-by-expansion": "Needed by a selected expansion",
+  "scoring-from-base": "Uses the base game"
 }

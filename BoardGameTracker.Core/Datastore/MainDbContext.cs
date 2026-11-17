@@ -93,6 +93,24 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
                     .IsRequired();
             });
 
+        builder.Entity<Expansion>()
+            .OwnsOne(e => e.BuyingPrice, cost =>
+            {
+                cost.Property(c => c.Amount)
+                    .HasColumnName(nameof(Expansion.BuyingPrice))
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+            });
+
+        builder.Entity<Expansion>()
+            .OwnsOne(e => e.SoldPrice, cost =>
+            {
+                cost.Property(c => c.Amount)
+                    .HasColumnName(nameof(Expansion.SoldPrice))
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+            });
+
         builder.Entity<Game>()
             .OwnsOne(g => g.Rating, cost =>
             {

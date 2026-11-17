@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { type Game, GameState } from "@/models";
+import { type Expansion, type Game, GameState } from "@/models";
 import {
+	collectionPrice,
 	filterByTitle,
 	freshWeight,
 	hasActiveFilters,
@@ -11,8 +12,10 @@ import {
 	sortGames,
 } from "./gamesSearch";
 
-const game = (title: string, state: GameState, buyingPrice: number | null) =>
-	({ title, state, buyingPrice }) as unknown as Game;
+const game = (title: string, state: GameState, buyingPrice: number | null, expansions: Expansion[] = []) =>
+	({ title, state, buyingPrice, expansions }) as unknown as Game;
+
+const expansion = (state: GameState, buyingPrice: number | null) => ({ state, buyingPrice }) as unknown as Expansion;
 
 describe("parseGamesSearch", () => {
 	it("keeps the name query and drops invalid filters", () => {
@@ -97,6 +100,34 @@ describe("ownedPriceStats", () => {
 		]);
 
 		expect(stats).toEqual({ total: 60, mean: 30, pricedCount: 2 });
+	});
+
+	it("adds the owned expansions to each collection", () => {
+		const stats = ownedPriceStats([
+			game("Catan", GameState.Owned, 35, [expansion(GameState.Owned, 30), expansion(GameState.Wanted, 25)]),
+			game("Root", GameState.Owned, 45),
+			game("Wanted base", GameState.Wanted, 50, [expansion(GameState.Owned, 20)]),
+		]);
+
+		expect(stats).toEqual({ total: 130, mean: 130 / 3, pricedCount: 3 });
+	});
+});
+
+describe("collectionPrice", () => {
+	it("is the base game plus its owned expansions", () => {
+		expect(
+			collectionPrice(
+				game("Catan", GameState.Owned, 35, [expansion(GameState.Owned, 30), expansion(GameState.Sold, 25)]),
+			),
+		).toBe(65);
+	});
+
+	it("is empty when neither the base game nor an owned expansion has a price", () => {
+		expect(collectionPrice(game("Catan", GameState.Owned, null, [expansion(GameState.Owned, null)]))).toBeNull();
+	});
+
+	it("counts only the expansions when the base game has no price", () => {
+		expect(collectionPrice(game("Catan", GameState.Owned, null, [expansion(GameState.Owned, 30)]))).toBe(30);
 	});
 });
 

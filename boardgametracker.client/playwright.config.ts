@@ -21,8 +21,14 @@ export default defineConfig({
 	projects: [
 		{ name: "empty", testMatch: "setup/empty.spec.ts" },
 		{ name: "seed", testMatch: "setup/seed.setup.ts", dependencies: ["empty"] },
-		{ name: "pages", testIgnore: ["setup/**", "**/*manage.spec.ts"], dependencies: ["seed"] },
+		{ name: "pages", testIgnore: ["setup/**", "screenshots/**", "**/*manage.spec.ts"], dependencies: ["seed"] },
 		{ name: "mutations", testMatch: "**/*manage.spec.ts", dependencies: ["seed"] },
+		{
+			name: "screenshots",
+			testMatch: "screenshots/**",
+			dependencies: ["seed"],
+			use: { viewport: { width: 1600, height: 900 } },
+		},
 	],
 	webServer: {
 		command: "pnpm build && dotnet run --project ../BoardGameTracker.AppHost --launch-profile http -- --e2e",
