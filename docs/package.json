@@ -23,7 +23,7 @@
 	},
 	"pnpm": {
 		"auditConfig": {
-			"ignoreGhsas": ["GHSA-ch52-4w7c-c8xp"]
+			"ignoreGhsas": ["GHSA-ch52-4w7c-c8xp", "GHSA-fc5q-39xc-vjpf"]
 		},
 		"overrides": {
 			"postcss-selector-parser@<7.1.6": "^7.1.6"
