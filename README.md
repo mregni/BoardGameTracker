@@ -1,7 +1,7 @@
 # BoardGameTracker
 
 <p align="center">
-  <img src=".github/images/games.png" width="800" alt="BoardGameTracker screenshot">
+  <img src="docs/src/assets/screenshots/dashboard.png" width="800" alt="BoardGameTracker dashboard">
 </p>
 
 <p align="center">
@@ -139,16 +139,29 @@ Date format, time format, currency and language are set in the application under
 <summary>Click to view screenshots</summary>
 
 ### Game Collection
-<img src=".github/images/game-list.png" width="800" alt="Game list view">
+<img src="docs/src/assets/screenshots/games.png" width="800" alt="Game list in the grid view">
 
 ### Game Details & Statistics
-<img src=".github/images/game-details.png" width="800" alt="Game details page">
+<img src="docs/src/assets/screenshots/game-detail.png" width="800" alt="Game page with statistics">
 
 ### Player Statistics
-<img src=".github/images/user-details.png" width="800" alt="User details page">
+<img src="docs/src/assets/screenshots/player-detail.png" width="800" alt="Player page with statistics">
 
 ### Session Recording
-<img src=".github/images/new-session.png" width="800" alt="New session form">
+<img src="docs/src/assets/screenshots/log-session.png" width="800" alt="Log session form">
+
+<img src="docs/src/assets/screenshots/log-session-phone.png" width="300" alt="Log session form on a phone">
+
+### Game Nights
+<img src="docs/src/assets/screenshots/game-nights.png" width="800" alt="Upcoming game nights">
+
+<img src="docs/src/assets/screenshots/rsvp.png" width="800" alt="Public RSVP page of a game night">
+
+### Leaderboard
+<img src="docs/src/assets/screenshots/leaderboard.png" width="800" alt="Leaderboard with podium">
+
+### Player vs Player
+<img src="docs/src/assets/screenshots/player-vs-player.png" width="800" alt="Head-to-head comparison of two players">
 
 </details>
 
