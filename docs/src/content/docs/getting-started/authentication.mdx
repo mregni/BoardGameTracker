@@ -73,6 +73,8 @@ Under **Settings → Single sign-on** the provider cannot be enabled while the *
 
 An administrator fills in the provider under **Settings → Single sign-on**. Enter the authority (issuer URL) and press **Test discovery** before saving: it fetches the provider's discovery document and tells you whether the reported issuer matches what you typed. Most providers only need the button label, authority and client ID; the claim fields are filled in with the standard defaults and the endpoint fields are for providers that do not follow them.
 
+![Single sign-on settings](../../../assets/screenshots/settings-sso.png)
+
 The same configuration is available through the API (`POST /api/admin/oidc-providers`, also in Swagger when `SWAGGER_ENABLED=true`):
 
 ```json
