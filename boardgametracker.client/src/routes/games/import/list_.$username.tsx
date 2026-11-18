@@ -1,13 +1,10 @@
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { cx } from "class-variance-authority";
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import LinkIcon from "@/assets/icons/arrow-square-out.svg?react";
 import Database from "@/assets/icons/database.svg?react";
-import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtSimpleCheckbox, BgtSimpleInputField, BgtSimpleSelect, BgtSimpleSwitch } from "@/components/BgtForm";
+import { BgtSimpleSwitch } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -16,43 +13,25 @@ import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtDataTable";
 import { BgtPaging } from "@/components/BgtTable/BgtPaging";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { useDecimalInput } from "@/hooks/useDecimalInput";
-import { GameState, type ImportGame } from "@/models";
+import type { ImportGame } from "@/models";
 import { IntegrationSettingsButton } from "@/routes/-components/IntegrationSettingsButton";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
-import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
-import { parseLocalDate } from "@/utils/localDate";
+import {
+	AddedDateCell,
+	AvatarCell,
+	BggIdCell,
+	CheckboxCell,
+	ImportListContext,
+	NameCell,
+	PriceCell,
+	ScoringCell,
+	SelectAllHeader,
+	StateCell,
+} from "./-components/ImportListCells";
 import { useList } from "./-hooks/useList";
 import { needsIntegrationSettings } from "./-utils/importErrors";
-
-interface ImportPriceInputProps {
-	price: number;
-	onChange: (price: number) => void;
-	placeholder: string;
-	disabled: boolean;
-	currency?: string;
-	ariaLabel: string;
-}
-
-const ImportPriceInput = ({ price, onChange, placeholder, disabled, currency, ariaLabel }: ImportPriceInputProps) => {
-	const decimal = useDecimalInput(price || null, (value) => onChange(value ?? 0));
-	return (
-		<BgtSimpleInputField
-			type="text"
-			inputMode="decimal"
-			value={decimal.value}
-			onChange={(event) => decimal.onChange(event.target.value)}
-			onBlur={decimal.onBlur}
-			placeholder={placeholder}
-			disabled={disabled}
-			className="w-32.5"
-			suffixLabel={currency}
-			ariaLabel={ariaLabel}
-		/>
-	);
-};
 
 export const Route = createFileRoute("/games/import/list_/$username")({
 	component: WriteRouteComponent,
@@ -71,27 +50,6 @@ export const Route = createFileRoute("/games/import/list_/$username")({
 
 const countPerPage = 50;
 const maxImport = 25;
-
-interface SelectAllState {
-	checked: boolean;
-	disabled: boolean;
-	onChange: (checked: boolean) => void;
-}
-
-const SelectAllContext = createContext<SelectAllState | undefined>(undefined);
-
-const SelectAllHeader = () => {
-	const selectAll = useContext(SelectAllContext);
-	return (
-		<BgtSimpleCheckbox
-			id="select-all-import"
-			label=""
-			disabled={selectAll?.disabled ?? true}
-			checked={selectAll?.checked ?? false}
-			onCheckedChange={(checked) => selectAll?.onChange(checked)}
-		/>
-	);
-};
 
 function RouteComponent() {
 	const { username } = Route.useParams();
@@ -134,165 +92,27 @@ function RouteComponent() {
 		[selectableGames, setSelection],
 	);
 
-	const selectAll = useMemo(
-		() => ({ checked: allSelected, disabled: selectionCap === 0, onChange: toggleSelectAll }),
-		[allSelected, selectionCap, toggleSelectAll],
+	const importList = useMemo(
+		() => ({
+			selectAll: { checked: allSelected, disabled: selectionCap === 0, onChange: toggleSelectAll },
+			updateGame,
+			currency: settings?.currency,
+		}),
+		[allSelected, selectionCap, toggleSelectAll, updateGame, settings?.currency],
 	);
 
 	const columns: DataTableProps<ImportGame>["columns"] = useMemo(
 		() => [
-			{
-				accessorKey: "0",
-				enableSorting: false,
-				cell: ({ row }) => (
-					<BgtSimpleCheckbox
-						id={`import-${row.original.bggId}`}
-						disabled={row.original.inCollection || row.original.lockedByExpansion}
-						label={""}
-						aria-label={row.original.title}
-						aria-describedby={row.original.lockedByExpansion ? `import-locked-${row.original.bggId}` : undefined}
-						checked={row.original.checked}
-						onCheckedChange={(state) => {
-							updateGame(row.original.bggId, { checked: state });
-						}}
-					/>
-				),
-				header: SelectAllHeader,
-			},
-			{
-				accessorKey: "1",
-				cell: ({ row }) => (
-					<div
-						className={cx(
-							row.original.baseGameBggId != null && [
-								"relative pl-6",
-								"before:absolute before:left-2 before:-top-3 before:-bottom-3 before:w-px before:bg-card-border",
-								"after:absolute after:left-2 after:top-1/2 after:h-px after:w-3 after:bg-card-border",
-							],
-						)}
-					>
-						<BgtAvatar
-							title={row.original.title}
-							image={row.original.imageUrl}
-							size={row.original.baseGameBggId != null ? "medium" : "large"}
-							disabled={row.original.inCollection}
-						/>
-					</div>
-				),
-				header: "",
-			},
-			{
-				accessorKey: "2",
-				cell: ({ row }) => (
-					<div className="flex flex-col gap-1">
-						<span className={cx("flex items-center gap-2", row.original.inCollection && "text-gray-400")}>
-							{row.original.baseGameBggId != null && (
-								<span className="rounded border border-primary/30 px-1 text-[11px] leading-4 tracking-wider text-stat-title">
-									{t("bgg-import:expansion-tag")}
-								</span>
-							)}
-							{row.original.title}
-						</span>
-						{row.original.inCollection && row.original.baseGameBggId == null && (
-							<span className="text-xs font-normal text-white/60">{t("bgg-import:in-collection")}</span>
-						)}
-						{row.original.addedForExpansion && (
-							<span
-								id={`import-locked-${row.original.bggId}`}
-								className="inline-flex w-fit items-center rounded-full border border-warn/50 bg-warn/10 px-2 py-0.5 text-xs font-medium text-warn"
-							>
-								{t("bgg-import:added-for-expansion")}
-							</span>
-						)}
-						{row.original.lockedByExpansion && !row.original.addedForExpansion && (
-							<span id={`import-locked-${row.original.bggId}`} className="text-xs font-normal text-white/60">
-								{t("bgg-import:needed-by-expansion")}
-							</span>
-						)}
-					</div>
-				),
-				header: t("name"),
-			},
-			{
-				accessorKey: "3",
-				cell: ({ row }) => (
-					<div>
-						<a
-							className="underline text-blue-700 cursor-pointer flex flex-row gap-1"
-							href={`https://boardgamegeek.com/boardgame/${row.original.bggId}`}
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							{row.original.bggId} <LinkIcon className="size-4" />
-						</a>
-					</div>
-				),
-				header: t("common:bgg-id"),
-			},
-			{
-				accessorKey: "4",
-				cell: ({ row }) => (
-					<ImportPriceInput
-						price={row.original.price}
-						onChange={(price) => updateGame(row.original.bggId, { price })}
-						placeholder={t("game:price.placeholder")}
-						disabled={row.original.inCollection}
-						currency={settings?.currency}
-						ariaLabel={`${t("game:price.label")}: ${row.original.title}`}
-					/>
-				),
-				header: t("game:price.label"),
-			},
-			{
-				accessorKey: "5",
-				cell: ({ row }) => (
-					<BgtSimpleSelect
-						value={row.original.state}
-						onValueChange={(value) => updateGame(row.original.bggId, { state: value as GameState })}
-						disabled={row.original.inCollection}
-						aria-label={`${t("state")}: ${row.original.title}`}
-						items={Object.values(GameState).map((value) => ({
-							label: t(getItemStateTranslationKey(value, false)),
-							value: value,
-						}))}
-					/>
-				),
-				header: t("state"),
-			},
-			{
-				accessorKey: "6",
-				cell: ({ row }) =>
-					row.original.baseGameBggId != null ? (
-						<span className="text-sm font-normal text-white/60">{t("bgg-import:scoring-from-base")}</span>
-					) : (
-						<BgtSimpleSwitch
-							label={t("game:scoring.label")}
-							value={row.original.hasScoring}
-							disabled={row.original.inCollection}
-							onChange={(value) => updateGame(row.original.bggId, { hasScoring: value })}
-						/>
-					),
-				header: t("scoring"),
-			},
-			{
-				accessorKey: "7",
-				cell: ({ row }) => (
-					<BgtSimpleInputField
-						value={row.original.addedDate}
-						onChange={(event) =>
-							updateGame(row.original.bggId, {
-								addedDate: parseLocalDate(event.target.value) ?? row.original.addedDate,
-							})
-						}
-						type="date"
-						disabled={row.original.inCollection}
-						ariaLabel={`${t("game:added-date.label")}: ${row.original.title}`}
-					/>
-				),
-				header: t("game:added-date.label"),
-			},
+			{ accessorKey: "0", enableSorting: false, cell: CheckboxCell, header: SelectAllHeader },
+			{ accessorKey: "1", cell: AvatarCell, header: "" },
+			{ accessorKey: "2", cell: NameCell, header: t("name") },
+			{ accessorKey: "3", cell: BggIdCell, header: t("common:bgg-id") },
+			{ accessorKey: "4", cell: PriceCell, header: t("game:price.label") },
+			{ accessorKey: "5", cell: StateCell, header: t("state") },
+			{ accessorKey: "6", cell: ScoringCell, header: t("scoring") },
+			{ accessorKey: "7", cell: AddedDateCell, header: t("game:added-date.label") },
 		],
-		[settings?.currency, t, updateGame],
+		[t],
 	);
 
 	const isLoading = processingGames || importing;
@@ -356,7 +176,7 @@ function RouteComponent() {
 
 						<BgtPaging page={page} setPage={setPage} totalCount={games.length} countPerPage={countPerPage} />
 
-						<SelectAllContext.Provider value={selectAll}>
+						<ImportListContext.Provider value={importList}>
 							<BgtDataTable
 								columns={columns}
 								data={games.slice(page * countPerPage, (page + 1) * countPerPage)}
@@ -365,7 +185,7 @@ function RouteComponent() {
 								widths={["w-[48px]", "w-[70px]", null, "w-[100px]"]}
 								rowClassName={(game) => (game.baseGameBggId != null ? "bg-card-black/60" : undefined)}
 							/>
-						</SelectAllContext.Provider>
+						</ImportListContext.Provider>
 
 						<BgtPaging page={page} setPage={setPage} totalCount={games.length} countPerPage={countPerPage} />
 					</>

@@ -1,13 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import type { ColumnDef, RowData } from "@tanstack/react-table";
 import { cx } from "class-variance-authority";
-import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import CaretRight from "@/assets/icons/caret-right.svg?react";
 import Refresh from "@/assets/icons/refresh.svg?react";
-import SquareOutIcon from "@/assets/icons/square-out.svg?react";
-import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { StoragePicker } from "@/components/BgtStorage/StoragePicker";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
@@ -15,32 +11,38 @@ import { useDurationRange } from "@/hooks/useDurationRange";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useStorageActions, useStorageData } from "@/hooks/useStorage";
 import { useTimeouts } from "@/hooks/useTimeouts";
-import { type Expansion, type Game, type GamePrice, GameState, QUERY_KEYS, StorageItemType } from "@/models";
+import { type Game, type GamePrice, GameState, QUERY_KEYS, StorageItemType } from "@/models";
 import { getTrackedPricesCall } from "@/services/gameService";
 import { toDisplay } from "@/utils/dateUtils";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
-import { formatDecimal, formatPrice, formatPriceOrEmpty } from "@/utils/numberUtils";
+import { formatPrice } from "@/utils/numberUtils";
 import { formatRange as formatValueRange } from "@/utils/rangeUtils";
-import {
-	allPlaces,
-	canStore,
-	parsePlaceKey,
-	placeKey,
-	placeLabel,
-	placeNames,
-	placeOf,
-	type StoragePlace,
-} from "@/utils/storage";
-import { SafeHttpUrl } from "@/utils/stringUtils";
+import { allPlaces, canStore, placeKey, placeLabel, placeNames, type StoragePlace } from "@/utils/storage";
 import { useInlineExpansionUpdate } from "../-hooks/useInlineExpansionUpdate";
 import { useInlineGameUpdate } from "../-hooks/useInlineGameUpdate";
-import { collectionPrice, ownedPriceStats } from "../-utils/gamesSearch";
-import { EditableNumberCell } from "./EditableNumberCell";
-import { EditableSelectCell } from "./EditableSelectCell";
+import { ownedPriceStats } from "../-utils/gamesSearch";
+import {
+	AdditionDateCell,
+	BggIdCell,
+	BuyingPriceCell,
+	CurrentPriceCell,
+	type GameRow,
+	GamesTableContext,
+	LanguageCell,
+	NO_PLACE,
+	PlayersCell,
+	PlayTimeCell,
+	RatingCell,
+	SelectAllHeader,
+	SelectCell,
+	ShopUrlCell,
+	StateCell,
+	StorageCell,
+	TitleCell,
+	WeightCell,
+} from "./GamesTableCells";
 import { expansionEditKey, GameTableCards, type GameTableColumn } from "./GameTableCards";
-import { LivePrice, withStateChange } from "./LivePrice";
-import { TrackedPriceIcon } from "./TrackedPriceIcon";
 
 declare module "@tanstack/react-table" {
 	interface TableMeta<TData extends RowData> {
@@ -56,16 +58,6 @@ interface EditingCell {
 	gameId: number;
 	column: GameTableColumn;
 }
-
-type GameRow =
-	| { kind: "game"; game: Game }
-	| { kind: "collection"; game: Game }
-	| { kind: "base"; game: Game }
-	| { kind: "expansion"; game: Game; expansion: Expansion; last: boolean };
-
-const isGameLine = (row: GameRow) => row.kind === "game" || row.kind === "base";
-
-const NO_PLACE = "none";
 
 interface Props {
 	games: Game[];
@@ -251,24 +243,56 @@ export const GamesTableView = (props: Props) => {
 		[dateFormat, uiLanguage],
 	);
 
-	const subRowTitle = useCallback(
-		(row: GameRow, tag: string, image: string | null, title: string, children?: ReactNode) => (
-			<span
-				className={cx(
-					"relative flex items-center gap-2 pl-9",
-					"before:absolute before:left-3 before:-top-3 before:w-px before:bg-card-border",
-					row.kind === "expansion" && row.last ? "before:bottom-1/2" : "before:-bottom-3",
-					"after:absolute after:left-3 after:top-1/2 after:h-px after:w-4 after:bg-card-border",
-				)}
-			>
-				<BgtAvatar image={image} title={title} size="small" />
-				<span className="rounded border border-primary/30 px-1 text-[11px] leading-4 tracking-wider text-stat-title">
-					{tag}
-				</span>
-				{children ?? <span className="font-medium">{title}</span>}
-			</span>
-		),
-		[],
+	const tableContext = useMemo(
+		() => ({
+			canWrite,
+			priceMap,
+			dimmed,
+			openGames,
+			selectable,
+			currency,
+			uiLanguage,
+			setSelected,
+			toggleSelected,
+			toggleGame,
+			startEdit,
+			stopEdit,
+			updateGame,
+			updateExpansion,
+			store,
+			shortPlace,
+			formatRange,
+			formatDuration,
+			formatDate,
+			stateEditItems,
+			languageEditItems,
+			gamePlaceItems,
+			expansionPlaceItems,
+		}),
+		[
+			canWrite,
+			priceMap,
+			dimmed,
+			openGames,
+			selectable,
+			currency,
+			uiLanguage,
+			toggleSelected,
+			toggleGame,
+			startEdit,
+			stopEdit,
+			updateGame,
+			updateExpansion,
+			store,
+			shortPlace,
+			formatRange,
+			formatDuration,
+			formatDate,
+			stateEditItems,
+			languageEditItems,
+			gamePlaceItems,
+			expansionPlaceItems,
+		],
 	);
 
 	const columns: ColumnDef<GameRow>[] = useMemo(
@@ -277,33 +301,9 @@ export const GamesTableView = (props: Props) => {
 				? [
 						{
 							id: "select",
-							header: ({ table }: { table: { options: { meta?: { allSelected?: boolean } } } }) => (
-								<input
-									type="checkbox"
-									className="size-4 accent-primary align-middle"
-									aria-label={t("games:table.select-all")}
-									checked={!!table.options.meta?.allSelected}
-									onChange={(event) => setSelected(event.target.checked ? new Set(selectable) : new Set())}
-								/>
-							),
+							header: SelectAllHeader,
 							enableSorting: false,
-							cell: ({
-								row: { original: row },
-								table,
-							}: {
-								row: { original: GameRow };
-								table: { options: { meta?: { isSelected?: (id: number) => boolean } } };
-							}) =>
-								row.kind === "game" || row.kind === "collection" ? (
-									<input
-										type="checkbox"
-										className="size-4 accent-primary align-middle"
-										aria-label={t("games:table.select", { title: row.game.title })}
-										disabled={!selectable.includes(row.game.id)}
-										checked={!!table.options.meta?.isSelected?.(row.game.id)}
-										onChange={() => toggleSelected(row.game.id)}
-									/>
-								) : null,
+							cell: SelectCell,
 						},
 					]
 				: []),
@@ -311,337 +311,86 @@ export const GamesTableView = (props: Props) => {
 				id: "title",
 				header: t("games:columns.title"),
 				enableSorting: false,
-				cell: ({ row: { original: row } }) => {
-					const { game } = row;
-					if (row.kind === "expansion") {
-						return subRowTitle(row, t("games:table.expansion-tag"), row.expansion.image, row.expansion.title);
-					}
-					if (row.kind === "base") {
-						return subRowTitle(row, t("games:table.base-tag"), game.image, game.title);
-					}
-					const livePrice = priceMap.get(game.id);
-					const open = row.kind === "collection";
-					const only = dimmed?.get(game.id);
-					return (
-						<div data-keep={only ? "" : undefined} className="flex flex-col items-start gap-0.5">
-							<Link
-								to="/games/$gameId"
-								params={{ gameId: game.id }}
-								className={cx(
-									"flex items-center gap-2 underline-offset-2 hover:text-primary-text hover:underline",
-									only && "opacity-45",
-								)}
-							>
-								<BgtAvatar image={game.image} title={game.title} size="small" />
-								<span>{game.title}</span>
-								{game.changeDetectionWatchId && <TrackedPriceIcon livePrice={livePrice} />}
-							</Link>
-							{only && <span className="ml-9 text-xs text-white/60">{t("games:table.stored-elsewhere")}</span>}
-							{game.expansions.length > 0 && !only && (
-								<button
-									type="button"
-									aria-expanded={open}
-									aria-label={t("games:table.toggle-expansions", { count: game.expansions.length, title: game.title })}
-									onClick={() => toggleGame(game.id)}
-									className="ml-9 -mt-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-semibold text-primary-text hover:bg-primary/20"
-								>
-									<CaretRight
-										className={cx("size-3 motion-safe:transition-transform", open && "rotate-90")}
-										aria-hidden="true"
-									/>
-									{t("games:table.expansions", { count: game.expansions.length })}
-								</button>
-							)}
-						</div>
-					);
-				},
+				cell: TitleCell,
 			},
 			{
 				id: "players",
 				header: t("games:columns.players"),
-				cell: ({ row: { original: row } }) =>
-					isGameLine(row) ? formatRange(row.game.minPlayers, row.game.maxPlayers) : null,
+				cell: PlayersCell,
 				meta: { hideOnMobile: true },
 			},
 			{
 				id: "play-time",
 				header: t("games:columns.play-time"),
-				cell: ({ row: { original: row } }) =>
-					isGameLine(row) ? formatDuration(row.game.minPlayTime, row.game.maxPlayTime) : null,
+				cell: PlayTimeCell,
 				meta: { hideOnMobile: true },
 			},
 			{
 				id: "weight",
 				header: t("games:columns.weight"),
-				cell: ({ row: { original: row } }) => {
-					if (!isGameLine(row)) return null;
-					return row.game.weight != null && row.game.weight > 0 ? formatDecimal(row.game.weight, uiLanguage) : "-";
-				},
+				cell: WeightCell,
 				meta: { hideOnMobile: true },
 			},
 			{
 				id: "rating",
 				header: t("games:columns.rating"),
-				cell: ({ row: { original: row } }) => (isGameLine(row) ? formatDecimal(row.game.rating, uiLanguage) : null),
+				cell: RatingCell,
 				meta: { hideOnMobile: true },
 			},
 			{
 				id: "language",
 				header: t("games:columns.language"),
-				cell: ({ row: { original: row }, table }) =>
-					isGameLine(row) ? (
-						<EditableSelectCell
-							label={t("games:columns.language")}
-							readOnly={!canWrite}
-							value={row.game.language ?? LANGUAGE_NONE}
-							emptyValue={LANGUAGE_NONE}
-							items={languageEditItems}
-							hasSearch
-							editing={!!table.options.meta?.isEditing?.(row.game.id, "language")}
-							onStartEdit={() => startEdit(row.game.id, "language")}
-							onStopEdit={stopEdit}
-							onChange={(language) =>
-								updateGame({ ...row.game, language: language === LANGUAGE_NONE ? null : language })
-							}
-						/>
-					) : null,
+				cell: LanguageCell,
 				meta: { hideOnMobile: true },
 			},
 			{
 				id: "state",
 				header: t("games:columns.state"),
-				cell: ({ row: { original: row }, table }) => {
-					if (row.kind === "expansion") {
-						const key = expansionEditKey(row.expansion.id);
-						return (
-							<EditableSelectCell
-								label={`${t("games:columns.state")}: ${row.expansion.title}`}
-								readOnly={!canWrite}
-								value={row.expansion.state}
-								items={stateEditItems}
-								editing={!!table.options.meta?.isEditing?.(key, "state")}
-								onStartEdit={() => startEdit(key, "state")}
-								onStopEdit={stopEdit}
-								onChange={(state) => updateExpansion(row.game.id, { ...row.expansion, state: state as GameState })}
-							/>
-						);
-					}
-					if (!isGameLine(row)) return null;
-					return (
-						<EditableSelectCell
-							label={t("games:columns.state")}
-							readOnly={!canWrite}
-							value={row.game.state}
-							items={stateEditItems}
-							editing={!!table.options.meta?.isEditing?.(row.game.id, "state")}
-							onStartEdit={() => startEdit(row.game.id, "state")}
-							onStopEdit={stopEdit}
-							onChange={(state) => updateGame(withStateChange(row.game, state as GameState, priceMap.get(row.game.id)))}
-						/>
-					);
-				},
+				cell: StateCell,
 				meta: { hideOnMobile: true },
 			},
 			{
 				id: "storage",
 				header: t("games:columns.storage"),
-				cell: ({ row: { original: row }, table }) => {
-					if (row.kind === "expansion") {
-						const key = expansionEditKey(row.expansion.id);
-						if (!canStore(row.expansion.state)) return <span className="text-white/40">-</span>;
-						const place = placeOf(row.expansion);
-						return (
-							<EditableSelectCell
-								label={`${t("games:columns.storage")}: ${row.expansion.title}`}
-								readOnly={!canWrite}
-								value={place ? placeKey(place) : NO_PLACE}
-								items={expansionPlaceItems}
-								hasSearch
-								className="max-w-60"
-								display={place ? shortPlace(place) : undefined}
-								editing={!!table.options.meta?.isEditing?.(key, "storage")}
-								flash={!!table.options.meta?.isStored?.(key)}
-								onFlashEnd={() => table.options.meta?.storedDone?.(key)}
-								onStartEdit={() => startEdit(key, "storage")}
-								onStopEdit={stopEdit}
-								onChange={(value) => store(StorageItemType.Expansion, [row.expansion.id], parsePlaceKey(value))}
-							/>
-						);
-					}
-					if (row.kind === "collection" && (openGames.has(row.game.id) || dimmed?.has(row.game.id))) return null;
-					if (!canStore(row.game.state)) return <span className="text-white/40">-</span>;
-					const place = placeOf(row.game);
-					const elsewhere = row.game.expansions.filter((expansion) => placeOf(expansion) !== null).length;
-					return (
-						<span className="flex flex-col items-start">
-							<EditableSelectCell
-								label={`${t("games:columns.storage")}: ${row.game.title}`}
-								readOnly={!canWrite}
-								value={place ? placeKey(place) : NO_PLACE}
-								items={gamePlaceItems}
-								hasSearch
-								className="max-w-60"
-								display={place ? shortPlace(place) : undefined}
-								editing={!!table.options.meta?.isEditing?.(row.game.id, "storage")}
-								flash={!!table.options.meta?.isStored?.(row.game.id)}
-								onFlashEnd={() => table.options.meta?.storedDone?.(row.game.id)}
-								onStartEdit={() => startEdit(row.game.id, "storage")}
-								onStopEdit={stopEdit}
-								onChange={(value) => store(StorageItemType.Game, [row.game.id], parsePlaceKey(value))}
-							/>
-							{row.kind !== "base" && elsewhere > 0 && (
-								<span className="pl-[9px] text-[11px] leading-3 text-white/60">
-									{t("games:table.expansions-elsewhere", { count: elsewhere })}
-								</span>
-							)}
-						</span>
-					);
-				},
+				cell: StorageCell,
 				meta: { hideOnMobile: true },
 			},
 			{
 				id: "additionDate",
 				header: t("games:columns.added"),
-				cell: ({ row: { original: row } }) => {
-					if (row.kind === "expansion") return formatDate(row.expansion.additionDate);
-					return isGameLine(row) ? formatDate(row.game.additionDate) : null;
-				},
+				cell: AdditionDateCell,
 				meta: { hideOnMobile: true },
 			},
 			{
 				id: "buyingPrice",
 				header: t("games:columns.price"),
-				cell: ({ row: { original: row }, table }) => {
-					if (row.kind === "expansion") {
-						const key = expansionEditKey(row.expansion.id);
-						return (
-							<EditableNumberCell
-								readOnly={!canWrite}
-								value={row.expansion.buyingPrice}
-								min={0}
-								prefix={currency}
-								format={(price) => formatPriceOrEmpty(price, currency, uiLanguage)}
-								editing={!!table.options.meta?.isEditing?.(key, "buyingPrice")}
-								onStartEdit={() => startEdit(key, "buyingPrice")}
-								onStopEdit={stopEdit}
-								onChange={(buyingPrice) => updateExpansion(row.game.id, { ...row.expansion, buyingPrice })}
-								ariaLabel={`${t("games:columns.price")}: ${row.expansion.title}`}
-							/>
-						);
-					}
-					if (row.kind === "collection" || (row.kind === "game" && row.game.expansions.length > 0)) {
-						const owned = row.game.expansions.filter((expansion) => expansion.state === GameState.Owned).length;
-						return (
-							<span className="inline-flex flex-col items-start pl-[9px]">
-								<span>{formatPriceOrEmpty(collectionPrice(row.game), currency, uiLanguage)}</span>
-								<span className="text-[11px] font-medium leading-3 text-white/60">
-									{t("games:table.collection-price", { count: owned })}
-								</span>
-							</span>
-						);
-					}
-					return (
-						<EditableNumberCell
-							readOnly={!canWrite}
-							value={row.game.buyingPrice}
-							min={0}
-							prefix={currency}
-							format={(price) => formatPriceOrEmpty(price, currency, uiLanguage)}
-							editing={!!table.options.meta?.isEditing?.(row.game.id, "buyingPrice")}
-							onStartEdit={() => startEdit(row.game.id, "buyingPrice")}
-							onStopEdit={stopEdit}
-							onChange={(buyingPrice) => updateGame({ ...row.game, buyingPrice })}
-							ariaLabel={`${t("games:columns.price")}: ${row.game.title}`}
-						/>
-					);
-				},
+				cell: BuyingPriceCell,
 				meta: { hideOnMobile: true },
 			},
 			{
 				id: "shopUrl",
 				header: t("games:columns.shop"),
 				enableSorting: false,
-				cell: ({ row: { original: row } }) => {
-					if (!isGameLine(row)) return null;
-					const url = SafeHttpUrl(priceMap.get(row.game.id)?.shopUrl ?? row.game.shopUrl);
-					return url ? (
-						<a
-							href={url}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="inline-flex items-center gap-1 text-primary-text hover:text-indigo-300"
-						>
-							<SquareOutIcon className="size-4" />
-							{t("games:columns.shop")}
-						</a>
-					) : (
-						"-"
-					);
-				},
+				cell: ShopUrlCell,
 			},
 			{
 				id: "bggId",
 				header: t("games:columns.bgg"),
 				enableSorting: false,
-				cell: ({ row: { original: row } }) => {
-					if (row.kind === "collection") return null;
-					const bggId = row.kind === "expansion" ? row.expansion.bggId : row.game.bggId;
-					return bggId ? (
-						<a
-							href={`https://boardgamegeek.com/boardgame/${bggId}`}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="inline-flex items-center gap-1 text-primary-text hover:text-indigo-300"
-						>
-							<SquareOutIcon className="size-4" />
-							{t("games:columns.bgg")}
-						</a>
-					) : (
-						"-"
-					);
-				},
+				cell: BggIdCell,
 			},
 			...(showLivePrices
 				? [
 						{
 							id: "current-price",
 							header: t("games:columns.current-price"),
-							cell: ({ row: { original: row } }: { row: { original: GameRow } }) =>
-								isGameLine(row) ? (
-									<LivePrice livePrice={priceMap.get(row.game.id)} currency={currency} uiLanguage={uiLanguage} />
-								) : null,
+							cell: CurrentPriceCell,
 							meta: { hideOnMobile: true },
 						},
 					]
 				: []),
 		],
-		[
-			t,
-			currency,
-			uiLanguage,
-			formatRange,
-			formatDuration,
-			formatDate,
-			updateGame,
-			updateExpansion,
-			stateEditItems,
-			languageEditItems,
-			showLivePrices,
-			priceMap,
-			startEdit,
-			stopEdit,
-			canWrite,
-			toggleGame,
-			subRowTitle,
-			dimmed,
-			openGames,
-			selectable,
-			toggleSelected,
-			gamePlaceItems,
-			expansionPlaceItems,
-			store,
-			shortPlace,
-		],
+		[t, canWrite, showLivePrices],
 	);
 
 	const columnWidths: (string | null)[] = [
@@ -729,16 +478,18 @@ export const GamesTableView = (props: Props) => {
 				</section>
 			)}
 			<div className="hidden md:block">
-				<BgtDataTable
-					columns={columns}
-					data={rows}
-					meta={tableMeta}
-					enableSorting={false}
-					isLoading={false}
-					noDataMessage={t("games:table.empty")}
-					widths={columnWidths}
-					rowClassName={rowClassName}
-				/>
+				<GamesTableContext.Provider value={tableContext}>
+					<BgtDataTable
+						columns={columns}
+						data={rows}
+						meta={tableMeta}
+						enableSorting={false}
+						isLoading={false}
+						noDataMessage={t("games:table.empty")}
+						widths={columnWidths}
+						rowClassName={rowClassName}
+					/>
+				</GamesTableContext.Provider>
 			</div>
 			<div className="md:hidden">
 				<GameTableCards

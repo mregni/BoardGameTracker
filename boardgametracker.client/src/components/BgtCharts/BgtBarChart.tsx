@@ -1,4 +1,4 @@
-import { type BarDatum, ResponsiveBar } from "@nivo/bar";
+import { type BarDatum, type BarTooltipProps, ResponsiveBar } from "@nivo/bar";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getIntegerTicks } from "@/utils/numberUtils";
@@ -38,9 +38,18 @@ interface Props {
 	tickFormat?: (value: string | number) => string;
 }
 
+const BarTooltip = ({ value, indexValue }: BarTooltipProps<BarDatum>) => {
+	const { t } = useTranslation();
+	return (
+		<div className="bg-background border border-primary/30 rounded-lg p-3 shadow-lg min-w-32">
+			<BgtText color="white">{indexValue}</BgtText>
+			<BgtText color="cyan">{t("common:sessions-count", { count: Number(value) })}</BgtText>
+		</div>
+	);
+};
+
 export const BgtBarChart = (props: Props) => {
 	const { data, index, keys, tickFormat } = props;
-	const { t } = useTranslation();
 	const [isSmall, setIsSmall] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -116,12 +125,7 @@ export const BgtBarChart = (props: Props) => {
 				enableGridY={true}
 				theme={theme}
 				animate={false}
-				tooltip={({ value, indexValue }) => (
-					<div className="bg-background border border-primary/30 rounded-lg p-3 shadow-lg min-w-32">
-						<BgtText color="white">{indexValue}</BgtText>
-						<BgtText color="cyan">{t("common:sessions-count", { count: Number(value) })}</BgtText>
-					</div>
-				)}
+				tooltip={BarTooltip}
 			/>
 		</div>
 	);
