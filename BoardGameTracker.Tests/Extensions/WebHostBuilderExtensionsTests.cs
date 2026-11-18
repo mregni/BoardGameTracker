@@ -1,17 +1,17 @@
+using System.Text;
+using System.Text.Json;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Tests.Support;
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Sentry;
 using Sentry.AspNetCore;
 using Sentry.Extensibility;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog.Events;
-using System.Text;
-using System.Text.Json;
 using Sentry.Protocol.Envelopes;
+using Serilog.Events;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Extensions;

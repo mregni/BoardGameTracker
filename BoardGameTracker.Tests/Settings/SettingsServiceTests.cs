@@ -9,8 +9,8 @@ using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Settings;
 using BoardGameTracker.Tests.Support;
-using Microsoft.AspNetCore.DataProtection;
 using FluentAssertions;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -31,7 +31,7 @@ public class SettingsServiceTests : IDisposable
         Constants.BggConfig.EnvApiKeyName
     ];
 
-    private readonly Dictionary<string, string?> _originalEnvironmentVariables = new();
+    private readonly Dictionary<string, string?> _originalEnvironmentVariables = [];
     private readonly Mock<IConfigRepository> _configRepositoryMock;
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
@@ -418,7 +418,7 @@ public class SettingsServiceTests : IDisposable
 
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await _settingsService.UpdateSettingsAsync(model);
 
@@ -457,7 +457,7 @@ public class SettingsServiceTests : IDisposable
         };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await WithEnvVar("CURRENCY", "USD", () => _settingsService.UpdateSettingsAsync(model));
 
@@ -485,7 +485,7 @@ public class SettingsServiceTests : IDisposable
         };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await WithEnvVar(variable, value, () => _settingsService.UpdateSettingsAsync(model));
 
@@ -500,7 +500,7 @@ public class SettingsServiceTests : IDisposable
         var model = new UIResourceDto { BggApiKey = "submitted-key", ChangeDetectionApiKey = "" };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await WithEnvVar(Constants.BggConfig.EnvApiKeyName, "env-key", () => _settingsService.UpdateSettingsAsync(model));
 
@@ -514,7 +514,7 @@ public class SettingsServiceTests : IDisposable
     {
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await WithEnvVar("DATE_FORMAT", null, () => _settingsService.GetSettingsAsync());
 
@@ -530,7 +530,7 @@ public class SettingsServiceTests : IDisposable
     {
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await WithEnvVar("SHELF_OF_SHAME_MONTHS", "9", () => _settingsService.GetSettingsAsync());
 
@@ -550,7 +550,7 @@ public class SettingsServiceTests : IDisposable
         var model = new UIResourceDto { BggApiKey = bggApiKey };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         await _settingsService.UpdateSettingsAsync(model);
 
@@ -565,7 +565,7 @@ public class SettingsServiceTests : IDisposable
         var model = new UIResourceDto { BggApiKey = "  new-key  " };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         await _settingsService.UpdateSettingsAsync(model);
 
@@ -632,7 +632,7 @@ public class SettingsServiceTests : IDisposable
         var model = new UIResourceDto { PublicUrl = publicUrl };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         await _settingsService.UpdateSettingsAsync(model);
 
@@ -647,7 +647,7 @@ public class SettingsServiceTests : IDisposable
         var model = new UIResourceDto { PublicUrl = null!, ChangeDetectionBaseUrl = null! };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         await _settingsService.UpdateSettingsAsync(model);
 
@@ -663,7 +663,7 @@ public class SettingsServiceTests : IDisposable
         var model = new UIResourceDto { ChangeDetectionApiKey = null };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         await _settingsService.UpdateSettingsAsync(model);
 
@@ -680,7 +680,7 @@ public class SettingsServiceTests : IDisposable
         var model = new UIResourceDto { ChangeDetectionApiKey = apiKey };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         await _settingsService.UpdateSettingsAsync(model);
 
@@ -720,7 +720,7 @@ public class SettingsServiceTests : IDisposable
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
             .Callback(() => calls.Add("read"))
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         await _settingsService.UpdateSettingsAsync(model);
 
@@ -738,7 +738,7 @@ public class SettingsServiceTests : IDisposable
         var model = new UIResourceDto { ChangeDetectionBaseUrl = submitted, BggApiKey = "", ChangeDetectionApiKey = "" };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         await _settingsService.UpdateSettingsAsync(model);
 
@@ -753,7 +753,7 @@ public class SettingsServiceTests : IDisposable
         var model = new UIResourceDto { ChangeDetectionBaseUrl = "https://db.example.com", BggApiKey = "", ChangeDetectionApiKey = "" };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await WithEnvVar(Constants.ChangeDetectionConfig.BaseUrl.ToUpperInvariant(), "https://env.example.com",
             () => _settingsService.UpdateSettingsAsync(model));
@@ -769,7 +769,7 @@ public class SettingsServiceTests : IDisposable
         var model = new UIResourceDto { BggApiKey = "key", ChangeDetectionApiKey = "" };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await WithEnvVar(Constants.BggConfig.EnvApiKeyName, "   ", () => _settingsService.UpdateSettingsAsync(model));
 
@@ -808,7 +808,7 @@ public class SettingsServiceTests : IDisposable
     {
         _configRepositoryMock
             .Setup(x => x.GetConfigsByPrefixAsync(Constants.ChangeDetectionConfig.Prefix))
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await _settingsService.GetChangeDetectionSettingsAsync();
 
@@ -911,7 +911,7 @@ public class SettingsServiceTests : IDisposable
     {
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await WithEnvVar(Constants.BggConfig.EnvApiKeyName, "env-api-key", () => _settingsService.GetSettingsAsync());
 
@@ -953,7 +953,7 @@ public class SettingsServiceTests : IDisposable
     {
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await WithEnvVar(Constants.BggConfig.EnvApiKeyName, null, () => _settingsService.GetSettingsAsync());
 
@@ -977,7 +977,7 @@ public class SettingsServiceTests : IDisposable
         var model = new UIResourceDto { ChangeDetectionApiKey = " cd-key " };
         _configRepositoryMock
             .Setup(x => x.GetAllConfigsAsync())
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         await _settingsService.UpdateSettingsAsync(model);
 

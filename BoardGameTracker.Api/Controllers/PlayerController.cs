@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models;
-using BoardGameTracker.Common;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

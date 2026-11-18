@@ -152,16 +152,16 @@ public class SettingsControllerTests
         VerifyNoOtherCalls();
     }
 
-    public static TheoryData<UpdateStatus> UpdateStatuses => new()
-    {
+    public static TheoryData<UpdateStatus> UpdateStatuses =>
+    [
         new UpdateStatus { CurrentVersion = "1.0.0", LatestVersion = "1.1.0", UpdateAvailable = true, LastChecked = DateTime.UtcNow.AddHours(-1), ErrorMessage = null },
         new UpdateStatus { CurrentVersion = "2.5.0", LatestVersion = "2.5.0", UpdateAvailable = false, LastChecked = DateTime.UtcNow.AddMinutes(-30), ErrorMessage = null },
         new UpdateStatus { CurrentVersion = "1.0.0", LatestVersion = null, UpdateAvailable = false, LastChecked = null, ErrorMessage = null },
         new UpdateStatus { CurrentVersion = "1.5.0", LatestVersion = null, UpdateAvailable = false, LastChecked = DateTime.UtcNow.AddDays(-1), ErrorMessage = "Failed to connect to update server" }
-    };
+    ];
 
     [Theory]
-    [MemberData(nameof(UpdateStatuses))]
+    [MemberData(nameof(UpdateStatuses), DisableDiscoveryEnumeration = true)]
     public async Task GetVersionInfo_ShouldReturnMappedStatus(UpdateStatus updateStatus)
     {
         _updateServiceMock

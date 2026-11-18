@@ -164,7 +164,7 @@ public class UpdateServiceTests
     {
         _configRepositoryMock
             .Setup(x => x.GetConfigsByPrefixAsync(UpdateConfig.Prefix))
-            .ReturnsAsync(new Dictionary<string, string>());
+            .ReturnsAsync([]);
 
         var result = await _updateService.GetVersionInfoAsync();
 

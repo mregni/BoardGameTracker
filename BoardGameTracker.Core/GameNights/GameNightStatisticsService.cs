@@ -63,6 +63,9 @@ public class GameNightStatisticsService : IGameNightStatisticsService
         var decided = played.Where(x => x.IsOver).ToList();
         var recent = outcomes.TakeLast(RecentNightCount).ToList();
         var winnerStreaks = GameNightStreaks.Find(decided.Select(x => new StreakStep(x.Night.StartDate, x.Winners.WinnerIds)).ToList());
+        var gamesPlayed = outcomes.Sum(x => x.Night.Sessions.Count);
+        var totalMinutes = outcomes.Sum(x => x.Night.Sessions.Sum(s => (s.End - s.Start).TotalMinutes));
+        var averageTable = outcomes.Count == 0 ? 0 : outcomes.Average(x => x.AttendeeIds.Count);
 
         return new GameNightStatisticsDto
         {
@@ -70,9 +73,9 @@ public class GameNightStatisticsService : IGameNightStatisticsService
             TotalNights = held.Count,
             NightsWithSessions = played.Count,
             Nights = outcomes.Count,
-            GamesPlayed = outcomes.Sum(x => x.Night.Sessions.Count),
-            TotalMinutes = outcomes.Sum(x => x.Night.Sessions.Sum(s => (s.End - s.Start).TotalMinutes)),
-            AverageTable = outcomes.Count == 0 ? 0 : outcomes.Average(x => x.AttendeeIds.Count),
+            GamesPlayed = gamesPlayed,
+            TotalMinutes = totalMinutes,
+            AverageTable = averageTable,
             AverageDaysBetweenNights = outcomes.Count < 2
                 ? null
                 : (outcomes[^1].Night.StartDate - outcomes[0].Night.StartDate).TotalDays / (outcomes.Count - 1),

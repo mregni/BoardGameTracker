@@ -39,7 +39,7 @@ public class AuthDisabledFilterTests
 
         return new ActionExecutingContext(
             actionContext,
-            new List<IFilterMetadata>(),
+            [],
             new Dictionary<string, object?>(),
             new object());
     }

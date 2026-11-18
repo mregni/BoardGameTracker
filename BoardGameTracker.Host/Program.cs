@@ -153,5 +153,3 @@ await StartupTasks.PrepareDataAsync(app.Services, authEnabled, environmentProvid
 await app.RunAsync();
 
 await Log.CloseAndFlushAsync();
-
-public partial class Program;

@@ -35,7 +35,7 @@ public class OidcControllerTests
     };
 
     [Theory]
-    [MemberData(nameof(Errors))]
+    [MemberData(nameof(Errors), DisableDiscoveryEnumeration = true)]
     public void ErrorKey_ShouldOnlyForwardTranslationKeysFromExpectedExceptions(Exception exception, string expected)
     {
         OidcController.ErrorKey(exception).Should().Be(expected);

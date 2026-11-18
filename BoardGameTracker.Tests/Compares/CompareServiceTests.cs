@@ -76,12 +76,12 @@ public class CompareServiceTests
         SetupPlayer(PlayerTwo, sessionCount: 8, duration: 400, winCount: 2);
         _compareRepositoryMock
             .Setup(x => x.GetSessionsTogether(PlayerOne, PlayerTwo))
-            .ReturnsAsync(new List<SessionTogether>
-            {
+            .ReturnsAsync(
+            [
                 Session(3, 10, 0, oneWon: true, twoWon: false, oneScore: 50, twoScore: 49),
                 Session(2, 10, 1, oneWon: true, twoWon: false, oneScore: 60, twoScore: 40),
                 Session(1, 11, 2, oneWon: false, twoWon: false)
-            });
+            ]);
 
         var result = await _compareService.GetPlayerComparison(PlayerOne, PlayerTwo);
 

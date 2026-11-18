@@ -397,14 +397,14 @@ public class GameNightControllerTests
         VerifyNoOtherCalls();
     }
 
-    public static TheoryData<UpdateRsvpCommand> UpdateRsvpCommands => new()
-    {
+    public static TheoryData<UpdateRsvpCommand> UpdateRsvpCommands =>
+    [
         new UpdateRsvpCommand { Id = 5, State = GameNightRsvpState.Accepted },
         new UpdateRsvpCommand { GameNightId = 10, PlayerId = 3, State = GameNightRsvpState.Declined }
-    };
+    ];
 
     [Theory]
-    [MemberData(nameof(UpdateRsvpCommands))]
+    [MemberData(nameof(UpdateRsvpCommands), DisableDiscoveryEnumeration = true)]
     public async Task UpdateRsvp_ShouldReturnOkWithRsvpDto_WhenCommandIsValid(UpdateRsvpCommand command)
     {
         var rsvp = GameNightRsvp.Create(3, command.State);
@@ -440,7 +440,7 @@ public class GameNightControllerTests
     }
 
     [Theory]
-    [MemberData(nameof(UpdateRsvpCommands))]
+    [MemberData(nameof(UpdateRsvpCommands), DisableDiscoveryEnumeration = true)]
     public async Task UpdateRsvpByLink_ShouldPassTheRouteLinkAndAuthenticationState_ToTheService(UpdateRsvpCommand command)
     {
         var linkId = Guid.NewGuid();
@@ -536,14 +536,14 @@ public class GameNightControllerTests
         VerifyNoOtherCalls();
     }
 
-    public static TheoryData<ClaimsPrincipal> AnonymousUsers => new()
-    {
+    public static TheoryData<ClaimsPrincipal> AnonymousUsers =>
+    [
         new ClaimsPrincipal(),
         new ClaimsPrincipal(new ClaimsIdentity())
-    };
+    ];
 
     [Theory]
-    [MemberData(nameof(AnonymousUsers))]
+    [MemberData(nameof(AnonymousUsers), DisableDiscoveryEnumeration = true)]
     public async Task UpdateRsvpByLink_ShouldTreatAnUnverifiedUserAsAnonymous(ClaimsPrincipal user)
     {
         var linkId = Guid.NewGuid();
@@ -561,7 +561,7 @@ public class GameNightControllerTests
     }
 
     [Theory]
-    [MemberData(nameof(AnonymousUsers))]
+    [MemberData(nameof(AnonymousUsers), DisableDiscoveryEnumeration = true)]
     public async Task GetByLink_ShouldTreatAnUnverifiedUserAsAnonymous(ClaimsPrincipal user)
     {
         var linkId = Guid.NewGuid();

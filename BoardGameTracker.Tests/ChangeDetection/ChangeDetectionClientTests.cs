@@ -1176,7 +1176,7 @@ public class ChangeDetectionClientTests
         private int _watchRequestsInFlight;
         private int _maxWatchRequestsInFlight;
 
-        public List<string> Requests { get; } = new();
+        public List<string> Requests { get; } = [];
         public string WatchBody { get; set; } = WatchJson;
         public HttpStatusCode WatchStatus { get; set; } = HttpStatusCode.OK;
         public string HistoryBody { get; set; } = HistoryText;

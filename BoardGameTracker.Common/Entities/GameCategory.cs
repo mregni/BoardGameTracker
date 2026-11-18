@@ -18,6 +18,6 @@ public class GameCategory : HasId
     public GameCategory(string name)
     {
         Name = name;
-        Games = new List<Game>();
+        Games = [];
     }
 }

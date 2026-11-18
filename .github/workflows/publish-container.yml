@@ -153,7 +153,7 @@ jobs:
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.AppHost/**/*.cs,**/scripts/**,**/src/test/**,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**,**/e2e/**,**/playwright.config.ts" \
             /d:sonar.cpd.exclusions="**/Migrations/**/*.cs" \
             /d:sonar.typescript.tsconfigPaths="$GITHUB_WORKSPACE/boardgametracker.client/tsconfig.json" \
-            /d:sonar.issue.ignore.multicriteria=e1,e2,e3,e4,e5 \
+            /d:sonar.issue.ignore.multicriteria=e1,e2,e3,e4,e5,e6 \
             /d:sonar.issue.ignore.multicriteria.e1.ruleKey=githubactions:S7637 \
             /d:sonar.issue.ignore.multicriteria.e1.resourceKey="**/.github/**" \
             /d:sonar.issue.ignore.multicriteria.e2.ruleKey=docker:S8431 \
@@ -163,7 +163,9 @@ jobs:
             /d:sonar.issue.ignore.multicriteria.e4.ruleKey=typescript:S9382 \
             /d:sonar.issue.ignore.multicriteria.e4.resourceKey="**/src/utils/refreshLock.ts" \
             /d:sonar.issue.ignore.multicriteria.e5.ruleKey=typescript:S9382 \
-            /d:sonar.issue.ignore.multicriteria.e5.resourceKey="**/src/routes/games/import/-hooks/useList.ts"
+            /d:sonar.issue.ignore.multicriteria.e5.resourceKey="**/src/routes/games/import/-hooks/useList.ts" \
+            /d:sonar.issue.ignore.multicriteria.e6.ruleKey=csharpsquid:S1144 \
+            /d:sonar.issue.ignore.multicriteria.e6.resourceKey="**/BoardGameTracker.Common/Entities/**"
 
       - name: Build .NET
         run: dotnet build --no-restore

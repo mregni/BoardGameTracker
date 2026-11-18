@@ -13,7 +13,7 @@ public class DbConnectionProviderTests : IDisposable
     private static readonly string[] Keys = ["DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME", "DB_PORT", "EF_SENSITIVE_LOGGING"];
 
     private readonly DbConnectionProvider _provider = new();
-    private readonly Dictionary<string, string?> _originalEnvironmentVariables = new();
+    private readonly Dictionary<string, string?> _originalEnvironmentVariables = [];
 
     public DbConnectionProviderTests()
     {

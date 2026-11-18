@@ -28,7 +28,7 @@ public class ValidateIdFilterTests
 
         return new ActionExecutingContext(
             actionContext,
-            new List<IFilterMetadata>(),
+            [],
             actionArguments,
             new object());
     }
@@ -124,7 +124,7 @@ public class ValidateIdFilterTests
     [Fact]
     public void OnActionExecuting_ShouldNotSetResult_WhenNoParametersProvided()
     {
-        var context = CreateContext(new Dictionary<string, object?>());
+        var context = CreateContext([]);
 
         _filter.OnActionExecuting(context);
 

@@ -400,13 +400,13 @@ public class DashboardServiceTests
     {
         _gameStatisticsRepositoryMock
             .Setup(x => x.GetMostPlayedGames(4, Token))
-            .ReturnsAsync(new List<(int GameId, string Title, string? Image, int PlayCount)> { (1, "Catan", "catan.jpg", 20), (2, "Ticket to Ride", "ttr.jpg", 15) });
+            .ReturnsAsync([(1, "Catan", "catan.jpg", 20), (2, "Ticket to Ride", "ttr.jpg", 15)]);
         _gameStatisticsRepositoryMock
             .Setup(x => x.GetMostPlayedGamesSince(4, YearStartUtc, Token))
-            .ReturnsAsync(new List<(int GameId, string Title, string? Image, int PlayCount)> { (2, "Ticket to Ride", "ttr.jpg", 3) });
+            .ReturnsAsync([(2, "Ticket to Ride", "ttr.jpg", 3)]);
         _gameStatisticsRepositoryMock
             .Setup(x => x.GetMostPlayedGamesSince(4, MonthStartUtc, Token))
-            .ReturnsAsync(new List<(int GameId, string Title, string? Image, int PlayCount)> { (1, "Catan", "catan.jpg", 5) });
+            .ReturnsAsync([(1, "Catan", "catan.jpg", 5)]);
 
         var result = await _sut.GetStatistics(null, Token);
 
@@ -429,7 +429,7 @@ public class DashboardServiceTests
     {
         _playerRepositoryMock
             .Setup(x => x.GetWinTotals(Token))
-            .ReturnsAsync(new List<(int Id, string Name, string? Image, int PlayCount, int WinCount)> { (2, "Jane", null, 20, 12), (1, "John", "john.jpg", 25, 15) });
+            .ReturnsAsync([(2, "Jane", null, 20, 12), (1, "John", "john.jpg", 25, 15)]);
 
         var result = await _sut.GetStatistics(null, Token);
 
@@ -451,14 +451,14 @@ public class DashboardServiceTests
     {
         _playerRepositoryMock
             .Setup(x => x.GetWinTotals(Token))
-            .ReturnsAsync(new List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>
-            {
+            .ReturnsAsync(
+            [
                 (1, "Jules", null, 30, 13),
                 (2, "Bram", null, 26, 13),
                 (3, "Sofie", null, 20, 20),
                 (4, "Anna", null, 26, 13),
                 (5, "Kathleen", null, 10, 2)
-            });
+            ]);
 
         var result = await _sut.GetStatistics(null, Token);
 
@@ -639,7 +639,7 @@ public class DashboardServiceTests
         _playerRepositoryMock.Setup(x => x.CountActivePlayersSince(localYearStartUtc, Token)).ReturnsAsync(2);
         _gameStatisticsRepositoryMock
             .Setup(x => x.GetMostPlayedGamesSince(4, localYearStartUtc, Token))
-            .ReturnsAsync(new List<(int GameId, string Title, string? Image, int PlayCount)> { (1, "Catan", null, 1) });
+            .ReturnsAsync([(1, "Catan", null, 1)]);
 
         var result = await _sut.GetStatistics(null, Token);
 

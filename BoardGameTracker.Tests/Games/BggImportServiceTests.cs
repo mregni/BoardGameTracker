@@ -1356,7 +1356,7 @@ public class BggImportServiceTests
             .Setup(x => x.IsBggEnabled())
             .ReturnsAsync(false);
 
-        var act = async () => await _bggImportService.ImportList(new List<ImportGame>());
+        var act = async () => await _bggImportService.ImportList([]);
 
         await act.Should().ThrowAsync<BggFeatureDisabledException>();
 

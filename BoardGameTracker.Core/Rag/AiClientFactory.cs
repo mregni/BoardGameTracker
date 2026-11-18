@@ -93,9 +93,7 @@ public class AiClientFactory : IAiClientFactory
         }
 
         _logger.LogInformation("Pulling AI model {Model}", model);
-        await foreach (var _ in client.PullModelAsync(model, cancellationToken))
-        {
-        }
+        await client.PullModelAsync(model, cancellationToken).LastOrDefaultAsync(cancellationToken);
         _logger.LogInformation("Finished pulling AI model {Model}", model);
     }
 

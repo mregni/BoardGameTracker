@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
-using BoardGameTracker.Common.DTOs.Commands;
-using BoardGameTracker.Common.DTOs;
-using BoardGameTracker.Common.Extensions;
-using BoardGameTracker.Common.Models.Bgg;
-using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

@@ -18,6 +18,6 @@ public class GameMechanic : HasId
     public GameMechanic(string name)
     {
         Name = name;
-        Games = new List<Game>();
+        Games = [];
     }
 }

@@ -9,13 +9,13 @@ public class RulebookChunkerTests
 {
     private readonly RulebookChunker _chunker = new();
 
-    public static TheoryData<List<PdfPageText>> NoContentPages => new()
-    {
+    public static TheoryData<List<PdfPageText>> NoContentPages =>
+    [
         new List<PdfPageText>(),
         new List<PdfPageText> { new(1, "") },
         new List<PdfPageText> { new(1, "   \n  \t ") },
         new List<PdfPageText> { new(1, "\r\r") }
-    };
+    ];
 
     [Fact]
     public void Chunk_ShouldDropControlCharacters_ThatPostgresCannotStore()
@@ -26,7 +26,7 @@ public class RulebookChunkerTests
     }
 
     [Theory]
-    [MemberData(nameof(NoContentPages))]
+    [MemberData(nameof(NoContentPages), DisableDiscoveryEnumeration = true)]
     public void Chunk_ShouldReturnNoChunks_WhenPagesHaveNoContent(List<PdfPageText> pages)
     {
         var result = _chunker.Chunk(pages);

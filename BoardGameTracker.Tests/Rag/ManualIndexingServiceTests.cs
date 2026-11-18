@@ -257,7 +257,7 @@ public class ManualIndexingServiceTests
         var second = CreateManual(8);
         _manualRepoMock
             .Setup(x => x.ListAsync(It.IsAny<ManualsToIndexSpec>(), _token))
-            .ReturnsAsync(new List<Manual> { first, second });
+            .ReturnsAsync([first, second]);
 
         await _service.EnqueuePendingAsync(_token);
 
@@ -274,7 +274,7 @@ public class ManualIndexingServiceTests
     {
         _manualRepoMock
             .Setup(x => x.ListAsync(It.IsAny<ManualsToIndexSpec>(), _token))
-            .ReturnsAsync(new List<Manual> { CreateManual(5) });
+            .ReturnsAsync([CreateManual(5)]);
 
         await _service.EnqueuePendingAsync(_token);
 
@@ -290,7 +290,7 @@ public class ManualIndexingServiceTests
     {
         _manualRepoMock
             .Setup(x => x.ListAsync(It.IsAny<ManualsToIndexSpec>(), _token))
-            .ReturnsAsync(new List<Manual>());
+            .ReturnsAsync([]);
 
         var act = () => _service.EnqueuePendingAsync(_token);
 

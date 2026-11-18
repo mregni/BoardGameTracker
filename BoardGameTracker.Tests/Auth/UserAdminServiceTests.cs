@@ -201,7 +201,7 @@ public class UserAdminServiceTests : IDisposable
 
         _userManagerMock
             .Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin))
-            .ReturnsAsync(new List<ApplicationUser> { otherAdmin, targetUser });
+            .ReturnsAsync([otherAdmin, targetUser]);
 
         _userManagerMock
             .Setup(x => x.DeleteAsync(targetUser))
@@ -233,7 +233,7 @@ public class UserAdminServiceTests : IDisposable
 
         _userManagerMock
             .Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin))
-            .ReturnsAsync(new List<ApplicationUser> { onlyAdmin });
+            .ReturnsAsync([onlyAdmin]);
 
         _userManagerMock
             .Setup(x => x.DeleteAsync(targetUser))
@@ -296,7 +296,7 @@ public class UserAdminServiceTests : IDisposable
 
         _userManagerMock
             .Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin))
-            .ReturnsAsync(new List<ApplicationUser> { lastAdmin });
+            .ReturnsAsync([lastAdmin]);
 
         var act = () => _service.DeleteAsync(targetUserId, currentUserId);
 
@@ -393,7 +393,7 @@ public class UserAdminServiceTests : IDisposable
 
         _userManagerMock.Setup(x => x.FindByIdAsync(adminUserId)).ReturnsAsync(adminUser);
         _userManagerMock.Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin))
-            .ReturnsAsync(new List<ApplicationUser> { adminUser });
+            .ReturnsAsync([adminUser]);
 
         var act = () => _service.UpdateRoleAsync(adminUserId, Constants.AuthRoles.User, adminUserId);
 
@@ -417,7 +417,7 @@ public class UserAdminServiceTests : IDisposable
 
         _userManagerMock.Setup(x => x.FindByIdAsync(adminUserId)).ReturnsAsync(adminUser);
         _userManagerMock.Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin))
-            .ReturnsAsync(new List<ApplicationUser> { adminUser, otherAdmin });
+            .ReturnsAsync([adminUser, otherAdmin]);
         _userManagerMock.Setup(x => x.RemoveFromRolesAsync(adminUser, currentRoles)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.Setup(x => x.AddToRoleAsync(adminUser, Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.SetupSequence(x => x.GetRolesAsync(adminUser))
@@ -611,7 +611,7 @@ public class UserAdminServiceTests : IDisposable
 
         _userManagerMock.Setup(x => x.FindByIdAsync(adminUserId)).ReturnsAsync(adminUser);
         _userManagerMock.Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin))
-            .ReturnsAsync(new List<ApplicationUser> { adminUser });
+            .ReturnsAsync([adminUser]);
 
         var act = () => _service.UpdateUserAsync(adminUserId, "admin", null, Constants.AuthRoles.User, null, adminUserId);
 
@@ -1066,7 +1066,7 @@ public class UserAdminServiceTests : IDisposable
         target.LinkPlayer(5);
         target.UseUploadedProfileImage("/images/profile/linked.webp");
         _userManagerMock.Setup(x => x.FindByIdAsync("user-2")).ReturnsAsync(target);
-        _userManagerMock.Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin)).ReturnsAsync(new List<ApplicationUser>());
+        _userManagerMock.Setup(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin)).ReturnsAsync([]);
         _userManagerMock.Setup(x => x.DeleteAsync(target)).ReturnsAsync(IdentityResult.Success);
 
         await _service.DeleteAsync("user-2", "admin-1");
