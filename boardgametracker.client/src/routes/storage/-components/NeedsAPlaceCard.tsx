@@ -7,8 +7,8 @@ import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { StoragePicker } from "@/components/BgtStorage/StoragePicker";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import type { Game } from "@/models";
-import type { StoragePlace } from "@/utils/storage";
+import { type Game, StorageItemType } from "@/models";
+import { itemKey, type StoragePlace } from "@/utils/storage";
 
 interface Props {
 	games: Game[];
@@ -99,7 +99,10 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 			)}
 			{rows.length > 0 && (
 				<>
-					<p className="mb-2 text-sm text-white/60">{t("inbox.description")}</p>
+					<p className="mb-2 text-sm text-white/60">
+						{t("inbox.description")}
+						{canWrite && <span className="pointer-coarse:hidden"> {t("inbox.drag-hint")}</span>}
+					</p>
 					<ul className="flex max-h-[45vh] flex-col overflow-y-auto">
 						{rows.map(({ game, gone }) => (
 							<li
@@ -110,6 +113,11 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 							>
 								<label
 									data-needs={game.id}
+									draggable={canWrite && !gone}
+									onDragStart={(event) => {
+										event.dataTransfer.setData("text/plain", itemKey(StorageItemType.Game, game.id));
+										event.dataTransfer.effectAllowed = "move";
+									}}
 									onAnimationEnd={flashId === game.id ? onFlashEnd : undefined}
 									className={cx(
 										"grid cursor-pointer grid-cols-[18px_36px_minmax(0,1fr)] items-center gap-2.5 rounded px-0.5 py-1.5",

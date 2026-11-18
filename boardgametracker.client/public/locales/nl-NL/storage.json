@@ -134,6 +134,7 @@
   "inbox": {
     "title": "Needs a place",
     "description": "Owned games and games for trade without a storage location.",
+    "drag-hint": "Or drag a game onto a shelf.",
     "done": "Every owned game has a place.",
     "put-away_one": "{{count}} game found its place just now.",
     "put-away_other": "{{count}} games found their place just now.",
