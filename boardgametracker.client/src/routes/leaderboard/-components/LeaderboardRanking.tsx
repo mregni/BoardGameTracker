@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
@@ -23,6 +24,17 @@ const withoutPodiums =
 const columnsFor = (showPodiums: boolean) => cx(baseColumns, showPodiums ? withPodiums : withoutPodiums);
 
 const desktopOnly = "hidden md:block";
+
+const rankTone = (rank: number | null) => {
+	if (rank === 1) return "text-gold";
+	if (rank !== null && rank <= 3) return "text-white";
+	return "text-white/60";
+};
+
+const standingFor = (entry: LeaderboardEntry, showPodiums: boolean, t: TFunction) => {
+	if (!entry.isRanked) return t("values.to-rank", { count: entry.sessionsToRank });
+	return showPodiums ? t("values.podiums", { count: entry.podiumCount }) : null;
+};
 export const columnLabel = "text-xs font-medium text-white/60";
 
 interface RowProps {
@@ -40,12 +52,8 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 
 	const wins = t("values.wins", { count: entry.winCount });
 	const sessions = t("values.sessions", { count: entry.playCount });
-	const mobileValue = rankBy === "wins" ? wins : rankBy === "sessions" ? sessions : rate;
-	const standing = entry.isRanked
-		? showPodiums
-			? t("values.podiums", { count: entry.podiumCount })
-			: null
-		: t("values.to-rank", { count: entry.sessionsToRank });
+	const mobileValue = { wins, sessions, winRate: rate }[rankBy];
+	const standing = standingFor(entry, showPodiums, t);
 	const details = [rankBy === "wins" ? rate : wins, rankBy === "sessions" ? rate : sessions, standing]
 		.filter(Boolean)
 		.join(" · ");
@@ -55,8 +63,7 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 		wins,
 		sessions,
 		`${t("columns.win-rate")} ${rate}`,
-		showPodiums && entry.isRanked ? t("values.podiums", { count: entry.podiumCount }) : null,
-		entry.isRanked ? null : t("values.to-rank", { count: entry.sessionsToRank }),
+		standing,
 		`${t("columns.time")} ${duration(entry.minutesPlayed)}`,
 	]
 		.filter(Boolean)
@@ -75,12 +82,7 @@ const Row = ({ entry, rankBy, showPodiums }: RowProps) => {
 					entry.isRanked ? "border-card-border bg-card" : "border-dashed border-card-border bg-transparent",
 				)}
 			>
-				<span
-					className={cx(
-						"text-right font-bold",
-						entry.rank === 1 ? "text-gold" : entry.rank !== null && entry.rank <= 3 ? "text-white" : "text-white/60",
-					)}
-				>
+				<span className={cx("text-right font-bold", rankTone(entry.rank))}>
 					{entry.rank ?? (
 						<>
 							<span aria-hidden="true">–</span>

@@ -29,21 +29,8 @@ public class GameFactory : IGameFactory
             throw new InvalidOperationException("Game must have a valid name from BGG");
         }
 
-        int? minPlayers = item.MinPlayers > 0 ? item.MinPlayers : null;
-        int? maxPlayers = item.MaxPlayers > 0 ? item.MaxPlayers : null;
-        if (minPlayers.HasValue && maxPlayers.HasValue && minPlayers > maxPlayers)
-        {
-            throw new InvalidOperationException($"Invalid player count range from BGG: {minPlayers}-{maxPlayers}");
-        }
-
-        int? minPlayTime = item.MinPlayingTime > 0 ? item.MinPlayingTime : null;
-        int? maxPlayTime = item.MaxPlayingTime > 0 ? item.MaxPlayingTime : null;
-        minPlayTime ??= maxPlayTime;
-        maxPlayTime ??= minPlayTime;
-        if (minPlayTime.HasValue && maxPlayTime.HasValue && minPlayTime > maxPlayTime)
-        {
-            throw new InvalidOperationException($"Invalid play time range from BGG: {minPlayTime}-{maxPlayTime}");
-        }
+        var (minPlayers, maxPlayers) = PlayerCount(item);
+        var (minPlayTime, maxPlayTime) = PlayTime(item);
 
         var links = item.Links ?? [];
 
@@ -108,6 +95,32 @@ public class GameFactory : IGameFactory
             _imageService.DeleteImage(imageUrl);
             throw;
         }
+    }
+
+    private static (int? Min, int? Max) PlayerCount(ThingResponse.Item item)
+    {
+        int? minPlayers = item.MinPlayers > 0 ? item.MinPlayers : null;
+        int? maxPlayers = item.MaxPlayers > 0 ? item.MaxPlayers : null;
+        if (minPlayers.HasValue && maxPlayers.HasValue && minPlayers > maxPlayers)
+        {
+            throw new InvalidOperationException($"Invalid player count range from BGG: {minPlayers}-{maxPlayers}");
+        }
+
+        return (minPlayers, maxPlayers);
+    }
+
+    private static (int? Min, int? Max) PlayTime(ThingResponse.Item item)
+    {
+        int? minPlayTime = item.MinPlayingTime > 0 ? item.MinPlayingTime : null;
+        int? maxPlayTime = item.MaxPlayingTime > 0 ? item.MaxPlayingTime : null;
+        minPlayTime ??= maxPlayTime;
+        maxPlayTime ??= minPlayTime;
+        if (minPlayTime.HasValue && maxPlayTime.HasValue && minPlayTime > maxPlayTime)
+        {
+            throw new InvalidOperationException($"Invalid play time range from BGG: {minPlayTime}-{maxPlayTime}");
+        }
+
+        return (minPlayTime, maxPlayTime);
     }
 
     public async Task<Expansion> CreateExpansionFromBggAsync(ThingResponse.Item item, Game game, GameState state = GameState.Owned, decimal? price = null, DateTime? additionDate = null)

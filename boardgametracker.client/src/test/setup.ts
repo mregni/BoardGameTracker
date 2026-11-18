@@ -57,9 +57,9 @@ if (!window.matchMedia) {
 
 if (typeof globalThis.ResizeObserver === "undefined") {
 	globalThis.ResizeObserver = class {
-		observe() {}
-		unobserve() {}
-		disconnect() {}
+		observe = () => undefined;
+		unobserve = () => undefined;
+		disconnect = () => undefined;
 	};
 }
 

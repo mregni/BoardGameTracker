@@ -55,7 +55,7 @@ public class ManualChunkRepository : IManualChunkRepository
         }
         catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedObject or PostgresErrorCodes.InvalidName)
         {
-            MarkIterativeScanUnsupported();
+            MarkIterativeScanUnsupported(_logger);
             await transaction.RollbackAsync(cancellationToken);
             return null;
         }
@@ -73,20 +73,25 @@ public class ManualChunkRepository : IManualChunkRepository
         }
 
         var version = await _context.Database.SqlQueryRaw<string>(VectorVersionSql).FirstOrDefaultAsync(cancellationToken);
-        _versionChecked = true;
+        MarkVersionChecked();
         if (Version.TryParse(version, out var installed) && installed >= IterativeScanVersion)
         {
             return true;
         }
 
-        MarkIterativeScanUnsupported();
+        MarkIterativeScanUnsupported(_logger);
         return false;
     }
 
-    private void MarkIterativeScanUnsupported()
+    private static void MarkVersionChecked()
+    {
+        _versionChecked = true;
+    }
+
+    private static void MarkIterativeScanUnsupported(ILogger logger)
     {
         _iterativeScanUnsupported = true;
-        _logger.LogWarning("pgvector iterative scans are unavailable (pgvector 0.8 or newer is needed); filtered rulebook searches may return fewer chunks than requested");
+        logger.LogWarning("pgvector iterative scans are unavailable (pgvector 0.8 or newer is needed); filtered rulebook searches may return fewer chunks than requested");
     }
 
     private IQueryable<ManualChunkMatch> Evaluate(NearestManualChunksSpec spec)
