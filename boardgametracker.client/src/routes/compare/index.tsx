@@ -119,8 +119,7 @@ function RouteComponent() {
 									aria-label={t("swap")}
 									onClick={() => goTo(playerTwo.id, playerOne.id)}
 								/>
-								<span
-									role="status"
+								<output
 									aria-label={isUpdating ? t("updating") : undefined}
 									className={cx(
 										"size-3 rounded-full border-2 border-white/20 border-t-white/70 transition-opacity motion-safe:animate-spin",

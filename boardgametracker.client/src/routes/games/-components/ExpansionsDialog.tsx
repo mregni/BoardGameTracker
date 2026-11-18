@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Package from "@/assets/icons/package.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
@@ -69,7 +69,7 @@ export const ExpansionsDialog = (props: Props) => {
 		.reduce((sum, expansion) => sum + (expansion.buyingPrice ?? 0), 0);
 	const formatPrice = (value: number) => price(value, currency ?? "");
 
-	const submitManual = async (event: FormEvent<HTMLFormElement>) => {
+	const submitManual = async (event: SubmitEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		const trimmed = title.trim();
 		if (!trimmed) return;

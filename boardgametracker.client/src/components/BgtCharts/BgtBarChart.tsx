@@ -119,7 +119,7 @@ export const BgtBarChart = (props: Props) => {
 					tickRotation: 0,
 					tickValues: ticks,
 				}}
-				valueScale={{ type: "linear", min: 0, max: ticks[ticks.length - 1] }}
+				valueScale={{ type: "linear", min: 0, max: ticks.at(-1) }}
 				gridYValues={ticks}
 				enableLabel={false}
 				enableGridY={true}

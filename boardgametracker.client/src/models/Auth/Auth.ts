@@ -136,13 +136,13 @@ export const ChangePasswordSchema = z.object({
 
 export const CreateUserSchema = z.object({
 	username: requiredString,
-	email: requiredString.email(invalidEmail),
+	email: requiredString.pipe(z.email(invalidEmail)),
 	password: passwordString,
 });
 
 export const EditUserSchema = z.object({
 	username: z.string().min(1, { message: "error:auth.username-required" }),
-	email: z.string().email(invalidEmail).or(z.literal("")),
+	email: z.email(invalidEmail).or(z.literal("")),
 });
 
 export const ForgotPasswordSchema = z.object({

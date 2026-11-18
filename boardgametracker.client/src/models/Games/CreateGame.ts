@@ -27,7 +27,7 @@ export const CreateGameSchema = z.object({
 		.optional()
 		.transform((value) => (value === undefined || Number.isNaN(value) ? null : value)),
 	additionDate: localDateSchema("game:added-date.required"),
-	state: z.nativeEnum(GameState),
+	state: z.enum(GameState),
 	yearPublished: z
 		.number({ error: "game:validation.year" })
 		.int({ message: "game:validation.year" })
@@ -57,7 +57,7 @@ export const CreateGameSchema = z.object({
 			message: "game:watch-id.invalid",
 		})
 		.optional()
-		.transform((value) => (value ? value : null)),
+		.transform((value) => value || null),
 	language: z
 		.string()
 		.optional()

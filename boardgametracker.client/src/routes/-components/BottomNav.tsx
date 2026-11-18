@@ -73,8 +73,10 @@ export const BottomNav = () => {
 	return (
 		<>
 			{showMoreMenu && (
-				<div
-					role="presentation"
+				<button
+					type="button"
+					tabIndex={-1}
+					aria-label={t("common:close")}
 					className="fixed inset-0 bg-black/50 z-30 md:hidden"
 					onClick={() => setShowMoreMenu(false)}
 				/>

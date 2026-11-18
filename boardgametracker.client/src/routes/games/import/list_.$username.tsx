@@ -127,7 +127,7 @@ function RouteComponent() {
 		<BgtPage>
 			<BgtPageHeader header={t("bgg-import:title")} actions={[]} icon={Database} />
 			<BgtPageContent>
-				{bggError ? (
+				{bggError && (
 					<div className="flex flex-col gap-4">
 						<BgtStatus
 							variant="warning"
@@ -141,9 +141,9 @@ function RouteComponent() {
 							{needsIntegrationSettings(bggErrorKind) && <IntegrationSettingsButton />}
 						</div>
 					</div>
-				) : isLoading ? (
-					<BgtLoadingSpinner label={loadingLabel} />
-				) : (
+				)}
+				{!bggError && isLoading && <BgtLoadingSpinner label={loadingLabel} />}
+				{!bggError && !isLoading && (
 					<>
 						<div className="flex flex-row justify-between gap-4 mb-16">
 							<div className="flex flex-col gap-2 flex-1">

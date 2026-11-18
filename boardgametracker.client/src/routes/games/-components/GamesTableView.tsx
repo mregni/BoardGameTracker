@@ -59,6 +59,12 @@ interface EditingCell {
 	column: GameTableColumn;
 }
 
+const rowKindClassName: Partial<Record<GameRow["kind"], string>> = {
+	base: "bg-card-black/70 [&>td]:py-2",
+	expansion: "bg-card-black/70 [&>td]:py-2",
+	collection: "[&>td]:border-b-transparent",
+};
+
 interface Props {
 	games: Game[];
 	dimmed?: Map<number, number[]>;
@@ -407,11 +413,7 @@ export const GamesTableView = (props: Props) => {
 	const rowClassName = useCallback(
 		(row: GameRow) =>
 			cx(
-				row.kind === "base" || row.kind === "expansion"
-					? "bg-card-black/70 [&>td]:py-2"
-					: row.kind === "collection"
-						? "[&>td]:border-b-transparent"
-						: undefined,
+				rowKindClassName[row.kind],
 				row.kind === "collection" && dimmed?.has(row.game.id) && "[&>td>*:not([data-keep])]:opacity-45",
 			),
 		[dimmed],

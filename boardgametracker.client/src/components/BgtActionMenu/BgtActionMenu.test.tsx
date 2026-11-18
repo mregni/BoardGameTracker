@@ -60,7 +60,7 @@ describe("BgtActionMenu", () => {
 		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 	});
 
-	it("moves the focus into the menu and through the items with the arrow keys", async () => {
+	it("focuses the first item on open and moves with ArrowDown, End and Home", async () => {
 		const user = userEvent.setup();
 		renderMenu();
 
@@ -143,7 +143,7 @@ describe("BgtActionMenu", () => {
 		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 	});
 
-	it("moves the focus into the menu and through the items with the arrow keys", async () => {
+	it("wraps the focus both ways with ArrowDown and ArrowUp, then jumps with Home and End", async () => {
 		const user = userEvent.setup();
 		renderMenu();
 

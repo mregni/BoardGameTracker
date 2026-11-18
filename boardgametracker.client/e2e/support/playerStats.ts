@@ -134,13 +134,15 @@ export const sessionLine = (session: SeedSession, name: string) => {
 	const hasWon = won(session, name);
 	const details = [session.game, displayDate(session.start)].join(" ");
 	const winner = !hasWon && !session.isCoop && session.winner ? ` · ${session.winner} won` : "";
-	const note = session.isCoop ? " co-op" : score != null ? ` ${score} points` : "";
+	let note = "";
+	if (session.isCoop) note = " co-op";
+	else if (score != null) note = ` ${score} points`;
 	return `${details} · ${session.scores.length} players${winner} ${hasWon ? "Won" : "Lost"}${note}`;
 };
 
 export const relativeTime = (date: Date) => {
 	const text = formatDistanceToNow(date, { addSuffix: true });
-	return /minute/.test(text) ? "(less than a minute|\\d+ minutes?) ago" : text;
+	return /minute/.test(text) ? String.raw`(less than a minute|\d+ minutes?) ago` : text;
 };
 
 const milestoneOf = (type: keyof typeof goalsOf, value: number) => {

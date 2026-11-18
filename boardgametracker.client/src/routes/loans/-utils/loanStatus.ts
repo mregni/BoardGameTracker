@@ -81,12 +81,12 @@ export const partitionLoans = (loans: Loan[]) => {
 	const returned = loans.filter((loan) => !!loan.returnedDate);
 
 	return {
-		active: active.sort(
+		active: active.toSorted(
 			(a, b) =>
 				timeOf(a.dueDate, Number.POSITIVE_INFINITY) - timeOf(b.dueDate, Number.POSITIVE_INFINITY) ||
 				timeOf(a.loanDate, 0) - timeOf(b.loanDate, 0),
 		),
-		returned: returned.sort((a, b) => timeOf(b.returnedDate, 0) - timeOf(a.returnedDate, 0)),
+		returned: returned.toSorted((a, b) => timeOf(b.returnedDate, 0) - timeOf(a.returnedDate, 0)),
 	};
 };
 

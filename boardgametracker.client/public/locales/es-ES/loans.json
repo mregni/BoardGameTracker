@@ -45,12 +45,10 @@
     "save": "Prestar",
     "start": {
       "label": "Inicio del préstamo",
-      "required": "La fecha de inicio del préstamo es obligatoria",
-      "placeholder": "Elige una fecha"
+      "required": "La fecha de inicio del préstamo es obligatoria"
     },
     "end": {
       "label": "Fecha límite",
-      "placeholder": "Elige una fecha",
       "before-start": "La fecha límite no puede ser anterior a la fecha de inicio"
     },
     "player": {

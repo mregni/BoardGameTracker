@@ -45,12 +45,10 @@
     "save": "Uitlenen",
     "start": {
       "label": "Uitleendatum",
-      "required": "Uitleendatum is verplicht",
-      "placeholder": "Kies een datum"
+      "required": "Uitleendatum is verplicht"
     },
     "end": {
       "label": "Terugbrengdatum",
-      "placeholder": "Kies een datum",
       "before-start": "De terugbrengdatum kan niet voor de startdatum liggen"
     },
     "player": {

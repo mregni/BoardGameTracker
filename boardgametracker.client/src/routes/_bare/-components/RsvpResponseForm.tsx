@@ -33,7 +33,7 @@ export const RsvpResponseForm = (props: Props) => {
 	const { invitedPlayers, hostId, initialAnswer, ownPlayerId, onSubmit, isSubmitting } = props;
 	const { t } = useTranslation("rsvp");
 	const headingId = useId();
-	const [chosenPlayerId, setPlayerId] = useState<number | null>(initialAnswer?.playerId ?? null);
+	const [chosenPlayerId, setChosenPlayerId] = useState<number | null>(initialAnswer?.playerId ?? null);
 	const [state, setState] = useState<GameNightRsvpState | null>(initialAnswer?.state ?? null);
 
 	const playerItems: BgtSelectImageItem[] = useMemo(
@@ -69,7 +69,7 @@ export const RsvpResponseForm = (props: Props) => {
 					hasSearch
 					showAvatars
 					value={playerId}
-					onValueChange={(value) => setPlayerId(Number(value))}
+					onValueChange={(value) => setChosenPlayerId(Number(value))}
 				/>
 			) : (
 				<fieldset className="flex min-w-0 flex-col gap-2">
@@ -82,7 +82,7 @@ export const RsvpResponseForm = (props: Props) => {
 									key={item.value}
 									type="button"
 									aria-pressed={pressed}
-									onClick={() => setPlayerId(Number(item.value))}
+									onClick={() => setChosenPlayerId(Number(item.value))}
 									className={cx(
 										"flex min-h-12 min-w-0 items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm font-medium transition-colors",
 										pressed

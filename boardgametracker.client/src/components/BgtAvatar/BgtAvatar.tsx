@@ -76,24 +76,8 @@ export const BgtAvatar = (props: Props) => {
 
 	const textSize = TEXT_SIZE_MAP[size || "medium"];
 
-	return (
-		<div
-			className={cx("group flex relative min-w-7 flex-row- gap-2 items-center", onClick && "cursor-pointer")}
-			onClick={onClick}
-			onKeyDown={
-				onClick
-					? (e: React.KeyboardEvent) => {
-							if (e.key === "Enter" || e.key === " ") {
-								e.preventDefault();
-								onClick();
-							}
-						}
-					: undefined
-			}
-			role={onClick ? "button" : undefined}
-			tabIndex={onClick ? 0 : undefined}
-			title={title}
-		>
+	const content = (
+		<>
 			{showImage && (
 				<img
 					className={cx(avatarClasses, "bg-white/5")}
@@ -114,6 +98,21 @@ export const BgtAvatar = (props: Props) => {
 				</div>
 			)}
 			{withTitle && title && <span className={cx(onClick && "cursor-pointer")}>{title}</span>}
+		</>
+	);
+	const wrapperClass = "group flex relative min-w-7 flex-row- gap-2 items-center";
+
+	if (onClick) {
+		return (
+			<button type="button" className={cx(wrapperClass, "cursor-pointer text-left")} onClick={onClick} title={title}>
+				{content}
+			</button>
+		);
+	}
+
+	return (
+		<div className={wrapperClass} title={title}>
+			{content}
 		</div>
 	);
 };

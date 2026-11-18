@@ -8,32 +8,32 @@ import { BgtTextArea, type BgtTextAreaProps } from "@/components/BgtForm/BgtText
 
 export const { fieldContext, formContext, useFieldContext } = createFormHookContexts();
 
-function AppInputField(props: Omit<BgtInputFieldProps, "field">) {
+function AppInputField(props: Readonly<Omit<BgtInputFieldProps, "field">>) {
 	const field = useFieldContext();
 	return <BgtInputField field={field} {...props} />;
 }
 
-function AppSelect(props: BgtSelectBaseProps) {
+function AppSelect(props: Readonly<BgtSelectBaseProps>) {
 	const field = useFieldContext();
 	return <BgtSelect field={field} {...props} />;
 }
 
-function AppDatePicker(props: BgtDatePickerBaseProps) {
+function AppDatePicker(props: Readonly<BgtDatePickerBaseProps>) {
 	const field = useFieldContext();
 	return <BgtDatePicker field={field} {...props} />;
 }
 
-function AppDateTimePicker(props: Omit<BgtDateTimePickerProps, "field">) {
+function AppDateTimePicker(props: Readonly<Omit<BgtDateTimePickerProps, "field">>) {
 	const field = useFieldContext();
 	return <BgtDateTimePicker field={field} {...props} />;
 }
 
-function AppTextArea(props: Omit<BgtTextAreaProps, "field">) {
+function AppTextArea(props: Readonly<Omit<BgtTextAreaProps, "field">>) {
 	const field = useFieldContext();
 	return <BgtTextArea field={field} {...props} />;
 }
 
-function AppSwitch(props: Omit<BgtSwitchProps, "field">) {
+function AppSwitch(props: Readonly<Omit<BgtSwitchProps, "field">>) {
 	const field = useFieldContext();
 	return <BgtSwitch field={field} {...props} />;
 }
