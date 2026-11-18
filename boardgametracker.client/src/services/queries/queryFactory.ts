@@ -8,13 +8,7 @@ export const createSingletonQuery =
 			queryFn: () => fetchFn(),
 		});
 
-export const createListQuery =
-	<T>(key: string, fetchFn: () => Promise<T[]>) =>
-	() =>
-		queryOptions({
-			queryKey: [key],
-			queryFn: () => fetchFn(),
-		});
+export const createListQuery = <T>(key: string, fetchFn: () => Promise<T[]>) => createSingletonQuery(key, fetchFn);
 
 export const createEntityQuery =
 	<T>(key: string, fetchFn: (id: number) => Promise<T>) =>

@@ -47,8 +47,6 @@ export interface BgtDatePickerBaseProps {
 	label: string;
 	disabled?: boolean;
 	className?: string;
-	/** Legacy placeholder prop. The segmented input shows locale-appropriate placeholders automatically. */
-	placeholder?: string;
 	clearable?: boolean;
 	minValue?: string | null;
 	maxValue?: string | null;

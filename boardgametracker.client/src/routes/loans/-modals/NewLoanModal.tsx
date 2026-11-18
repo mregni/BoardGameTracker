@@ -167,12 +167,7 @@ const NewLoanModal = (props: ModalProps) => {
 							}}
 						>
 							{(field: AnyFieldApi) => (
-								<BgtDatePicker
-									field={field}
-									label={t("new.start.label")}
-									disabled={isLoading}
-									placeholder={t("new.start.placeholder")}
-								/>
+								<BgtDatePicker field={field} label={t("new.start.label")} disabled={isLoading} />
 							)}
 						</form.Field>
 						<form.Subscribe
@@ -227,7 +222,6 @@ const NewLoanModal = (props: ModalProps) => {
 													field={field}
 													label={t("new.due.custom-label")}
 													disabled={isLoading}
-													placeholder={t("new.end.placeholder")}
 													minValue={loanDate || null}
 												/>
 											)}

@@ -192,7 +192,7 @@ export const leaderboard = (subset: Session[], minimum: number, rankBy: RankBy) 
 	const ranks: number[] = [];
 	const ranked = ordered.map((entry, index) => {
 		const previous = ordered[index - 1];
-		const same = previous && previous.wins === entry.wins && previous.sessions === entry.sessions;
+		const same = previous?.wins === entry.wins && previous.sessions === entry.sessions;
 		ranks[index] = same ? ranks[index - 1] : index + 1;
 		return { ...entry, rank: ranks[index] };
 	});
@@ -255,6 +255,6 @@ export const between = (from?: string, to?: string) =>
 		return (from === undefined || day >= from) && (to === undefined || day <= to);
 	});
 
-export const literal = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+export const literal = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 
 export const short = (minutes: number) => duration(Math.round(minutes));

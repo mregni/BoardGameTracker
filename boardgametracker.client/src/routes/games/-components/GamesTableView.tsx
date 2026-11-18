@@ -63,6 +63,12 @@ type GameRow =
 	| { kind: "base"; game: Game }
 	| { kind: "expansion"; game: Game; expansion: Expansion; last: boolean };
 
+const rowKindClassName: Partial<Record<GameRow["kind"], string>> = {
+	base: "bg-card-black/70 [&>td]:py-2",
+	expansion: "bg-card-black/70 [&>td]:py-2",
+	collection: "[&>td]:border-b-transparent",
+};
+
 const isGameLine = (row: GameRow) => row.kind === "game" || row.kind === "base";
 
 const NO_PLACE = "none";
@@ -658,11 +664,7 @@ export const GamesTableView = (props: Props) => {
 	const rowClassName = useCallback(
 		(row: GameRow) =>
 			cx(
-				row.kind === "base" || row.kind === "expansion"
-					? "bg-card-black/70 [&>td]:py-2"
-					: row.kind === "collection"
-						? "[&>td]:border-b-transparent"
-						: undefined,
+				rowKindClassName[row.kind],
 				row.kind === "collection" && dimmed?.has(row.game.id) && "[&>td>*:not([data-keep])]:opacity-45",
 			),
 		[dimmed],

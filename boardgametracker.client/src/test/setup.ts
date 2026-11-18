@@ -13,7 +13,7 @@ vi.mock("react-i18next", () => ({
 					result = result.replace(`{{${k}}}`, String(v));
 				});
 				// For delete modal pattern: common.delete.title with { title: 'X' } -> 'Delete X'
-				if (key === "delete.title" && options.title) {
+				if (key === "delete.title" && typeof options.title === "string" && options.title) {
 					return `Delete ${options.title}`;
 				}
 				return result;
@@ -55,7 +55,7 @@ if (!window.matchMedia) {
 		}) as unknown as MediaQueryList;
 }
 
-if (typeof globalThis.ResizeObserver === "undefined") {
+if (globalThis.ResizeObserver === undefined) {
 	globalThis.ResizeObserver = class {
 		observe = () => undefined;
 		unobserve = () => undefined;

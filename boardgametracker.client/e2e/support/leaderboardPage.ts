@@ -38,9 +38,8 @@ export const podiumOf = (standing: Standing) => {
 
 const metric = (entry: Entry, rankBy: RankBy) => {
 	if (rankBy === "winRate") return `${percent(entry.winRate)} Win rate`;
-	return rankBy === "sessions"
-		? `${entry.sessions} Session${entry.sessions === 1 ? "" : "s"}`
-		: `${entry.wins} Win${entry.wins === 1 ? "" : "s"}`;
+	if (rankBy === "sessions") return `${entry.sessions} Session${entry.sessions === 1 ? "" : "s"}`;
+	return `${entry.wins} Win${entry.wins === 1 ? "" : "s"}`;
 };
 
 const podiumName = (entry: Ranked, rankBy: RankBy) => {
@@ -73,7 +72,7 @@ const rowText = (entry: Entry, rank: number | null, minimum: number, showPodiums
 		...(showPodiums ? [entry.podiums] : []),
 		short(entry.minutes),
 	].join(" ");
-	return new RegExp(`^${rank ?? "– Not ranked"} (. )?${literal(columns)}$`.replaceAll(" ", "\\s+"));
+	return new RegExp(`^${rank ?? "– Not ranked"} (. )?${literal(columns)}$`.replaceAll(" ", String.raw`\s+`));
 };
 
 const expectRow = async (
@@ -202,9 +201,8 @@ const expectRecords = async (page: Page, standing: Standing, gameTitle?: string)
 				"href",
 				`/players/${playerId(tile.entry.name)}`,
 			);
-			await expect(item).toHaveText(
-				new RegExp(`^${literal(`${tile.text}${tile.value(tile.entry)}`)}.?${literal(tile.entry.name)}$`),
-			);
+			const text = `${tile.text}${tile.value(tile.entry)}`;
+			await expect(item).toHaveText(new RegExp(`^${literal(text)}.?${literal(tile.entry.name)}$`));
 		} else {
 			await expect(item).toHaveText(`${tile.text}-Nobody yet`);
 			await expect(item.getByRole("link")).toHaveCount(0);

@@ -81,14 +81,7 @@ const EditLoanForm = ({ loan, close, disabled, onSave }: FormProps) => {
 			<BgtDialogDescription>{t("edit.description")}</BgtDialogDescription>
 			<div className="flex flex-col gap-3 mt-3 mb-3">
 				<form.Field name="loanDate" validators={zodValidator(LoanDatesSchema, "loanDate")}>
-					{(field: AnyFieldApi) => (
-						<BgtDatePicker
-							field={field}
-							label={t("new.start.label")}
-							disabled={disabled}
-							placeholder={t("new.start.placeholder")}
-						/>
-					)}
+					{(field: AnyFieldApi) => <BgtDatePicker field={field} label={t("new.start.label")} disabled={disabled} />}
 				</form.Field>
 				<form.Field
 					name="dueDate"
@@ -101,7 +94,6 @@ const EditLoanForm = ({ loan, close, disabled, onSave }: FormProps) => {
 									field={field}
 									label={t("new.end.label")}
 									disabled={disabled}
-									placeholder={t("new.end.placeholder")}
 									minValue={loanDate || null}
 									clearable
 								/>

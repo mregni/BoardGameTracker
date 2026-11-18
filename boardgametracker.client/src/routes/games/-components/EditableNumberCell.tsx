@@ -78,13 +78,14 @@ export const EditableNumberCell = (props: Props) => {
 	const { decimal } = useNumberFormat();
 
 	if (!editing || readOnly) {
+		const label = () => {
+			if (value == null) return EMPTY_PRICE;
+			if (format) return format(value);
+			return [prefix, decimal(value, 2), suffix].filter((part) => part != null && part !== "").join(" ");
+		};
 		return (
 			<EditableCellButton onClick={onStartEdit} className={className} align={align} readOnly={readOnly} size={size}>
-				{value == null
-					? EMPTY_PRICE
-					: format
-						? format(value)
-						: [prefix, decimal(value, 2), suffix].filter((part) => part != null && part !== "").join(" ")}
+				{label()}
 			</EditableCellButton>
 		);
 	}

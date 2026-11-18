@@ -159,7 +159,7 @@ describe("LeaderboardFilters", () => {
 		const onChange = renderFilters();
 
 		await user.click(screen.getByRole("combobox", { name: "filters.min-sessions" }));
-		expect((await screen.findAllByRole("option")).length).toBe(4);
+		expect(await screen.findAllByRole("option")).toHaveLength(4);
 		await user.click(screen.getAllByRole("option")[3]);
 		expect(onChange).toHaveBeenCalledWith({ min: 10 });
 	});

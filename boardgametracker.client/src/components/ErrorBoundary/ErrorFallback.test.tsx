@@ -15,29 +15,15 @@ describe("ErrorFallback", () => {
 	};
 
 	describe("Rendering", () => {
-		it("should render error heading", () => {
+		it.each([
+			["error heading", () => screen.getByText("something-went-wrong")],
+			["error description", () => screen.getByText("unexpected-error")],
+			["alert icon", () => screen.getByTestId("alert-icon")],
+			["try again button", () => screen.getByText("common:try-again")],
+			["go home button", () => screen.getByText("common:go-home")],
+		])("should render %s", (_, find) => {
 			renderWithTheme(<ErrorFallback {...defaultProps} />);
-			expect(screen.getByText("something-went-wrong")).toBeInTheDocument();
-		});
-
-		it("should render error description", () => {
-			renderWithTheme(<ErrorFallback {...defaultProps} />);
-			expect(screen.getByText("unexpected-error")).toBeInTheDocument();
-		});
-
-		it("should render alert icon", () => {
-			renderWithTheme(<ErrorFallback {...defaultProps} />);
-			expect(screen.getByTestId("alert-icon")).toBeInTheDocument();
-		});
-
-		it("should render try again button", () => {
-			renderWithTheme(<ErrorFallback {...defaultProps} />);
-			expect(screen.getByText("common:try-again")).toBeInTheDocument();
-		});
-
-		it("should render go home button", () => {
-			renderWithTheme(<ErrorFallback {...defaultProps} />);
-			expect(screen.getByText("common:go-home")).toBeInTheDocument();
+			expect(find()).toBeInTheDocument();
 		});
 	});
 

@@ -5,6 +5,7 @@ import {
 	getFilteredRowModel,
 	getSortedRowModel,
 	type RowData,
+	type SortDirection,
 	type TableMeta,
 	useReactTable,
 } from "@tanstack/react-table";
@@ -30,12 +31,18 @@ export interface DataTableProps<T> {
 	size?: "sm" | "md";
 	isLoading?: boolean;
 	noHeaders?: boolean;
-	firstCellClassNames?: string;
 	widths?: (string | null)[];
 	meta?: TableMeta<T>;
 	enableSorting?: boolean;
 	rowClassName?: (row: T) => string | undefined;
 }
+
+const ariaSort = (canSort: boolean, sorted: false | SortDirection) => {
+	if (!canSort) return undefined;
+	if (sorted === "asc") return "ascending";
+	if (sorted === "desc") return "descending";
+	return "none";
+};
 
 const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
 	const {
@@ -72,9 +79,7 @@ const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
 					<BgtTableHead
 						scope="col"
 						key={head.id}
-						aria-sort={
-							canSort ? (sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : "none") : undefined
-						}
+						aria-sort={ariaSort(canSort, sorted)}
 						className={cx(
 							widths?.[i] ?? "",
 							(i === header.headers.length - 1 || head.column.columnDef.meta?.alignRight) && "text-right",

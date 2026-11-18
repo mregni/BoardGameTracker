@@ -58,11 +58,12 @@ function ForgotPasswordPage() {
 						</BgtText>
 					</div>
 
-					{emailDisabled ? (
+					{emailDisabled && (
 						<BgtButton size="3" className="w-full" onClick={() => navigate({ to: "/login" })}>
 							{t("back-to-login")}
 						</BgtButton>
-					) : submitted ? (
+					)}
+					{!emailDisabled && submitted && (
 						<div className="space-y-4">
 							<BgtText size="2" color="gray" className="block text-center">
 								{t("forgot-confirmation")}
@@ -71,7 +72,8 @@ function ForgotPasswordPage() {
 								{t("back-to-login")}
 							</BgtButton>
 						</div>
-					) : (
+					)}
+					{!emailDisabled && !submitted && (
 						<form onSubmit={handleFormSubmit(form)} className="space-y-4">
 							<form.Field name="username" validators={zodValidator(ForgotPasswordSchema, "username")}>
 								{(field: AnyFieldApi) => (

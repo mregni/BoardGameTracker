@@ -80,7 +80,8 @@ export const PickWheel = ({ games, winnerId, onSpinStart, onResult, onExclude, w
 	const [vetoId, setVetoId] = useState<number>();
 	const [vetoedTitle, setVetoedTitle] = useState<string>();
 
-	const winnerIndex = spinning ? -1 : games.length === 1 ? 0 : games.findIndex((game) => game.id === winnerId);
+	const restingIndex = games.length === 1 ? 0 : initialIndex;
+	const winnerIndex = spinning ? -1 : restingIndex;
 	const picked = winnerIndex >= 0 ? games[winnerIndex] : undefined;
 
 	useEffect(() => {

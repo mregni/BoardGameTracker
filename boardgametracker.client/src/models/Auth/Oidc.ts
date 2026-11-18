@@ -83,7 +83,7 @@ export const OidcProviderSchema = z.object({
 	authority: z
 		.string()
 		.trim()
-		.url({ message: "settings:sso.validation.authority" })
+		.pipe(z.url({ message: "settings:sso.validation.authority" }))
 		.refine((value) => value.startsWith("https://") || value.startsWith("http://"), {
 			message: "settings:sso.validation.authority",
 		}),

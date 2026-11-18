@@ -352,11 +352,16 @@ body {
 
 .bgt-image-card img {
 	scale: 1;
-	transition: scale 200ms ease;
 }
 
-.bgt-image-card:hover img {
-	scale: 1.05;
+@media (prefers-reduced-motion: no-preference) {
+	.bgt-image-card img {
+		transition: scale 200ms ease;
+	}
+
+	.bgt-image-card:hover img {
+		scale: 1.05;
+	}
 }
 
 .wheel-slice {

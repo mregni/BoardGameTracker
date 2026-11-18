@@ -74,11 +74,11 @@ export const GameNightStatsView = (props: Props) => {
 				)}
 			</div>
 
-			{isLoading || !statistics ? (
-				<BgtLoadingSpinner />
-			) : statistics.nights === 0 ? (
+			{(isLoading || !statistics) && <BgtLoadingSpinner />}
+			{!isLoading && statistics?.nights === 0 && (
 				<BgtEmptyState icon={BarChart} title={t("stats.empty.title")} description={t("stats.empty.description")} />
-			) : (
+			)}
+			{!isLoading && statistics && statistics.nights !== 0 && (
 				<>
 					<NightStatsTiles statistics={statistics} />
 					<div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">

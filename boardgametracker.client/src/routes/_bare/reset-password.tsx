@@ -72,7 +72,7 @@ function IncompleteResetLink() {
 	);
 }
 
-function ResetPasswordForm({ userId, token }: { userId: string; token: string }) {
+function ResetPasswordForm({ userId, token }: Readonly<{ userId: string; token: string }>) {
 	const { t } = useTranslation(["auth", "settings", "common"]);
 	const navigate = useNavigate();
 	const { successToast } = useToasts();

@@ -45,12 +45,10 @@
     "save": "Lend",
     "start": {
       "label": "Loan start",
-      "required": "Start loan date is required",
-      "placeholder": "Pick a date"
+      "required": "Start loan date is required"
     },
     "end": {
       "label": "Due date",
-      "placeholder": "Pick a date",
       "before-start": "The due date can't be before the start date"
     },
     "player": {

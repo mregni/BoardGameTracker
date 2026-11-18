@@ -64,7 +64,7 @@ export const toInputDate = (date: DateInput, fallbackToToday = true): string => 
 	return format(dateObj, "yyyy-MM-dd");
 };
 
-export const toInputDateTime = (date: Date | string | undefined, fallbackToNow = true): string => {
+export const toInputDateTime = (date: DateInput, fallbackToNow = true): string => {
 	if (!date && fallbackToNow) {
 		return format(new Date(), "yyyy-MM-dd'T'HH:mm");
 	}
@@ -82,7 +82,7 @@ export const toInputDateTime = (date: Date | string | undefined, fallbackToNow =
 	return format(dateObj, "yyyy-MM-dd'T'HH:mm");
 };
 
-export const toDisplay = (date: Date | string | undefined | null, dateFormat: string, uiLanguage: string): string => {
+export const toDisplay = (date: DateInput | null, dateFormat: string, uiLanguage: string): string => {
 	if (!date) {
 		return "";
 	}
@@ -104,7 +104,7 @@ export const toDisplayWithWeekday = (date: Date | string, dateFormat: string, ui
 };
 
 export const toDisplayDateTime = (
-	date: Date | string | undefined,
+	date: DateInput,
 	dateFormat: string,
 	timeFormat: string,
 	uiLanguage: string,
@@ -131,11 +131,7 @@ export const minutesIntoDay = (date: Date | string): number => {
 	return value.getHours() * 60 + value.getMinutes();
 };
 
-export const toDisplayTime = (
-	date: Date | string | undefined | null,
-	timeFormat: string,
-	uiLanguage: string,
-): string => {
+export const toDisplayTime = (date: DateInput | null, timeFormat: string, uiLanguage: string): string => {
 	if (!date) {
 		return "";
 	}
@@ -152,7 +148,7 @@ export const toDisplayTime = (
 };
 
 export const toRelative = (
-	date: Date | string | undefined | null,
+	date: DateInput | null,
 	uiLanguage: string,
 	options?: { includeSeconds?: boolean; now?: Date },
 ): string => {
@@ -190,7 +186,7 @@ export const isValidDate = (date: unknown): boolean => {
 	return false;
 };
 
-export const safeParseDate = (date: Date | string | undefined): Date | undefined => {
+export const safeParseDate = (date: DateInput): Date | undefined => {
 	if (!date) {
 		return undefined;
 	}
@@ -203,7 +199,7 @@ export const safeParseDate = (date: Date | string | undefined): Date | undefined
 	return dateFnsIsValid(parsed) ? parsed : undefined;
 };
 
-const toValidDate = (date: Date | string | undefined | null): Date | null => {
+const toValidDate = (date: DateInput | null): Date | null => {
 	if (!date) {
 		return null;
 	}
@@ -212,12 +208,12 @@ const toValidDate = (date: Date | string | undefined | null): Date | null => {
 	return dateFnsIsValid(dateObj) ? dateObj : null;
 };
 
-export const toMonthYear = (date: Date | string | undefined | null, uiLanguage: string): string => {
+export const toMonthYear = (date: DateInput | null, uiLanguage: string): string => {
 	const dateObj = toValidDate(date);
 	return dateObj ? format(dateObj, "LLL yyyy", { locale: getDateFnsLocale(uiLanguage) }) : "";
 };
 
-export const monthsSince = (date: Date | string | undefined | null, now: Date = new Date()): number | null => {
+export const monthsSince = (date: DateInput | null, now: Date = new Date()): number | null => {
 	const dateObj = toValidDate(date);
 	return dateObj ? Math.max(0, differenceInMonths(now, dateObj)) : null;
 };

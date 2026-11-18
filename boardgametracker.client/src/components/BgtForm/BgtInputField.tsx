@@ -71,7 +71,11 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 			decimal.onChange(raw);
 			return;
 		}
-		field.handleChange(type === "number" ? (raw === "" ? undefined : Number(raw)) : raw);
+		if (type !== "number") {
+			field.handleChange(raw);
+			return;
+		}
+		field.handleChange(raw === "" ? undefined : Number(raw));
 	};
 
 	const handleBlur = () => {

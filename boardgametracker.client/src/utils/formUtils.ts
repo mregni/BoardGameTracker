@@ -22,7 +22,7 @@ export const ignoreApiError = async (work: unknown) => {
 	}
 };
 
-export const handleFormSubmit = (form: FormLike) => async (e: React.FormEvent) => {
+export const handleFormSubmit = (form: FormLike) => async (e: React.SubmitEvent<HTMLFormElement>) => {
 	e.preventDefault();
 	e.stopPropagation();
 	const formElement = e.currentTarget;

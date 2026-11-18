@@ -24,7 +24,7 @@ export const BggSearchSchema = z.object({
 		.optional()
 		.transform((value) => value || null),
 	additionDate: localDateSchema("game:added-date.required"),
-	state: z.nativeEnum(GameState),
+	state: z.enum(GameState),
 	hasScoring: z.boolean(),
 });
 
