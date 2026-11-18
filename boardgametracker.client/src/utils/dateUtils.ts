@@ -17,7 +17,7 @@ export const DEFAULT_TIME_FORMAT = "HH:mm";
 const FORMAT_PROBE = new Date(2000, 0, 15, 13, 45, 30);
 
 const convertDateFormat = (userFormat: string): string => {
-	return userFormat.replace(/Y/g, "y").replace(/D/g, "d");
+	return userFormat.replaceAll("Y", "y").replaceAll("D", "d");
 };
 
 const canFormat = (pattern: string): boolean => {

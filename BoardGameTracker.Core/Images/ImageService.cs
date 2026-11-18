@@ -305,7 +305,7 @@ public class ImageService : IImageService
                 return null;
             }
 
-            buffer.Write(chunk, 0, read);
+            await buffer.WriteAsync(chunk.AsMemory(0, read));
         }
 
         return buffer.ToArray();

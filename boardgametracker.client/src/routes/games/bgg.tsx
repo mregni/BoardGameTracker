@@ -23,7 +23,7 @@ import { useBggGameModal } from "./-hooks/useBggGameModal";
 
 export const Route = createFileRoute("/games/bgg")({
 	component: WriteRouteComponent,
-	loader: async ({ context: { queryClient } }) => {
+	loader: ({ context: { queryClient } }) => {
 		queryClient.query(getSettings()).catch(noop);
 	},
 });

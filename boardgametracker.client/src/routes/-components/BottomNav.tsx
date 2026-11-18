@@ -95,7 +95,7 @@ export const BottomNav = () => {
 
 					<UserCard />
 
-					<div ref={moreMenuRef} role="menu" aria-label={t("common:more")} onKeyDown={moveMenuFocus}>
+					<div ref={moreMenuRef} role="menu" tabIndex={-1} aria-label={t("common:more")} onKeyDown={moveMenuFocus}>
 						{menuItems
 							.filter((x) => !x.mobileVisible)
 							.map((item) => (

@@ -12,7 +12,7 @@ import { useUpdateGame } from "./-hooks/useUpdateGame";
 export const Route = createFileRoute("/games/$gameId_/update")({
 	component: WriteRouteComponent,
 	params: gameIdParamSchema,
-	loader: async ({ context: { queryClient } }) => {
+	loader: ({ context: { queryClient } }) => {
 		queryClient.query(getSettings()).catch(noop);
 	},
 });

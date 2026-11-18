@@ -62,7 +62,7 @@ export const Route = createFileRoute("/games/import/list_/$username")({
 			throw redirect({ to: "/games" });
 		}
 	},
-	loader: async ({ params, context: { queryClient } }) => {
+	loader: ({ params, context: { queryClient } }) => {
 		queryClient.query(getBggCollection(params.username)).catch(noop);
 		queryClient.query(getGames()).catch(noop);
 		queryClient.query(getSettings()).catch(noop);
