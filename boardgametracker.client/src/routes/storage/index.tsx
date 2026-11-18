@@ -160,7 +160,10 @@ function RouteComponent() {
 
 	const moveBox = (draggedKey: string, slot: StorageLocation, beforeKey: string | null) => {
 		const dragged = items.find((item) => item.key === draggedKey);
-		if (!dragged) return;
+		if (!dragged) {
+			void putAway(draggedKey, slot, beforeKey);
+			return;
+		}
 		const order = itemsAt(items, { locationId: slot.locationId, storageLocationId: slot.id }).filter(
 			(item) => item.key !== draggedKey,
 		);
@@ -195,6 +198,25 @@ function RouteComponent() {
 		} catch {
 			return false;
 		}
+	};
+
+	const putAway = async (draggedKey: string, slot: StorageLocation, beforeKey: string | null) => {
+		const game = homeless.find((x) => itemKey(StorageItemType.Game, x.id) === draggedKey);
+		if (!game) return;
+		const refs = (checked.has(game.id) ? homeless.filter((x) => checked.has(x.id)) : [game]).map((x) => ({
+			type: StorageItemType.Game,
+			id: x.id,
+		}));
+		const target = { locationId: slot.locationId, storageLocationId: slot.id };
+		if (!(await assign(refs, target))) return;
+		setChecked((previous) => new Set([...previous].filter((id) => !refs.some((ref) => ref.id === id))));
+		if (beforeKey) {
+			const order = itemsAt(items, target).map(reference);
+			const index = order.findIndex((ref) => itemKey(ref.type, ref.id) === beforeKey);
+			order.splice(index < 0 ? order.length : index, 0, ...refs);
+			await actions.arrangeStorage({ storageLocationId: slot.id, items: order }).catch(noop);
+		}
+		land(refs.map((ref) => itemKey(ref.type, ref.id)));
 	};
 
 	const view = (target: StoragePlace) => {

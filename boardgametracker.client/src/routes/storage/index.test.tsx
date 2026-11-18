@@ -9,7 +9,7 @@ import {
 	StorageLayout,
 	type StorageLocation,
 } from "@/models";
-import { renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
+import { fireEvent, renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
 
 interface CapturedRoute {
 	component: FC;
@@ -69,6 +69,15 @@ vi.mock("@/services/queries/games", () => ({
 }));
 
 await import("./index");
+
+const transfer = () => {
+	const data = new Map<string, string>();
+	return {
+		setData: (type: string, value: string) => data.set(type, value),
+		getData: (type: string) => data.get(type) ?? "",
+		effectAllowed: "",
+	};
+};
 
 const node = (id: number, parentId: number | null, overrides: Partial<StorageLocation> = {}): StorageLocation => ({
 	id,
@@ -236,6 +245,67 @@ describe("Storage page", () => {
 		expect(azul).toHaveFocus();
 		await user.keyboard("a");
 		expect(azul).toHaveFocus();
+	});
+
+	it("puts a game from Needs a place onto an empty shelf by dragging it there", async () => {
+		mocks.search = { at: "1:11" };
+		renderPage();
+
+		const shelves = await screen.findAllByRole("group", { name: "storage:slot.shelf" });
+		const dataTransfer = transfer();
+		fireEvent.dragStart(screen.getByRole("checkbox", { name: /Root/ }).closest("label") as HTMLElement, {
+			dataTransfer,
+		});
+		fireEvent.drop(shelves[1], { dataTransfer });
+
+		await waitFor(() =>
+			expect(mocks.assign).toHaveBeenCalledWith({
+				items: [{ type: StorageItemType.Game, id: 4 }],
+				locationId: 1,
+				storageLocationId: 13,
+			}),
+		);
+		expect(mocks.arrange).not.toHaveBeenCalled();
+	});
+
+	it("drops every checked game before the box it lands on", async () => {
+		const user = userEvent.setup();
+		mocks.games = [...mocks.games, game(6, "Azul")];
+		mocks.search = { at: "1:11" };
+		renderPage();
+
+		await user.click(await screen.findByRole("checkbox", { name: /Root/ }));
+		await user.click(screen.getByRole("checkbox", { name: /Azul/ }));
+		const dataTransfer = transfer();
+		fireEvent.dragStart(screen.getByRole("checkbox", { name: /Azul/ }).closest("label") as HTMLElement, {
+			dataTransfer,
+		});
+		fireEvent.drop(screen.getByRole("button", { name: "Pandemic" }), { dataTransfer });
+
+		const moved = [
+			{ type: StorageItemType.Game, id: 4 },
+			{ type: StorageItemType.Game, id: 6 },
+		];
+		await waitFor(() =>
+			expect(mocks.arrange).toHaveBeenCalledWith({
+				storageLocationId: 12,
+				items: [{ type: StorageItemType.Game, id: 1 }, ...moved, { type: StorageItemType.Game, id: 2 }],
+			}),
+		);
+		expect(mocks.assign).toHaveBeenCalledWith({ items: moved, locationId: 1, storageLocationId: 12 });
+	});
+
+	it("ignores a drop of something that is not a box or a game without a place", async () => {
+		mocks.search = { at: "1:11" };
+		renderPage();
+
+		const shelves = await screen.findAllByRole("group", { name: "storage:slot.shelf" });
+		const dataTransfer = transfer();
+		dataTransfer.setData("text/plain", "game-5");
+		fireEvent.drop(shelves[1], { dataTransfer });
+
+		expect(mocks.assign).not.toHaveBeenCalled();
+		expect(mocks.arrange).not.toHaveBeenCalled();
 	});
 
 	it("opens the cabinet when the address points at one of its shelves", async () => {

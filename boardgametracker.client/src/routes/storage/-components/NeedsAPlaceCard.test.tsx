@@ -11,13 +11,13 @@ const wingspan = game(1, "Wingspan");
 const root = game(2, "Root");
 const azul = game(3, "Azul");
 
-const card = (games: Game[]) => (
+const card = (games: Game[], canWrite = true) => (
 	<NeedsAPlaceCard
 		games={games}
 		checked={new Set()}
 		flashId={null}
 		onFlashEnd={vi.fn()}
-		canWrite
+		canWrite={canWrite}
 		onToggle={vi.fn()}
 		onMove={vi.fn()}
 	/>
@@ -48,6 +48,25 @@ describe("NeedsAPlaceCard", () => {
 		fireEvent.animationEnd(screen.getByRole("listitem", { hidden: true }));
 		expect(screen.getByRole("status")).toHaveTextContent("inbox.done");
 		expect(screen.getByRole("status")).toHaveTextContent("inbox.put-away");
+	});
+
+	it("lets a writer drag a game out and tells them so", () => {
+		renderWithProviders(card([root]));
+
+		const row = screen.getByRole("checkbox", { name: /Root/ }).closest("label") as HTMLElement;
+		const setData = vi.fn();
+		fireEvent.dragStart(row, { dataTransfer: { setData } });
+
+		expect(row).toHaveAttribute("draggable", "true");
+		expect(setData).toHaveBeenCalledWith("text/plain", "game-2");
+		expect(screen.getByText("inbox.drag-hint", { exact: false })).toBeInTheDocument();
+	});
+
+	it("does not offer dragging to a reader", () => {
+		renderWithProviders(card([root], false));
+
+		expect(screen.getByRole("checkbox", { name: /Root/ }).closest("label")).toHaveAttribute("draggable", "false");
+		expect(screen.queryByText("inbox.drag-hint", { exact: false })).not.toBeInTheDocument();
 	});
 
 	it("stays quiet when nothing needed a place to begin with", () => {
