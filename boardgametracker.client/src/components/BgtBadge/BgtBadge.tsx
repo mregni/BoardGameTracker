@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef, MouseEvent } from "react";
 
 import CloseIcon from "@/assets/icons/x.svg?react";
 
@@ -36,7 +36,10 @@ const badgeVariants = cva(
 	},
 );
 
-interface Props extends Omit<ComponentPropsWithoutRef<"span">, "color">, VariantProps<typeof badgeVariants> {
+interface Props
+	extends Omit<ComponentPropsWithoutRef<"span">, "color" | "onClick">,
+		VariantProps<typeof badgeVariants> {
+	onClick?: (event: MouseEvent<HTMLElement>) => void;
 	onClose?: () => void;
 }
 
@@ -51,31 +54,29 @@ export const BgtBadge = (props: Props) => {
 		className,
 	});
 
-	const handleClose = (e: React.MouseEvent<SVGSVGElement>) => {
+	const handleClose = (e: MouseEvent<SVGSVGElement>) => {
 		e.stopPropagation();
 		onClose?.();
 	};
 
-	return (
-		<span
-			className={badgeClasses}
-			onClick={onClick}
-			onKeyDown={
-				onClick
-					? (e: React.KeyboardEvent) => {
-							if (e.key === "Enter" || e.key === " ") {
-								e.preventDefault();
-								onClick(e as unknown as React.MouseEvent<HTMLSpanElement>);
-							}
-						}
-					: undefined
-			}
-			role={onClick ? "button" : undefined}
-			tabIndex={onClick ? 0 : undefined}
-			{...rest}
-		>
+	const content = (
+		<>
 			{children}
 			{onClose && <CloseIcon onClick={handleClose} className="cursor-pointer" />}
+		</>
+	);
+
+	if (onClick) {
+		return (
+			<button type="button" className={badgeClasses} onClick={onClick} {...rest}>
+				{content}
+			</button>
+		);
+	}
+
+	return (
+		<span className={badgeClasses} {...rest}>
+			{content}
 		</span>
 	);
 };

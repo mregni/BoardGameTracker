@@ -1,6 +1,6 @@
 import { noop, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import MapPinIcon from "@/assets/icons/map-pin.svg?react";
 import PackageIcon from "@/assets/icons/package.svg?react";
@@ -93,6 +93,18 @@ function RouteComponent() {
 	const [checked, setChecked] = useState<Set<number>>(new Set());
 	const [flashId, setFlashId] = useState<number | null>(null);
 	const [landed, setLanded] = useState<Set<string>>(new Set());
+	const landing = useMemo(
+		() => ({
+			keys: landed,
+			done: (key: string) =>
+				setLanded((previous) => {
+					const next = new Set(previous);
+					next.delete(key);
+					return next;
+				}),
+		}),
+		[landed],
+	);
 	const [dialog, setDialog] = useState<Dialog | null>(null);
 
 	if (isLoading || gamesLoading) return <BgtLoadingSpinner />;
@@ -142,15 +154,6 @@ function RouteComponent() {
 		});
 
 	const land = (keys: string[]) => setLanded(new Set(keys));
-	const landing = {
-		keys: landed,
-		done: (key: string) =>
-			setLanded((previous) => {
-				const next = new Set(previous);
-				next.delete(key);
-				return next;
-			}),
-	};
 
 	const arrange = (slot: StorageLocation, order: StorageItem[], moved: string) =>
 		actions.arrangeStorage({ storageLocationId: slot.id, items: order.map(reference) }).then(() => land([moved]), noop);

@@ -55,6 +55,10 @@ export const StoragePicker = (props: Props) => {
 		else onChange(key === NONE ? null : parsePlaceKey(key));
 	};
 
+	let selected = "";
+	if (value) selected = placeKey(value);
+	else if (noneLabel) selected = NONE;
+
 	return (
 		<>
 			<BgtSimpleSelect
@@ -62,7 +66,7 @@ export const StoragePicker = (props: Props) => {
 				hasSearch
 				placeholder={placeholder ?? t("picker.placeholder")}
 				items={items}
-				value={value ? placeKey(value) : noneLabel ? NONE : ""}
+				value={selected}
 				onValueChange={select}
 			/>
 			{creating === "storage" && (

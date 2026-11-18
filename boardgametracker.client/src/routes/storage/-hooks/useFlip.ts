@@ -21,6 +21,28 @@ const measure = (element: HTMLElement, root: HTMLElement): Box => {
 
 const timing = { id: "flip", duration: 320, easing: "cubic-bezier(0.16, 1, 0.3, 1)" };
 
+const flip = (element: HTMLElement, from: Box | undefined, to: Box | undefined) => {
+	if (!from || !to || to.width === 0 || to.height === 0) return;
+	const dx = from.x + from.width / 2 - (to.x + to.width / 2);
+	const dy = from.y + from.height / 2 - (to.y + to.height / 2);
+	const sx = from.width / to.width;
+	const sy = from.height / to.height;
+	const resized = Math.abs(sx - 1) > 0.01 || Math.abs(sy - 1) > 0.01;
+	if (!resized && Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+	for (const running of element.getAnimations({ subtree: true })) {
+		if (running.id === "flip") running.cancel();
+	}
+	element.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` }, { transform: "none" }], {
+		...timing,
+		composite: "add",
+	});
+	const layer = Math.ceil(Math.hypot(dx, dy));
+	element.animate([{ zIndex: layer }, { zIndex: layer }], timing);
+	if (resized) {
+		for (const child of element.children) child.animate([{ opacity: 0 }, { opacity: 1 }], timing);
+	}
+};
+
 export const useFlip = (ref: RefObject<HTMLElement | null>, scope: number) => {
 	const previous = useRef<{ scope: number; width: number; boxes: Map<string, Box> } | null>(null);
 
@@ -38,27 +60,7 @@ export const useFlip = (ref: RefObject<HTMLElement | null>, scope: number) => {
 
 		for (const element of elements) {
 			const key = element.dataset.box ?? "";
-			const from = before.get(key);
-			const to = boxes.get(key);
-			if (!from || !to || to.width === 0 || to.height === 0) continue;
-			const dx = from.x + from.width / 2 - (to.x + to.width / 2);
-			const dy = from.y + from.height / 2 - (to.y + to.height / 2);
-			const sx = from.width / to.width;
-			const sy = from.height / to.height;
-			const resized = Math.abs(sx - 1) > 0.01 || Math.abs(sy - 1) > 0.01;
-			if (!resized && Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
-			for (const running of element.getAnimations({ subtree: true })) {
-				if (running.id === "flip") running.cancel();
-			}
-			element.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` }, { transform: "none" }], {
-				...timing,
-				composite: "add",
-			});
-			const layer = Math.ceil(Math.hypot(dx, dy));
-			element.animate([{ zIndex: layer }, { zIndex: layer }], timing);
-			if (resized) {
-				for (const child of element.children) child.animate([{ opacity: 0 }, { opacity: 1 }], timing);
-			}
+			flip(element, before.get(key), boxes.get(key));
 		}
 	});
 };

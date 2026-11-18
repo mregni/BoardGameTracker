@@ -18,29 +18,15 @@ import { useDebouncedSearchQuery } from "@/hooks/useDebouncedSearchQuery";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useStorageData } from "@/hooks/useStorage";
-import { type Expansion, type Game as GameModel, GameState, StorageLayout } from "@/models";
+import { GameState, StorageLayout } from "@/models";
 import { getGames, getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { toRelative } from "@/utils/dateUtils";
-import { LANGUAGE_NONE } from "@/utils/languageUtils";
-import {
-	allPlaces,
-	canStore,
-	isPlacedIn,
-	itemsIn,
-	needsAPlace,
-	parsePlaceKey,
-	placeKey,
-	placeLabel,
-	placeNames,
-	placeOf,
-	storageItems,
-} from "@/utils/storage";
+import { allPlaces, itemsIn, needsAPlace, placeKey, placeLabel, placeNames, storageItems } from "@/utils/storage";
 import { NoGamesEmptyPage } from "../-components/NoGamesEmptyPage";
 import { ExpansionQuickView } from "./-components/ExpansionQuickView";
 import {
 	ActiveFilterChips,
-	filterGames,
 	type GameSort,
 	type GamesFilterSearch,
 	GamesFilters,
@@ -49,14 +35,8 @@ import {
 import { GamesTableView } from "./-components/GamesTableView";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
 import { useGamesData } from "./-hooks/useGamesData";
-import {
-	GAME_SORTS,
-	hasActiveFilters,
-	isPlayable,
-	parseGamesSearch,
-	sortGames,
-	withoutUndefined,
-} from "./-utils/gamesSearch";
+import { buildCards, findGames, storageGoal } from "./-utils/findGames";
+import { GAME_SORTS, hasActiveFilters, isPlayable, parseGamesSearch, withoutUndefined } from "./-utils/gamesSearch";
 
 export const Route = createFileRoute("/games/")({
 	component: RouteComponent,
@@ -125,88 +105,40 @@ function RouteComponent() {
 				})),
 		];
 	}, [games, nodes, locations, t]);
-	const target = storage && storage !== NO_STORAGE ? parsePlaceKey(storage) : null;
-	const storageName =
-		storage === NO_STORAGE ? t("filters.storage.none") : target ? placeLabel(target, nodes, locations, t) : undefined;
+	const target = storageGoal(storage);
+	let storageName: string | undefined;
+	if (storage === NO_STORAGE) storageName = t("filters.storage.none");
+	else if (target) storageName = placeLabel(target, nodes, locations, t);
 
-	const { filteredGames, dimmed, expansionCards } = useMemo(() => {
-		const goal = storage && storage !== NO_STORAGE ? parsePlaceKey(storage) : null;
-		const needle = q?.trim().toLowerCase() ?? "";
-		const titleMatches = (title: string) => title.toLowerCase().includes(needle);
-		const stateMatches = (value: GameState) => state === undefined || value === state;
-		const inTarget = (item: GameModel | Expansion) => goal === null || isPlacedIn(placeOf(item), goal, nodes);
-		const candidates = filterGames(
-			games.filter(
-				(game) =>
-					(category === undefined || game.categories.some((cat) => cat.name === category)) &&
-					(language === undefined || (language === LANGUAGE_NONE ? !game.language : game.language === language)) &&
-					(!inStock || !showLivePrices || priceMap.get(game.id)?.inStock === true),
+	const found = useMemo(
+		() =>
+			findGames(
+				games,
+				{ q, category, players, playTime, weight, age, state, language, storage, sort },
+				nodes,
+				(game) => !inStock || !showLivePrices || priceMap.get(game.id)?.inStock === true,
 			),
-			{ playerCount: players, maxPlayTime: playTime, weight, age },
-		);
-		const expansionsOf = (game: GameModel) =>
-			storage === NO_STORAGE
-				? []
-				: game.expansions.filter(
-						(expansion) =>
-							(titleMatches(expansion.title) || titleMatches(game.title)) &&
-							stateMatches(expansion.state) &&
-							inTarget(expansion),
-					);
-		const base = candidates.filter(
-			(game) =>
-				titleMatches(game.title) &&
-				stateMatches(game.state) &&
-				(storage === NO_STORAGE ? canStore(game.state) && placeOf(game) === null : inTarget(game)),
-		);
-		const extra = new Map<number, number[]>();
-		if (goal) {
-			for (const game of candidates) {
-				const matching = base.includes(game) ? [] : expansionsOf(game);
-				if (matching.length > 0)
-					extra.set(
-						game.id,
-						matching.map((expansion) => expansion.id),
-					);
-			}
-		}
-		return {
-			filteredGames: sortGames([...base, ...candidates.filter((game) => extra.has(game.id))], sort),
-			dimmed: extra,
-			expansionCards: candidates
-				.flatMap((game) => expansionsOf(game).map((expansion) => ({ game, expansion })))
-				.sort((a, b) => a.expansion.title.localeCompare(b.expansion.title)),
-		};
-	}, [
-		games,
-		q,
-		category,
-		players,
-		playTime,
-		weight,
-		age,
-		state,
-		language,
-		inStock,
-		showLivePrices,
-		priceMap,
-		sort,
-		storage,
-		nodes,
-	]);
+		[
+			games,
+			q,
+			category,
+			players,
+			playTime,
+			weight,
+			age,
+			state,
+			language,
+			inStock,
+			showLivePrices,
+			priceMap,
+			sort,
+			storage,
+			nodes,
+		],
+	);
+	const { filteredGames, dimmed } = found;
 
-	const showBase = type !== "expansions";
-	const showExpansions = type === "expansions" || type === "any";
-	const cards = [
-		...(showBase ? filteredGames.filter((game) => !dimmed.has(game.id)) : []).map((game) => ({
-			game,
-			expansion: null as Expansion | null,
-		})),
-		...(showExpansions ? expansionCards : []),
-	];
-	if (showBase && showExpansions && (sort ?? "title") === "title") {
-		cards.sort((a, b) => (a.expansion?.title ?? a.game.title).localeCompare(b.expansion?.title ?? b.game.title));
-	}
+	const cards = buildCards(found, type, sort);
 	const shownCount = view === "table" ? filteredGames.length - dimmed.size : cards.length;
 	const expansionCount = view === "table" ? 0 : cards.filter((card) => card.expansion).length;
 	const quickViewGame = games.find((game) => game.id === quickView?.gameId);
@@ -361,11 +293,9 @@ function RouteComponent() {
 					</div>
 				</div>
 				{typeSwitched && type === "any" && (
-					<p role="status" className="text-sm text-white/70">
-						{t("filters.type.switched")}
-					</p>
+					<output className="block text-sm text-white/70">{t("filters.type.switched")}</output>
 				)}
-				{shownCount === 0 ? null : view === "table" ? (
+				{shownCount > 0 && view === "table" && (
 					<GamesTableView
 						games={filteredGames}
 						dimmed={dimmed}
@@ -377,7 +307,8 @@ function RouteComponent() {
 						uiLanguage={settingsQuery.data?.uiLanguage}
 						dateFormat={settingsQuery.data?.dateFormat}
 					/>
-				) : (
+				)}
+				{shownCount > 0 && view !== "table" && (
 					<BgtCardList>
 						{cards.map(({ game: x, expansion }) =>
 							expansion ? (

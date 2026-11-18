@@ -28,6 +28,12 @@ const shapes: Record<BoxOrientation, string> = {
 	[BoxOrientation.Flat]: "h-(--spine) w-(--box) items-center px-1",
 };
 
+const titleShapes: Record<BoxOrientation, string> = {
+	[BoxOrientation.Front]: "line-clamp-3 px-1 py-[3px]",
+	[BoxOrientation.Side]: "max-h-[calc(var(--box)-6px)] truncate [transform:rotate(180deg)] [writing-mode:vertical-rl]",
+	[BoxOrientation.Flat]: "truncate",
+};
+
 export const boxLabel = (item: StorageItem, t: (key: string, values?: Record<string, unknown>) => string) =>
 	item.expansion ? t("storage:box.expansion-label", { title: item.title, base: item.game.title }) : item.title;
 
@@ -102,17 +108,7 @@ export const StorageBox = ({
 			{showCover ? (
 				<img src={item.image ?? undefined} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
 			) : (
-				<span
-					className={cx(
-						"text-[11px] leading-3",
-						orientation === BoxOrientation.Front && "line-clamp-3 px-1 py-[3px]",
-						orientation === BoxOrientation.Side &&
-							"max-h-[calc(var(--box)-6px)] truncate [transform:rotate(180deg)] [writing-mode:vertical-rl]",
-						orientation === BoxOrientation.Flat && "truncate",
-					)}
-				>
-					{item.title}
-				</span>
+				<span className={cx("text-[11px] leading-3", titleShapes[orientation])}>{item.title}</span>
 			)}
 			{item.expansion && (
 				<span

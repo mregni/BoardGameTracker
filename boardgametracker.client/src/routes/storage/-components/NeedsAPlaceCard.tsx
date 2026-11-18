@@ -20,8 +20,7 @@ interface Props {
 	onMove: (place: StoragePlace) => void;
 }
 
-export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite, onToggle, onMove }: Props) => {
-	const { t } = useTranslation("storage");
+const useLeavingRows = (games: Game[]) => {
 	const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
 	const [previous, setPrevious] = useState(games);
 	const [leaving, setLeaving] = useState<{ game: Game; index: number }[]>([]);
@@ -44,6 +43,13 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 		rows.splice(Math.min(row.index, rows.length), 0, { game: row.game, gone: true });
 	}
 	const left = (gameId: number) => setLeaving((current) => current.filter((row) => row.game.id !== gameId));
+
+	return { rows, left, countFlash, putAway };
+};
+
+export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite, onToggle, onMove }: Props) => {
+	const { t } = useTranslation("storage");
+	const { rows, left, countFlash, putAway } = useLeavingRows(games);
 
 	useEffect(() => {
 		if (flashId === null) return;
@@ -68,8 +74,8 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 					{games.length}
 				</span>
 			</h2>
-			{rows.length === 0 && putAway > 0 ? (
-				<div role="status" className="flex items-center gap-3 rounded-lg bg-ok/10 p-3">
+			{rows.length === 0 && putAway > 0 && (
+				<output className="flex items-center gap-3 rounded-lg bg-ok/10 p-3">
 					<span className="relative grid size-9 flex-none place-items-center">
 						<span
 							aria-hidden="true"
@@ -83,13 +89,15 @@ export const NeedsAPlaceCard = ({ games, checked, flashId, onFlashEnd, canWrite,
 						<span className="block font-semibold">{t("inbox.done")}</span>
 						<span className="text-sm text-white/70">{t("inbox.put-away", { count: putAway })}</span>
 					</span>
-				</div>
-			) : rows.length === 0 ? (
+				</output>
+			)}
+			{rows.length === 0 && putAway === 0 && (
 				<p className="flex items-center gap-1.5 text-sm text-white/60">
 					<CheckIcon className="size-4 text-ok" aria-hidden="true" />
 					{t("inbox.done")}
 				</p>
-			) : (
+			)}
+			{rows.length > 0 && (
 				<>
 					<p className="mb-2 text-sm text-white/60">{t("inbox.description")}</p>
 					<ul className="flex max-h-[45vh] flex-col overflow-y-auto">

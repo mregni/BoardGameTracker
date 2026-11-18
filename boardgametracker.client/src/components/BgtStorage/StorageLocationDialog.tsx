@@ -1,5 +1,5 @@
 import { noop, useQuery } from "@tanstack/react-query";
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	BgtDialog,
@@ -88,27 +88,30 @@ export const StorageLocationDialog = ({ open, close, mode, onCreated }: Props) =
 					.flatMap((slot) => itemsAt(storageItems(games), { locationId: slot.locationId, storageLocationId: slot.id }))
 			: [];
 
-	const submit = (event: FormEvent) => {
+	const save = (): Promise<unknown> => {
+		if (editing) {
+			return updateStorageLocation({
+				id: editing.id,
+				name: name.trim() || null,
+				rows: isCabinet(editing) ? rowCount : null,
+				columns: isCabinet(editing) ? columnCount : null,
+			});
+		}
+		if (!parent) return Promise.resolve();
+		return createStorageLocation({
+			name: name.trim(),
+			locationId: parent.locationId,
+			parentId: parent.storageLocationId,
+			layout,
+			rows: sized ? rowCount : null,
+			columns: sized ? columnCount : null,
+		}).then((created) => onCreated?.(created));
+	};
+
+	const submit = (event: SubmitEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		if (!valid) return;
-		const saved = editing
-			? updateStorageLocation({
-					id: editing.id,
-					name: name.trim() || null,
-					rows: isCabinet(editing) ? rowCount : null,
-					columns: isCabinet(editing) ? columnCount : null,
-				})
-			: parent
-				? createStorageLocation({
-						name: name.trim(),
-						locationId: parent.locationId,
-						parentId: parent.storageLocationId,
-						layout,
-						rows: sized ? rowCount : null,
-						columns: sized ? columnCount : null,
-					}).then((created) => onCreated?.(created))
-				: Promise.resolve();
-		void saved.then(close, noop);
+		void save().then(close, noop);
 	};
 
 	const sizeField = (label: string, value: string, onChange: (value: string) => void) => (

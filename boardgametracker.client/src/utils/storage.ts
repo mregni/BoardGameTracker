@@ -144,7 +144,7 @@ export const placeLabel = (place: StoragePlace, nodes: StorageLocation[], locati
 	placeNames(place, nodes, locations, t).join(" › ");
 
 export const isPlacedIn = (place: StoragePlace | null, target: StoragePlace, nodes: StorageLocation[]) => {
-	if (!place || place.locationId !== target.locationId) {
+	if (place?.locationId !== target.locationId) {
 		return false;
 	}
 	return (

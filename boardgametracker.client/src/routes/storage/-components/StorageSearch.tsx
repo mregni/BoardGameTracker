@@ -47,7 +47,7 @@ const findHits = (games: Game[], query: string): SearchHit[] => {
 const SlotMap = ({ place, nodes }: { place: StoragePlace | null; nodes: StorageLocation[] }) => {
 	const slot = nodes.find((node) => node.id === place?.storageLocationId);
 	const cabinet = nodes.find((node) => node.id === slot?.parentId);
-	if (!slot || slot.layout !== StorageLayout.Slot || !cabinet) return null;
+	if (slot?.layout !== StorageLayout.Slot || !cabinet) return null;
 	const rows = cabinet.rows ?? 1;
 	const columns = cabinet.columns ?? 1;
 	const width = 56 / columns;
@@ -90,6 +90,12 @@ export const StorageSearch = ({ games, nodes, locations, onPick }: Props) => {
 		if (!canStore(hit.expansion?.state ?? hit.game.state)) return;
 		setOpen(false);
 		onPick(hit);
+	};
+
+	const where = (hit: SearchHit, storable: boolean) => {
+		if (!storable)
+			return `${t(getItemStateTranslationKey(hit.expansion?.state ?? hit.game.state, false))} · ${t("page.not-in-collection")}`;
+		return hit.place ? placeLabel(hit.place, nodes, locations, t) : t("place.none");
 	};
 
 	const keyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -138,10 +144,10 @@ export const StorageSearch = ({ games, nodes, locations, onPick }: Props) => {
 					className="min-w-0 flex-1 bg-transparent text-base text-white outline-none"
 				/>
 			</label>
-			<p role="status" className="sr-only">
+			<output className="sr-only">
 				{expanded &&
 					(hits.length > 0 ? t("page.found", { count: hits.length }) : t("page.not-found", { query: query.trim() }))}
-			</p>
+			</output>
 			{expanded && (
 				<div className="absolute inset-x-0 top-[calc(100%+6px)] z-20 max-h-[70vh] overflow-auto rounded-lg border border-card-border bg-card p-1.5 shadow-xl">
 					{hits.length > 0 && (
@@ -152,7 +158,6 @@ export const StorageSearch = ({ games, nodes, locations, onPick }: Props) => {
 							const storable = canStore(hit.expansion?.state ?? hit.game.state);
 							const title = hit.expansion?.title ?? hit.game.title;
 							return (
-								// biome-ignore lint/a11y/useKeyWithClickEvents: the combobox input handles the keyboard
 								<div
 									key={`${hit.game.id}-${hit.expansion?.id ?? 0}`}
 									id={`${listId}-${index}`}
@@ -162,6 +167,7 @@ export const StorageSearch = ({ games, nodes, locations, onPick }: Props) => {
 									aria-disabled={!storable}
 									onMouseDown={(event) => event.preventDefault()}
 									onClick={() => pick(hit)}
+									onKeyDown={(event) => event.key === "Enter" && pick(hit)}
 									onMouseEnter={() => setActive(index)}
 									className={cx(
 										"grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 rounded-md px-2.5 py-2",
@@ -179,11 +185,7 @@ export const StorageSearch = ({ games, nodes, locations, onPick }: Props) => {
 											</span>
 										)}
 										<span className="mt-0.5 block text-sm text-white/80">
-											{!storable
-												? `${t(getItemStateTranslationKey(hit.expansion?.state ?? hit.game.state, false))} · ${t("page.not-in-collection")}`
-												: hit.place
-													? placeLabel(hit.place, nodes, locations, t)
-													: t("place.none")}
+											{where(hit, storable)}
 											{storable && hit.expansion && hit.inBaseBox && hit.place && (
 												<span className="text-xs text-white/50">
 													{" "}

@@ -24,7 +24,7 @@ export const useRovingBoxes = (keys: string[], selectedKey: string | null): Rovi
 
 	const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
 		const step = steps[event.key];
-		const current = (event.target as HTMLElement).closest("[data-box]")?.getAttribute("data-box");
+		const current = (event.target as HTMLElement).closest<HTMLElement>("[data-box]")?.dataset.box;
 		const index = current ? keys.indexOf(current) : -1;
 		if (!step || index < 0) return;
 		event.preventDefault();
