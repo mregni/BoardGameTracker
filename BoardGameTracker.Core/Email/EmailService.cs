@@ -2,7 +2,6 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Email.Interfaces;
-using Microsoft.Extensions.Logging;
 using MimeKit;
 
 namespace BoardGameTracker.Core.Email;
@@ -11,13 +10,11 @@ public class EmailService : IEmailService
 {
     private readonly IEnvironmentProvider _environmentProvider;
     private readonly ISmtpSender _smtpSender;
-    private readonly ILogger<EmailService> _logger;
 
-    public EmailService(IEnvironmentProvider environmentProvider, ISmtpSender smtpSender, ILogger<EmailService> logger)
+    public EmailService(IEnvironmentProvider environmentProvider, ISmtpSender smtpSender)
     {
         _environmentProvider = environmentProvider;
         _smtpSender = smtpSender;
-        _logger = logger;
     }
 
     public bool IsConfigured => _environmentProvider.EmailEnabled;

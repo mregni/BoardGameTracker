@@ -55,6 +55,24 @@ interface Props {
 	now?: Date;
 }
 
+const useDetailText = (shame: Shame) => {
+	const { t, i18n } = useTranslation("shames");
+	const durationRange = useDurationRange();
+	const details: string[] = [];
+	if (shame.additionDate) {
+		details.push(t("row.owned-since", { date: toMonthYear(shame.additionDate, i18n.language) }));
+	}
+	if (shame.playCount > 0) {
+		details.push(t("row.plays", { count: shame.playCount }));
+		return details.join(" · ");
+	}
+	const players = formatRange(shame.minPlayers, shame.maxPlayers);
+	const duration = durationRange(shame.minPlayTime, shame.maxPlayTime);
+	if (players) details.push(t("row.players", { count: shame.maxPlayers ?? shame.minPlayers ?? 0, range: players }));
+	if (duration) details.push(duration);
+	return details.join(" · ");
+};
+
 export const ShameRow = ({
 	shame,
 	currency,
@@ -70,23 +88,10 @@ export const ShameRow = ({
 }: Props) => {
 	const { t, i18n } = useTranslation("shames");
 	const format = useNumberFormat();
-	const durationRange = useDurationRange();
 	const tone = lastPlayedTone(shame, now);
 	const lastPlayed = tone === "bad" ? t("row.never-played") : toRelative(shame.lastSessionDate, i18n.language, { now });
 
-	const details: string[] = [];
-	if (shame.additionDate) {
-		details.push(t("row.owned-since", { date: toMonthYear(shame.additionDate, i18n.language) }));
-	}
-	if (shame.playCount > 0) {
-		details.push(t("row.plays", { count: shame.playCount }));
-	} else {
-		const players = formatRange(shame.minPlayers, shame.maxPlayers);
-		const duration = durationRange(shame.minPlayTime, shame.maxPlayTime);
-		if (players) details.push(t("row.players", { count: shame.maxPlayers ?? shame.minPlayers ?? 0, range: players }));
-		if (duration) details.push(duration);
-	}
-	const detailText = details.join(" · ");
+	const detailText = useDetailText(shame);
 
 	const planned = shame.plannedFor !== null;
 

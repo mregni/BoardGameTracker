@@ -62,7 +62,8 @@ function RouteComponent() {
 	const filtersCollapsed = !showFilters && !isDesktop;
 
 	const categories = useMemo(
-		() => [...new Set(games.flatMap((game) => game.categories.map((cat) => cat.name)))].sort(),
+		() =>
+			[...new Set(games.flatMap((game) => game.categories.map((cat) => cat.name)))].sort((a, b) => a.localeCompare(b)),
 		[games],
 	);
 

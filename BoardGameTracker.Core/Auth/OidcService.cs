@@ -738,7 +738,7 @@ public class OidcService : IOidcService
                 RequiredEndpoint(doc, "token_endpoint"),
                 OptionalEndpoint(doc, "userinfo_endpoint"),
                 OptionalEndpoint(doc, "end_session_endpoint"),
-                SigningAlgorithms(doc),
+                ReadSigningAlgorithms(doc),
                 OptionalEndpoint(doc, "jwks_uri")));
         }
     }
@@ -799,7 +799,7 @@ public class OidcService : IOidcService
         }
     }
 
-    private static List<string> SigningAlgorithms(JsonElement doc)
+    private static List<string> ReadSigningAlgorithms(JsonElement doc)
     {
         return doc.TryGetProperty("id_token_signing_alg_values_supported", out var value) && value.ValueKind == JsonValueKind.Array
             ? value.EnumerateArray()
