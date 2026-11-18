@@ -18,10 +18,10 @@ export default defineConfig({
       reporter: ['lcov', 'text-summary'],
       thresholds: {
         autoUpdate: true,
-        statements: 88.8,
-        branches: 86.85,
+        statements: 88.84,
+        branches: 86.88,
         functions: 82.53,
-        lines: 89.1,
+        lines: 89.14,
       },
     },
     reporters: ['default', ['vitest-sonar-reporter', { outputFile: 'coverage/sonar-report.xml' }]],

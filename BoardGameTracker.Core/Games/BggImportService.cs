@@ -230,47 +230,11 @@ public class BggImportService : IBggImportService
         var distinctGames = games.DistinctBy(x => x.BggId).ToList();
         _logger.LogInformation("Importing {Count} games from BGG", distinctGames.Count);
 
-        var toImport = new List<ImportGame>();
-        foreach (var importGame in distinctGames.Where(x => x.BaseGameBggId == null))
-        {
-            var existingGame = await _gameRepository.GetGameByBggId(importGame.BggId);
-            if (existingGame != null)
-            {
-                _logger.LogDebug("BGG game with id {BggId} already imported, skipping", importGame.BggId);
-                continue;
-            }
-
-            toImport.Add(importGame);
-        }
+        var toImport = await GamesToImport(distinctGames.Where(x => x.BaseGameBggId == null));
 
         var expansionsToImport = await ExpansionsToImport(distinctGames.Where(x => x.BaseGameBggId != null).ToList());
         var baseGames = new Dictionary<int, Game>();
-        var missingBaseGames = new List<ImportGame>();
-        foreach (var expansion in expansionsToImport.DistinctBy(x => x.BaseGameBggId))
-        {
-            var baseGameBggId = expansion.BaseGameBggId!.Value;
-            if (toImport.Any(x => x.BggId == baseGameBggId))
-            {
-                continue;
-            }
-
-            var existingGame = await _gameRepository.GetGameByBggId(baseGameBggId);
-            if (existingGame != null)
-            {
-                baseGames[baseGameBggId] = existingGame;
-            }
-            else
-            {
-                missingBaseGames.Add(new ImportGame
-                {
-                    BggId = baseGameBggId,
-                    Title = string.Empty,
-                    ImageUrl = string.Empty,
-                    State = expansion.State,
-                    AddedDate = expansion.AddedDate
-                });
-            }
-        }
+        var missingBaseGames = await MissingBaseGames(expansionsToImport, toImport, baseGames);
 
         var bggIds = toImport.Concat(missingBaseGames).Concat(expansionsToImport).Select(x => x.BggId).ToList();
         var items = bggIds.Count > 0
@@ -313,17 +277,74 @@ public class BggImportService : IBggImportService
         }
         catch
         {
-            foreach (var game in created)
-            {
-                _imageService.DeleteImage(game.Image);
-            }
-
-            foreach (var expansion in createdExpansions)
-            {
-                _imageService.DeleteImage(expansion.Image);
-            }
-
+            DeleteImages(created, createdExpansions);
             throw;
+        }
+    }
+
+    private async Task<List<ImportGame>> GamesToImport(IEnumerable<ImportGame> games)
+    {
+        var toImport = new List<ImportGame>();
+        foreach (var importGame in games)
+        {
+            var existingGame = await _gameRepository.GetGameByBggId(importGame.BggId);
+            if (existingGame != null)
+            {
+                _logger.LogDebug("BGG game with id {BggId} already imported, skipping", importGame.BggId);
+                continue;
+            }
+
+            toImport.Add(importGame);
+        }
+
+        return toImport;
+    }
+
+    private async Task<List<ImportGame>> MissingBaseGames(
+        List<ImportGame> expansionsToImport,
+        List<ImportGame> toImport,
+        Dictionary<int, Game> baseGames)
+    {
+        var missingBaseGames = new List<ImportGame>();
+        foreach (var expansion in expansionsToImport.DistinctBy(x => x.BaseGameBggId))
+        {
+            var baseGameBggId = expansion.BaseGameBggId!.Value;
+            if (toImport.Any(x => x.BggId == baseGameBggId))
+            {
+                continue;
+            }
+
+            var existingGame = await _gameRepository.GetGameByBggId(baseGameBggId);
+            if (existingGame != null)
+            {
+                baseGames[baseGameBggId] = existingGame;
+            }
+            else
+            {
+                missingBaseGames.Add(new ImportGame
+                {
+                    BggId = baseGameBggId,
+                    Title = string.Empty,
+                    ImageUrl = string.Empty,
+                    State = expansion.State,
+                    AddedDate = expansion.AddedDate
+                });
+            }
+        }
+
+        return missingBaseGames;
+    }
+
+    private void DeleteImages(List<Game> games, List<Expansion> expansions)
+    {
+        foreach (var game in games)
+        {
+            _imageService.DeleteImage(game.Image);
+        }
+
+        foreach (var expansion in expansions)
+        {
+            _imageService.DeleteImage(expansion.Image);
         }
     }
 

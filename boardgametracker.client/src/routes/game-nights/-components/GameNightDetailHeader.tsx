@@ -1,4 +1,5 @@
 import { cx } from "class-variance-authority";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import MapPin from "@/assets/icons/map-pin.svg?react";
 import PencilIcon from "@/assets/icons/pencil.svg?react";
@@ -33,6 +34,17 @@ interface Props {
 }
 
 const phoneButton = "max-md:py-3 max-md:text-sm";
+
+const whenLabel = (gameNight: GameNight, settings: Settings, isOver: boolean, isPlanned: boolean, t: TFunction) => {
+	const date = toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage);
+	if (isOver) return date;
+	if (isNightInProgress(gameNight)) return t("card.live");
+	return t(isPlanned ? "plan.starts" : "card.when", {
+		when: relativeDay(gameNight.startDate, settings.uiLanguage),
+		date,
+		time: toDisplayTime(gameNight.startDate, settings.timeFormat, settings.uiLanguage),
+	});
+};
 
 export const GameNightDetailHeader = (props: Props) => {
 	const {
@@ -77,15 +89,7 @@ export const GameNightDetailHeader = (props: Props) => {
 							isOver ? "bg-white/10 text-gray-300" : "bg-primary/20 text-indigo-300",
 						)}
 					>
-						{isOver
-							? toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage)
-							: isNightInProgress(gameNight)
-								? t("card.live")
-								: t(isPlanned ? "plan.starts" : "card.when", {
-										when: relativeDay(gameNight.startDate, settings.uiLanguage),
-										date: toDisplay(gameNight.startDate, settings.dateFormat, settings.uiLanguage),
-										time: toDisplayTime(gameNight.startDate, settings.timeFormat, settings.uiLanguage),
-									})}
+						{whenLabel(gameNight, settings, isOver, isPlanned, t)}
 					</span>
 					<BgtHeading as="h1" size="5" className="wrap-anywhere">
 						{gameNight.title}

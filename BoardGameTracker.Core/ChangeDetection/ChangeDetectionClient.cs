@@ -365,32 +365,36 @@ public class ChangeDetectionClient : IChangeDetectionClient
             }
 
             var result = watch.Value.TryGetProperty("restock", out var restock) ? ParseRestock(restock) : null;
-            if (result == null)
-            {
-                using var response = await client.GetAsync($"api/v1/watch/{watchId}/history/latest", cancellationToken);
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.LogDebug("changedetection.io returned {StatusCode} for the latest snapshot of watch {WatchId}",
-                        response.StatusCode, watchId);
-                    var unavailable = ChangeDetectionResult.Unavailable(response.StatusCode == HttpStatusCode.NotFound
-                        ? ChangeDetectionStatus.Pending
-                        : MapStatus(response.StatusCode));
-                    ApplyWatchMetadata(unavailable, watch.Value);
-                    unavailable.RecheckQueued = queueRecheck;
-                    return unavailable;
-                }
-
-                result = ChangeDetectionSnapshotParser.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
-                if (result.Status == ChangeDetectionStatus.ParseError)
-                {
-                    _logger.LogWarning("changedetection.io snapshot for watch {WatchId} is not a restock snapshot", watchId);
-                }
-            }
+            result ??= await FetchLatestSnapshotAsync(client, watchId, cancellationToken);
 
             ApplyWatchMetadata(result, watch.Value);
             result.RecheckQueued = queueRecheck;
             return result;
         }, ChangeDetectionResult.Unavailable(ChangeDetectionStatus.Unreachable), $"fetch for watch {watchId}", cancellationToken);
+    }
+
+    private async Task<ChangeDetectionResult> FetchLatestSnapshotAsync(
+        HttpClient client,
+        string watchId,
+        CancellationToken cancellationToken)
+    {
+        using var response = await client.GetAsync($"api/v1/watch/{watchId}/history/latest", cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogDebug("changedetection.io returned {StatusCode} for the latest snapshot of watch {WatchId}",
+                response.StatusCode, watchId);
+            return ChangeDetectionResult.Unavailable(response.StatusCode == HttpStatusCode.NotFound
+                ? ChangeDetectionStatus.Pending
+                : MapStatus(response.StatusCode));
+        }
+
+        var result = ChangeDetectionSnapshotParser.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+        if (result.Status == ChangeDetectionStatus.ParseError)
+        {
+            _logger.LogWarning("changedetection.io snapshot for watch {WatchId} is not a restock snapshot", watchId);
+        }
+
+        return result;
     }
 
     private async Task<(ChangeDetectionStatus Status, JsonElement? Watch)> FetchWatchAsync(

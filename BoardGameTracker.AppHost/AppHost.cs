@@ -53,6 +53,7 @@ var backend = builder.AddProject<Projects.BoardGameTracker_Host>("bgt-host")
         // Auth
         env["AUTH_ENABLED"] = "true";
         env["PUBLIC_URL"] = $"http://localhost:{clientPort}";
+        env["CORS_ORIGINS"] = $"http://localhost:{clientPort}";
         env["JWT_SECRET"] = jwtSecret.Resource;
         env["DATA_PROTECTION_KEY"] = dataProtectionKey.Resource;
 

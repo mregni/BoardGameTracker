@@ -1,4 +1,4 @@
-import { describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import type {
 	Badge,
 	CompareGame,
@@ -94,13 +94,13 @@ type SameUnion<A, B> = [A] extends [B]
 		: { onlyInApi: Exclude<A, B> }
 	: { onlyInFrontend: Exclude<B, A> };
 
-const sameKeys = <Model, Schema>(_aligned: KeyDrift<Model, Schema>) => undefined;
+const sameKeys = <Model, Schema>(aligned: KeyDrift<Model, Schema>) => expect(aligned).toBe(true);
 const coversApiKeys = <Model, Schema>(
-	_aligned: [Exclude<keyof Schema, keyof Model>] extends [never]
+	aligned: [Exclude<keyof Schema, keyof Model>] extends [never]
 		? true
 		: { onlyInApi: Exclude<keyof Schema, keyof Model> },
-) => undefined;
-const sameValues = <A, B>(_aligned: SameUnion<A, B>) => undefined;
+) => expect(aligned).toBe(true);
+const sameValues = <A, B>(aligned: SameUnion<A, B>) => expect(aligned).toBe(true);
 
 describe("API contract", () => {
 	it("keeps the response models aligned with the generated schemas", () => {

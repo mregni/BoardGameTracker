@@ -40,6 +40,22 @@ function convertDatesInObject(obj: any): any {
 	return obj;
 }
 
+type ErrorBody = Record<string, unknown> | string | null;
+
+function responseMessage(data: ErrorBody): string {
+	if (typeof data === "string") return data || "An unexpected error occurred";
+	if (data && typeof data.reason === "string") return data.reason;
+	if (data && typeof data.title === "string") return data.title;
+	return "An unexpected error occurred";
+}
+
+function responseParams(data: ErrorBody) {
+	if (data && typeof data === "object" && data.params && typeof data.params === "object") {
+		return data.params as Record<string, string | number>;
+	}
+	return undefined;
+}
+
 function classifyError(error: AxiosError): ApiError {
 	const url = error.config?.url;
 
@@ -53,22 +69,12 @@ function classifyError(error: AxiosError): ApiError {
 
 	if (error.response) {
 		const status = error.response.status;
-		const data = error.response.data as Record<string, unknown> | string | null;
+		const data = error.response.data as ErrorBody;
 
-		let message = "An unexpected error occurred";
-		if (data && typeof data === "object" && "reason" in data && typeof data.reason === "string") {
-			message = data.reason;
-		} else if (data && typeof data === "object" && "title" in data && typeof data.title === "string") {
-			message = data.title;
-		} else if (typeof data === "string" && data.length > 0) {
-			message = data;
-		}
-
+		const message = responseMessage(data);
 		const kind: ApiErrorKind = status >= 500 ? "server" : "client";
-		if (data && typeof data === "object" && "params" in data && data.params && typeof data.params === "object") {
-			return { kind, status, message, params: data.params as Record<string, string | number>, url };
-		}
-		return { kind, status, message, url };
+		const params = responseParams(data);
+		return params ? { kind, status, message, params, url } : { kind, status, message, url };
 	}
 
 	return {
