@@ -309,7 +309,7 @@ public class OidcConfigurationProviderTests : IDisposable
 
     private sealed class MetadataHandler : HttpMessageHandler
     {
-        public Dictionary<string, string> Documents { get; } = new();
+        public Dictionary<string, string> Documents { get; } = [];
 
         public List<string> Requests { get; } = [];
 

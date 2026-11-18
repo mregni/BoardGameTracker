@@ -25,6 +25,30 @@ public static class GameNightDtoExtensions
         };
     }
 
+    public static RunningGameDto ToDto(this RunningGame runningGame)
+    {
+        return new RunningGameDto
+        {
+            Id = runningGame.Id,
+            GameNightId = runningGame.GameNightId,
+            GameId = runningGame.GameId,
+            Start = runningGame.Start,
+            PlayerIds = runningGame.GetPlayerIds()
+        };
+    }
+
+    public static GameNightRsvpDto ToDto(this GameNightRsvp rsvp)
+    {
+        return new GameNightRsvpDto
+        {
+            Id = rsvp.Id,
+            PlayerId = rsvp.PlayerId,
+            Player = rsvp.Player.ToPublicDto(),
+            GameNightId = rsvp.GameNightId,
+            State = rsvp.State
+        };
+    }
+
     public static GameNightSummaryDto ToSummaryDto(this GameNight gameNight)
     {
         return new GameNightSummaryDto
@@ -50,35 +74,11 @@ public static class GameNightDtoExtensions
         };
     }
 
-    public static RunningGameDto ToDto(this RunningGame runningGame)
-    {
-        return new RunningGameDto
-        {
-            Id = runningGame.Id,
-            GameNightId = runningGame.GameNightId,
-            GameId = runningGame.GameId,
-            Start = runningGame.Start,
-            PlayerIds = runningGame.GetPlayerIds()
-        };
-    }
-
     public static GameNightDto ToPublicDto(this GameNight gameNight)
     {
         var dto = gameNight.ToDto();
         dto.SuggestedGames = gameNight.SuggestedGames.Select(g => g.ToPublicDto()).ToList();
         return dto;
-    }
-
-    public static GameNightRsvpDto ToDto(this GameNightRsvp rsvp)
-    {
-        return new GameNightRsvpDto
-        {
-            Id = rsvp.Id,
-            PlayerId = rsvp.PlayerId,
-            Player = rsvp.Player.ToPublicDto(),
-            GameNightId = rsvp.GameNightId,
-            State = rsvp.State
-        };
     }
 
     public static GameNightRsvpUpdateDto ToUpdateDto(this GameNightRsvp rsvp, bool hostNotified)

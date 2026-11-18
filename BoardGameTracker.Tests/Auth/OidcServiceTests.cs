@@ -4,9 +4,9 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Common.Entities.Auth;
-using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
@@ -403,7 +403,7 @@ public class OidcServiceTests : IDisposable
 
     private const string DiscoveryAuthority = "https://sso.example.com/realms/bgt";
 
-    private readonly Dictionary<string, (HttpStatusCode Status, string Body)> _documents = new();
+    private readonly Dictionary<string, (HttpStatusCode Status, string Body)> _documents = [];
 
     private void SetupDiscovery(HttpStatusCode status, string body)
     {

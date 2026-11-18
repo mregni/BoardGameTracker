@@ -89,7 +89,7 @@ public class GameSpecsTests
     };
 
     [Theory]
-    [MemberData(nameof(DetailSpecs))]
+    [MemberData(nameof(DetailSpecs), DisableDiscoveryEnumeration = true)]
     public void GameByIdDetailSpecs_ShouldMatchOnlyRequestedId_IncludeGraph_AndSetTracking(
         Specification<Game> matching, Specification<Game> nonMatching, bool asNoTracking)
     {

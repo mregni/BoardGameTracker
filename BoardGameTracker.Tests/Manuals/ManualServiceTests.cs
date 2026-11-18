@@ -741,7 +741,7 @@ public class ManualServiceTests
             .Setup(x => x.ListAsync(
                 It.Is<ManualsByGameIdsSpec>(s => s.IsSatisfiedBy(CreateManual(1, 1)) && s.IsSatisfiedBy(CreateManual(1, 2)) && s.IsSatisfiedBy(CreateManual(1, 3)) && !s.IsSatisfiedBy(CreateManual(1, 4))),
                 CancellationToken.None))
-            .ReturnsAsync(new List<Manual> { CreateManual(1, 1), CreateManual(2, 1), CreateManual(3, 3) });
+            .ReturnsAsync([CreateManual(1, 1), CreateManual(2, 1), CreateManual(3, 3)]);
 
         var result = await _manualService.GetManualsForGameNight(linkId, true);
 

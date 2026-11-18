@@ -815,16 +815,16 @@ public class OidcService : IOidcService
         return OptionalEndpoint(doc, name) ?? throw new DomainException(Constants.Errors.OidcDiscoveryFailed);
     }
 
+    private static string RequiredEndpoint(string? endpoint)
+    {
+        return string.IsNullOrWhiteSpace(endpoint) ? throw new DomainException(Constants.Errors.OidcDiscoveryFailed) : endpoint;
+    }
+
     private static string? OptionalEndpoint(JsonElement doc, string name)
     {
         return doc.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String && value.GetString() is { Length: > 0 } endpoint
             ? endpoint
             : null;
-    }
-
-    private static string RequiredEndpoint(string? endpoint)
-    {
-        return string.IsNullOrWhiteSpace(endpoint) ? throw new DomainException(Constants.Errors.OidcDiscoveryFailed) : endpoint;
     }
 
     private static string SecureEndpoint(string endpoint)

@@ -164,7 +164,7 @@ public class BggImportService : IBggImportService
         var collection = await FetchCollection(new CollectionRequest(userName, subType: Constants.Bgg.BoardGame), userName, cancellationToken);
         if (collection.Count == 0)
         {
-            return new List<BggImportGame>();
+            return [];
         }
 
         var games = collection
@@ -239,7 +239,7 @@ public class BggImportService : IBggImportService
         var bggIds = toImport.Concat(missingBaseGames).Concat(expansionsToImport).Select(x => x.BggId).ToList();
         var items = bggIds.Count > 0
             ? await FetchThingsFromBgg(bggIds)
-            : new Dictionary<int, ThingResponse.Item>();
+            : [];
 
         var created = new List<Game>();
         var createdExpansions = new List<Expansion>();

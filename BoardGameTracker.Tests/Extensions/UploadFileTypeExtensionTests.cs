@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
@@ -10,12 +9,12 @@ namespace BoardGameTracker.Tests.Extensions;
 
 public class UploadFileTypeExtensionTests
 {
-    public static IEnumerable<object[]> PathCases()
+    public static TheoryData<UploadFileType, string> PathCases => new()
     {
-        yield return new object[] { UploadFileType.Profile, PathHelper.FullProfileImagePath };
-        yield return new object[] { UploadFileType.Game, string.Empty };
-        yield return new object[] { (UploadFileType) 999, string.Empty };
-    }
+        { UploadFileType.Profile, PathHelper.FullProfileImagePath },
+        { UploadFileType.Game, string.Empty },
+        { (UploadFileType) 999, string.Empty },
+    };
 
     [Theory]
     [MemberData(nameof(PathCases))]

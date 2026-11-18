@@ -1,7 +1,7 @@
 ﻿using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -226,8 +226,8 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .Select(g => new
             {
                 GameId = g.Key,
-                Title = g.First().Game.Title,
-                Image = g.First().Game.Image,
+                g.First().Game.Title,
+                g.First().Game.Image,
                 PlayCount = g.Count()
             })
             .OrderByDescending(x => x.PlayCount)

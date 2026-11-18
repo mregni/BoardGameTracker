@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Core.Auth;
@@ -10,6 +8,8 @@ using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Auth;
@@ -81,7 +81,7 @@ public class TokenServiceTests : IDisposable
         var user = new ApplicationUser("testuser", "test@test.com");
         var sessionId = Guid.NewGuid();
 
-        var token = _tokenService.GenerateAccessToken(user, new List<string>(), sessionId);
+        var token = _tokenService.GenerateAccessToken(user, [], sessionId);
 
         new JsonWebTokenHandler().ReadJsonWebToken(token).Claims.Should().Contain(c => c.Type == TokenService.SessionIdClaim && c.Value == sessionId.ToString());
     }
@@ -285,7 +285,7 @@ public class TokenServiceTests : IDisposable
         var service = new TokenService(Options.Create(new JwtOptions()), _context);
         var user = new ApplicationUser("testuser", "test@test.com");
 
-        var act = () => service.GenerateAccessToken(user, new List<string>(), Guid.NewGuid());
+        var act = () => service.GenerateAccessToken(user, [], Guid.NewGuid());
 
         act.Should().Throw<InvalidOperationException>().WithMessage("JWT Secret is not configured");
     }
@@ -294,7 +294,7 @@ public class TokenServiceTests : IDisposable
     public async Task GenerateAccessToken_ShouldSignWithTheConfiguredSecret()
     {
         var user = new ApplicationUser("testuser", "test@test.com");
-        var token = _tokenService.GenerateAccessToken(user, new List<string>(), Guid.NewGuid());
+        var token = _tokenService.GenerateAccessToken(user, [], Guid.NewGuid());
         var parameters = new TokenValidationParameters
         {
             ValidIssuer = "test-issuer",
@@ -313,8 +313,8 @@ public class TokenServiceTests : IDisposable
         var user = new ApplicationUser("testuser", "test@test.com");
         var sessionId = Guid.NewGuid();
 
-        var first = new JsonWebTokenHandler().ReadJsonWebToken(_tokenService.GenerateAccessToken(user, new List<string>(), sessionId));
-        var second = new JsonWebTokenHandler().ReadJsonWebToken(_tokenService.GenerateAccessToken(user, new List<string>(), sessionId));
+        var first = new JsonWebTokenHandler().ReadJsonWebToken(_tokenService.GenerateAccessToken(user, [], sessionId));
+        var second = new JsonWebTokenHandler().ReadJsonWebToken(_tokenService.GenerateAccessToken(user, [], sessionId));
 
         first.Id.Should().NotBeNullOrEmpty().And.NotBe(second.Id);
     }

@@ -46,7 +46,7 @@ public class Expansion : HasId
         BggId = bggId == null ? null : Guard.Against.NegativeOrZero(bggId.Value);
         GameId = Guard.Against.NegativeOrZero(gameId);
         AdditionDate = DateTime.UtcNow;
-        Sessions = new List<Session>();
+        Sessions = [];
     }
 
     public Expansion(string title, int? bggId, Game game)
@@ -56,7 +56,7 @@ public class Expansion : HasId
         Game = Guard.Against.Null(game);
         GameId = game.Id;
         AdditionDate = DateTime.UtcNow;
-        Sessions = new List<Session>();
+        Sessions = [];
     }
 
     public bool Matches(Expansion other)

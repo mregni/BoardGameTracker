@@ -18,7 +18,7 @@ public class OidcIdTokenValidator : IOidcIdTokenValidator
 
     private static readonly JsonWebTokenHandler Handler = new();
 
-    private readonly ConditionalWeakTable<OpenIdConnectConfiguration, string> _expiredCertificateWarnings = new();
+    private readonly ConditionalWeakTable<OpenIdConnectConfiguration, string> _expiredCertificateWarnings = [];
     private readonly IOidcConfigurationProvider _configurations;
     private readonly ILogger<OidcIdTokenValidator> _logger;
 

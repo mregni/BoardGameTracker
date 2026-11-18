@@ -63,13 +63,11 @@ public partial class UpdateService : IUpdateService
     {
         try
         {
-            _logger.LogInformation("Checking for updates from Docker Hub...");
-
             var currentVersion = GetCurrentVersion();
             var updateTrack = await _configRepository.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track);
             var isBetaTrack = updateTrack == VersionTrack.Beta;
 
-            _logger.LogInformation("Current version: {Version}, Update track: {Track}",
+            _logger.LogInformation("Checking for updates from Docker Hub. Current version: {Version}, Update track: {Track}",
                 currentVersion, updateTrack);
 
             var semverTags = await GetSemverTagsAsync();

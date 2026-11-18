@@ -1,3 +1,10 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Ardalis.Specification;
 using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common;
@@ -23,13 +30,6 @@ using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Games;
@@ -327,7 +327,7 @@ public class GameServiceTests
         gameOne.UpdateChangeDetectionWatchId(watchOne);
         var gameTwo = new Game("Game Two") { Id = 2 };
         gameTwo.UpdateChangeDetectionWatchId(watchTwo);
-        _gameRepositoryMock.Setup(x => x.GetTrackedGames()).ReturnsAsync(new List<Game> { gameOne, gameTwo });
+        _gameRepositoryMock.Setup(x => x.GetTrackedGames()).ReturnsAsync([gameOne, gameTwo]);
         _changeDetectionClientMock
             .Setup(x => x.GetLatestAsync(It.Is<IReadOnlyCollection<string>>(ids => ids.SequenceEqual(new[] { watchOne, watchTwo })), true, _token))
             .ReturnsAsync(new Dictionary<string, ChangeDetectionResult>
@@ -362,7 +362,7 @@ public class GameServiceTests
         gameTwo.UpdateChangeDetectionWatchId(watchTwo);
 
         _gameRepositoryMock.Setup(x => x.GetTrackedGames())
-            .ReturnsAsync(new List<Game> { gameOne, gameTwo });
+            .ReturnsAsync([gameOne, gameTwo]);
         _changeDetectionClientMock
             .Setup(x => x.GetLatestAsync(
                 It.Is<IReadOnlyCollection<string>>(ids => ids.SequenceEqual(new[] { watchOne, watchTwo })), false, _token))

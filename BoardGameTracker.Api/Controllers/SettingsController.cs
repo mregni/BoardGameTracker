@@ -1,7 +1,7 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Extensions;
-using BoardGameTracker.Common;
 using BoardGameTracker.Core.Integrations.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;

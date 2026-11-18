@@ -39,7 +39,7 @@ public class Manual : HasId
     public string? IndexError { get; private set; }
     public DateTime? IndexedDate { get; private set; }
 
-    public ICollection<ManualChunk> Chunks { get; private set; } = new List<ManualChunk>();
+    public ICollection<ManualChunk> Chunks { get; private set; } = [];
 
     public Manual(string title, string storedFileName, string contentType, long fileSizeBytes, int gameId, DateTime uploadDate)
     {

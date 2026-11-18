@@ -34,7 +34,7 @@ public class ExceptionStatusMapperTests
     };
 
     [Theory]
-    [MemberData(nameof(Reporting))]
+    [MemberData(nameof(Reporting), DisableDiscoveryEnumeration = true)]
     public void ShouldReport_ShouldOnlyReportWhatTheApiAnswersWithAServerError(Exception exception, bool expected)
     {
         ExceptionStatusMapper.ShouldReport(exception).Should().Be(expected);

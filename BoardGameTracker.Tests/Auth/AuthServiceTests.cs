@@ -956,7 +956,7 @@ public class AuthServiceTests : IDisposable
         var user = new ApplicationUser("testuser", "old@test.com", "Old Name");
         _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
         _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
 
         var result = await _authService.UpdateProfileAsync(userId, new UpdateProfileRequest("New Name", "OLD@test.com", null));
 
@@ -983,7 +983,7 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Setup(x => x.HasPasswordAsync(user)).ReturnsAsync(true);
         _userManagerMock.Setup(x => x.CheckPasswordAsync(user, "current-password")).ReturnsAsync(true);
         _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
         _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
 
         var result = await _authService.UpdateProfileAsync(userId, request);
@@ -1029,7 +1029,7 @@ public class AuthServiceTests : IDisposable
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
         _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
 
         var result = await _authService.UpdateProfileAsync(userId, new UpdateProfileRequest("New Name", "", null));
 
@@ -1098,7 +1098,7 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Setup(x => x.CreateAsync(It.Is<ApplicationUser>(u => IsNewAccount(u, "newuser", "new@test.com")), "password123")).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.Setup(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser"), Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.Setup(x => x.UpdateAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser" && u.PlayerId == 5))).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.GetRolesAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser"))).ReturnsAsync(new List<string> { "User" });
+        _userManagerMock.Setup(x => x.GetRolesAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser"))).ReturnsAsync(["User"]);
         _playerServiceMock.Setup(x => x.Create(It.Is<CreatePlayerCommand>(c => c.Name == "newuser" && c.Email == "new@test.com"))).ReturnsAsync(new Player("newuser") { Id = 5 });
 
         var result = await _authService.RegisterAsync(request);
@@ -1168,7 +1168,7 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Setup(x => x.CreateAsync(It.Is<ApplicationUser>(u => IsNewAccount(u, "newuser", "new@test.com")), "password123")).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.Setup(x => x.AddToRoleAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser"), Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.Setup(x => x.UpdateAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser" && u.PlayerId == 7))).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.GetRolesAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser"))).ReturnsAsync(new List<string> { "User" });
+        _userManagerMock.Setup(x => x.GetRolesAsync(It.Is<ApplicationUser>(u => u.UserName == "newuser"))).ReturnsAsync(["User"]);
 
         var result = await _authService.RegisterAsync(request);
 
@@ -1216,7 +1216,7 @@ public class AuthServiceTests : IDisposable
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
         _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
 
         var result = await _authService.UpdateProfileAsync(userId, request);
 
@@ -1241,7 +1241,7 @@ public class AuthServiceTests : IDisposable
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
         _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
 
         var result = await _authService.UpdateProfileAsync(userId, request);
 
@@ -1314,7 +1314,7 @@ public class AuthServiceTests : IDisposable
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
         _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
 
         var result = await _authService.UpdateProfileAsync(userId, request);
 
@@ -1391,7 +1391,7 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Setup(x => x.HasPasswordAsync(user)).ReturnsAsync(true);
         _userManagerMock.Setup(x => x.CheckPasswordAsync(user, "current-password")).ReturnsAsync(true);
         _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(["User"]);
         _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(false);
 
         await _authService.UpdateProfileAsync(userId, new UpdateProfileRequest("Bob", "alice@test.com", null, "current-password"));

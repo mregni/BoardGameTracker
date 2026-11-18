@@ -27,7 +27,7 @@ public class ConfigRepositoryTests : IDisposable
     private readonly MainDbContext _context;
     private readonly Mock<ILogger<ConfigRepository>> _loggerMock = new();
     private readonly ConfigRepository _repository;
-    private readonly Dictionary<string, string?> _originalEnvironmentVariables = new();
+    private readonly Dictionary<string, string?> _originalEnvironmentVariables = [];
 
     public ConfigRepositoryTests()
     {

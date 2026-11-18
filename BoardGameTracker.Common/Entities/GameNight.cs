@@ -51,7 +51,7 @@ public class GameNight: HasId
 
     public void SetInvitedPlayers(IEnumerable<GameNightRsvp> gameNightRsvps)
     {
-        InvitedPlayers = new List<GameNightRsvp>();
+        InvitedPlayers = [];
         foreach (var gameNightRsvp in gameNightRsvps)
         {
             if (InvitedPlayers.Any(x => x.PlayerId == gameNightRsvp.PlayerId))
@@ -86,7 +86,7 @@ public class GameNight: HasId
 
     public void SetSuggestedGames(IEnumerable<Game> suggestedGames)
     {
-        SuggestedGames = new List<Game>();
+        SuggestedGames = [];
         foreach (var suggestedGame in suggestedGames)
         {
             if (SuggestedGames.Any(x => x.Id == suggestedGame.Id))

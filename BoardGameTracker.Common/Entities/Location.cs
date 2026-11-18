@@ -22,8 +22,8 @@ public class Location: HasId
     public Location(string name)
     {
         Name = name;
-        Sessions = new List<Session>();
-        GameNights = new List<GameNight>();
+        Sessions = [];
+        GameNights = [];
     }
 
     public void UpdateName(string name)

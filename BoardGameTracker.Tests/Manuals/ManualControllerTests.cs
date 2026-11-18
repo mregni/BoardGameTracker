@@ -61,7 +61,7 @@ public class ManualControllerTests
     {
         _manualServiceMock
             .Setup(x => x.GetManualsForGame(5))
-            .ReturnsAsync(new List<Manual> { CreateManual(1, 5) });
+            .ReturnsAsync([CreateManual(1, 5)]);
 
         var result = await _controller.GetManualsForGame(5);
 
@@ -78,10 +78,10 @@ public class ManualControllerTests
     [Fact]
     public async Task UploadManuals_ShouldReturnCreatedWithDtos()
     {
-        var command = new UploadManualsCommand { Files = new List<IFormFile>() };
+        var command = new UploadManualsCommand { Files = [] };
         _manualServiceMock
             .Setup(x => x.UploadManuals(5, command.Files))
-            .ReturnsAsync(new List<Manual> { CreateManual(1, 5) });
+            .ReturnsAsync([CreateManual(1, 5)]);
 
         var result = await _controller.UploadManuals(5, command);
 
