@@ -1,6 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
-import { type ChangeEvent, useCallback, useMemo, useRef, useState } from "react";
+import type { CellContext, ColumnDef } from "@tanstack/react-table";
+import {
+	type ChangeEvent,
+	createContext,
+	type ReactNode,
+	useCallback,
+	useContext,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { BgtActionMenu } from "@/components/BgtActionMenu/BgtActionMenu";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
@@ -402,6 +411,72 @@ interface UserManagementSectionProps {
 	onDeleteUser: (user: UserDto) => void;
 }
 
+interface UsersTableCells {
+	lastLogin: (user: UserDto) => string;
+	roleNames: (user: UserDto) => string;
+	badges: (user: UserDto) => ReactNode;
+	playerChip: (user: UserDto) => ReactNode;
+	currentUserId: string;
+	onEditUser: (user: UserDto) => void;
+	onManageAccess: (user: UserDto) => void;
+	onResetPassword: (user: UserDto) => void;
+	onDeleteUser: (user: UserDto) => void;
+}
+
+const UsersTableContext = createContext<UsersTableCells | null>(null);
+
+const useUsersTable = () => {
+	const cells = useContext(UsersTableContext);
+	if (!cells) throw new Error("UsersTableContext is missing");
+	return cells;
+};
+
+const UsernameCell = ({ row }: CellContext<UserDto, unknown>) => {
+	const { badges } = useUsersTable();
+	return (
+		<div className="flex flex-wrap items-center gap-2">
+			<BgtAvatar image={row.original.profileImage} title={row.original.username} colorKey={row.original.id} />
+			<span>{row.original.username}</span>
+			{badges(row.original)}
+		</div>
+	);
+};
+
+const RoleCell = ({ row }: CellContext<UserDto, unknown>) => (
+	<div className="text-white/70">{useUsersTable().roleNames(row.original)}</div>
+);
+
+const PlayerCell = ({ row }: CellContext<UserDto, unknown>) => (
+	<div className="text-white/70">{useUsersTable().playerChip(row.original)}</div>
+);
+
+const LastLoginCell = ({ row }: CellContext<UserDto, unknown>) => (
+	<div className="text-white/70">{useUsersTable().lastLogin(row.original)}</div>
+);
+
+const ActionsCell = ({ row }: CellContext<UserDto, unknown>) => {
+	const { t } = useTranslation(["settings", "common"]);
+	const { currentUserId, onEditUser, onManageAccess, onResetPassword, onDeleteUser } = useUsersTable();
+	return (
+		<div className="flex justify-end gap-2">
+			<BgtButton size="1" variant="cancel" onClick={() => onEditUser(row.original)}>
+				{t("common:edit")}
+			</BgtButton>
+			<BgtButton size="1" variant="cancel" onClick={() => onManageAccess(row.original)}>
+				{t("account.users.access.button")}
+			</BgtButton>
+			<BgtButton size="1" variant="cancel" onClick={() => onResetPassword(row.original)}>
+				{t("account.users.reset-password.button")}
+			</BgtButton>
+			{row.original.id !== currentUserId && (
+				<BgtButton size="1" variant="error" onClick={() => onDeleteUser(row.original)}>
+					{t("common:delete.button")}
+				</BgtButton>
+			)}
+		</div>
+	);
+};
+
 const UserManagementSection = ({
 	users,
 	isLoading,
@@ -467,69 +542,40 @@ const UserManagementSection = ({
 		[players],
 	);
 
-	const columns: ColumnDef<UserDto>[] = useMemo(
-		() => [
-			{
-				accessorKey: "username",
-				header: t("auth:username"),
-				cell: ({ row }) => (
-					<div className="flex flex-wrap items-center gap-2">
-						<BgtAvatar image={row.original.profileImage} title={row.original.username} colorKey={row.original.id} />
-						<span>{row.original.username}</span>
-						{badges(row.original)}
-					</div>
-				),
-			},
-			{
-				accessorKey: "roles",
-				header: t("account.users.role"),
-				cell: ({ row }) => <div className="text-white/70">{roleNames(row.original)}</div>,
-			},
-			{
-				id: "player",
-				header: t("account.users.player-column"),
-				cell: ({ row }) => <div className="text-white/70">{playerChip(row.original)}</div>,
-			},
-			{
-				accessorKey: "lastLoginAt",
-				header: t("account.users.last-login"),
-				cell: ({ row }) => <div className="text-white/70">{lastLogin(row.original)}</div>,
-			},
-			{
-				id: "actions",
-				header: "",
-				cell: ({ row }) => (
-					<div className="flex justify-end gap-2">
-						<BgtButton size="1" variant="cancel" onClick={() => onEditUser(row.original)}>
-							{t("common:edit")}
-						</BgtButton>
-						<BgtButton size="1" variant="cancel" onClick={() => onManageAccess(row.original)}>
-							{t("account.users.access.button")}
-						</BgtButton>
-						<BgtButton size="1" variant="cancel" onClick={() => onResetPassword(row.original)}>
-							{t("account.users.reset-password.button")}
-						</BgtButton>
-						{row.original.id !== currentUserId && (
-							<BgtButton size="1" variant="error" onClick={() => onDeleteUser(row.original)}>
-								{t("common:delete.button")}
-							</BgtButton>
-						)}
-					</div>
-				),
-			},
-		],
-		[
-			t,
+	const cells = useMemo(
+		() => ({
+			lastLogin,
+			roleNames,
+			badges,
+			playerChip,
 			currentUserId,
 			onEditUser,
 			onManageAccess,
 			onResetPassword,
 			onDeleteUser,
+		}),
+		[
 			lastLogin,
-			badges,
 			roleNames,
+			badges,
 			playerChip,
+			currentUserId,
+			onEditUser,
+			onManageAccess,
+			onResetPassword,
+			onDeleteUser,
 		],
+	);
+
+	const columns: ColumnDef<UserDto>[] = useMemo(
+		() => [
+			{ accessorKey: "username", header: t("auth:username"), cell: UsernameCell },
+			{ accessorKey: "roles", header: t("account.users.role"), cell: RoleCell },
+			{ id: "player", header: t("account.users.player-column"), cell: PlayerCell },
+			{ accessorKey: "lastLoginAt", header: t("account.users.last-login"), cell: LastLoginCell },
+			{ id: "actions", header: "", cell: ActionsCell },
+		],
+		[t],
 	);
 
 	return (
@@ -541,7 +587,9 @@ const UserManagementSection = ({
 				{() => (
 					<>
 						<div className="hidden md:block">
-							<BgtDataTable columns={columns} data={users} noDataMessage={t("account.users.no-users")} />
+							<UsersTableContext.Provider value={cells}>
+								<BgtDataTable columns={columns} data={users} noDataMessage={t("account.users.no-users")} />
+							</UsersTableContext.Provider>
 						</div>
 						<ul className="flex flex-col gap-2 md:hidden" aria-label={t("account.users.title")}>
 							{users.length === 0 && <li className="text-sm text-white/60">{t("account.users.no-users")}</li>}

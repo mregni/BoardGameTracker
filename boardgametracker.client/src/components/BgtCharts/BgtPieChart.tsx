@@ -1,4 +1,5 @@
-import { ResponsivePie } from "@nivo/pie";
+import { type PieTooltipProps, ResponsivePie } from "@nivo/pie";
+import { createContext, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
@@ -18,6 +19,24 @@ const theme = {
 	},
 };
 
+type ColoredDatum = PieChartDatum & { color: string };
+
+const PieTooltipContext = createContext({ total: 0, prefix: "" });
+
+const PieTooltip = ({ datum }: PieTooltipProps<ColoredDatum>) => {
+	const { t } = useTranslation();
+	const { percent } = useNumberFormat();
+	const { total, prefix } = useContext(PieTooltipContext);
+	return (
+		<div className="bg-background border border-primary/30 rounded-lg p-3 shadow-lg min-w-40">
+			<BgtText color="white">{datum.label}</BgtText>
+			<BgtText color="cyan">
+				{t(prefix, { count: datum.value })} ({percent(total === 0 ? 0 : datum.value / total)})
+			</BgtText>
+		</div>
+	);
+};
+
 interface Props {
 	data: PieChartDatum[];
 	showLegend?: boolean;
@@ -28,54 +47,47 @@ interface Props {
 export const BgtPieChart = (props: Props) => {
 	const { data, showLegend = false, tooltipPrefix, ariaLabel } = props;
 	const { t } = useTranslation();
-	const { percent, integer } = useNumberFormat();
+	const { integer } = useNumberFormat();
 	const animate = useMediaQuery("(prefers-reduced-motion: no-preference)");
+	const total = (data ?? []).reduce((sum, item) => sum + item.value, 0);
+	const tooltip = useMemo(() => ({ total, prefix: tooltipPrefix }), [total, tooltipPrefix]);
 
 	if (!data || data.length === 0) return null;
 
-	const coloredData = data.map((item, index) => ({
+	const coloredData: ColoredDatum[] = data.map((item, index) => ({
 		...item,
 		color: item.color ?? pieColors[index % pieColors.length],
 	}));
-	const total = data.reduce((sum, item) => sum + item.value, 0);
-	const label =
-		ariaLabel ?? `${data.map((item) => `${item.label}: ${item.value}`).join(", ")}, ${t("total")}: ${total}`;
+	const parts = data.map((item) => `${item.label}: ${item.value}`).join(", ");
+	const label = ariaLabel ?? `${parts}, ${t("total")}: ${total}`;
 
 	return (
 		<>
 			<div className="flex items-center flex-col justify-between h-full mb-4">
 				<div className="relative w-48 h-48" role="img" aria-label={label}>
-					<ResponsivePie
-						data={coloredData}
-						margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-						innerRadius={0.6}
-						padAngle={2}
-						cornerRadius={3}
-						activeOuterRadiusOffset={8}
-						colors={{ datum: "data.color" }}
-						enableArcLinkLabels={false}
-						enableArcLabels={false}
-						borderWidth={0}
-						borderColor={{
-							from: "color",
-							modifiers: [["darker", 0.9]],
-						}}
-						theme={theme}
-						animate={animate}
-						motionConfig="slow"
-						transitionMode="startAngle"
-						tooltip={({ datum }) => {
-							const percentage = percent(total === 0 ? 0 : datum.value / total);
-							return (
-								<div className="bg-background border border-primary/30 rounded-lg p-3 shadow-lg min-w-40">
-									<BgtText color="white">{datum.label}</BgtText>
-									<BgtText color="cyan">
-										{t(tooltipPrefix, { count: datum.value })} ({percentage})
-									</BgtText>
-								</div>
-							);
-						}}
-					/>
+					<PieTooltipContext.Provider value={tooltip}>
+						<ResponsivePie
+							data={coloredData}
+							margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+							innerRadius={0.6}
+							padAngle={2}
+							cornerRadius={3}
+							activeOuterRadiusOffset={8}
+							colors={{ datum: "data.color" }}
+							enableArcLinkLabels={false}
+							enableArcLabels={false}
+							borderWidth={0}
+							borderColor={{
+								from: "color",
+								modifiers: [["darker", 0.9]],
+							}}
+							theme={theme}
+							animate={animate}
+							motionConfig="slow"
+							transitionMode="startAngle"
+							tooltip={PieTooltip}
+						/>
+					</PieTooltipContext.Provider>
 					<div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
 						<BgtText color="cyan" size="8">
 							{integer(total)}

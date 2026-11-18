@@ -1,6 +1,7 @@
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import type { CellContext } from "@tanstack/react-table";
+import { createContext, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import AlertTriangle from "@/assets/icons/alert-triangle.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
@@ -11,7 +12,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtDataTable";
 import { usePermissions } from "@/hooks/usePermissions";
-import type { Session } from "@/models";
+import type { Game, Session } from "@/models";
 import { getGames } from "@/services/queries/games";
 import { getPlayer, getPlayerSessions, getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
@@ -34,6 +35,21 @@ export const Route = createFileRoute("/players/$playerId_/sessions")({
 	},
 });
 
+const GameMapContext = createContext(new Map<number, Game>());
+
+const GameCell = ({ row }: CellContext<Session, unknown>) => {
+	const navigate = useNavigate();
+	const game = useContext(GameMapContext).get(row.original.gameId);
+	return (
+		game && (
+			<div className="flex flex-row gap-2 items-center">
+				<BgtAvatar image={game.image} title={game.title} onClick={() => navigate({ to: `/games/${game.id}` })} />
+				<span>{game.title}</span>
+			</div>
+		)
+	);
+};
+
 function RouteComponent() {
 	const { playerId } = Route.useParams();
 	const { t } = useTranslation(["common", "sessions", "player"]);
@@ -54,20 +70,10 @@ function RouteComponent() {
 		() => ({
 			id: "game",
 			accessorFn: (session) => gameMap.get(session.gameId)?.title ?? "",
-			cell: ({ row }) => {
-				const game = gameMap.get(row.original.gameId);
-				return (
-					game && (
-						<div className="flex flex-row gap-2 items-center">
-							<BgtAvatar image={game.image} title={game.title} onClick={() => navigate({ to: `/games/${game.id}` })} />
-							<span>{game.title}</span>
-						</div>
-					)
-				);
-			},
+			cell: GameCell,
 			header: t("game"),
 		}),
-		[gameMap, navigate, t],
+		[gameMap, t],
 	);
 	const columns = useSessionColumns({ settings, players, onDelete: setSessionToDelete, subjectColumn });
 
@@ -106,12 +112,14 @@ function RouteComponent() {
 							/>
 							<BgtCard className="p-4">
 								<div className="hidden md:block">
-									<BgtDataTable
-										columns={columns}
-										data={sessions}
-										noDataMessage={t("no-data-yet")}
-										widths={["w-[70px]", "w-[100px]", "w-[75px]"]}
-									/>
+									<GameMapContext.Provider value={gameMap}>
+										<BgtDataTable
+											columns={columns}
+											data={sessions}
+											noDataMessage={t("no-data-yet")}
+											widths={["w-[70px]", "w-[100px]", "w-[75px]"]}
+										/>
+									</GameMapContext.Provider>
 								</div>
 								<SessionCardList
 									className="md:hidden"
