@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { AvatarRgb, ContrastWithWhite, StringToHsl, StringToRgb } from "./stringUtils";
+import { AvatarRgb, ContrastWithWhite, StringToHsl, StringToRgb, trimTrailingSlashes } from "./stringUtils";
 
 describe("stringUtils", () => {
 	describe("StringToHsl", () => {
@@ -119,5 +119,17 @@ describe("stringUtils", () => {
 			const result = StringToRgb("test@#$%");
 			expect(result).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
 		});
+	});
+});
+
+describe("trimTrailingSlashes", () => {
+	it.each([
+		["https://id.example.com///", "https://id.example.com"],
+		["/games/", "/games"],
+		["/", ""],
+		["no-slash", "no-slash"],
+		["", ""],
+	])("trims %j to %j", (input, expected) => {
+		expect(trimTrailingSlashes(input)).toBe(expected);
 	});
 });

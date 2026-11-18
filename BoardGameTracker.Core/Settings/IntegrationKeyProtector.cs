@@ -47,7 +47,7 @@ public class IntegrationKeyProtector : IIntegrationKeyProtector
         }
         catch (Exception ex) when (ex is CryptographicException or FormatException)
         {
-            _logger.LogWarning("The stored {Setting} could not be decrypted; the data-protection keys may have been lost or rotated. The integration is treated as not configured until the key is entered again in the settings", setting);
+            _logger.LogWarning(ex, "The stored {Setting} could not be decrypted; the data-protection keys may have been lost or rotated. The integration is treated as not configured until the key is entered again in the settings", setting);
             return null;
         }
     }

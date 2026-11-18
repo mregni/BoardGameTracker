@@ -32,7 +32,7 @@ function RouteComponent() {
 		defaultValues: {
 			username: "",
 		},
-		onSubmit: async ({ value }) => {
+		onSubmit: ({ value }) => {
 			const validatedData = BggUserNameSchema.parse(value);
 			navigate({ to: `/games/import/list/${validatedData.username}` });
 		},

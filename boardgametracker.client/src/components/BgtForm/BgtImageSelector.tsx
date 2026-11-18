@@ -129,12 +129,8 @@ export const BgtImageSelector = (props: Props) => {
 								isDragging && "bg-gray-800",
 							)}
 						>
-							<div className="flex flex-col items-center justify-center">
-								<p className="mb-2 text-sm text-gray-400 text-center">
-									<span className="font-semibold">{t("upload")}</span>
-								</p>
-								<p className="text-xs text-gray-400">{t("types")}</p>
-							</div>
+							<span className="mb-2 text-sm font-semibold text-gray-400 text-center">{t("upload")}</span>
+							<span className="text-xs text-gray-400">{t("types")}</span>
 							<input
 								id="dropzone-file"
 								onChange={onImageChangeViaInput}

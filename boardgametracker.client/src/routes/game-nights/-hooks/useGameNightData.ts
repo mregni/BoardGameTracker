@@ -1,4 +1,4 @@
-import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
+import { noop, useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import type { GameNight, UpdateGameNight, UpdateGameNightRsvp } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
@@ -30,7 +30,7 @@ export const useGameNightData = () => {
 	const locations = locationsQuery.data ?? [];
 
 	const invalidateQueries = () => {
-		invalidator.invalidateGameNights();
+		invalidator.invalidateGameNights().catch(noop);
 	};
 
 	const createMutation = useMutation({
