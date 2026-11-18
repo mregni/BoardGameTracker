@@ -47,13 +47,6 @@ internal static class ApiSetup
                         .AllowAnyMethod()
                         .AllowAnyHeader();
                 }
-                else if (environmentProvider.IsDevelopment)
-                {
-                    policyBuilder
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                }
             });
         });
     }

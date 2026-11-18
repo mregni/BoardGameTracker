@@ -40,14 +40,16 @@ function convertDatesInObject(obj: any): any {
 	return obj;
 }
 
-function responseMessage(data: Record<string, unknown> | string | null): string {
+type ErrorBody = Record<string, unknown> | string | null;
+
+function responseMessage(data: ErrorBody): string {
 	if (typeof data === "string") return data || "An unexpected error occurred";
 	if (data && typeof data.reason === "string") return data.reason;
 	if (data && typeof data.title === "string") return data.title;
 	return "An unexpected error occurred";
 }
 
-function responseParams(data: Record<string, unknown> | string | null) {
+function responseParams(data: ErrorBody) {
 	if (data && typeof data === "object" && data.params && typeof data.params === "object") {
 		return data.params as Record<string, string | number>;
 	}
@@ -67,7 +69,7 @@ function classifyError(error: AxiosError): ApiError {
 
 	if (error.response) {
 		const status = error.response.status;
-		const data = error.response.data as Record<string, unknown> | string | null;
+		const data = error.response.data as ErrorBody;
 
 		const message = responseMessage(data);
 		const kind: ApiErrorKind = status >= 500 ? "server" : "client";

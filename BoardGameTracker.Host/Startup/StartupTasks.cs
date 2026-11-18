@@ -46,14 +46,15 @@ internal static class StartupTasks
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
 
-        logger.LogInformation("BoardGameTracker started");
-        logger.LogInformation("  Environment:  {Environment}", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
-        logger.LogInformation("  Log level:    {LogLevel}", LogLevelExtensions.GetEnvironmentLogLevel());
-        logger.LogInformation("  Sentry:       {SentryEnabled}", Environment.GetEnvironmentVariable("STATISTICS_ENABLED")?.ToLower() == "true" ? "Enabled" : "Disabled");
-        logger.LogInformation("  HTTP ports:   {HttpPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS") ?? "default");
-        logger.LogInformation("  Timezone:     {Timezone}", Environment.GetEnvironmentVariable("TZ") ?? "system default");
-        logger.LogInformation("  DB port:      {DbPort}", Environment.GetEnvironmentVariable("DB_PORT") ?? "5432");
-        logger.LogInformation("  Auth:         {AuthState}", authEnabled ? "Enabled" : "Disabled");
+        logger.LogInformation(
+            "BoardGameTracker started\n  Environment:  {Environment}\n  Log level:    {LogLevel}\n  Sentry:       {SentryEnabled}\n  HTTP ports:   {HttpPorts}\n  Timezone:     {Timezone}\n  DB port:      {DbPort}\n  Auth:         {AuthState}",
+            Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+            LogLevelExtensions.GetEnvironmentLogLevel(),
+            Environment.GetEnvironmentVariable("STATISTICS_ENABLED")?.ToLower() == "true" ? "Enabled" : "Disabled",
+            Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS") ?? "default",
+            Environment.GetEnvironmentVariable("TZ") ?? "system default",
+            Environment.GetEnvironmentVariable("DB_PORT") ?? "5432",
+            authEnabled ? "Enabled" : "Disabled");
         if (!authEnabled)
         {
             logger.LogWarning(

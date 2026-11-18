@@ -15,11 +15,16 @@ internal static class PipelineSetup
         app.UseSerilogRequestLogging(options =>
         {
             options.GetLevel = (context, _, exception) =>
-                exception != null || context.Response.StatusCode >= StatusCodes.Status500InternalServerError
-                    ? LogEventLevel.Error
-                    : context.Request.Path.StartsWithSegments("/api/health")
-                        ? LogEventLevel.Verbose
-                        : LogEventLevel.Information;
+            {
+                if (exception != null || context.Response.StatusCode >= StatusCodes.Status500InternalServerError)
+                {
+                    return LogEventLevel.Error;
+                }
+
+                return context.Request.Path.StartsWithSegments("/api/health")
+                    ? LogEventLevel.Verbose
+                    : LogEventLevel.Information;
+            };
         });
         return app;
     }
@@ -31,21 +36,21 @@ internal static class PipelineSetup
             context.Response.OnStarting(() =>
             {
                 var headers = context.Response.Headers;
-                headers["X-Content-Type-Options"] = "nosniff";
-                headers["X-Frame-Options"] = "DENY";
+                headers.XContentTypeOptions = "nosniff";
+                headers.XFrameOptions = "DENY";
                 headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
                 headers["Cross-Origin-Resource-Policy"] = "same-origin";
                 headers["Cross-Origin-Opener-Policy"] = "same-origin";
                 headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
 
                 var isSwagger = swaggerEnabled && context.Request.Path.StartsWithSegments("/swagger");
-                headers["Content-Security-Policy"] = isSwagger
+                headers.ContentSecurityPolicy = isSwagger
                     ? "default-src 'self'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';"
                     : "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.ingest.sentry.io https://*.ingest.us.sentry.io; worker-src 'self' blob:; frame-ancestors 'none'; form-action 'self';";
 
                 if (hstsEnabled && context.Request.IsHttps)
                 {
-                    headers["Strict-Transport-Security"] = "max-age=2592000";
+                    headers.StrictTransportSecurity = "max-age=2592000";
                 }
 
                 return Task.CompletedTask;
