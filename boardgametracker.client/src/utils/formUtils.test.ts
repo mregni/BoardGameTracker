@@ -7,7 +7,7 @@ const event = () =>
 		preventDefault: vi.fn(),
 		stopPropagation: vi.fn(),
 		currentTarget: document.createElement("form"),
-	}) as unknown as React.FormEvent;
+	}) as unknown as React.SubmitEvent<HTMLFormElement>;
 
 describe("handleFormSubmit", () => {
 	it("stops the browser submit and runs the form", async () => {

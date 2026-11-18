@@ -32,7 +32,10 @@ export const AttendanceModal = (props: Props) => {
 	const [present, setPresent] = useState(() => new Set([...nightTable(detail).playerIds, ...played]));
 	const [ordered] = useState(() => {
 		const invited = new Set(detail.gameNight.invitedPlayers.map((rsvp) => rsvp.playerId));
-		const rank = (player: Player) => (present.has(player.id) ? 0 : invited.has(player.id) ? 1 : 2);
+		const rank = (player: Player) => {
+			if (present.has(player.id)) return 0;
+			return invited.has(player.id) ? 1 : 2;
+		};
 		return [...players].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
 	});
 
@@ -58,6 +61,11 @@ export const AttendanceModal = (props: Props) => {
 					{ordered.map((player) => {
 						const isPresent = present.has(player.id);
 						const hasPlayed = played.has(player.id);
+						let status: string;
+						if (finished.has(player.id)) status = t("attendance.played");
+						else if (hasPlayed) status = t("attendance.playing");
+						else if (isPresent) status = t("attendance.present");
+						else status = t("attendance.absent");
 						return (
 							<li key={player.id}>
 								<button
@@ -73,15 +81,7 @@ export const AttendanceModal = (props: Props) => {
 									<BgtAvatar title={player.name} image={player.image} />
 									<span className="flex min-w-0 flex-1 flex-col">
 										<span className="truncate text-sm font-semibold text-white">{player.name}</span>
-										<span className="text-xs text-gray-400">
-											{finished.has(player.id)
-												? t("attendance.played")
-												: hasPlayed
-													? t("attendance.playing")
-													: isPresent
-														? t("attendance.present")
-														: t("attendance.absent")}
-										</span>
+										<span className="text-xs text-gray-400">{status}</span>
 									</span>
 									{isPresent && <CheckIcon className="size-4 shrink-0 text-green-300" aria-hidden="true" />}
 								</button>

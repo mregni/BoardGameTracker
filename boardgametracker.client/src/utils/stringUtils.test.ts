@@ -20,30 +20,18 @@ describe("stringUtils", () => {
 			expect(result1).not.toBe(result2);
 		});
 
-		it("should return valid HSL format", () => {
-			const result = StringToHsl("test");
-			expect(result).toMatch(/^hsl\(\d+, 85%, \d+%\)$/);
-		});
-
 		it("should handle empty string", () => {
 			const result = StringToHsl("");
 			expect(result).toBe("hsl(0, 85%, 35%)");
 		});
 
-		it("should handle special characters", () => {
-			const result = StringToHsl("test@#$%");
-			expect(result).toMatch(/^hsl\(\d+, 85%, \d+%\)$/);
-		});
-
-		it("should handle unicode characters", () => {
-			const result = StringToHsl("测试");
-			expect(result).toMatch(/^hsl\(\d+, 85%, \d+%\)$/);
-		});
-
-		it("should handle very long strings", () => {
-			const longString = "a".repeat(1000);
-			const result = StringToHsl(longString);
-			expect(result).toMatch(/^hsl\(\d+, 85%, \d+%\)$/);
+		it.each([
+			["a plain string", "test"],
+			["special characters", "test@#$%"],
+			["unicode characters", "测试"],
+			["very long strings", "a".repeat(1000)],
+		])("should return valid HSL format for %s", (_, input) => {
+			expect(StringToHsl(input)).toMatch(/^hsl\(\d+, 85%, \d+%\)$/);
 		});
 	});
 
@@ -88,9 +76,12 @@ describe("stringUtils", () => {
 			expect(result1).not.toBe(result2);
 		});
 
-		it("should return valid RGB format", () => {
-			const result = StringToRgb("test");
-			expect(result).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
+		it.each([
+			["a plain string", "test"],
+			["empty string", ""],
+			["special characters", "test@#$%"],
+		])("should return valid RGB format for %s", (_, input) => {
+			expect(StringToRgb(input)).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
 		});
 
 		it("should return RGB values within valid range (0-255)", () => {
@@ -108,16 +99,6 @@ describe("stringUtils", () => {
 				expect(b).toBeGreaterThanOrEqual(0);
 				expect(b).toBeLessThanOrEqual(255);
 			}
-		});
-
-		it("should handle empty string", () => {
-			const result = StringToRgb("");
-			expect(result).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
-		});
-
-		it("should handle special characters", () => {
-			const result = StringToRgb("test@#$%");
-			expect(result).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
 		});
 	});
 });

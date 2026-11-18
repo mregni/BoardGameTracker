@@ -18,7 +18,11 @@ const toIcsDate = (date: Date) =>
 		.replace(/\.\d{3}/, "");
 
 const escapeText = (text: string) =>
-	text.replaceAll("\\", "\\\\").replaceAll(";", "\\;").replaceAll(",", "\\,").replace(/\r?\n/g, "\\n");
+	text
+		.replaceAll("\\", String.raw`\\`)
+		.replaceAll(";", String.raw`\;`)
+		.replaceAll(",", String.raw`\,`)
+		.replace(/\r?\n/g, String.raw`\n`);
 
 export const toCalendarFile = (event: CalendarEvent, now = new Date()): string => {
 	const start = new Date(event.start);

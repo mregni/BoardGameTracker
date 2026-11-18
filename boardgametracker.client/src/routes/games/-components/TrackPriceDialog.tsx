@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type SubmitEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Target from "@/assets/icons/target.svg?react";
 import {
@@ -33,7 +33,7 @@ export const TrackPriceDialog = ({ open, close, initialUrl, isPending, onSubmit 
 	const trimmed = url.trim();
 	const valid = HTTP_URL.test(trimmed);
 
-	const submit = async (event: FormEvent) => {
+	const submit = async (event: SubmitEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		if (!valid) return;
 		await onSubmit(trimmed);

@@ -39,25 +39,15 @@ describe("BgtDataTable", () => {
 			expect(screen.getByRole("table")).toBeInTheDocument();
 		});
 
-		it("should render headers", () => {
+		it.each([
+			["headers", ["ID", "Name", "Value"]],
+			["data rows", ["Item 1", "Item 2", "Item 3"]],
+			["cell values", ["100", "200", "300"]],
+		])("should render %s", (_, texts) => {
 			renderWithTheme(<BgtDataTable columns={testColumns} data={testData} noDataMessage="No data available" />);
-			expect(screen.getByText("ID")).toBeInTheDocument();
-			expect(screen.getByText("Name")).toBeInTheDocument();
-			expect(screen.getByText("Value")).toBeInTheDocument();
-		});
-
-		it("should render data rows", () => {
-			renderWithTheme(<BgtDataTable columns={testColumns} data={testData} noDataMessage="No data available" />);
-			expect(screen.getByText("Item 1")).toBeInTheDocument();
-			expect(screen.getByText("Item 2")).toBeInTheDocument();
-			expect(screen.getByText("Item 3")).toBeInTheDocument();
-		});
-
-		it("should render cell values", () => {
-			renderWithTheme(<BgtDataTable columns={testColumns} data={testData} noDataMessage="No data available" />);
-			expect(screen.getByText("100")).toBeInTheDocument();
-			expect(screen.getByText("200")).toBeInTheDocument();
-			expect(screen.getByText("300")).toBeInTheDocument();
+			for (const text of texts) {
+				expect(screen.getByText(text)).toBeInTheDocument();
+			}
 		});
 	});
 

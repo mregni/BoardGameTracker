@@ -6,7 +6,7 @@ export const GameNightListSkeleton = () => {
 	const { t } = useTranslation("game-nights");
 
 	return (
-		<div className="flex flex-col gap-6" role="status" aria-busy="true" data-testid="game-nights-skeleton">
+		<output className="flex flex-col gap-6" aria-busy="true" data-testid="game-nights-skeleton">
 			<span className="sr-only">{t("loading")}</span>
 			<div className="flex flex-col gap-3" aria-hidden="true">
 				<div className={`${block} h-5 w-28`} />
@@ -32,6 +32,6 @@ export const GameNightListSkeleton = () => {
 					</div>
 				))}
 			</div>
-		</div>
+		</output>
 	);
 };

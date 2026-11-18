@@ -90,6 +90,9 @@ function RouteComponent() {
 
 	const sortOptions = PLAYER_SORTS.map((value) => ({ value, label: t(`list.sort-${value}`) }));
 	const addPlayer = () => navigate({ to: "/players/new" });
+	const countLabel = q
+		? t("count-filtered", { shown: visiblePlayers.length, count: players.length })
+		: t("count", { count: players.length });
 
 	if (isError && players.length === 0) {
 		return (
@@ -152,23 +155,19 @@ function RouteComponent() {
 							className="max-sm:[&>button]:min-h-11"
 						/>
 						<p aria-live="polite" className="ml-auto text-sm text-white/70 tabular-nums">
-							{isLoading
-								? null
-								: q
-									? t("count-filtered", { shown: visiblePlayers.length, count: players.length })
-									: t("count", { count: players.length })}
+							{!isLoading && countLabel}
 						</p>
 					</div>
-					{isLoading ? (
-						<PlayersSkeleton />
-					) : visiblePlayers.length === 0 ? (
+					{isLoading && <PlayersSkeleton />}
+					{!isLoading && visiblePlayers.length === 0 && (
 						<div className="flex flex-col items-center gap-3">
 							<BgtNoData message={t("list.no-match", { query: q })} className="min-h-0 py-4" />
 							<BgtButton variant="cancel" onClick={clearFilter}>
 								{t("list.clear")}
 							</BgtButton>
 						</div>
-					) : (
+					)}
+					{!isLoading && visiblePlayers.length > 0 && (
 						<BgtCardList>
 							{ordered.map((x) => (
 								<BgtImageCard

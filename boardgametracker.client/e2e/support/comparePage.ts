@@ -189,7 +189,8 @@ export const expectGameRows = async (page: Page, one: string, two: string, expec
 		const row = rows.nth(index);
 		await expect(row.locator("strong")).toHaveText(game.title);
 		await expect(row.locator("small")).toHaveText(detailOf(game));
-		await expect(row).toHaveText(new RegExp(`^.?${literal(`${game.title}${detailOf(game)}${winsOf(game)}`)}$`));
+		const text = `${game.title}${detailOf(game)}${winsOf(game)}`;
+		await expect(row).toHaveText(new RegExp(`^.?${literal(text)}$`));
 		await expect(row.getByRole("img", { name: barOf(game, one, two), exact: true })).toBeVisible();
 	}
 };
@@ -233,13 +234,15 @@ export const recentRows = (one: string, two: string) => {
 	return stats.recent.slice(0, RECENT_ROWS).map((session) => {
 		const left = stats.scoreOf(session, one);
 		const right = stats.scoreOf(session, two);
-		const scores = session.isCoop ? " · same team" : left !== null && right !== null ? ` · ${left} – ${right}` : "";
-		const pill = session.isCoop ? `Co-op · ${session.teamWon ? "won" : "lost"}` : session.winner;
+		let scores = "";
+		if (session.isCoop) scores = " · same team";
+		else if (left !== null && right !== null) scores = ` · ${left} – ${right}`;
+		const result = session.teamWon ? "won" : "lost";
+		const pill = session.isCoop ? `Co-op · ${result}` : session.winner;
+		const line = literal(`${session.game}${scores} ${pill} ${duration(session.minutes)}`);
 		return {
 			href: `/sessions/update/${sessionId(session)}`,
-			text: new RegExp(
-				`^${displayDate(session.start)} (${literal(session.game)}|.) ${literal(`${session.game}${scores} ${pill} ${duration(session.minutes)}`)}$`,
-			),
+			text: new RegExp(`^${displayDate(session.start)} (${literal(session.game)}|.) ${line}$`),
 		};
 	});
 };

@@ -3,7 +3,7 @@ import type { Breadcrumb, Event } from "@sentry/react";
 export const FILTERED = "[Filtered]";
 
 const SENSITIVE_PARAM =
-	/(^|[?&#;])(code|state|token|id_token|access_token|refresh_token|session_state|linkid|[^=&#?;\s/]*(?:password|secret|key)[^=&#?;\s/]*)=([^&#\s"']*)/gi;
+	/(^|[?&#;])(code|(?:session_)?state|(?:id_|access_|refresh_)?token|linkid|[^=&#?;\s/]*(?:password|secret|key)[^=&#?;\s/]*)=([^&#\s"']*)/gi;
 
 const SENSITIVE_PATH =
 	/(\/gamenight\/link\/|\/manual\/gamenight\/)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;

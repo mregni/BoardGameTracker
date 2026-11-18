@@ -34,7 +34,6 @@ describe("BgtDatePicker", () => {
 	const defaultProps = {
 		field: createMockField(),
 		label: "Select Date",
-		placeholder: "Pick a date",
 	};
 
 	beforeEach(() => {

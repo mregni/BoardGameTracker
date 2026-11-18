@@ -40,12 +40,9 @@ export const TopPlayersCard = (props: Props) => {
 						]
 							.filter(Boolean)
 							.join(" · ");
-						const trendLabel =
-							player.trend === Trend.Up
-								? t("top-players.trend-up", { sessions: TREND_WINDOW })
-								: player.trend === Trend.Down
-									? t("top-players.trend-down", { sessions: TREND_WINDOW })
-									: null;
+						let trendLabel: string | null = null;
+						if (player.trend === Trend.Up) trendLabel = t("top-players.trend-up", { sessions: TREND_WINDOW });
+						else if (player.trend === Trend.Down) trendLabel = t("top-players.trend-down", { sessions: TREND_WINDOW });
 
 						return (
 							<li key={player.playerId} title={details}>

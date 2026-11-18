@@ -10,7 +10,7 @@ export const DashboardSkeleton = () => {
 	return (
 		<BgtPage>
 			<BgtPageContent>
-				<div role="status" aria-label={t("loading-data")} className="flex flex-col gap-3 xl:gap-6">
+				<output aria-label={t("loading-data")} className="flex flex-col gap-3 xl:gap-6">
 					<div className={`${block} h-16`} />
 					<div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
 						{["games", "players", "sessions", "time"].map((key) => (
@@ -24,7 +24,7 @@ export const DashboardSkeleton = () => {
 							<div className={`${block} h-36`} />
 						</div>
 					</div>
-				</div>
+				</output>
 			</BgtPageContent>
 		</BgtPage>
 	);

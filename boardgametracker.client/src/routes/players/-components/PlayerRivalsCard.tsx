@@ -9,6 +9,12 @@ import { usePlayerById } from "@/routes/-hooks/usePlayerById";
 
 const RIVAL_COUNT = 5;
 
+const recordClassName = (wins: number, losses: number) => {
+	if (wins > losses) return "text-ok";
+	if (wins < losses) return "text-error";
+	return "text-white/70";
+};
+
 interface Props {
 	playerId: number;
 	rivals: PlayerRival[];
@@ -40,12 +46,7 @@ export const PlayerRivalsCard = (props: Props) => {
 									<span className="block truncate font-semibold">{opponent?.name}</span>
 									<span className="block text-xs text-white/60">{t("common:sessions", { count: rival.sessions })}</span>
 								</span>
-								<span
-									className={cx(
-										"shrink-0 font-bold tabular-nums",
-										rival.wins > rival.losses ? "text-ok" : rival.wins < rival.losses ? "text-error" : "text-white/70",
-									)}
-								>
+								<span className={cx("shrink-0 font-bold tabular-nums", recordClassName(rival.wins, rival.losses))}>
 									<span className="sr-only">{t("rivals.record", { wins: rival.wins, losses: rival.losses })}</span>
 									<span aria-hidden="true">
 										{rival.wins}–{rival.losses}
