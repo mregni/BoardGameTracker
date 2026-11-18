@@ -30,7 +30,7 @@ const wheelPlayers = 5;
 test.use({ allowedApiStatuses: [401, 400] });
 
 test.afterEach(async ({ request }) => {
-	const api = await adminApi(request);
+	const api = adminApi(request);
 	const all: ApiLoan[] = await api.get("/api/loans");
 	const seeded = loans.map((loan) => gameId(loan.game));
 	for (const loan of all.filter((x) => !seeded.includes(x.gameId))) {
@@ -43,7 +43,7 @@ const lend = async (
 	title: string,
 	dates: { loanDate?: Date; dueDate?: Date | null } = {},
 ) => {
-	const api = await adminApi(request);
+	const api = adminApi(request);
 	const { loanDate = subDays(new Date(), 10), dueDate = addDays(new Date(), 20) } = dates;
 	const loan: ApiLoan = await api.post("/api/loans", {
 		gameId: gameId(title),
@@ -141,7 +141,7 @@ test.describe("a new borrower", () => {
 	};
 
 	test.afterEach(async ({ request }) => {
-		const api = await adminApi(request);
+		const api = adminApi(request);
 		const all: { id: number; name: string }[] = await api.get("/api/player");
 		for (const player of all.filter((x) => x.name === name)) {
 			await api.remove(`/api/player/${player.id}`);
@@ -399,7 +399,7 @@ test("deletes a returned loan from the history", async ({ page, request }) => {
 
 test("removes the loans of a deleted borrower", async ({ page, request }) => {
 	const name = "Leaving borrower";
-	const api = await adminApi(request);
+	const api = adminApi(request);
 	const player = await api.post("/api/player", { name });
 	await api.post("/api/loans", {
 		gameId: gameId(game),

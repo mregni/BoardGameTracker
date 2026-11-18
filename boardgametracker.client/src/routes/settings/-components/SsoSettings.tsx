@@ -20,6 +20,7 @@ import {
 import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
 import { DEFAULT_DATE_FORMAT, toDisplay } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { trimTrailingSlashes } from "@/utils/stringUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { useSsoSettings } from "../-hooks/useSsoSettings";
 import { SettingsSection } from "./SettingsSection";
@@ -110,7 +111,7 @@ const statusLine = (provider: OidcProviderConfig | null, httpsRequired: boolean,
 		: t("sso.description.configured", { name: provider.displayName });
 };
 
-const normalizeAuthority = (authority: string) => authority.trim().replace(/\/+$/, "").toLowerCase();
+const normalizeAuthority = (authority: string) => trimTrailingSlashes(authority.trim()).toLowerCase();
 
 interface Props {
 	dateFormat?: string;

@@ -16,7 +16,7 @@ const {
 	updateRsvpCall: vi.fn(),
 	updateCall: vi.fn(),
 	deleteCall: vi.fn(),
-	invalidateGameNights: vi.fn(),
+	invalidateGameNights: vi.fn(() => Promise.resolve()),
 	invalidateGameNightDeleted: vi.fn(),
 	successToast: vi.fn(),
 	errorToast: vi.fn(),

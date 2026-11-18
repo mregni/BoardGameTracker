@@ -34,7 +34,7 @@ describe("BgtImageSelector", () => {
 
 		it("should render the upload hints in a passing muted grey", () => {
 			renderWithTheme(<BgtImageSelector image={undefined} setImage={mockSetImage} />);
-			expect(screen.getByText("upload").closest("p")).toHaveClass("text-gray-400");
+			expect(screen.getByText("upload")).toHaveClass("text-gray-400");
 			expect(screen.getByText("types")).toHaveClass("text-gray-400");
 			expect(screen.getByText("types")).not.toHaveClass("text-gray-500");
 		});

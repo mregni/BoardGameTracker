@@ -149,9 +149,9 @@ public class AuthService : IAuthService
                 ? await _tokenService.RotateRefreshTokenAsync(current)
                 : await _tokenService.SupersedeRefreshTokenAsync(current);
         }
-        catch (DbUpdateConcurrencyException)
+        catch (DbUpdateConcurrencyException ex)
         {
-            _logger.LogInformation("Two refreshes raced on one refresh token for user {UserId}; only the first got a new token", presented.UserId);
+            _logger.LogInformation(ex, "Two refreshes raced on one refresh token for user {UserId}; only the first got a new token", presented.UserId);
             throw new AuthenticationFailedException(Constants.Errors.RefreshTokenSuperseded);
         }
 
@@ -485,7 +485,7 @@ public class AuthService : IAuthService
         }
         catch (DomainException ex) when (ex.Message == Constants.Errors.PublicUrlNotConfigured)
         {
-            _logger.LogWarning("Password reset email not sent because no public URL is configured");
+            _logger.LogWarning(ex, "Password reset email not sent because no public URL is configured");
         }
         catch (Exception ex)
         {

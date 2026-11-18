@@ -90,7 +90,7 @@ export const getDateSeparator = (dateFormat?: string | null): string | null => {
 		return null;
 	}
 
-	const match = /[dmy]+([^a-z]+)[dmy]+/i.exec(dateFormat);
+	const match = /[dmy]([^a-z]+)[dmy]/i.exec(dateFormat);
 	const separator = match?.[1].trim();
 	return separator ? separator : null;
 };

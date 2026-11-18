@@ -19,7 +19,7 @@ import { useNewSessionWithGameData } from "./-hooks/useNewSessionWithGameData";
 export const Route = createFileRoute("/sessions/new_/$gameId")({
 	component: RouteComponent,
 	params: gameIdParamSchema,
-	loader: async ({ params, context: { queryClient } }) => {
+	loader: ({ params, context: { queryClient } }) => {
 		queryClient.query(getGame(params.gameId)).catch(noop);
 		queryClient.query(getGames()).catch(noop);
 		queryClient.query(getLocations()).catch(noop);

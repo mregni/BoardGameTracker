@@ -9,7 +9,7 @@ import { useNewGame } from "./-hooks/useNewGame";
 
 export const Route = createFileRoute("/games/new")({
 	component: WriteRouteComponent,
-	loader: async ({ context: { queryClient } }) => {
+	loader: ({ context: { queryClient } }) => {
 		queryClient.query(getSettings()).catch(noop);
 	},
 });

@@ -11,7 +11,7 @@ const option = (page: Page, name: string | RegExp) =>
 	page.getByRole("option", { name, exact: typeof name === "string" });
 
 test.afterEach(async ({ request }) => {
-	const api = await adminApi(request);
+	const api = adminApi(request);
 	const all: { id: number; title: string }[] = await api.get("/api/game");
 	const stored = all.find((x) => x.title === game.title);
 	if (stored) {

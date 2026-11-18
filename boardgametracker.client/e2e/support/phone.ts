@@ -152,6 +152,6 @@ export const apiFor = async (page: Page) => {
 		put: async (path: string, data: unknown) => failIfRefused(await request.put(path, { headers, data })),
 		remove: async (path: string) => failIfRefused(await request.delete(path, { headers })),
 		status: async (path: string) => (await request.get(path, { headers })).status(),
-		tidy: async (path: string) => request.delete(path, { headers }),
+		tidy: (path: string) => request.delete(path, { headers }),
 	};
 };

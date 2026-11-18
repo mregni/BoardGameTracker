@@ -1,3 +1,9 @@
+export const trimTrailingSlashes = (value: string): string => {
+	let end = value.length;
+	while (end > 0 && value[end - 1] === "/") end -= 1;
+	return value.slice(0, end);
+};
+
 export const SafeHttpUrl = (value: string | null | undefined): string | null => {
 	if (!value) return null;
 	return /^https?:\/\//i.test(value.trim()) ? value : null;
@@ -57,7 +63,7 @@ const hslToRgb = (hue: number, lightness: number): Rgb => {
 const calculateHash = (input: string): number => {
 	let hash = 0;
 	for (let i = 0; i < input.length; i += 1) {
-		hash = input.charCodeAt(i) + ((hash << 5) - hash);
+		hash = (input.codePointAt(i) ?? 0) + ((hash << 5) - hash);
 	}
 
 	return ((hash % 360) + 360) % 360;

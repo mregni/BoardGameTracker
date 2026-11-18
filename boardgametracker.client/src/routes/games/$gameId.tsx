@@ -46,7 +46,7 @@ import { ExpansionSelectorModal } from "./-modals/ExpansionSelectorModal";
 export const Route = createFileRoute("/games/$gameId")({
 	component: RouteComponent,
 	params: gameIdParamSchema,
-	loader: async ({ params, context: { queryClient } }) => {
+	loader: ({ params, context: { queryClient } }) => {
 		queryClient.query(getGame(params.gameId)).catch(noop);
 		queryClient.query(getGameStatistics(params.gameId)).catch(noop);
 		queryClient.query(getSettings()).catch(noop);

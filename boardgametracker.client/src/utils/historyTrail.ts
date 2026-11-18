@@ -1,8 +1,10 @@
 import type { RouterHistory } from "@tanstack/react-router";
 
+import { trimTrailingSlashes } from "./stringUtils";
+
 const trails = new WeakMap<RouterHistory, Map<number, string>>();
 
-export const normalizePathname = (pathname: string) => (pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname);
+export const normalizePathname = (pathname: string) => (pathname.length > 1 ? trimTrailingSlashes(pathname) : pathname);
 
 const indexOf = (history: RouterHistory) => history.location.state.__TSR_index;
 

@@ -50,7 +50,7 @@ const sessionAt = (locationId: number, minutes: number) => ({
 test.use({ allowedApiStatuses: [401, 400] });
 
 test.afterEach(async ({ request }) => {
-	const api = await adminApi(request);
+	const api = adminApi(request);
 	const nights: { id: number; title: string }[] = await api.get("/api/gamenight");
 	for (const { id } of nights.filter(({ title }) => title === hallNight)) await api.remove(`/api/gamenight/${id}`);
 	const all: { id: number }[] = await api.get("/api/location");
@@ -135,7 +135,7 @@ test.describe("a name that is already used", () => {
 
 test("shows a new name at the game nights and sessions of the location", async ({ page, request }) => {
 	const renamed = "Corner cafe";
-	const api = await adminApi(request);
+	const api = adminApi(request);
 
 	try {
 		await page.goto(`/locations/${cafeId}`);
@@ -162,7 +162,7 @@ test("shows a new name at the game nights and sessions of the location", async (
 test("refuses to delete a location with a session until the session is gone", async ({ page, request }) => {
 	const name = "Attic";
 	const minutes = 75;
-	const api = await adminApi(request);
+	const api = adminApi(request);
 	const location = await api.post("/api/location", { name });
 	const session = await api.post("/api/session", sessionAt(location.id, minutes));
 
@@ -194,7 +194,7 @@ test("refuses to delete a location with a session until the session is gone", as
 
 test("is refused by the server when the page does not know about the session yet", async ({ page, request }) => {
 	const name = "Stale attic";
-	const api = await adminApi(request);
+	const api = adminApi(request);
 	const location = await api.post("/api/location", { name });
 	const session = await api.post("/api/session", sessionAt(location.id, 30));
 	await page.route(`**/api/location/${location.id}`, async (route) => {
@@ -224,7 +224,7 @@ test("is refused by the server when the page does not know about the session yet
 
 test("refuses to delete a location with a game night until the night is gone", async ({ page, request }) => {
 	const name = "Booked hall";
-	const api = await adminApi(request);
+	const api = adminApi(request);
 	const location = await api.post("/api/location", { name });
 	const gameNight = await api.post("/api/gamenight", {
 		title: hallNight,

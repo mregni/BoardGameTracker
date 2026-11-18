@@ -50,14 +50,14 @@ public class BggConnectionTester : IIntegrationTester
 
             return Map(response.StatusCode);
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            _logger.LogWarning("BoardGameGeek connection test timed out");
+            _logger.LogWarning(ex, "BoardGameGeek connection test timed out");
             return IntegrationTestResult.Unreachable(IntegrationMessageKeys.Timeout);
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogWarning("BoardGameGeek connection test failed: {Error}", ex.HttpRequestError);
+            _logger.LogWarning(ex, "BoardGameGeek connection test failed: {Error}", ex.HttpRequestError);
             return IntegrationTestResult.Unreachable();
         }
         catch (FormatException)
