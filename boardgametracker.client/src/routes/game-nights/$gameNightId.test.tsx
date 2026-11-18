@@ -39,6 +39,10 @@ vi.mock("@tanstack/react-router", () => ({
 	Link: ({ children }: { children: React.ReactNode }) => <a href="/session">{children}</a>,
 }));
 
+vi.mock("@/hooks/useStorage", () => ({
+	useStorageData: () => ({ nodes: [], locations: [], isLoading: false }),
+}));
+
 vi.mock("@/hooks/usePermissions", () => ({
 	usePermissions: () => ({ canWrite: true }),
 }));

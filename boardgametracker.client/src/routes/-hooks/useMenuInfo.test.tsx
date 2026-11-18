@@ -65,8 +65,8 @@ const createWrapper = () => {
 
 describe("useBgtMenuBar", () => {
 	describe("menuItems", () => {
-		it("should have 12 menu items", () => {
-			expect(menuItems).toHaveLength(12);
+		it("should have 13 menu items", () => {
+			expect(menuItems).toHaveLength(13);
 		});
 
 		it("should link the leaderboard after compare", () => {
@@ -117,6 +117,11 @@ describe("useBgtMenuBar", () => {
 			const locations = menuItems.find((item) => item.path === "/locations");
 			expect(locations).toBeDefined();
 			expect(locations?.menuLabel).toBe("common:locations");
+		});
+
+		it("should list storage right after locations", () => {
+			const index = menuItems.findIndex((item) => item.path === "/locations");
+			expect(menuItems[index + 1]).toMatchObject({ path: "/storage", menuLabel: "common:storage" });
 		});
 
 		it("should have settings as last item", () => {

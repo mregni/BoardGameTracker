@@ -1,5 +1,6 @@
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { isApiError, QUERY_KEYS } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { deleteLocationCall } from "@/services/locationService";
@@ -15,6 +16,7 @@ export const useLocationData = ({ locationId }: Props) => {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const { successToast, errorToast } = useToasts();
+	const invalidator = useQueryInvalidator();
 
 	const queries = useQueries({
 		queries: [
@@ -40,6 +42,7 @@ export const useLocationData = ({ locationId }: Props) => {
 		queryClient.removeQueries({ queryKey: [QUERY_KEYS.locations, locationId] });
 		await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
 		await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
+		await invalidator.invalidateStorage();
 	};
 
 	return {

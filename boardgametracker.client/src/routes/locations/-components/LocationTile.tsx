@@ -1,4 +1,6 @@
 import { useTranslation } from "react-i18next";
+import Calendar from "@/assets/icons/calendar.svg?react";
+import Package from "@/assets/icons/package.svg?react";
 import { BgtTile } from "@/components/BgtTile/BgtTile";
 import { BgtTileSessions } from "@/components/BgtTile/BgtTileSessions";
 import type { Location } from "@/models";
@@ -19,12 +21,24 @@ export const LocationTile = (props: Props) => {
 			link={`/locations/${location.id}`}
 			visual={<LocationPin />}
 			stats={
-				<>
-					<BgtTileSessions count={location.playCount} />
-					{location.lastPlayed && (
-						<> · {t("tile.last-played", { when: relativeDay(location.lastPlayed, i18n.language) })}</>
-					)}
-				</>
+				<span className="flex flex-wrap gap-x-3 gap-y-0.5">
+					<span className="inline-flex items-center gap-1">
+						<Calendar aria-hidden="true" className="size-3.5 shrink-0" />
+						<span>
+							<BgtTileSessions count={location.playCount} />
+							{location.lastPlayed && (
+								<> · {t("tile.last-played", { when: relativeDay(location.lastPlayed, i18n.language) })}</>
+							)}
+						</span>
+					</span>
+					<span className="inline-flex items-center gap-1">
+						<Package aria-hidden="true" className="size-3.5 shrink-0" />
+						<span>
+							<span className="font-semibold text-white">{location.storedCount}</span>{" "}
+							{t("tile.stored", { count: location.storedCount })}
+						</span>
+					</span>
+				</span>
 			}
 		/>
 	);

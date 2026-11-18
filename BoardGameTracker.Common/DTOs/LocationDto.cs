@@ -6,5 +6,6 @@ public class LocationDto
     public string Name { get; set; } = string.Empty;
     public int PlayCount { get; set; }
     public int GameNightCount { get; set; }
+    public int StoredCount { get; set; }
     public DateTime? LastPlayed { get; set; }
 }

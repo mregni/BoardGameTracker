@@ -741,6 +741,9 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
                     b.Property<int?>("BggId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("BoxOrientation")
+                        .HasColumnType("integer");
+
                     b.Property<int>("GameId")
                         .HasColumnType("integer");
 
@@ -750,6 +753,15 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
                     b.Property<int>("State")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("StorageLocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StoragePosition")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("StoredAtLocationId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -757,6 +769,10 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
                     b.HasKey("Id");
 
                     b.HasIndex("GameId");
+
+                    b.HasIndex("StorageLocationId");
+
+                    b.HasIndex("StoredAtLocationId");
 
                     b.ToTable("Expansions");
                 });
@@ -773,6 +789,9 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("BggId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("BoxOrientation")
                         .HasColumnType("integer");
 
                     b.Property<string>("ChangeDetectionWatchId")
@@ -806,6 +825,15 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
                     b.Property<int>("State")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("StorageLocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StoragePosition")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("StoredAtLocationId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -817,6 +845,10 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 
                     b.HasIndex("BggId")
                         .IsUnique();
+
+                    b.HasIndex("StorageLocationId");
+
+                    b.HasIndex("StoredAtLocationId");
 
                     b.ToTable("Games");
                 });
@@ -1344,6 +1376,48 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
                     b.ToTable("Sessions");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.StorageLocation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("Column")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Columns")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Layout")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Row")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Rows")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("StorageLocations");
+                });
+
             modelBuilder.Entity("ExpansionSession", b =>
                 {
                     b.Property<int>("ExpansionsId")
@@ -1621,6 +1695,16 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BoardGameTracker.Common.Entities.StorageLocation", null)
+                        .WithMany()
+                        .HasForeignKey("StorageLocationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Location", null)
+                        .WithMany("StoredExpansions")
+                        .HasForeignKey("StoredAtLocationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.OwnsOne("BoardGameTracker.Common.ValueObjects.Price", "BuyingPrice", b1 =>
                         {
                             b1.Property<int>("ExpansionId")
@@ -1666,6 +1750,16 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Game", b =>
                 {
+                    b.HasOne("BoardGameTracker.Common.Entities.StorageLocation", null)
+                        .WithMany()
+                        .HasForeignKey("StorageLocationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Location", null)
+                        .WithMany("StoredGames")
+                        .HasForeignKey("StoredAtLocationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.OwnsOne("BoardGameTracker.Common.ValueObjects.Price", "BuyingPrice", b1 =>
                         {
                             b1.Property<int>("GameId")
@@ -2003,6 +2097,24 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
                     b.Navigation("Location");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.StorageLocation", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Location", "Location")
+                        .WithMany("StorageLocations")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.StorageLocation", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Location");
+
+                    b.Navigation("Parent");
+                });
+
             modelBuilder.Entity("ExpansionSession", b =>
                 {
                     b.HasOne("BoardGameTracker.Common.Entities.Expansion", null)
@@ -2158,6 +2270,12 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
                     b.Navigation("GameNights");
 
                     b.Navigation("Sessions");
+
+                    b.Navigation("StorageLocations");
+
+                    b.Navigation("StoredExpansions");
+
+                    b.Navigation("StoredGames");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Manual", b =>
@@ -2184,6 +2302,11 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Session", b =>
                 {
                     b.Navigation("PlayerSessions");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.StorageLocation", b =>
+                {
+                    b.Navigation("Children");
                 });
 #pragma warning restore 612, 618
         }

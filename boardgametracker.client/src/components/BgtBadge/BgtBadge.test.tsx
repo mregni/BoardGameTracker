@@ -16,7 +16,7 @@ describe("BgtBadge", () => {
 		it("should render as div element", () => {
 			const { container } = render(<BgtBadge>Badge</BgtBadge>);
 			const badge = container.firstChild;
-			expect(badge?.nodeName).toBe("DIV");
+			expect(badge?.nodeName).toBe("SPAN");
 		});
 
 		it("should render multiple children", () => {

@@ -36,6 +36,7 @@
   --color-player-one: #f87171;
   --color-player-two: #60a5fa;
   --color-bar-muted: #475569;
+  --color-wood: #2a2118;
   --color-bar-subtle: #334155;
   --color-bar-hatch: #64748b;
 
@@ -62,6 +63,14 @@
   --animate-float: float 4s ease-in-out infinite;
   --animate-shimmer: shimmer 1.6s linear infinite;
   --animate-podium-rise: podium-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-box-land: box-land 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-box-glow: box-glow 0.9s ease-out;
+  --animate-content-in: rise-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-done-pop: done-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+  --animate-done-ring: done-ring 0.9s ease-out 0.25s backwards;
+  --animate-row-out: row-out 0.32s ease-in forwards;
+  --animate-cell-light: cell-light 1s ease-out;
+  --animate-tree-open: tree-open 0.22s ease-out;
 }
 
 @utility bg-hatch {
@@ -164,6 +173,73 @@
   }
   to {
     transform: translateX(120%);
+  }
+}
+
+@keyframes box-land {
+  from {
+    transform: translateY(-0.375rem) scale(1.06);
+    box-shadow:
+      0 0 0 2px var(--color-card-value),
+      0 8px 16px rgb(0 0 0 / 0.45);
+  }
+}
+
+@keyframes box-glow {
+  from {
+    box-shadow: 0 0 0 2px var(--color-card-value);
+  }
+}
+
+@keyframes done-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-20deg);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+}
+
+@keyframes done-ring {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+@keyframes row-out {
+  from {
+    max-height: 4rem;
+  }
+  40% {
+    opacity: 0;
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    border-color: transparent;
+  }
+}
+
+@keyframes tree-open {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+@keyframes cell-light {
+  from {
+    opacity: 0.2;
+  }
+  35% {
+    opacity: 1;
+    filter: brightness(1.6);
   }
 }
 

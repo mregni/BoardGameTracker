@@ -35,6 +35,7 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
     public DbSet<OidcProvider> OidcProviders { get; set; }
     public DbSet<ExternalLogin> ExternalLogins { get; set; }
     public DbSet<OidcSession> OidcSessions { get; set; }
+    public DbSet<StorageLocation> StorageLocations { get; set; }
 
     public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
     {
@@ -60,10 +61,54 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
         BuildBadges(builder);
         BuildLoans(builder);
         BuildGameNights(builder);
+        BuildStorage(builder);
         BuildAuthEntities(builder);
         BuildConfig(builder);
 
         SeedDatabase(builder);
+    }
+
+    private static void BuildStorage(ModelBuilder builder)
+    {
+        builder.Entity<StorageLocation>()
+            .HasOne(x => x.Location)
+            .WithMany(x => x.StorageLocations)
+            .HasForeignKey(x => x.LocationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<StorageLocation>()
+            .HasMany(x => x.Children)
+            .WithOne(x => x.Parent)
+            .HasForeignKey(x => x.ParentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<StorageLocation>()
+            .Property(x => x.Name)
+            .HasMaxLength(200);
+
+        builder.Entity<Game>()
+            .HasOne<Location>()
+            .WithMany(x => x.StoredGames)
+            .HasForeignKey(x => x.StoredAtLocationId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Game>()
+            .HasOne<StorageLocation>()
+            .WithMany()
+            .HasForeignKey(x => x.StorageLocationId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Expansion>()
+            .HasOne<Location>()
+            .WithMany(x => x.StoredExpansions)
+            .HasForeignKey(x => x.StoredAtLocationId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Expansion>()
+            .HasOne<StorageLocation>()
+            .WithMany()
+            .HasForeignKey(x => x.StorageLocationId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
     private static void BuildConfig(ModelBuilder builder)

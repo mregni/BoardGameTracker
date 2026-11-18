@@ -46,6 +46,7 @@ function RouteComponent() {
 		const result = await updateGame(updatedGame);
 
 		navigate({ to: `/games/${result.id}` });
+		return result;
 	};
 
 	return (

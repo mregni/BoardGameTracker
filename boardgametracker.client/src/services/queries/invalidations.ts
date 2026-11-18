@@ -148,6 +148,15 @@ export class QueryInvalidator {
 		});
 	}
 
+	async invalidateStorage() {
+		await Promise.all([
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.storage] }),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] }),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game] }),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] }),
+		]);
+	}
+
 	async invalidateCounts() {
 		await this.queryClient.invalidateQueries({
 			queryKey: [QUERY_KEYS.counts],

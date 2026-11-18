@@ -41,13 +41,15 @@ Your collection. Games can be added in three ways:
 
 Each game has a state (*owned*, *wanted*, *for trade*, *previously owned*, *sold*) and a **scoring** switch. Turn scoring off for games without points: sessions then only record who won, and the score charts stay hidden. For co-operative games switch on *Can be played co-op*, and optionally *New sessions start as co-op*; a co-op session records a team result instead of a winner per player.
 
-The game page shows statistics (plays, total play time, price per play, best score, top players), the last sessions, expansions, the uploaded rulebooks (*Manuals*) and, once the rules assistant is enabled, an *Ask the manual* button. In the *Table view* of Games you can edit language, state and price inline.
+The game page shows statistics (plays, total play time, price per play, best score, top players), the last sessions, expansions, the uploaded rulebooks (*Manuals*) and, once the rules assistant is enabled, an *Ask the manual* button. In the *Table view* of Games you can edit language, state, price and storage location inline, and tick several games to move them to a storage location at once.
 
 ![Game page](../../assets/screenshots/game-detail.png)
 
 ![Games in the table view](../../assets/screenshots/games-table.png)
 
 Expansions have their own state, price and date added, and those picked from BoardGameGeek get their own cover. Edit them in the *Expansions* dialog of the game page, or in the table view: a game with expansions is one row whose price is the base game and its owned expansions together; open it to edit the base game and each expansion on their own row. The price per play and the Shelf of Shame keep using the price of the base game.
+
+The *Storage* filter shows the games stored in a place and everything below it, or *No storage location* for owned games and games for trade without a place. In the card view a *Type* filter shows base games, expansions or both; it starts on base games and switches to both when you pick a storage location. An expansion card opens a quick view where you change its state, price and storage location.
 
 <Aside type="tip">
 Ratings (0-10), weight (0-5) and, for a *sold* game, the price it was sold for can be edited on the game's update page.
@@ -106,7 +108,7 @@ The page is split into **Upcoming** and **Past**. Each upcoming night is a card 
 
 *Email invites* mails the RSVP link to every invitee who has not answered yet and has an email address, at most 50 per send. It first lists who gets one and who has no address, and only sends after you confirm. A night can be emailed once every 10 minutes. The button stays disabled, with the reason, while email or the public URL is not set up. Past nights are a short list; open one to see who attended.
 
-Before a night opens, its page shows the plan: when it starts, the RSVPs with *Manage RSVPs*, and the planned games. Starting, logging and finishing games and *End night* become available 12 hours before the start time. The RSVPs stay on the page until the night is over.
+Before a night opens, its page shows the plan: when it starts, the RSVPs with *Manage RSVPs*, and the planned games. Each planned game shows where it is stored, and games stored at another location than the night's are marked *Bring along*. Starting, logging and finishing games and *End night* become available 12 hours before the start time. The RSVPs stay on the page until the night is over.
 
 ![Game night page](../../assets/screenshots/game-night-detail.png)
 
@@ -134,11 +136,21 @@ Track which game is lent to whom. The cards at the top count the games on loan, 
 
 Active loans are listed with the soonest due date first. Each row shows how the loan stands — *3 days overdue* in red, *Due today* or *Due in 4 days* in amber, otherwise the due date or *No due date*. Press *Mark returned* when the game comes back and enter the return date. Returned loans are folded away under *Show history*, where they can still be edited or deleted. A game that is out on loan shows it on its game page.
 
+## Storage
+
+Where your games are kept. Storage starts at a location (see below), such as *Home* or *Trailer*; under it you add storage locations as deep as you like: a room, a cabinet, a box. A storage location is *Free* (you add what is inside yourself), *Shelves* (a number of shelves) or *Grid* (rows and columns, like a Kallax). Shelves and grid cells can be renamed, and a cabinet can be made bigger or smaller later; games on a removed shelf or cell move to the cabinet itself.
+
+A game or expansion is stored directly in a location (*Somewhere in Home*) or in any storage location below it. Only owned games and games for trade get a place; another state clears it. An expansion stays in its base game's box until you give it a place of its own, in the *Expansions* dialog or its quick view. A loaned game keeps its place and is greyed out.
+
+The *Storage* page shows every location and storage location in a tree. A cabinet is drawn with the covers on its shelves or in its cells: drag a box to reorder it or move it to another shelf, or select it to turn it (front, on its side, flat), move it or open the game. Search with *Where is…?* to jump to a game or expansion. *Needs a place* lists owned games without a place; tick some and move them in one go. Moving a storage location takes everything inside along. Deleting one moves its games one level up and deletes the shelves and storage locations inside it.
+
+You can also pick a storage location on a game's edit page and in the games table; where you pick one you can create a new location or storage location on the spot.
+
 ## Locations
 
-The places you play, such as your living room, a friend's house or the local game café. A session can be linked to a location, and a game night needs one. Each location is a tile with its number of sessions; filter them by name.
+The places you play, such as your living room, a friend's house or the local game café. A session can be linked to a location, and a game night needs one. Each location is a tile with its number of sessions and the number of games stored there; filter them by name.
 
-Open a location to see the sessions, games and players played there and the total play time, followed by its sessions, newest first, with the winners and duration (*Show all* lists every session). Edit and delete the location from this page. A location that a session or a game night still uses cannot be deleted: the page says what is linked to it, so move those to another location first.
+Open a location to see the sessions, games and players played there and the total play time, followed by its sessions, newest first, with the winners and duration (*Show all* lists every session). A *Storage* card lists its storage locations and how many games are stored in each; a location where you never played shows its storage first. Edit and delete the location from this page; deleting it also deletes its storage locations, and its games lose their storage location. A location that a session or a game night still uses cannot be deleted: the page says what is linked to it, so move those to another location first.
 
 ![Location page](../../assets/screenshots/location-detail.png)
 

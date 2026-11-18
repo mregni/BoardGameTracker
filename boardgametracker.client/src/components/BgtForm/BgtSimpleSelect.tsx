@@ -59,7 +59,8 @@ export const BgtSimpleSelect = (props: Props) => {
 	const { onPointerDownOutside, onTriggerPointerDown, onTriggerClick } = useTriggerToggle(triggerRef);
 
 	const currentValue = value?.toString();
-	const selectedLabel = items.find((item) => item.value.toString() === currentValue)?.label;
+	const selectedItem = items.find((item) => item.value.toString() === currentValue);
+	const selectedLabel = selectedItem?.triggerLabel ?? selectedItem?.label;
 	const filteredItems = items.filter((item) => {
 		if (item.value === value) {
 			return true;
@@ -129,9 +130,11 @@ export const BgtSimpleSelect = (props: Props) => {
 				>
 					{trigger ?? (
 						<>
-							<Select.Value placeholder={placeholder} className="min-w-0 flex-1 truncate text-left">
-								{valuePrefix && selectedLabel ? `${valuePrefix} · ${selectedLabel}` : undefined}
-							</Select.Value>
+							<span className="min-w-0 flex-1 truncate py-0.5 text-left">
+								<Select.Value placeholder={placeholder}>
+									{valuePrefix && selectedLabel ? `${valuePrefix} · ${selectedLabel}` : undefined}
+								</Select.Value>
+							</span>
 							<Select.Icon className="absolute right-3 top-1/2 -translate-y-1/2">
 								{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
 							</Select.Icon>

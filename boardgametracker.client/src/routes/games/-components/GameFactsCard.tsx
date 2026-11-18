@@ -1,5 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import { Children, type ComponentType, type ReactNode, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
+import Archive from "@/assets/icons/archive.svg?react";
 import Award from "@/assets/icons/award.svg?react";
 import BarChart from "@/assets/icons/bar-chart.svg?react";
 import Calendar from "@/assets/icons/calendar.svg?react";
@@ -8,17 +10,18 @@ import Coins from "@/assets/icons/coins.svg?react";
 import Target from "@/assets/icons/target.svg?react";
 import User from "@/assets/icons/user.svg?react";
 import Users from "@/assets/icons/users.svg?react";
+import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { useDurationRange } from "@/hooks/useDurationRange";
-import { type Game, type GamePrice, GameState } from "@/models";
+import { useStorageData } from "@/hooks/useStorage";
+import type { Game, GamePrice } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { formatDecimal, formatPriceOrEmpty } from "@/utils/numberUtils";
 import { formatRange } from "@/utils/rangeUtils";
+import { canStore, placeKey, placeLabel, placeOf } from "@/utils/storage";
 import { LivePrice } from "./LivePrice";
 import { PriceRefreshButton } from "./PriceRefreshButton";
-
-const isInCollection = (state: GameState) => state === GameState.Owned || state === GameState.ForTrade;
 
 interface FactRowProps {
 	icon: ComponentType<SVGProps<SVGSVGElement>>;
@@ -66,6 +69,9 @@ export const GameFactsCard = (props: Props) => {
 	const players = formatRange(game.minPlayers, game.maxPlayers);
 	const durationRange = useDurationRange();
 	const duration = durationRange(game.minPlayTime, game.maxPlayTime);
+	const { nodes, locations } = useStorageData();
+	const place = placeOf(game);
+	const storedElsewhere = game.expansions.filter((expansion) => placeOf(expansion) !== null).length;
 
 	return (
 		<div className="flex flex-col gap-3 xl:gap-6">
@@ -118,11 +124,35 @@ export const GameFactsCard = (props: Props) => {
 						{onRefreshPrice && <PriceRefreshButton onRefresh={onRefreshPrice} isRefreshing={!!isRefreshingPrice} />}
 					</FactRow>
 				)}
+				{(place !== null || canStore(game.state) || storedElsewhere > 0) && (
+					<FactRow icon={Archive} label={t("storage:title")}>
+						<span className="flex min-w-0 flex-col items-end gap-1 text-right">
+							{place ? (
+								<Link
+									to="/storage"
+									search={{ at: placeKey(place) }}
+									className="min-w-0 text-right text-primary-text underline-offset-4 hover:underline"
+								>
+									{placeLabel(place, nodes, locations, t)}
+								</Link>
+							) : (
+								canStore(game.state) && <span className="font-normal text-white/50">{t("storage:place.none")}</span>
+							)}
+							{game.isLoaned && (
+								<BgtBadge color="neutral" size="sm">
+									{t("game:state.on-loan")}
+								</BgtBadge>
+							)}
+							{storedElsewhere > 0 && (
+								<span className="text-sm font-normal text-white/60">
+									{t("game:storage.expansions-elsewhere", { count: storedElsewhere })}
+								</span>
+							)}
+						</span>
+					</FactRow>
+				)}
 				{!!game.additionDate && (
-					<FactRow
-						icon={Calendar}
-						label={t(isInCollection(game.state) ? "statistics:in-collection" : "statistics:added")}
-					>
+					<FactRow icon={Calendar} label={t(canStore(game.state) ? "statistics:in-collection" : "statistics:added")}>
 						{toDisplay(game.additionDate, dateFormat, uiLanguage)}
 					</FactRow>
 				)}

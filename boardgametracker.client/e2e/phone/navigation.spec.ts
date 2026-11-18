@@ -26,6 +26,7 @@ const adminEntries = [
 	{ name: "Game nights", path: "/game-nights", heading: "Game nights", count: String(gameNights.length) },
 	{ name: "Loans", path: "/loans", heading: "Loans", count: String(loans.filter((x) => !x.returned).length) },
 	{ name: "Locations", path: "/locations", heading: "Locations", count: String(locations.length) },
+	{ name: "Storage", path: "/storage", heading: "Storage", count: null },
 	{ name: "Settings", path: "/settings", heading: "Settings", count: null },
 ];
 

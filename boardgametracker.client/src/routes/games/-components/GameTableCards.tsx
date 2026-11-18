@@ -7,11 +7,13 @@ import SquareOutIcon from "@/assets/icons/square-out.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useStorageData } from "@/hooks/useStorage";
 import { type BgtSelectItem, type Expansion, type Game, GameState } from "@/models";
 import type { GamePrice } from "@/models/Games/GamePrice";
 import { toDisplay } from "@/utils/dateUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { formatDecimal, formatPriceOrEmpty } from "@/utils/numberUtils";
+import { canStore, placeLabel, placeOf } from "@/utils/storage";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { collectionPrice } from "../-utils/gamesSearch";
 import { EditableNumberCell } from "./EditableNumberCell";
@@ -19,7 +21,7 @@ import { EditableSelectCell } from "./EditableSelectCell";
 import { LivePrice, withStateChange } from "./LivePrice";
 import { TrackedPriceIcon } from "./TrackedPriceIcon";
 
-export type GameTableColumn = "language" | "state" | "buyingPrice";
+export type GameTableColumn = "language" | "state" | "buyingPrice" | "storage";
 
 export const expansionEditKey = (expansionId: number) => -expansionId;
 
@@ -71,6 +73,7 @@ export const GameTableCards = (props: Props) => {
 		uiLanguage,
 	} = props;
 	const { t } = useTranslation(["games", "game", "common"]);
+	const { nodes, locations } = useStorageData();
 	const [openGames, setOpenGames] = useState<Set<number>>(new Set());
 	const toggleGame = (gameId: number) =>
 		setOpenGames((previous) => {
@@ -171,6 +174,16 @@ export const GameTableCards = (props: Props) => {
 									<LivePrice livePrice={livePrice} currency={currency} uiLanguage={uiLanguage} />
 								</Row>
 							)}
+							{canStore(game.state) && (
+								<Row label={t("games:columns.storage")}>
+									<span className="block truncate text-sm">
+										{(() => {
+											const place = placeOf(game);
+											return place ? placeLabel(place, nodes, locations, t) : t("storage:place.none");
+										})()}
+									</span>
+								</Row>
+							)}
 							<Row label={t("games:columns.added")}>
 								{game.additionDate && dateFormat
 									? toDisplay(game.additionDate, dateFormat, uiLanguage ?? "en-US")
@@ -208,7 +221,7 @@ export const GameTableCards = (props: Props) => {
 									<ul className="flex flex-col gap-2 pb-1">
 										<li className="flex flex-col gap-1 rounded-md bg-primary/5 p-2">
 											<span className="flex items-center gap-2 text-sm font-medium">
-												<span className="rounded border border-primary/30 px-1 text-[10px] leading-4 text-stat-title">
+												<span className="rounded border border-primary/30 px-1 text-[11px] leading-4 tracking-wider text-stat-title">
 													{t("games:table.base-tag")}
 												</span>
 												{game.title}
@@ -221,7 +234,7 @@ export const GameTableCards = (props: Props) => {
 												<li key={expansion.id} className="flex flex-col gap-1 rounded-md bg-primary/5 p-2">
 													<span className="flex items-center gap-2 text-sm font-medium">
 														<BgtAvatar image={expansion.image} title={expansion.title} size="small" />
-														<span className="rounded border border-primary/30 px-1 text-[10px] leading-4 text-stat-title">
+														<span className="rounded border border-primary/30 px-1 text-[11px] leading-4 tracking-wider text-stat-title">
 															{t("games:table.expansion-tag")}
 														</span>
 														<span className="truncate">{expansion.title}</span>

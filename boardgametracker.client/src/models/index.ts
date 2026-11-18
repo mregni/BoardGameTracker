@@ -50,3 +50,4 @@ export * from "./Settings/ChangeDetectionConfigStatus";
 export * from "./Settings/IntegrationStatus";
 export * from "./Settings/Language";
 export * from "./Settings/Settings";
+export * from "./Storage/StorageLocation";

@@ -34,6 +34,12 @@
       "game-nights_one": "{{count}} game night is linked to it.",
       "game-nights_other": "{{count}} game nights are linked to it.",
       "hint": "Move them to another location before deleting it."
+    },
+    "storage": {
+      "inside_one": "{{count}} storage location inside it is deleted too.",
+      "inside_other": "{{count}} storage locations inside it are deleted too.",
+      "unplaced_one": "{{count}} game loses its storage location and shows up in Needs a place on the Storage page.",
+      "unplaced_other": "{{count}} games lose their storage location and show up in Needs a place on the Storage page."
     }
   },
   "detail": {
@@ -68,7 +74,16 @@
     "more-players_one": "+{{count}} more player",
     "more-players_other": "+{{count}} more players",
     "all-sessions": "All sessions ({{count}})",
-    "no-sessions-hint": "Choose this location when you log a session and it shows up here."
+    "no-sessions-hint": "Choose this location when you log a session and it shows up here.",
+    "stored": "Games stored",
+    "no-sessions": "No sessions played here yet.",
+    "storage": {
+      "title": "Storage",
+      "open": "Open in Storage",
+      "empty": "Nothing is stored here yet.",
+      "count_one": "game",
+      "count_other": "games"
+    }
   },
   "error": {
     "title": "Couldn't load locations",
@@ -79,7 +94,9 @@
     "clear": "Clear filter"
   },
   "tile": {
-    "last-played": "last played {{when}}"
+    "last-played": "last played {{when}}",
+    "stored_one": "game stored",
+    "stored_other": "games stored"
   },
   "sort": {
     "label": "Sort locations",

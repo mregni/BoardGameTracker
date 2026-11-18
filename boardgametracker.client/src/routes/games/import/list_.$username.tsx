@@ -187,7 +187,7 @@ function RouteComponent() {
 					<div className="flex flex-col gap-1">
 						<span className={cx("flex items-center gap-2", row.original.inCollection && "text-gray-400")}>
 							{row.original.baseGameBggId != null && (
-								<span className="rounded border border-primary/30 px-1 text-[10px] leading-4 tracking-wider text-stat-title">
+								<span className="rounded border border-primary/30 px-1 text-[11px] leading-4 tracking-wider text-stat-title">
 									{t("bgg-import:expansion-tag")}
 								</span>
 							)}

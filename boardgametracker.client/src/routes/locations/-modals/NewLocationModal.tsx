@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtInputField } from "@/components/BgtForm";
 import { useAppForm } from "@/hooks/form";
-import { CreateLocationSchema } from "@/models";
+import { CreateLocationSchema, type Location } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { useLocationModal } from "../-hooks/useLocationModal";
@@ -11,10 +11,11 @@ import { useLocationModal } from "../-hooks/useLocationModal";
 interface Props {
 	open: boolean;
 	close: () => void;
+	onCreated?: (location: Location) => void;
 }
 
 export const NewLocationModal = (props: Props) => {
-	const { open, close } = props;
+	const { open, close, onCreated } = props;
 	const { t } = useTranslation(["location", "common"]);
 
 	const { saveLocation, isLoading } = useLocationModal({
@@ -37,7 +38,8 @@ export const NewLocationModal = (props: Props) => {
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = CreateLocationSchema.parse(value);
-			await saveLocation(validatedData);
+			const location = await saveLocation(validatedData);
+			onCreated?.(location);
 		},
 	});
 

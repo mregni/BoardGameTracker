@@ -16,6 +16,7 @@ import { getLoans } from "@/services/queries/loans";
 import { getSettings } from "@/services/queries/settings";
 import { toDisplay } from "@/utils/dateUtils";
 import { gameIdParamSchema } from "@/utils/routeSchemas";
+import { placeOf } from "@/utils/storage";
 import { BgtPoster } from "../-components/BgtPoster";
 import { usePlayerById } from "../-hooks/usePlayerById";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
@@ -257,6 +258,8 @@ function RouteComponent() {
 								uiLanguage={settings.uiLanguage}
 							/>
 							<ExpansionsDialog
+								gameTitle={game.title}
+								gamePlace={placeOf(game)}
 								gamePrice={game.buyingPrice}
 								currency={settings.currency}
 								onUpdateExpansion={(expansion) => updateExpansion(game.id, expansion)}

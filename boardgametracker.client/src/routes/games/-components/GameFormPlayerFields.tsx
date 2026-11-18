@@ -2,10 +2,12 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtDatePicker, BgtInputField, BgtSelect } from "@/components/BgtForm";
+import { StoragePicker } from "@/components/BgtStorage/StoragePicker";
 import { withForm } from "@/hooks/form";
 import { CreateGameSchema, type GamePrice, GameState } from "@/models";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
+import { canStore } from "@/utils/storage";
 import { rangeValidator, zodValidator } from "@/utils/zodValidator";
 import { gameFormOpts } from "../-utils/gameFormOpts";
 
@@ -68,6 +70,22 @@ export const GameFormPlayerFields = withForm({
 						/>
 					)}
 				</form.Field>
+				<form.Subscribe selector={(state) => state.values.state}>
+					{(state) => (
+						<form.Field name="storage">
+							{(field) => (
+								<StoragePicker
+									label={t("storage:picker.label")}
+									value={canStore(state) ? field.state.value : null}
+									onChange={field.handleChange}
+									noneLabel={t("storage:place.none")}
+									disabled={disabled || !canStore(state)}
+									canCreate
+								/>
+							)}
+						</form.Field>
+					)}
+				</form.Subscribe>
 				<form.Field name="language" validators={zodValidator(CreateGameSchema, "language")}>
 					{(field: AnyFieldApi) => (
 						<BgtSelect field={field} label={t("language.label")} disabled={disabled} hasSearch items={languageItems} />

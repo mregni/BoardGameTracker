@@ -17,6 +17,9 @@ interface Props {
 	readOnly?: boolean;
 	emptyValue?: string;
 	size?: "xs" | "sm";
+	display?: string;
+	flash?: boolean;
+	onFlashEnd?: () => void;
 }
 
 export const EditableSelectCell = (props: Props) => {
@@ -34,12 +37,22 @@ export const EditableSelectCell = (props: Props) => {
 		readOnly,
 		emptyValue,
 		size,
+		display,
+		flash,
+		onFlashEnd,
 	} = props;
 
 	if (!editing || readOnly) {
 		return (
-			<EditableCellButton onClick={onStartEdit} className={className} align={align} readOnly={readOnly} size={size}>
-				{value === emptyValue ? "-" : (items.find((item) => String(item.value) === value)?.label ?? "-")}
+			<EditableCellButton
+				onClick={onStartEdit}
+				className={cx(className, flash && "animate-value-flash")}
+				align={align}
+				readOnly={readOnly}
+				size={size}
+				onAnimationEnd={flash ? onFlashEnd : undefined}
+			>
+				{display ?? (value === emptyValue ? "-" : (items.find((item) => String(item.value) === value)?.label ?? "-"))}
 			</EditableCellButton>
 		);
 	}

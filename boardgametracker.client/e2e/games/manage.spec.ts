@@ -79,7 +79,7 @@ test("adds an expansion by name and removes it", async ({ page }) => {
 	await dialog.getByRole("textbox", { name: "Expansion name" }).fill(title);
 	await dialog.getByRole("button", { name: "Add" }).click();
 
-	await expect(dialog.getByText(title)).toBeVisible();
+	await expect(dialog.getByText(title, { exact: true })).toBeVisible();
 	await expect(dialog.getByText("Added manually")).toBeVisible();
 	await expect(dialog.getByRole("heading", { name: "Expansions (1)" })).toBeVisible();
 

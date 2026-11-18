@@ -235,7 +235,12 @@
     "title": "Juegos planificados",
     "played": "jugado",
     "playing": "en juego",
-    "start-game": "Empezar {{game}}"
+    "start-game": "Empezar {{game}}",
+    "bring-along": "Bring along",
+    "at-location": "At {{location}}",
+    "loaned": "Loaned",
+    "to-bring_one": "{{count}} to bring along",
+    "to-bring_other": "{{count}} to bring along"
   },
   "end": {
     "button": "Cerrar la noche",

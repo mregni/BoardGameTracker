@@ -1,6 +1,7 @@
 import { formOptions } from "@tanstack/react-form";
 import { GameState } from "@/models/Games/GameState";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
+import type { StoragePlace } from "@/utils/storage";
 
 export const gameFormOpts = formOptions({
 	defaultValues: {
@@ -26,5 +27,6 @@ export const gameFormOpts = formOptions({
 		rating: undefined as number | undefined,
 		weight: undefined as number | undefined,
 		soldPrice: undefined as number | undefined,
+		storage: null as StoragePlace | null,
 	},
 });

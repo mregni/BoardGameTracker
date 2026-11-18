@@ -4825,6 +4825,296 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/storage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["StorageLocationDto"][];
+                        "application/json": components["schemas"]["StorageLocationDto"][];
+                        "text/json": components["schemas"]["StorageLocationDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateStorageLocationCommand"];
+                    "text/json": components["schemas"]["CreateStorageLocationCommand"];
+                    "application/*+json": components["schemas"]["CreateStorageLocationCommand"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["StorageLocationDto"];
+                        "application/json": components["schemas"]["StorageLocationDto"];
+                        "text/json": components["schemas"]["StorageLocationDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/storage/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateStorageLocationCommand"];
+                    "text/json": components["schemas"]["UpdateStorageLocationCommand"];
+                    "application/*+json": components["schemas"]["UpdateStorageLocationCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["StorageLocationDto"];
+                        "application/json": components["schemas"]["StorageLocationDto"];
+                        "text/json": components["schemas"]["StorageLocationDto"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/storage/{id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["MoveStorageLocationCommand"];
+                    "text/json": components["schemas"]["MoveStorageLocationCommand"];
+                    "application/*+json": components["schemas"]["MoveStorageLocationCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["StorageLocationDto"];
+                        "application/json": components["schemas"]["StorageLocationDto"];
+                        "text/json": components["schemas"]["StorageLocationDto"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/storage/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AssignStorageCommand"];
+                    "text/json": components["schemas"]["AssignStorageCommand"];
+                    "application/*+json": components["schemas"]["AssignStorageCommand"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/storage/arrange": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ArrangeStorageCommand"];
+                    "text/json": components["schemas"]["ArrangeStorageCommand"];
+                    "application/*+json": components["schemas"]["ArrangeStorageCommand"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/storage/orientation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateBoxOrientationCommand"];
+                    "text/json": components["schemas"]["UpdateBoxOrientationCommand"];
+                    "application/*+json": components["schemas"]["UpdateBoxOrientationCommand"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/update/check": {
         parameters: {
             query?: never;
@@ -5234,10 +5524,22 @@ export interface components {
             /** Format: int32 */
             playerId: number | null;
         };
+        ArrangeStorageCommand: {
+            /** Format: int32 */
+            storageLocationId?: number;
+            items: components["schemas"]["StorageItemReference"][];
+        };
         AskRagCommand: {
             question: string;
             /** Format: int32 */
             manualId?: number | null;
+        };
+        AssignStorageCommand: {
+            items: components["schemas"]["StorageItemReference"][];
+            /** Format: int32 */
+            locationId?: number | null;
+            /** Format: int32 */
+            storageLocationId?: number | null;
         };
         AuthStatusResponse: {
             authEnabled: boolean;
@@ -5288,6 +5590,8 @@ export interface components {
             hasScoring: boolean;
             shopUrl: string | null;
         };
+        /** @enum {string} */
+        BoxOrientation: "front" | "side" | "flat";
         ChangeDetectionConfigStatusDto: {
             isConfigured: boolean;
             source: string;
@@ -5521,6 +5825,18 @@ export interface components {
             playerSessions?: components["schemas"]["CreatePlayerSessionCommand"][];
             expansionIds?: number[];
         };
+        CreateStorageLocationCommand: {
+            name: string;
+            /** Format: int32 */
+            locationId?: number;
+            /** Format: int32 */
+            parentId?: number | null;
+            layout?: components["schemas"]["StorageLayout"];
+            /** Format: int32 */
+            rows?: number | null;
+            /** Format: int32 */
+            columns?: number | null;
+        };
         CreateWatchCommand: {
             url: string;
         };
@@ -5653,6 +5969,13 @@ export interface components {
             soldPrice: number | null;
             /** Format: date-time */
             additionDate: string | null;
+            /** Format: int32 */
+            storedAtLocationId: number | null;
+            /** Format: int32 */
+            storageLocationId: number | null;
+            /** Format: int32 */
+            storagePosition: number;
+            boxOrientation: components["schemas"]["BoxOrientation"];
         };
         ExternalLoginDto: {
             /** Format: int32 */
@@ -5727,6 +6050,13 @@ export interface components {
             soldPrice: number | null;
             /** Format: date-time */
             additionDate: string | null;
+            /** Format: int32 */
+            storedAtLocationId: number | null;
+            /** Format: int32 */
+            storageLocationId: number | null;
+            /** Format: int32 */
+            storagePosition: number;
+            boxOrientation: components["schemas"]["BoxOrientation"];
             /** Format: int32 */
             playCount: number;
             /** Format: date-time */
@@ -6074,6 +6404,8 @@ export interface components {
             playCount: number;
             /** Format: int32 */
             gameNightCount: number;
+            /** Format: int32 */
+            storedCount: number;
             /** Format: date-time */
             lastPlayed: string | null;
         };
@@ -6142,6 +6474,12 @@ export interface components {
             image: string;
             /** Format: int32 */
             totalWins: number;
+        };
+        MoveStorageLocationCommand: {
+            /** Format: int32 */
+            locationId: number;
+            /** Format: int32 */
+            parentId: number | null;
         };
         NightAttendanceDto: {
             /** Format: int32 */
@@ -6587,6 +6925,33 @@ export interface components {
             gameId: number;
             playerIds: number[];
         };
+        StorageItemReference: {
+            type: components["schemas"]["StorageItemType"];
+            /** Format: int32 */
+            id: number;
+        };
+        /** @enum {string} */
+        StorageItemType: "game" | "expansion";
+        /** @enum {string} */
+        StorageLayout: "free" | "shelves" | "grid" | "slot";
+        StorageLocationDto: {
+            /** Format: int32 */
+            id: number;
+            name: string | null;
+            /** Format: int32 */
+            locationId: number;
+            /** Format: int32 */
+            parentId: number | null;
+            layout: components["schemas"]["StorageLayout"];
+            /** Format: int32 */
+            rows: number | null;
+            /** Format: int32 */
+            columns: number | null;
+            /** Format: int32 */
+            row: number | null;
+            /** Format: int32 */
+            column: number | null;
+        };
         TestOidcDiscoveryRequest: {
             authority: string;
         };
@@ -6632,6 +6997,10 @@ export interface components {
         };
         UpdateAttendanceCommand: {
             presentPlayerIds: number[];
+        };
+        UpdateBoxOrientationCommand: {
+            item: components["schemas"]["StorageItemReference"];
+            orientation?: components["schemas"]["BoxOrientation"];
         };
         UpdateExpansionCommand: {
             state: components["schemas"]["GameState"];
@@ -6791,6 +7160,13 @@ export interface components {
             /** Format: date-time */
             lastChecked: string | null;
             errorMessage: string | null;
+        };
+        UpdateStorageLocationCommand: {
+            name: string | null;
+            /** Format: int32 */
+            rows: number | null;
+            /** Format: int32 */
+            columns: number | null;
         };
         UpdateUserRoleRequest: {
             role: string;

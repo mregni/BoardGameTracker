@@ -8,6 +8,7 @@ import Game from "@/assets/icons/dices.svg?react";
 import HomeIcon from "@/assets/icons/home.svg?react";
 import LeftRightArrowIcon from "@/assets/icons/left-right-arrow.svg?react";
 import MapPinIcon from "@/assets/icons/map-pin.svg?react";
+import PackageIcon from "@/assets/icons/package.svg?react";
 import PlusIcon from "@/assets/icons/plus.svg?react";
 import TrendUp from "@/assets/icons/trend-up.svg?react";
 import TrophyIcon from "@/assets/icons/trophy.svg?react";
@@ -83,6 +84,12 @@ export const menuItems: MenuItem[] = [
 		menuLabel: "common:locations",
 		path: "/locations",
 		icon: MapPinIcon,
+		mobileVisible: false,
+	},
+	{
+		menuLabel: "common:storage",
+		path: "/storage",
+		icon: PackageIcon,
 		mobileVisible: false,
 	},
 	{
