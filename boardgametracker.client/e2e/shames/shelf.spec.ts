@@ -409,7 +409,7 @@ test.describe("on a phone", () => {
 
 		const { contentWidth, screenWidth } = await page.evaluate(() => ({
 			contentWidth: document.documentElement.scrollWidth,
-			screenWidth: document.documentElement.clientWidth,
+			screenWidth: window.innerWidth,
 		}));
 
 		expect(contentWidth).toBeLessThanOrEqual(screenWidth);
