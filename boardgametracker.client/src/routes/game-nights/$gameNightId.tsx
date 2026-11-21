@@ -113,13 +113,13 @@ function RouteComponent() {
 				playerIds: freePlayerIds(nightTable(detail).playerIds, detail.runningGames),
 			});
 		}
-		navigate({ to: ".", search: {}, replace: true });
+		void navigate({ to: ".", search: {}, replace: true });
 	}, [start, detail, canWrite, navigate]);
 
 	const handleDelete = async () => {
 		await deleteGameNight(gameNightId);
 		modals.deleteModal.hide();
-		navigate({ to: "/game-nights" });
+		void navigate({ to: "/game-nights" });
 	};
 
 	const handleDiscard = async () => {

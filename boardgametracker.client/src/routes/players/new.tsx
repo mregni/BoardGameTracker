@@ -50,7 +50,7 @@ function RouteComponent() {
 			}
 
 			const savedPlayer = await savePlayer(player);
-			navigate({ to: `/players/${savedPlayer.id}` });
+			void navigate({ to: `/players/${savedPlayer.id}` });
 		},
 	});
 

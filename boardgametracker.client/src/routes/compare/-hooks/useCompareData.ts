@@ -56,9 +56,9 @@ export const useCompareData = ({ left, right }: Props) => {
 		settings: settingsQuery.data,
 		error: playersQuery.error ?? settingsQuery.error ?? compareQuery.error,
 		retry: () => {
-			playersQuery.refetch();
-			settingsQuery.refetch();
-			compareQuery.refetch();
+			void playersQuery.refetch();
+			void settingsQuery.refetch();
+			void compareQuery.refetch();
 		},
 		isLoading:
 			playersQuery.isLoading ||

@@ -15,11 +15,11 @@ export const useGameActions = (props: UseGameActionsProps) => {
 	const navigate = useNavigate();
 
 	const handleAddSession = useCallback(() => {
-		navigate({ to: `/sessions/new/${gameId}` });
+		void navigate({ to: `/sessions/new/${gameId}` });
 	}, [navigate, gameId]);
 
 	const handleEdit = useCallback(() => {
-		navigate({ to: `/games/${gameId}/update` });
+		void navigate({ to: `/games/${gameId}/update` });
 	}, [navigate, gameId]);
 
 	const handleDelete = useCallback(async () => {
@@ -39,7 +39,7 @@ export const useGameActions = (props: UseGameActionsProps) => {
 	}, [onExpansionModalOpen]);
 
 	const handleViewAllSessions = useCallback(() => {
-		navigate({ to: `/games/${gameId}/sessions` });
+		void navigate({ to: `/games/${gameId}/sessions` });
 	}, [navigate, gameId]);
 
 	const handleBackToGames = useBack("/games");

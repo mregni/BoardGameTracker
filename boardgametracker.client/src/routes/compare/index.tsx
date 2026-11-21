@@ -68,7 +68,7 @@ function RouteComponent() {
 	useEffect(() => {
 		if (leftId === 0 || rightId === 0) return;
 		if (search.left === leftId && search.right === rightId) return;
-		goTo(leftId, rightId);
+		void goTo(leftId, rightId);
 	}, [goTo, leftId, rightId, search.left, search.right]);
 
 	const playerOne = players.find((player) => player.id === leftId);

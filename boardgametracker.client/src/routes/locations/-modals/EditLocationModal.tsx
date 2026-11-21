@@ -1,4 +1,4 @@
-import { useStore } from "@tanstack/react-form";
+import { useSelector } from "@tanstack/react-form";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
@@ -47,7 +47,7 @@ export const EditLocationModal = (props: Props) => {
 		},
 	});
 
-	const unchanged = useStore(form.store, (state) => state.values.name.trim() === location.name);
+	const unchanged = useSelector(form.store, (state) => state.values.name.trim() === location.name);
 
 	return (
 		<BgtDialog open={open} onClose={close}>

@@ -23,7 +23,7 @@ function RouteComponent() {
 	const { t } = useTranslation("game");
 
 	const onSuccess = () => {
-		navigate({ to: `/games/${gameId}` });
+		void navigate({ to: `/games/${gameId}` });
 		window.scrollTo(0, 0);
 	};
 
@@ -45,7 +45,7 @@ function RouteComponent() {
 		};
 		const result = await updateGame(updatedGame);
 
-		navigate({ to: `/games/${result.id}` });
+		void navigate({ to: `/games/${result.id}` });
 		return result;
 	};
 

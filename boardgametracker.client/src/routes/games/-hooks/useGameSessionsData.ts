@@ -27,8 +27,8 @@ export const useGameSessionsData = ({ gameId, onDeleteSuccess }: UseGameSessions
 	const isLoading = gameQuery.isLoading || settingsQuery.isLoading || sessionsQuery.isLoading;
 
 	const retry = () => {
-		gameQuery.refetch();
-		settingsQuery.refetch();
+		void gameQuery.refetch();
+		void settingsQuery.refetch();
 	};
 
 	const deleteSession = async (id: number) => {

@@ -44,7 +44,7 @@ export const usePlayerData = ({ playerId, onDeleteSuccess }: UsePLayerDataProps)
 	const error = requiredQueries.find((query) => query.isError)?.error;
 	const retry = () => {
 		for (const query of requiredQueries) {
-			if (query.isError) query.refetch();
+			if (query.isError) void query.refetch();
 		}
 	};
 

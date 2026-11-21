@@ -92,13 +92,13 @@ const PlayerLinkDialog = () => {
 			QUERY_KEYS.dashboard,
 			QUERY_KEYS.users,
 		]) {
-			queryClient.invalidateQueries({ queryKey: [key] });
+			void queryClient.invalidateQueries({ queryKey: [key] });
 		}
 	};
 
 	const onFailed = (error: unknown) => {
 		errorToast(apiErrorMessage(error, "auth:player-link.failed"));
-		refetch();
+		void refetch();
 	};
 
 	const linkMutation = useMutation({

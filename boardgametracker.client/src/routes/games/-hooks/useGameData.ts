@@ -89,10 +89,10 @@ export const useGameData = (props: UseGameDataProps) => {
 		mutationFn: (url: string) => createWatchCall(gameId, url),
 		onSuccess: (data) => {
 			queryClient.setQueryData([QUERY_KEYS.game, gameId], data);
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, gameId], exact: true });
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.price] });
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] });
+			void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, gameId], exact: true });
+			void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
+			void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.price] });
+			void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] });
 			successToast("game:track-price.success");
 			pollPrice([5000, 15000, 30000]);
 		},

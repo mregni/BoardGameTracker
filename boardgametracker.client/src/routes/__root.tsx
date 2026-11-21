@@ -70,7 +70,7 @@ function RootComponent() {
 
 		if (authStatus.authEnabled && !isAuthenticated && !isBare && location.pathname !== "/login") {
 			const currentPath = location.pathname + location.searchStr;
-			navigate({ to: "/login", search: { redirect: currentPath } });
+			void navigate({ to: "/login", search: { redirect: currentPath } });
 		}
 	}, [authChecked, authStatus, isAuthenticated, isBare, navigate, location]);
 
