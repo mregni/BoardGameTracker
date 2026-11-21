@@ -1,6 +1,15 @@
 import type { CreateGame, Expansion, ExpansionData, ExpansionUpdate, UpdateExpansion } from "@/models/";
 import type { ShameStatistics } from "@/models/Games/ShameStatistics";
-import type { BggSearch, Game, GamePrice, GameStatistics, ImportGame, Session, Shame } from "../models";
+import type {
+	BggSearch,
+	CsvImportResult,
+	Game,
+	GamePrice,
+	GameStatistics,
+	ImportGame,
+	Session,
+	Shame,
+} from "../models";
 import { axiosInstance } from "../utils/axiosInstance";
 
 const domain = "game";
@@ -89,6 +98,17 @@ export const saveGameExpansionCall = (expansionUpdate: ExpansionUpdate): Promise
 		.then((response) => {
 			return response.data;
 		});
+};
+
+export const uploadCsvImportCall = (file: File): Promise<CsvImportResult> => {
+	const formData = new FormData();
+	formData.append("file", file);
+	return axiosInstance
+		.post<CsvImportResult>(`${domain}/import/csv`, formData, {
+			headers: { "Content-Type": "multipart/form-data" },
+			timeout: 120000,
+		})
+		.then((response) => response.data);
 };
 
 export const importGamesCall = (games: ImportGame[]): Promise<boolean> => {

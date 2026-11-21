@@ -58,6 +58,7 @@ vi.mock("@/services/gameService", () => ({
 	importGamesCall: mocks.importGamesCall,
 }));
 
+import { getBggCollection } from "@/services/queries/games";
 import { IMPORT_BATCH_SIZE, importBatches, useList } from "./useList";
 
 const importGame = (bggId: number): ImportGame => ({
@@ -99,7 +100,7 @@ const createWrapper = () => {
 };
 
 const renderUseList = async () => {
-	const rendered = renderHook(() => useList({ username: "tester" }), {
+	const rendered = renderHook(() => useList({ collectionQuery: getBggCollection("tester") }), {
 		wrapper: createWrapper(),
 	});
 	await waitFor(() => expect(rendered.result.current.processingGames).toBe(false));

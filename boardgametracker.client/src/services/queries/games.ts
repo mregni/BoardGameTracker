@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/models";
+import { type ApiError, type CsvRejectedRow, type ImportGame, QUERY_KEYS } from "@/models";
 import {
 	getBggCollectionCall,
 	getGameCall,
@@ -39,6 +39,31 @@ export const getBggCollection = (username: string) =>
 	queryOptions({
 		queryKey: [QUERY_KEYS.game, QUERY_KEYS.bgg, username],
 		queryFn: () => getBggCollectionCall(username),
+		retry: false,
+	});
+
+export const csvImportGamesKey = [QUERY_KEYS.game, "csv-import", "games"];
+export const csvImportRejectedKey = [QUERY_KEYS.game, "csv-import", "rejected"];
+
+const uploadedOnly = (): never => {
+	throw new Error("Upload a CSV file first");
+};
+
+export const getCsvImportGames = () =>
+	queryOptions<ImportGame[], ApiError, ImportGame[], string[]>({
+		queryKey: csvImportGamesKey,
+		queryFn: uploadedOnly,
+		staleTime: Number.POSITIVE_INFINITY,
+		gcTime: Number.POSITIVE_INFINITY,
+		retry: false,
+	});
+
+export const getCsvImportRejected = () =>
+	queryOptions<CsvRejectedRow[]>({
+		queryKey: csvImportRejectedKey,
+		queryFn: uploadedOnly,
+		staleTime: Number.POSITIVE_INFINITY,
+		gcTime: Number.POSITIVE_INFINITY,
 		retry: false,
 	});
 

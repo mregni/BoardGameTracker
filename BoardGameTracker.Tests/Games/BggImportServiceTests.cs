@@ -1997,4 +1997,64 @@ public class BggImportServiceTests
     }
 
     #endregion
+
+    #region ImportCsv Tests
+
+    [Fact]
+    public async Task ImportCsv_ShouldLinkExpansionsToTheirBaseGame_AndRejectExpansionsWithoutOne()
+    {
+        const string csv = "objectid,objectname,itemtype,basegame\n13,Catan,standalone,\n325,Seafarers,expansion,\n926,,expansion,13\n999,Lost Promo,expansion,\n";
+        var cities = ExpansionThing(926, "Cities & Knights", (13, "Catan"));
+        cities.Image = "https://cf.geekdo-images.com/cities.jpg";
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 325, 926, 999))))
+            .ReturnsAsync(CreateSucceededThingResponse([
+                ExpansionThing(325, "Catan: Seafarers", (13, "Catan")),
+                cities,
+                ExpansionThing(999, "Lost Promo")
+            ]));
+        _gameRepositoryMock
+            .Setup(x => x.GetExistingGameBggIds(It.IsAny<IEnumerable<int>>()))
+            .ReturnsAsync([]);
+
+        var result = await _bggImportService.ImportCsv(csv);
+
+        result.Games.Select(x => (x.BggId, x.Title, x.BaseGameBggId, x.BaseGameTitle, x.ImageUrl)).Should().Equal(
+            (13, "Catan", null, null, ""),
+            (325, "Seafarers", 13, "Catan", ""),
+            (926, "Cities & Knights", 13, "Catan", "https://cf.geekdo-images.com/cities.jpg"));
+        result.Rejected.Select(x => (x.Line, x.Title, x.BggId, x.Reason)).Should().Equal(
+            (5, "Lost Promo", 999, "no-base-game"));
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 325, 926, 999))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetExistingGameBggIds(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 13 }))), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Warning, "No base game found on BGG for expansion 999, leaving it out");
+        _loggerMock.VerifyLog(LogLevel.Information, "Read 3 games from a CSV file, 1 rows rejected");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportCsv_ShouldNotCallBgg_WhenTheFileHasNoExpansions()
+    {
+        var result = await _bggImportService.ImportCsv("objectid\n13\n");
+
+        result.Games.Select(x => x.BggId).Should().Equal(13);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        _loggerMock.VerifyLog(LogLevel.Information, "Read 1 games from a CSV file, 0 rows rejected");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportCsv_ShouldThrow_WhenBggIsDisabled()
+    {
+        _settingsServiceMock.Setup(x => x.IsBggEnabled()).ReturnsAsync(false);
+
+        var act = () => _bggImportService.ImportCsv("objectid\n13\n");
+
+        await act.Should().ThrowAsync<BggFeatureDisabledException>();
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
 }

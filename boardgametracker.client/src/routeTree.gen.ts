@@ -39,6 +39,7 @@ import { Route as ShamesIndexRouteImport } from './routes/shames/index'
 import { Route as StorageIndexRouteImport } from './routes/storage/index'
 import { Route as GamesGameIdSessionsRouteImport } from './routes/games/$gameId_.sessions'
 import { Route as GamesGameIdUpdateRouteImport } from './routes/games/$gameId_.update'
+import { Route as GamesImportCsvRouteImport } from './routes/games/import/csv'
 import { Route as GamesImportStartRouteImport } from './routes/games/import/start'
 import { Route as PlayersPlayerIdSessionsRouteImport } from './routes/players/$playerId_.sessions'
 import { Route as SessionsNewGameIdRouteImport } from './routes/sessions/new_.$gameId'
@@ -194,6 +195,11 @@ const GamesGameIdUpdateRoute = GamesGameIdUpdateRouteImport.update({
   path: '/games/$gameId/update',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesImportCsvRoute = GamesImportCsvRouteImport.update({
+  id: '/games/import/csv',
+  path: '/games/import/csv',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GamesImportStartRoute = GamesImportStartRouteImport.update({
   id: '/games/import/start',
   path: '/games/import/start',
@@ -250,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/storage/': typeof StorageIndexRoute
   '/games/$gameId/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId/update': typeof GamesGameIdUpdateRoute
+  '/games/import/csv': typeof GamesImportCsvRoute
   '/games/import/start': typeof GamesImportStartRoute
   '/players/$playerId/sessions': typeof PlayersPlayerIdSessionsRoute
   '/sessions/new/$gameId': typeof SessionsNewGameIdRoute
@@ -286,6 +293,7 @@ export interface FileRoutesByTo {
   '/storage': typeof StorageIndexRoute
   '/games/$gameId/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId/update': typeof GamesGameIdUpdateRoute
+  '/games/import/csv': typeof GamesImportCsvRoute
   '/games/import/start': typeof GamesImportStartRoute
   '/players/$playerId/sessions': typeof PlayersPlayerIdSessionsRoute
   '/sessions/new/$gameId': typeof SessionsNewGameIdRoute
@@ -324,6 +332,7 @@ export interface FileRoutesById {
   '/storage/': typeof StorageIndexRoute
   '/games/$gameId_/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId_/update': typeof GamesGameIdUpdateRoute
+  '/games/import/csv': typeof GamesImportCsvRoute
   '/games/import/start': typeof GamesImportStartRoute
   '/players/$playerId_/sessions': typeof PlayersPlayerIdSessionsRoute
   '/sessions/new_/$gameId': typeof SessionsNewGameIdRoute
@@ -362,6 +371,7 @@ export interface FileRouteTypes {
     | '/storage/'
     | '/games/$gameId/sessions'
     | '/games/$gameId/update'
+    | '/games/import/csv'
     | '/games/import/start'
     | '/players/$playerId/sessions'
     | '/sessions/new/$gameId'
@@ -398,6 +408,7 @@ export interface FileRouteTypes {
     | '/storage'
     | '/games/$gameId/sessions'
     | '/games/$gameId/update'
+    | '/games/import/csv'
     | '/games/import/start'
     | '/players/$playerId/sessions'
     | '/sessions/new/$gameId'
@@ -435,6 +446,7 @@ export interface FileRouteTypes {
     | '/storage/'
     | '/games/$gameId_/sessions'
     | '/games/$gameId_/update'
+    | '/games/import/csv'
     | '/games/import/start'
     | '/players/$playerId_/sessions'
     | '/sessions/new_/$gameId'
@@ -468,6 +480,7 @@ export interface RootRouteChildren {
   StorageIndexRoute: typeof StorageIndexRoute
   GamesGameIdSessionsRoute: typeof GamesGameIdSessionsRoute
   GamesGameIdUpdateRoute: typeof GamesGameIdUpdateRoute
+  GamesImportCsvRoute: typeof GamesImportCsvRoute
   GamesImportStartRoute: typeof GamesImportStartRoute
   PlayersPlayerIdSessionsRoute: typeof PlayersPlayerIdSessionsRoute
   SessionsNewGameIdRoute: typeof SessionsNewGameIdRoute
@@ -687,6 +700,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesGameIdUpdateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/import/csv': {
+      id: '/games/import/csv'
+      path: '/games/import/csv'
+      fullPath: '/games/import/csv'
+      preLoaderRoute: typeof GamesImportCsvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/games/import/start': {
       id: '/games/import/start'
       path: '/games/import/start'
@@ -769,6 +789,7 @@ const rootRouteChildren: RootRouteChildren = {
   StorageIndexRoute: StorageIndexRoute,
   GamesGameIdSessionsRoute: GamesGameIdSessionsRoute,
   GamesGameIdUpdateRoute: GamesGameIdUpdateRoute,
+  GamesImportCsvRoute: GamesImportCsvRoute,
   GamesImportStartRoute: GamesImportStartRoute,
   PlayersPlayerIdSessionsRoute: PlayersPlayerIdSessionsRoute,
   SessionsNewGameIdRoute: SessionsNewGameIdRoute,

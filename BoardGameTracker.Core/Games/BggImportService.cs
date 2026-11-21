@@ -8,6 +8,7 @@ using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Factories;
+using BoardGameTracker.Core.Games.Import;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
@@ -209,7 +210,8 @@ public class BggImportService : IBggImportService
         foreach (var expansion in expansions)
         {
             var candidates = candidatesPerExpansion[expansion.BggId];
-            var baseGameBggId = candidates.Cast<int?>().FirstOrDefault(x => inDatabase.Contains(x!.Value))
+            var baseGameBggId = expansion.BaseGameBggId
+                ?? candidates.Cast<int?>().FirstOrDefault(x => inDatabase.Contains(x!.Value))
                 ?? candidates.Cast<int?>().FirstOrDefault(x => inCollection.Contains(x!.Value))
                 ?? candidates.Cast<int?>().FirstOrDefault();
             if (baseGameBggId == null)
@@ -218,9 +220,49 @@ public class BggImportService : IBggImportService
                 continue;
             }
 
+            items.TryGetValue(expansion.BggId, out var item);
             expansion.BaseGameBggId = baseGameBggId;
-            expansion.BaseGameTitle = items[expansion.BggId].Links!.First(l => l.Id == baseGameBggId).Value;
+            expansion.BaseGameTitle = item?.Links?.FirstOrDefault(l => l.Id == baseGameBggId)?.Value ?? expansion.BaseGameTitle;
+            if (string.IsNullOrWhiteSpace(expansion.Title))
+            {
+                expansion.Title = item?.Name ?? string.Empty;
+            }
+
+            if (string.IsNullOrEmpty(expansion.ImageUrl))
+            {
+                expansion.ImageUrl = item?.Image ?? string.Empty;
+            }
         }
+    }
+
+    public async Task<CsvImportResult> ImportCsv(string csv)
+    {
+        await EnsureBggConfiguredAsync();
+        var parsed = CsvCollectionParser.Parse(csv, DateTime.UtcNow.Date);
+        var expansions = parsed.Games.Where(x => parsed.ExpansionIds.Contains(x.BggId)).ToList();
+        if (expansions.Count > 0)
+        {
+            await LinkExpansionsToBaseGames(parsed.Games, expansions);
+        }
+
+        foreach (var expansion in expansions.Where(x => x.BaseGameBggId == null))
+        {
+            parsed.Rejected.Add(new CsvRejectedRow
+            {
+                Line = parsed.Lines[expansion.BggId],
+                Title = expansion.Title,
+                BggId = expansion.BggId,
+                Reason = CsvRejectReasons.NoBaseGame
+            });
+        }
+
+        var result = new CsvImportResult
+        {
+            Games = parsed.Games.Where(x => !parsed.ExpansionIds.Contains(x.BggId) || x.BaseGameBggId != null).ToList(),
+            Rejected = parsed.Rejected.OrderBy(x => x.Line).ToList()
+        };
+        _logger.LogInformation("Read {Count} games from a CSV file, {Rejected} rows rejected", result.Games.Count, result.Rejected.Count);
+        return result;
     }
 
     public async Task ImportList(IList<ImportGame> games)

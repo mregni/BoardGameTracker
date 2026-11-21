@@ -9,6 +9,7 @@ public class BggImportGame
     public string ImageUrl { get; set; } = string.Empty;
     public GameState State { get; set; }
     public DateTime LastModified { get; set; }
+    public decimal? Price { get; set; }
     public int? BaseGameBggId { get; set; }
     public string? BaseGameTitle { get; set; }
 }

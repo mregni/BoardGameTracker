@@ -11,11 +11,16 @@
       },
       "title": "Importar juegos de BoardGameGeek",
       "description": "Importa tu colección de juegos de BoardGameGeek. En el siguiente paso podrás elegir qué juegos quieres importar.",
-      "button": "Importar juegos"
+      "button": "Importar juegos",
+      "csv": {
+        "description": "O sube un archivo CSV: una exportación de colección de BoardGameGeek, o tu propio archivo con al menos una columna objectid. Las expansiones se vinculan automáticamente a su juego base.",
+        "button": "Subir archivo CSV",
+        "uploading": "Leyendo archivo CSV..."
+      }
     },
     "start-import": "Iniciar importación ({{count}}/{{totalCount}})",
-    "intro_one": "Hemos encontrado {{count}} juego en tu colección de BGG; {{collectionCount}} ya están en tu colección local. Selecciona los juegos que quieres importar. Puedes seleccionar como máximo {{maxImport}} juegos a la vez, para no sobrecargar el sitio web de BGG.",
-    "intro_other": "Hemos encontrado {{count}} juegos en tu colección de BGG; {{collectionCount}} ya están en tu colección local. Selecciona los juegos que quieres importar. Puedes seleccionar como máximo {{maxImport}} juegos a la vez, para no sobrecargar el sitio web de BGG.",
+    "intro_one": "Hemos encontrado {{count}} juego en tu colección de BGG; {{collectionCount}} ya están en tu colección local. Selecciona los juegos que quieres importar.",
+    "intro_other": "Hemos encontrado {{count}} juegos en tu colección de BGG; {{collectionCount}} ya están en tu colección local. Selecciona los juegos que quieres importar.",
     "error-title": "No se pudo cargar la colección de BGG",
     "hide-collected": "Ocultar los juegos que ya están en tu colección",
     "error-rate-limited": "BoardGameGeek está limitando tu clave de API. Espera un minuto y vuelve a intentarlo.",
@@ -27,7 +32,25 @@
     "failed-preparing": "BoardGameGeek todavía está preparando los datos. Vuelve a intentar la importación en un momento.",
     "failed-timeout": "La importación tardó demasiado. Selecciona menos juegos o inténtalo de nuevo en un momento.",
     "failed-unauthorized": "BoardGameGeek rechazó la petición. Comprueba la clave de API en los ajustes.",
-    "failed-unknown": "Error al importar juegos de BoardGameGeek, revisa los registros para más detalles."
+    "failed-unknown": "Error al importar juegos de BoardGameGeek, revisa los registros para más detalles.",
+    "csv": {
+      "title": "Importar juegos desde un archivo CSV",
+      "intro_one": "Hemos encontrado {{count}} juego en tu archivo; {{collectionCount}} ya están en tu colección. Selecciona los juegos que quieres importar.",
+      "intro_other": "Hemos encontrado {{count}} juegos en tu archivo; {{collectionCount}} ya están en tu colección. Selecciona los juegos que quieres importar.",
+      "rejected-title_one": "{{count}} fila no se importó",
+      "rejected-title_other": "{{count}} filas no se importaron",
+      "rejected-row": "Línea {{line}}: {{title}} ({{reason}})",
+      "upload-failed": "No se pudo leer el archivo CSV.",
+      "reason": {
+        "invalid-id": "objectid no es un id de BGG válido",
+        "duplicate": "este id de BGG ya aparece antes en el archivo",
+        "invalid-base-game": "basegame no es un id de BGG válido",
+        "no-state": "no está en posesión, deseado ni poseído anteriormente",
+        "invalid-price": "pricepaid no es un número",
+        "invalid-date": "acquisitiondate no es una fecha aaaa-mm-dd",
+        "no-base-game": "no se encontró un juego base en BoardGameGeek, añade una columna basegame"
+      }
+    }
   },
   "title": "Juegos",
   "load-error": "No se pudieron cargar tus juegos. Comprueba que el servidor está disponible e inténtalo de nuevo.",

@@ -11,11 +11,16 @@
       },
       "title": "Import games from BoardGameGeek",
       "description": "Import your game collection from BoardGameGeek. You can select which games you want to import in the next step.",
-      "button": "Import games"
+      "button": "Import games",
+      "csv": {
+        "description": "Or upload a CSV file: a collection export from BoardGameGeek, or your own file with at least an objectid column. Expansions are linked to their base game automatically.",
+        "button": "Upload CSV file",
+        "uploading": "Reading CSV file..."
+      }
     },
     "start-import": "Start import ({{count}}/{{totalCount}})",
-    "intro_one": "We found {{count}} game in your BGG collection, {{collectionCount}} are already included in your local collection. Select what games you want to import. Select max {{maxImport}} games at any time, this is to prevent stress on the bgg website.",
-    "intro_other": "We found {{count}} games in your BGG collection, {{collectionCount}} are already included in your local collection. Select what games you want to import. Select max {{maxImport}} games at any time, this is to prevent stress on the bgg website.",
+    "intro_one": "We found {{count}} game in your BGG collection, {{collectionCount}} are already included in your local collection. Select what games you want to import.",
+    "intro_other": "We found {{count}} games in your BGG collection, {{collectionCount}} are already included in your local collection. Select what games you want to import.",
     "error-title": "Failed to load BGG collection",
     "hide-collected": "Hide games that are in your collection already",
     "error-rate-limited": "BoardGameGeek is rate-limiting your API key. Wait a minute and try again.",
@@ -27,7 +32,25 @@
     "failed-preparing": "BoardGameGeek is still preparing the data. Try the import again in a moment.",
     "failed-timeout": "The import took too long. Select fewer games or try again in a moment.",
     "failed-unauthorized": "BoardGameGeek rejected the request. Check the API key in the settings.",
-    "failed-unknown": "Failed importing games from BoardGameGeek, check logs for more details."
+    "failed-unknown": "Failed importing games from BoardGameGeek, check logs for more details.",
+    "csv": {
+      "title": "Import games from a CSV file",
+      "intro_one": "We found {{count}} game in your file, {{collectionCount}} are already in your collection. Select the games you want to import.",
+      "intro_other": "We found {{count}} games in your file, {{collectionCount}} are already in your collection. Select the games you want to import.",
+      "rejected-title_one": "{{count}} row was not imported",
+      "rejected-title_other": "{{count}} rows were not imported",
+      "rejected-row": "Line {{line}}: {{title}} ({{reason}})",
+      "upload-failed": "The CSV file could not be read.",
+      "reason": {
+        "invalid-id": "objectid is not a valid BGG id",
+        "duplicate": "this BGG id is already higher up in the file",
+        "invalid-base-game": "basegame is not a valid BGG id",
+        "no-state": "not owned, wanted or previously owned",
+        "invalid-price": "pricepaid is not a number",
+        "invalid-date": "acquisitiondate is not a yyyy-mm-dd date",
+        "no-base-game": "no base game found on BoardGameGeek, add a basegame column"
+      }
+    }
   },
   "title": "Games",
   "load-error": "Your games could not be loaded. Check that the server is reachable and try again.",
