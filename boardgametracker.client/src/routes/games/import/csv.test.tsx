@@ -75,6 +75,25 @@ describe("CSV import list", () => {
 		expect(mocks.redirect).toHaveBeenCalledWith({ to: "/games/import/start" });
 	});
 
+	it("opens the review screen when a CSV file was uploaded", () => {
+		const queryClient = { getQueryData: () => [] };
+
+		expect(() => mocks.captured.config.beforeLoad({ context: { queryClient } })).not.toThrow();
+		expect(mocks.redirect).not.toHaveBeenCalled();
+	});
+
+	it("names a rejected row by its BGG id, or a dash, when it has no title", async () => {
+		mocks.rejected.mockResolvedValue([
+			{ line: 2, title: "", bggId: 404, reason: "not-found" },
+			{ line: 3, title: "", bggId: null, reason: "invalid-id" },
+		]);
+		const Component = mocks.captured.config.component;
+		renderWithProviders(<Component />);
+
+		expect(await screen.findByText(/"line":2,"title":404,/)).toBeInTheDocument();
+		expect(screen.getByText(/"line":3,"title":"-",/)).toBeInTheDocument();
+	});
+
 	it("lists the games from the file with the price from the file", async () => {
 		const Component = mocks.captured.config.component;
 		renderWithProviders(<Component />);
