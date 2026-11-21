@@ -118,7 +118,7 @@ var client = builder.AddViteApp("bgt-client", "../boardgametracker.client")
     })
     .WithExternalHttpEndpoints()
     .WithEnvironment("API_PROXY_TARGET", backend.GetEndpoint("http"))
-    .WithUrlForEndpoint("http", url => url.DisplayText = "website")
+    .WithUrlForEndpoint("http", url => url.DisplayText = "Frontend")
     .WaitFor(backend);
 
 if (e2e)
