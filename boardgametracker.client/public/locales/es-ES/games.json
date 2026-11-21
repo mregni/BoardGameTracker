@@ -48,7 +48,8 @@
         "no-state": "no está en posesión, deseado ni poseído anteriormente",
         "invalid-price": "pricepaid no es un número",
         "invalid-date": "acquisitiondate no es una fecha aaaa-mm-dd",
-        "no-base-game": "no se encontró un juego base en BoardGameGeek, añade una columna basegame"
+        "no-base-game": "no se encontró un juego base en BoardGameGeek, añade una columna basegame",
+        "not-found": "no se encontró en BoardGameGeek"
       }
     }
   },

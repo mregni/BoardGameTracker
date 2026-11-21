@@ -2000,17 +2000,28 @@ public class BggImportServiceTests
 
     #region ImportCsv Tests
 
-    [Fact]
-    public async Task ImportCsv_ShouldLinkExpansionsToTheirBaseGame_AndRejectExpansionsWithoutOne()
+    private static ThingResponse.Item GameThing(int id, string name, string? image = null) => new()
     {
-        const string csv = "objectid,objectname,itemtype,basegame\n13,Catan,standalone,\n325,Seafarers,expansion,\n926,,expansion,13\n999,Lost Promo,expansion,\n";
+        Id = id,
+        Name = name,
+        Type = "boardgame",
+        Image = image
+    };
+
+    [Fact]
+    public async Task ImportCsv_ShouldFillCoversAndLinkExpansions_AndRejectRowsThatCannotBeImported()
+    {
+        const string csv = "objectid,objectname,itemtype,basegame\n13,Catan,standalone,\n325,Seafarers,expansion,\n926,,,13\n2993,,,\n999,Lost Promo,expansion,\n404,Unknown,standalone,\n";
         var cities = ExpansionThing(926, "Cities & Knights", (13, "Catan"));
         cities.Image = "https://cf.geekdo-images.com/cities.jpg";
+        var inns = ExpansionThing(2993, "Inns & Cathedrals", (822, "Carcassonne"));
         _bggClientMock
-            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 325, 926, 999))))
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 13, 325, 926, 2993, 999, 404))))
             .ReturnsAsync(CreateSucceededThingResponse([
+                GameThing(13, "Catan", "https://cf.geekdo-images.com/catan.jpg"),
                 ExpansionThing(325, "Catan: Seafarers", (13, "Catan")),
                 cities,
+                inns,
                 ExpansionThing(999, "Lost Promo")
             ]));
         _gameRepositoryMock
@@ -2020,27 +2031,30 @@ public class BggImportServiceTests
         var result = await _bggImportService.ImportCsv(csv);
 
         result.Games.Select(x => (x.BggId, x.Title, x.BaseGameBggId, x.BaseGameTitle, x.ImageUrl)).Should().Equal(
-            (13, "Catan", null, null, ""),
+            (13, "Catan", null, null, "https://cf.geekdo-images.com/catan.jpg"),
             (325, "Seafarers", 13, "Catan", ""),
-            (926, "Cities & Knights", 13, "Catan", "https://cf.geekdo-images.com/cities.jpg"));
+            (926, "Cities & Knights", 13, "Catan", "https://cf.geekdo-images.com/cities.jpg"),
+            (2993, "Inns & Cathedrals", 822, "Carcassonne", ""));
         result.Rejected.Select(x => (x.Line, x.Title, x.BggId, x.Reason)).Should().Equal(
-            (5, "Lost Promo", 999, "no-base-game"));
+            (6, "Lost Promo", 999, "no-base-game"),
+            (7, "Unknown", 404, "not-found"));
         _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
-        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 325, 926, 999))), Times.Once);
-        _gameRepositoryMock.Verify(x => x.GetExistingGameBggIds(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 13 }))), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => IsThing(r, 13, 325, 926, 2993, 999, 404))), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetExistingGameBggIds(It.Is<IEnumerable<int>>(ids => ids.OrderBy(i => i).SequenceEqual(new[] { 13, 822 }))), Times.Once);
         _loggerMock.VerifyLog(LogLevel.Warning, "No base game found on BGG for expansion 999, leaving it out");
-        _loggerMock.VerifyLog(LogLevel.Information, "Read 3 games from a CSV file, 1 rows rejected");
+        _loggerMock.VerifyLog(LogLevel.Information, "Read 4 games from a CSV file, 2 rows rejected");
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task ImportCsv_ShouldNotCallBgg_WhenTheFileHasNoExpansions()
+    public async Task ImportCsv_ShouldNotCallBgg_WhenEveryRowIsRejected()
     {
-        var result = await _bggImportService.ImportCsv("objectid\n13\n");
+        var result = await _bggImportService.ImportCsv("objectid\nabc\n");
 
-        result.Games.Select(x => x.BggId).Should().Equal(13);
+        result.Games.Should().BeEmpty();
+        result.Rejected.Should().ContainSingle().Which.Reason.Should().Be("invalid-id");
         _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
-        _loggerMock.VerifyLog(LogLevel.Information, "Read 1 games from a CSV file, 0 rows rejected");
+        _loggerMock.VerifyLog(LogLevel.Information, "Read 0 games from a CSV file, 1 rows rejected");
         VerifyNoOtherCalls();
     }
 

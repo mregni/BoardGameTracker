@@ -197,4 +197,5 @@ public static class CsvRejectReasons
     public const string InvalidPrice = "invalid-price";
     public const string InvalidDate = "invalid-date";
     public const string NoBaseGame = "no-base-game";
+    public const string NotFound = "not-found";
 }

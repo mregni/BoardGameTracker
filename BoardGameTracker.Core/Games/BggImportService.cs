@@ -195,9 +195,12 @@ public class BggImportService : IBggImportService
         return games.Where(x => !expansionIds.Contains(x.BggId) || x.BaseGameBggId != null).ToList();
     }
 
-    private async Task LinkExpansionsToBaseGames(List<BggImportGame> games, List<BggImportGame> expansions)
+    private async Task LinkExpansionsToBaseGames(
+        List<BggImportGame> games,
+        List<BggImportGame> expansions,
+        Dictionary<int, ThingResponse.Item>? items = null)
     {
-        var items = await FetchThingsFromBgg(expansions.Select(x => x.BggId).ToList());
+        items ??= await FetchThingsFromBgg(expansions.Select(x => x.BggId).ToList());
         var candidatesPerExpansion = expansions.ToDictionary(
             x => x.BggId,
             x => items.TryGetValue(x.BggId, out var item) ? BaseGameCandidates(item) : []);
@@ -239,26 +242,55 @@ public class BggImportService : IBggImportService
     {
         await EnsureBggConfiguredAsync();
         var parsed = CsvCollectionParser.Parse(csv, DateTime.UtcNow.Date);
-        var expansions = parsed.Games.Where(x => parsed.ExpansionIds.Contains(x.BggId)).ToList();
+        var items = parsed.Games.Count > 0
+            ? await FetchThingsFromBgg(parsed.Games.Select(x => x.BggId).ToList())
+            : [];
+
+        void Reject(BggImportGame game, string reason) => parsed.Rejected.Add(new CsvRejectedRow
+        {
+            Line = parsed.Lines[game.BggId],
+            Title = game.Title,
+            BggId = game.BggId,
+            Reason = reason
+        });
+
+        var found = new List<BggImportGame>();
+        foreach (var game in parsed.Games)
+        {
+            if (!items.TryGetValue(game.BggId, out var item))
+            {
+                Reject(game, CsvRejectReasons.NotFound);
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(game.Title))
+            {
+                game.Title = item.Name ?? string.Empty;
+            }
+
+            game.ImageUrl = item.Image ?? string.Empty;
+            if (item.Type == Constants.Bgg.Expansion)
+            {
+                parsed.ExpansionIds.Add(game.BggId);
+            }
+
+            found.Add(game);
+        }
+
+        var expansions = found.Where(x => parsed.ExpansionIds.Contains(x.BggId)).ToList();
         if (expansions.Count > 0)
         {
-            await LinkExpansionsToBaseGames(parsed.Games, expansions);
+            await LinkExpansionsToBaseGames(found, expansions, items);
         }
 
         foreach (var expansion in expansions.Where(x => x.BaseGameBggId == null))
         {
-            parsed.Rejected.Add(new CsvRejectedRow
-            {
-                Line = parsed.Lines[expansion.BggId],
-                Title = expansion.Title,
-                BggId = expansion.BggId,
-                Reason = CsvRejectReasons.NoBaseGame
-            });
+            Reject(expansion, CsvRejectReasons.NoBaseGame);
         }
 
         var result = new CsvImportResult
         {
-            Games = parsed.Games.Where(x => !parsed.ExpansionIds.Contains(x.BggId) || x.BaseGameBggId != null).ToList(),
+            Games = found.Where(x => !parsed.ExpansionIds.Contains(x.BggId) || x.BaseGameBggId != null).ToList(),
             Rejected = parsed.Rejected.OrderBy(x => x.Line).ToList()
         };
         _logger.LogInformation("Read {Count} games from a CSV file, {Rejected} rows rejected", result.Games.Count, result.Rejected.Count);
