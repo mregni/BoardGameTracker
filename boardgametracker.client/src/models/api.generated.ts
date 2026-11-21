@@ -1321,6 +1321,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/game/import/csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "multipart/form-data": {
+                        /** Format: binary */
+                        File: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CsvImportResult"];
+                        "application/json": components["schemas"]["CsvImportResult"];
+                        "text/json": components["schemas"]["CsvImportResult"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/game/{id}/price": {
         parameters: {
             query?: never;
@@ -5575,6 +5619,8 @@ export interface components {
             state: components["schemas"]["GameState"];
             /** Format: date-time */
             lastModified: string;
+            /** Format: double */
+            price: number | null;
             /** Format: int32 */
             baseGameBggId: number | null;
             baseGameTitle: string | null;
@@ -5839,6 +5885,18 @@ export interface components {
         };
         CreateWatchCommand: {
             url: string;
+        };
+        CsvImportResult: {
+            games: components["schemas"]["BggImportGame"][];
+            rejected: components["schemas"]["CsvRejectedRow"][];
+        };
+        CsvRejectedRow: {
+            /** Format: int32 */
+            line: number;
+            title: string;
+            /** Format: int32 */
+            bggId: number | null;
+            reason: string;
         };
         DashboardGameDto: {
             /** Format: int32 */
