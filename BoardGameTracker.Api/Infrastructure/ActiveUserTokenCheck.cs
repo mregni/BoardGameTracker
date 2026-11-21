@@ -11,12 +11,12 @@ public static class ActiveUserTokenCheck
     public static async Task<bool> IsActiveAsync(ClaimsPrincipal? principal, IUserAccessCheck accessCheck, CancellationToken cancellationToken)
     {
         var userId = principal?.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId) || !await accessCheck.CanSignInAsync(userId, cancellationToken))
+        if (principal is null || string.IsNullOrEmpty(userId) || !await accessCheck.CanSignInAsync(userId, cancellationToken))
         {
             return false;
         }
 
-        var sessionId = principal?.FindFirstValue(TokenService.SessionIdClaim);
+        var sessionId = principal.FindFirstValue(TokenService.SessionIdClaim);
         return sessionId == null || (Guid.TryParse(sessionId, out var id) && await accessCheck.IsSessionActiveAsync(id, cancellationToken));
     }
 }

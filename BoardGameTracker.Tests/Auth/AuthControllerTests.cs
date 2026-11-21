@@ -118,7 +118,7 @@ public class AuthControllerTests
 
     private static LoginResponse Session(string accessToken, string refreshToken) => new(
         accessToken, refreshToken, DateTime.UtcNow.AddHours(1),
-        new UserInfo("user-id", "admin", "Admin", new List<string> { "Admin" }));
+        new UserInfo("user-id", "admin", "Admin", ["Admin"]));
 
     private static DefaultHttpContext ContextFromClient()
     {
@@ -368,7 +368,7 @@ public class AuthControllerTests
         SetupAuthenticatedUser("admin-id");
         var request = new RegisterRequest("newuser", "new@test.com", "password", null);
         var expectedDto = new UserDto("user-id", "newuser", "new@test.com", "New User",
-            new List<string> { "User" }, DateTime.UtcNow, null, null);
+            ["User"], DateTime.UtcNow, null, null);
 
         _authServiceMock.Setup(x => x.RegisterAsync(request)).ReturnsAsync(expectedDto);
 
@@ -392,7 +392,7 @@ public class AuthControllerTests
         SetupAuthenticatedUser("user-id");
         var expectedProfile = new ProfileResponse(
             "user-id", "testuser", "test@test.com", "Test",
-            new List<string> { "User" }, DateTime.UtcNow, null, null);
+            ["User"], DateTime.UtcNow, null, null);
 
         _authServiceMock.Setup(x => x.GetProfileAsync("user-id")).ReturnsAsync(expectedProfile);
 
@@ -453,7 +453,7 @@ public class AuthControllerTests
         var request = new UpdateProfileRequest("Updated Name", "new@test.com", null);
         var expectedProfile = new ProfileResponse(
             "user-id", "testuser", "new@test.com", "Updated Name",
-            new List<string> { "User" }, DateTime.UtcNow, null, null);
+            ["User"], DateTime.UtcNow, null, null);
 
         _authServiceMock.Setup(x => x.UpdateProfileAsync("user-id", request)).ReturnsAsync(expectedProfile);
 

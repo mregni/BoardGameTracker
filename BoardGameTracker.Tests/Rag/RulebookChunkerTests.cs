@@ -37,7 +37,7 @@ public class RulebookChunkerTests
     [Fact]
     public void Chunk_ShortPage_ReturnsSingleChunkCarryingPageNumber()
     {
-        var result = _chunker.Chunk(new List<PdfPageText> { new(3, "Setup: each player takes 7 cards.") });
+        var result = _chunker.Chunk([new(3, "Setup: each player takes 7 cards.")]);
 
         result.Should().Equal(new TextChunk(0, "Setup: each player takes 7 cards.", 3));
     }
@@ -46,7 +46,7 @@ public class RulebookChunkerTests
     public void Chunk_LongPage_SplitsIntoMultipleChunksWithSequentialIndices()
     {
         var text = string.Join(" ", Enumerable.Repeat("word", 900));
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Should().HaveCount(6);
         result.Should().OnlyContain(c => c.PageNumber == 1);
@@ -74,7 +74,7 @@ public class RulebookChunkerTests
     {
         var text = new string('a', 1000);
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Should().ContainSingle().Which.Content.Should().Be(text);
     }
@@ -108,7 +108,7 @@ public class RulebookChunkerTests
     public void Chunk_ShouldBreakAtBoundary_WhenNewlineOrSentenceEndFallsWithinOverlapWindow(
         string text, string expectedFirst, string expectedSecond)
     {
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Should().HaveCount(2);
         result[0].Content.Should().Be(expectedFirst);
@@ -120,7 +120,7 @@ public class RulebookChunkerTests
     {
         var text = new string('a', 900) + "3.5" + new string('b', 300);
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Should().HaveCount(2);
         result[0].Content.Should().Be(new string('a', 900) + "3.5" + new string('b', 97));
@@ -132,7 +132,7 @@ public class RulebookChunkerTests
     {
         var text = new string('a', 500) + "\n" + new string('a', 999);
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Should().HaveCount(2);
         result[0].Content.Should().Be(new string('a', 500) + "\n" + new string('a', 499));
@@ -144,7 +144,7 @@ public class RulebookChunkerTests
     {
         var text = new string('a', 1500);
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Should().HaveCount(2);
         result[0].Content.Should().Be(new string('a', 1000));
@@ -156,7 +156,7 @@ public class RulebookChunkerTests
     {
         var text = new string('a', 1001);
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Should().HaveCount(2);
         result[0].Content.Should().Be(new string('a', 1000));
@@ -168,7 +168,7 @@ public class RulebookChunkerTests
     {
         var text = string.Concat(Enumerable.Range(0, 5000).Select(i => (char)('a' + i % 26)));
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Should().HaveCount(6);
         for (var i = 0; i < result.Count; i++)
@@ -182,7 +182,7 @@ public class RulebookChunkerTests
     {
         var text = new string('a', 999) + "\U0001D11E" + new string('b', 300);
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Should().HaveCount(2);
         result.Should().OnlyContain(c => !HasLoneSurrogate(c.Content));
@@ -219,7 +219,7 @@ public class RulebookChunkerTests
     [InlineData("  padded text  ", "padded text")]
     public void Chunk_ShouldNormalizeWhitespace_WhenTextContainsCarriageReturnsTabsOrRepeatedSpaces(string input, string expected)
     {
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, input) });
+        var result = _chunker.Chunk([new(1, input)]);
 
         result.Should().ContainSingle().Which.Content.Should().Be(expected);
     }
@@ -229,7 +229,7 @@ public class RulebookChunkerTests
     {
         var text = new string('a', 800) + "\n" + new string('b', 600);
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Select(c => c.Content).Should().Equal(
             new string('a', 800),
@@ -241,7 +241,7 @@ public class RulebookChunkerTests
     {
         var text = new string('a', 799) + "\n" + new string('b', 600);
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Select(c => c.Content).Should().Equal(
             new string('a', 799) + "\n" + new string('b', 200),
@@ -253,7 +253,7 @@ public class RulebookChunkerTests
     {
         var text = new string('a', 999) + "\n" + new string('b', 100);
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Select(c => c.Content).Should().Equal(
             new string('a', 999),
@@ -265,7 +265,7 @@ public class RulebookChunkerTests
     {
         var text = "a" + new string('\n', 3000) + "b";
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Select(c => c.Content).Should().Equal("a", "b");
         result.Select(c => c.Index).Should().Equal(0, 1);
@@ -276,7 +276,7 @@ public class RulebookChunkerTests
     {
         var text = new string('a', 799) + "\U0001D11E" + new string('b', 500);
 
-        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+        var result = _chunker.Chunk([new(1, text)]);
 
         result.Should().OnlyContain(c => !HasLoneSurrogate(c.Content));
     }

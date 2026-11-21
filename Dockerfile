@@ -80,9 +80,8 @@ ARG ASPNETCORE_HTTP_PORTS=5444
 WORKDIR /app
 
 ARG APK_CACHE_BUST
-RUN apk upgrade --no-cache && apk add --no-cache curl poppler-utils tzdata krb5-libs
-
-RUN mkdir -p /app/images /app/logs /app/manuals && \
+RUN apk upgrade --no-cache && apk add --no-cache curl poppler-utils tzdata krb5-libs && \
+    mkdir -p /app/images /app/logs /app/manuals && \
     chown "$APP_UID:$APP_UID" /app/images /app/logs /app/manuals
 
 # Copy published files from backend build stage

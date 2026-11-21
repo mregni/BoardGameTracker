@@ -22,7 +22,7 @@ public class FutureGameNightsSpecTests
         ended.End(now.AddMinutes(-10));
         var spec = new FutureGameNightsSpec(now);
 
-        var result = spec.Evaluate(new List<GameNight> { lastWeek, future, playing, overByTime, ended }).ToList();
+        var result = spec.Evaluate([lastWeek, future, playing, overByTime, ended]).ToList();
 
         result.Select(x => x.Title).Should().BeEquivalentTo("Future", "Playing");
         spec.AsNoTracking.Should().BeTrue();
