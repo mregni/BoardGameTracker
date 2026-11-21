@@ -10,52 +10,39 @@ public static class CsvReader
         var rows = new List<string[]>();
         var row = new List<string>();
         var field = new StringBuilder();
-        var inQuotes = false;
+        var i = 0;
 
-        for (var i = 0; i < text.Length; i++)
+        while (i < text.Length)
         {
             var c = text[i];
-            if (inQuotes)
+            if (c == '"')
             {
-                if (c != '"')
-                {
-                    field.Append(c);
-                }
-                else if (i + 1 < text.Length && text[i + 1] == '"')
-                {
-                    field.Append('"');
-                    i++;
-                }
-                else
-                {
-                    inQuotes = false;
-                }
+                i = ReadQuoted(text, i + 1, field);
+                continue;
             }
-            else if (c == '"')
-            {
-                inQuotes = true;
-            }
-            else if (c == separator)
+
+            if (c == separator)
             {
                 row.Add(field.ToString());
                 field.Clear();
             }
             else if (c is '\r' or '\n')
             {
-                if (c == '\r' && i + 1 < text.Length && text[i + 1] == '\n')
-                {
-                    i++;
-                }
-
                 row.Add(field.ToString());
                 field.Clear();
                 rows.Add(row.ToArray());
                 row.Clear();
+                if (c == '\r' && i + 1 < text.Length && text[i + 1] == '\n')
+                {
+                    i++;
+                }
             }
             else
             {
                 field.Append(c);
             }
+
+            i++;
         }
 
         if (field.Length > 0 || row.Count > 0)
@@ -65,6 +52,30 @@ public static class CsvReader
         }
 
         return rows;
+    }
+
+    private static int ReadQuoted(string text, int start, StringBuilder field)
+    {
+        var i = start;
+        while (i < text.Length)
+        {
+            if (text[i] != '"')
+            {
+                field.Append(text[i]);
+                i++;
+            }
+            else if (i + 1 < text.Length && text[i + 1] == '"')
+            {
+                field.Append('"');
+                i += 2;
+            }
+            else
+            {
+                return i + 1;
+            }
+        }
+
+        return i;
     }
 
     private static char DetectSeparator(string text)
