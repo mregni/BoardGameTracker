@@ -34,7 +34,7 @@ public class NextGameNightSpecTests
         ended.End(From);
 
         var spec = new NextGameNightSpec(From);
-        var result = spec.Evaluate(new List<GameNight> { past, later, sameStartHigherId, next, playing, ended }).ToList();
+        var result = spec.Evaluate([past, later, sameStartHigherId, next, playing, ended]).ToList();
 
         result.Select(x => x.Id).Should().Equal(5, 3, 4, 2);
         spec.AsNoTracking.Should().BeTrue();

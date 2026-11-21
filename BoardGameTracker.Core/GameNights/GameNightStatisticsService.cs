@@ -64,7 +64,7 @@ public class GameNightStatisticsService : IGameNightStatisticsService
         var recent = outcomes.TakeLast(RecentNightCount).ToList();
         var winnerStreaks = GameNightStreaks.Find(decided.Select(x => new StreakStep(x.Night.StartDate, x.Winners.WinnerIds)).ToList());
         var gamesPlayed = outcomes.Sum(x => x.Night.Sessions.Count);
-        var totalMinutes = outcomes.Sum(x => x.Night.Sessions.Sum(s => (s.End - s.Start).TotalMinutes));
+        var totalMinutes = outcomes.SelectMany(x => x.Night.Sessions).Sum(s => (s.End - s.Start).TotalMinutes);
         var averageTable = outcomes.Count == 0 ? 0 : outcomes.Average(x => x.AttendeeIds.Count);
 
         return new GameNightStatisticsDto

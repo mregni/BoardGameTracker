@@ -98,7 +98,7 @@ public class ManualIndexingServiceTests
     {
         _embedderMock
             .Setup(x => x.GenerateAsync(It.Is<IEnumerable<string>>(v => v.SequenceEqual(contents)), null, _token))
-            .ReturnsAsync(new GeneratedEmbeddings<Embedding<float>>(embeddings));
+            .ReturnsAsync([.. embeddings]);
     }
 
     private void VerifyEmbedded(string[] contents)
