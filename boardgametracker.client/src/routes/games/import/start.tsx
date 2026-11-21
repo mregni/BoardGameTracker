@@ -42,7 +42,7 @@ function RouteComponent() {
 		onSuccess: (result) => {
 			queryClient.setQueryData(csvImportGamesKey, result.games);
 			queryClient.setQueryData(csvImportRejectedKey, result.rejected);
-			navigate({ to: "/games/import/csv" });
+			void navigate({ to: "/games/import/csv" });
 		},
 		onError: (error) => {
 			errorToast(
