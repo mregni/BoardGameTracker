@@ -98,6 +98,9 @@ public static class Constants
         public const string TooManyRequests = "error.auth.too-many-requests";
         public const string GameAlreadyExists = "error.game.already-exists";
         public const string ExpansionAlreadyExists = "error.game.expansion-already-exists";
+        public const string CsvImportEmpty = "error.import.csv-empty";
+        public const string CsvImportMissingObjectId = "error.import.csv-missing-objectid";
+        public const string CsvImportTooManyRows = "error.import.csv-too-many-rows";
         public const string PlayerRangeIncomplete = "error.game.player-range-incomplete";
         public const string PlayTimeRangeIncomplete = "error.game.play-time-range-incomplete";
         public const string RangeMinAboveMax = "error.game.range-min-above-max";

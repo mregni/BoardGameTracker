@@ -891,4 +891,43 @@ public class GameControllerTests
     }
 
     #endregion
+
+    private static Microsoft.AspNetCore.Http.FormFile CsvFile(string content, string fileName = "collection.csv")
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes(content);
+        return new Microsoft.AspNetCore.Http.FormFile(new System.IO.MemoryStream(bytes), 0, bytes.Length, "file", fileName);
+    }
+
+    [Fact]
+    public async Task ImportCsv_ShouldPassTheFileTextWithoutBomToTheService()
+    {
+        var importResult = new CsvImportResult();
+        _bggImportServiceMock.Setup(x => x.ImportCsv("objectid\n13\n")).ReturnsAsync(importResult);
+
+        var result = await _controller.ImportCsv(new ImportCsvCommand { File = CsvFile("﻿objectid\n13\n") });
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(importResult);
+        _bggImportServiceMock.Verify(x => x.ImportCsv("objectid\n13\n"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("", "collection.csv")]
+    [InlineData("objectid\n13\n", "collection.xlsx")]
+    public async Task ImportCsv_ShouldReturnBadRequest_WhenTheFileIsEmptyOrNotACsv(string content, string fileName)
+    {
+        var result = await _controller.ImportCsv(new ImportCsvCommand { File = CsvFile(content, fileName) });
+
+        result.Should().BeOfType<BadRequestResult>();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportCsv_ShouldReturnBadRequest_WhenTheFileIsLargerThanOneMegabyte()
+    {
+        var result = await _controller.ImportCsv(new ImportCsvCommand { File = CsvFile(new string('1', 1024 * 1024 + 1)) });
+
+        result.Should().BeOfType<BadRequestResult>();
+        VerifyNoOtherCalls();
+    }
 }

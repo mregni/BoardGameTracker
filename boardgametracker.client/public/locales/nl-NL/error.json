@@ -151,5 +151,10 @@
     "not-a-cabinet": "Only shelves and grids can change their size",
     "invalid-parent": "A storage location can only go inside a free storage location of the same location, not inside itself",
     "not-allowed-for-state": "Only owned games and games for trade get a storage location"
+  },
+  "import": {
+    "csv-empty": "Het CSV-bestand is leeg.",
+    "csv-missing-objectid": "Het CSV-bestand heeft geen kolom objectid.",
+    "csv-too-many-rows": "Het CSV-bestand heeft meer dan 2000 rijen."
   }
 }

@@ -1,11 +1,11 @@
-import { useMutation, useQueries } from "@tanstack/react-query";
+import { type UseQueryOptions, useMutation, useQueries } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
-import type { Game, ImportGame } from "@/models";
+import type { ApiError, Game, ImportGame } from "@/models";
 import { useIntegrationSettings } from "@/routes/-hooks/useIntegrationSettings";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { importGamesCall } from "@/services/gameService";
-import { getBggCollection, getGames } from "@/services/queries/games";
+import { getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { classifyImportError, needsIntegrationSettings } from "../-utils/importErrors";
 
@@ -73,16 +73,16 @@ export const importBatches = (selected: ImportGame[], size = IMPORT_BATCH_SIZE):
 };
 
 interface Props {
-	username: string;
+	collectionQuery: UseQueryOptions<ImportGame[], ApiError, ImportGame[], string[]>;
 }
 
-export const useList = ({ username }: Props) => {
+export const useList = ({ collectionQuery }: Props) => {
 	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
 	const { integrationSettingsAction } = useIntegrationSettings();
 
 	const [bggCollectionQuery, gamesQuery, settingsQuery] = useQueries({
-		queries: [getBggCollection(username), getGames(), getSettings()],
+		queries: [collectionQuery, getGames(), getSettings()],
 	});
 
 	const settings = settingsQuery.data;
@@ -111,7 +111,7 @@ export const useList = ({ username }: Props) => {
 				return {
 					...game,
 					inCollection: !!existingExpansion,
-					price: existingExpansion?.buyingPrice ?? 0,
+					price: existingExpansion?.buyingPrice ?? game.price ?? 0,
 					addedDate: existingExpansion?.additionDate
 						? new Date(existingExpansion.additionDate)
 						: new Date(game.lastModified),
@@ -123,7 +123,7 @@ export const useList = ({ username }: Props) => {
 			return {
 				...game,
 				inCollection: !!existingGame,
-				price: existingGame?.buyingPrice ?? 0,
+				price: existingGame?.buyingPrice ?? game.price ?? 0,
 				addedDate: existingGame?.additionDate ? new Date(existingGame.additionDate) : new Date(game.lastModified),
 				hasScoring: existingGame?.hasScoring ?? true,
 				checked: false,
