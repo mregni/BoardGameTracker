@@ -88,15 +88,15 @@ function RouteComponent() {
 	);
 
 	const onGameChange = (value: string | number) => {
-		navigate({ to: "/chat", search: { gameId: Number(value) }, replace: true });
+		void navigate({ to: "/chat", search: { gameId: Number(value) }, replace: true });
 	};
 
 	const onManualChange = (value: string | number) => {
 		if (value === ALL_MANUALS) {
-			navigate({ to: "/chat", search: { gameId: selectedGameId }, replace: true });
+			void navigate({ to: "/chat", search: { gameId: selectedGameId }, replace: true });
 			return;
 		}
-		navigate({ to: "/chat", search: { gameId: selectedGameId, manualId: Number(value) }, replace: true });
+		void navigate({ to: "/chat", search: { gameId: selectedGameId, manualId: Number(value) }, replace: true });
 	};
 
 	const indexedCount = manuals.filter((manual) => manual.indexStatus === "indexed").length;

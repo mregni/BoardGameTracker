@@ -58,7 +58,7 @@ function RouteComponent() {
 
 	const updateSearch = useCallback(
 		(partial: PlayersSearch) => {
-			navigate({ to: "/players", search: (prev) => parsePlayersSearch({ ...prev, ...partial }), replace: true });
+			void navigate({ to: "/players", search: (prev) => parsePlayersSearch({ ...prev, ...partial }), replace: true });
 		},
 		[navigate],
 	);

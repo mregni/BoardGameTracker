@@ -34,7 +34,7 @@ function RouteComponent() {
 		},
 		onSubmit: ({ value }) => {
 			const validatedData = BggUserNameSchema.parse(value);
-			navigate({ to: `/games/import/list/${validatedData.username}` });
+			void navigate({ to: `/games/import/list/${validatedData.username}` });
 		},
 	});
 

@@ -46,7 +46,7 @@ export const useRefreshIntegrationStatus = () => {
 
 	return useCallback(async () => {
 		try {
-			const statuses = await queryClient.fetchQuery({ ...getIntegrationStatuses(), staleTime: 0 });
+			const statuses = await queryClient.query({ ...getIntegrationStatuses(), staleTime: 0 });
 			for (const status of statuses.filter(isIntegrationFailure)) {
 				toast.error(t("integrations.save-failed", { name: t(`integrations.name.${status.integration}`) }), {
 					description: t(`integrations.reason.${status.messageKey}`),

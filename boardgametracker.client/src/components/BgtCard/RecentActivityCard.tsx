@@ -27,7 +27,7 @@ const RecentActivityCardComponent = <T,>({
 	const navigate = useNavigate();
 
 	const handleViewAll = useCallback(() => {
-		navigate({ to: viewAllRoute });
+		void navigate({ to: viewAllRoute });
 	}, [navigate, viewAllRoute]);
 
 	return (

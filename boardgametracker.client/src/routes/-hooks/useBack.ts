@@ -12,7 +12,7 @@ export const useBackTo = () => {
 				router.history.back();
 				return;
 			}
-			navigate({ to: parent, replace: true });
+			void navigate({ to: parent, replace: true });
 		},
 		[router, navigate],
 	);

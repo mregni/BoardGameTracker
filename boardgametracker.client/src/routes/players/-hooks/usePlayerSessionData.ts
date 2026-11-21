@@ -29,8 +29,8 @@ export const usePlayerSessionData = ({ playerId, onDeleteSuccess }: UsePlayerSes
 	const isLoading = settingsQuery.isLoading || playerQuery.isLoading || gamesQuery.isLoading || sessionsQuery.isLoading;
 
 	const retry = () => {
-		playerQuery.refetch();
-		settingsQuery.refetch();
+		void playerQuery.refetch();
+		void settingsQuery.refetch();
 	};
 
 	const deleteSession = async (id: number) => {

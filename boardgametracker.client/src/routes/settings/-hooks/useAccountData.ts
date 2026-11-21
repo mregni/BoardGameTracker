@@ -29,8 +29,8 @@ export const useAccountData = () => {
 	const playersQuery = useQuery({ ...getPlayers(), enabled: isAdmin });
 
 	const invalidatePlayers = () => {
-		queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
-		queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.player] });
+		void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
+		void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.player] });
 	};
 
 	const updateProfileMutation = useMutation({
@@ -38,8 +38,8 @@ export const useAccountData = () => {
 		onSuccess: (profile) => {
 			updateCurrentUser({ displayName: profile.displayName, needsPlayerLink: profile.needsPlayerLink });
 			successToast("settings:account.notifications.profile-updated");
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
+			void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
+			void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 			invalidatePlayers();
 		},
 		onError: (error) => {
@@ -50,7 +50,7 @@ export const useAccountData = () => {
 	const onProfileImageChanged = (profile: ProfileResponse, message: string) => {
 		updateCurrentUser({ profileImage: profile.profileImage });
 		queryClient.setQueryData([QUERY_KEYS.profile], profile);
-		queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
+		void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 		invalidatePlayers();
 		successToast(message);
 	};
@@ -85,7 +85,7 @@ export const useAccountData = () => {
 		mutationFn: registerUserCall,
 		onSuccess: () => {
 			successToast("settings:account.notifications.user-created");
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
+			void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 			invalidatePlayers();
 		},
 		onError: (error) => {
@@ -97,7 +97,7 @@ export const useAccountData = () => {
 		mutationFn: deleteUserCall,
 		onSuccess: () => {
 			successToast("settings:account.notifications.user-deleted");
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
+			void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 			invalidatePlayers();
 		},
 		onError: (error) => {
@@ -123,10 +123,10 @@ export const useAccountData = () => {
 					roles: user.roles,
 					...(user.playerId !== null && { needsPlayerLink: false }),
 				});
-				queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
+				void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
 			}
 			successToast("settings:account.notifications.user-updated");
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
+			void queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 			invalidatePlayers();
 		},
 		onError: (error) => {

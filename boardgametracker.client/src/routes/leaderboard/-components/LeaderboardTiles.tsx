@@ -123,7 +123,7 @@ export const LeaderboardTiles = ({ leaderboard, podium }: Props) => {
 								<Link
 									to="/players/$playerId"
 									params={{ playerId: tile.entry.playerId }}
-									aria-label={`${tile.title}${tile.suffix ? `, ${tile.suffix}` : ""}: ${tile.entry.name}, ${tile.value(tile.entry)}`}
+									aria-label={`${[tile.title, tile.suffix].filter(Boolean).join(", ")}: ${tile.entry.name}, ${tile.value(tile.entry)}`}
 									className={cx(cell, "transition-colors hover:bg-primary/10")}
 								>
 									{content}

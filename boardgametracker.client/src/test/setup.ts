@@ -55,13 +55,11 @@ if (!window.matchMedia) {
 		}) as unknown as MediaQueryList;
 }
 
-if (globalThis.ResizeObserver === undefined) {
-	globalThis.ResizeObserver = class {
-		observe = () => undefined;
-		unobserve = () => undefined;
-		disconnect = () => undefined;
-	};
-}
+globalThis.ResizeObserver ??= class {
+	observe = () => undefined;
+	unobserve = () => undefined;
+	disconnect = () => undefined;
+};
 
 afterEach(() => {
 	cleanup();

@@ -69,7 +69,7 @@ function RouteComponent() {
 
 	const updateSearch = useCallback(
 		(partial: Partial<GamesFilterSearch>) => {
-			navigate({
+			void navigate({
 				to: "/games",
 				search: (prev) => withoutUndefined({ ...prev, ...partial }),
 				replace: true,
@@ -161,7 +161,7 @@ function RouteComponent() {
 
 	const clearFilters = () => {
 		setFilterValue("");
-		navigate({ to: "/games", search: withoutUndefined({ view, sort }), replace: true });
+		void navigate({ to: "/games", search: withoutUndefined({ view, sort }), replace: true });
 	};
 
 	if (isLoading) return null;

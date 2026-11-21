@@ -47,7 +47,7 @@ function RouteComponent() {
 
 	const updateSearch = useCallback(
 		(next: Partial<LeaderboardSearch>) => {
-			navigate({ search: (previous) => ({ ...previous, ...next }), replace: true });
+			void navigate({ search: (previous) => ({ ...previous, ...next }), replace: true });
 		},
 		[navigate],
 	);

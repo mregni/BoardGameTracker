@@ -55,7 +55,7 @@ export const useLocationData = ({ locationId }: Props) => {
 		isError: error !== undefined,
 		isNotFound: isApiError(error) && error.status === 404,
 		retry: () => {
-			for (const query of queries) if (query.isError) query.refetch();
+			for (const query of queries) if (query.isError) void query.refetch();
 		},
 		deleteLocation,
 	};

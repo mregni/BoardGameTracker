@@ -606,7 +606,7 @@ export const neverPlayedGame = games[PLAYED_GAMES];
 export const wantedGame = games[OWNED_GAMES];
 export const previouslyOwnedGame = games[OWNED_GAMES + WANTED_GAMES];
 export const soldGame = games[OWNED_GAMES + WANTED_GAMES + PREVIOUSLY_OWNED_GAMES];
-export const forTradeGame = games[games.length - 1];
+export const [forTradeGame] = games.slice(-1);
 export const coopGame = games.find((game) => game.title === COOP_GAME) ?? games[0];
 export const unscoredGame = games.find((game) => game.title === UNSCORED_GAME) ?? games[0];
 

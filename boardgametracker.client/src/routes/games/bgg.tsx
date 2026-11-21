@@ -35,7 +35,7 @@ function RouteComponent() {
 
 	const onSuccess = useCallback(
 		(game: Game) => {
-			navigate({ to: `/games/${game.id}` });
+			void navigate({ to: `/games/${game.id}` });
 		},
 		[navigate],
 	);

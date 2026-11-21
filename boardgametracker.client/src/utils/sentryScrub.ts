@@ -2,8 +2,7 @@ import type { Breadcrumb, Event } from "@sentry/react";
 
 export const FILTERED = "[Filtered]";
 
-const SENSITIVE_PARAM =
-	/(^|[?&#;])(code|(?:session_)?state|(?:id_|access_|refresh_)?token|linkid|[^=&#?;\s/]*(?:password|secret|key)[^=&#?;\s/]*)=([^&#\s"']*)/gi;
+const QUERY_PARAM = /(^|[?&#;])([^=&#?;\s/]+)=([^&#\s"']*)/g;
 
 const SENSITIVE_PATH =
 	/(\/gamenight\/link\/|\/manual\/gamenight\/)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
@@ -24,7 +23,9 @@ const EVENT_FIELDS = [
 
 export const scrubUrl = (value: string): string =>
 	value
-		.replace(SENSITIVE_PARAM, (_, prefix: string, name: string) => `${prefix}${name}=${FILTERED}`)
+		.replace(QUERY_PARAM, (match, prefix: string, name: string) =>
+			SENSITIVE_KEY.test(name) ? `${prefix}${name}=${FILTERED}` : match,
+		)
 		.replace(SENSITIVE_PATH, (_, path: string) => `${path}${FILTERED}`);
 
 export const scrubValue = (value: unknown): unknown => {

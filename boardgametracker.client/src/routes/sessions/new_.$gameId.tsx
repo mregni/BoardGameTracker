@@ -39,7 +39,7 @@ function RouteComponent() {
 
 	const save = async (data: CreateSession) => {
 		const result = await saveSession(data);
-		navigate({ to: `/games/${result.gameId}` });
+		void navigate({ to: `/games/${result.gameId}` });
 	};
 
 	if (game === undefined) {

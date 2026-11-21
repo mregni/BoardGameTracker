@@ -50,7 +50,7 @@ function AuthCallbackPage() {
 			if (!handled.current) {
 				handled.current = true;
 				successToast("auth:oidc.linked");
-				navigate({ to: "/settings", search: { tab: "account" }, replace: true });
+				void navigate({ to: "/settings", search: { tab: "account" }, replace: true });
 			}
 			return;
 		}
@@ -63,7 +63,7 @@ function AuthCallbackPage() {
 				handled.current = true;
 				setSession(login.accessToken, login.user);
 				announceSessionChange("login");
-				navigate({ to: safeRedirectPath(redirect), replace: true });
+				void navigate({ to: safeRedirectPath(redirect), replace: true });
 			})
 			.catch(() => {
 				if (!cancelled) {

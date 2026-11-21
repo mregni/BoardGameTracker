@@ -96,7 +96,7 @@ function RouteComponent() {
 
 	useEffect(() => {
 		if (isLoading || wheelGames || pool.length === 0) return;
-		navigate({
+		void navigate({
 			search: (prev) =>
 				withoutUndefined({
 					...prev,
@@ -116,12 +116,12 @@ function RouteComponent() {
 			.map((game) => (game.id === gameId ? replacement : game))
 			.filter((game) => game !== undefined)
 			.map((game) => game.id);
-		update({ out: [...(out ?? []), gameId], wheel: nextWheel, pick: undefined });
+		void update({ out: [...(out ?? []), gameId], wheel: nextWheel, pick: undefined });
 	};
 
 	const restoreExcluded = (gameId?: number) => {
 		const rest = gameId === undefined ? [] : (out ?? []).filter((id) => id !== gameId);
-		update({ out: rest.length > 0 ? rest : undefined });
+		void update({ out: rest.length > 0 ? rest : undefined });
 		requestAnimationFrame(() => document.querySelector<HTMLElement>(PICK_ACTION_SELECTOR)?.focus());
 	};
 

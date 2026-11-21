@@ -18,7 +18,7 @@ export const usePlayerActions = (props: UsePlayerActionsProps) => {
 	}, [deletePlayer, playerId, navigate, onDeleteModalClose]);
 
 	const handleViewSessions = useCallback(() => {
-		navigate({ to: `/players/${playerId}/sessions` });
+		void navigate({ to: `/players/${playerId}/sessions` });
 	}, [navigate, playerId]);
 
 	const handleBackToPlayers = useBack("/players");
