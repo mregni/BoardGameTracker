@@ -7,8 +7,8 @@ public record ConfigDefault(string Key, string Value);
 
 public static class ConfigDefaults
 {
-    public static IReadOnlyList<ConfigDefault> All { get; } = new List<ConfigDefault>
-    {
+    public static IReadOnlyList<ConfigDefault> All { get; } =
+    [
         new(AppConfig.Currency, "€"),
         new(AppConfig.DateFormat, "dd-MM-yyyy"),
         new(AppConfig.TimeFormat, "HH:mm"),
@@ -39,5 +39,5 @@ public static class ConfigDefaults
         new(UpdateConfig.CheckLastRun, ""),
         new(UpdateConfig.AvailableVersion, ""),
         new(UpdateConfig.Available, "false"),
-    };
+    ];
 }

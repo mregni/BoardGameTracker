@@ -40,7 +40,7 @@ public class RagServiceTests
         _factoryMock.Setup(x => x.CreateChatClientAsync(_token))
             .ReturnsAsync(_chatMock.Object);
         _embedderMock.Setup(x => x.GenerateAsync(It.Is<IEnumerable<string>>(v => v.SequenceEqual(new[] { Question })), null, _token))
-            .ReturnsAsync(new GeneratedEmbeddings<Embedding<float>>(new[] { new Embedding<float>(new float[1024]) }));
+            .ReturnsAsync([.. new[] { new Embedding<float>(new float[1024]) }]);
 
         _service = new RagService(_chunkRepoMock.Object, _factoryMock.Object, _settingsMock.Object);
     }

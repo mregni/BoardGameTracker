@@ -132,8 +132,7 @@ public class AiClientFactory : IAiClientFactory
             };
 
             var response = await _client.EmbedAsync(request, cancellationToken);
-            return new GeneratedEmbeddings<Embedding<float>>(
-                response.Embeddings.Select(embedding => new Embedding<float>(embedding)));
+            return [.. response.Embeddings.Select(embedding => new Embedding<float>(embedding))];
         }
 
         public object? GetService(Type serviceType, object? serviceKey = null) =>

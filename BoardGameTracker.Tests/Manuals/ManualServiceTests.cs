@@ -165,7 +165,7 @@ public class ManualServiceTests
     [Fact]
     public async Task UploadManuals_ShouldThrow_WhenNoFilesProvided()
     {
-        var act = async () => await _manualService.UploadManuals(1, new List<IFormFile>());
+        var act = async () => await _manualService.UploadManuals(1, []);
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.ManualMissing);
         VerifyNoOtherCalls();
@@ -672,7 +672,7 @@ public class ManualServiceTests
     {
         var gameNight = NewNight();
         var linkId = gameNight.LinkId;
-        gameNight.SetSuggestedGames(new List<Game> { new("Catan") { Id = 5 } });
+        gameNight.SetSuggestedGames([new("Catan") { Id = 5 }]);
         _gameNightRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec && ForNight(s, gameNight)), CancellationToken.None)).ReturnsAsync(gameNight);
         _manualRepositoryMock.Setup(x => x.GetByIdAsync(11)).ReturnsAsync((Manual?)null);
 
@@ -691,7 +691,7 @@ public class ManualServiceTests
     {
         var gameNight = NewNight();
         var linkId = gameNight.LinkId;
-        gameNight.SetSuggestedGames(new List<Game> { new("Catan") { Id = 5 } });
+        gameNight.SetSuggestedGames([new("Catan") { Id = 5 }]);
         _gameNightRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec && ForNight(s, gameNight)), CancellationToken.None)).ReturnsAsync(gameNight);
         _manualRepositoryMock.Setup(x => x.GetByIdAsync(11)).ReturnsAsync(CreateManual(11, 99));
 
@@ -710,7 +710,7 @@ public class ManualServiceTests
     {
         var gameNight = NewNight();
         var linkId = gameNight.LinkId;
-        gameNight.SetSuggestedGames(new List<Game> { new("Catan") { Id = 5 } });
+        gameNight.SetSuggestedGames([new("Catan") { Id = 5 }]);
         _gameNightRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec && ForNight(s, gameNight)), CancellationToken.None)).ReturnsAsync(gameNight);
         _manualRepositoryMock.Setup(x => x.GetByIdAsync(11)).ReturnsAsync(CreateManual(11, 5, "Catan.pdf"));
         _diskProviderMock.Setup(x => x.FileExists(Physical("stored-Catan.pdf"))).Returns(true);
@@ -735,7 +735,7 @@ public class ManualServiceTests
     {
         var gameNight = NewNight();
         var linkId = gameNight.LinkId;
-        gameNight.SetSuggestedGames(new List<Game> { new("Catan") { Id = 1 }, new("Wingspan") { Id = 2 }, new("Brass") { Id = 3 } });
+        gameNight.SetSuggestedGames([new("Catan") { Id = 1 }, new("Wingspan") { Id = 2 }, new("Brass") { Id = 3 }]);
         _gameNightRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec && ForNight(s, gameNight)), CancellationToken.None)).ReturnsAsync(gameNight);
         _manualRepositoryMock
             .Setup(x => x.ListAsync(
