@@ -1389,6 +1389,58 @@
         }
       }
     },
+    "/api/game/import/csv": {
+      "post": {
+        "tags": [
+          "Game"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "File"
+                ],
+                "type": "object",
+                "properties": {
+                  "File": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "File": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsvImportResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsvImportResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsvImportResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/game/{id}/price": {
       "get": {
         "tags": [
@@ -6533,6 +6585,11 @@
             "type": "string",
             "format": "date-time"
           },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "baseGameBggId": {
             "type": "integer",
             "format": "int32",
@@ -7366,6 +7423,45 @@
         "type": "object",
         "properties": {
           "url": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CsvImportResult": {
+        "type": "object",
+        "properties": {
+          "games": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BggImportGame"
+            }
+          },
+          "rejected": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CsvRejectedRow"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CsvRejectedRow": {
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "bggId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "reason": {
             "type": "string"
           }
         },
