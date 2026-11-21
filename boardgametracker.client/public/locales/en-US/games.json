@@ -48,7 +48,8 @@
         "no-state": "not owned, wanted or previously owned",
         "invalid-price": "pricepaid is not a number",
         "invalid-date": "acquisitiondate is not a yyyy-mm-dd date",
-        "no-base-game": "no base game found on BoardGameGeek, add a basegame column"
+        "no-base-game": "no base game found on BoardGameGeek, add a basegame column",
+        "not-found": "not found on BoardGameGeek"
       }
     }
   },

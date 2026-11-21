@@ -48,7 +48,8 @@
         "no-state": "niet in bezit, gewenst of vroeger in bezit",
         "invalid-price": "pricepaid is geen getal",
         "invalid-date": "acquisitiondate is geen datum in de vorm jjjj-mm-dd",
-        "no-base-game": "geen basisspel gevonden op BoardGameGeek, voeg een kolom basegame toe"
+        "no-base-game": "geen basisspel gevonden op BoardGameGeek, voeg een kolom basegame toe",
+        "not-found": "niet gevonden op BoardGameGeek"
       }
     }
   },
