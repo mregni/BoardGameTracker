@@ -9,6 +9,7 @@ interface Props {
 	align?: "left" | "right";
 	readOnly?: boolean;
 	size?: "xs" | "sm";
+	onAnimationEnd?: () => void;
 }
 
 export const EditableCellButton = ({
@@ -18,6 +19,7 @@ export const EditableCellButton = ({
 	align = "left",
 	readOnly = false,
 	size = "xs",
+	onAnimationEnd,
 }: Props) => {
 	const { t } = useTranslation();
 	const sizeClass = size === "sm" ? "text-sm" : "text-[12px]";
@@ -41,6 +43,7 @@ export const EditableCellButton = ({
 		<button
 			type="button"
 			onClick={onClick}
+			onAnimationEnd={onAnimationEnd}
 			title={t("click-to-edit")}
 			className={cx(
 				"h-9 w-full rounded-lg px-2 truncate border border-transparent hover:border-primary/30 hover:text-primary-text",

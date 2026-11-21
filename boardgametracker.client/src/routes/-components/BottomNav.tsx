@@ -73,8 +73,10 @@ export const BottomNav = () => {
 	return (
 		<>
 			{showMoreMenu && (
-				<div
-					role="presentation"
+				<button
+					type="button"
+					tabIndex={-1}
+					aria-label={t("common:close")}
 					className="fixed inset-0 bg-black/50 z-30 md:hidden"
 					onClick={() => setShowMoreMenu(false)}
 				/>
@@ -93,7 +95,7 @@ export const BottomNav = () => {
 
 					<UserCard />
 
-					<div ref={moreMenuRef} role="menu" aria-label={t("common:more")} onKeyDown={moveMenuFocus}>
+					<div ref={moreMenuRef} role="menu" tabIndex={-1} aria-label={t("common:more")} onKeyDown={moveMenuFocus}>
 						{menuItems
 							.filter((x) => !x.mobileVisible)
 							.map((item) => (

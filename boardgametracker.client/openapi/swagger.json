@@ -5572,6 +5572,322 @@
         }
       }
     },
+    "/api/storage": {
+      "get": {
+        "tags": [
+          "Storage"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StorageLocationDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StorageLocationDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StorageLocationDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Storage"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStorageLocationCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStorageLocationCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStorageLocationCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageLocationDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageLocationDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageLocationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storage/{id}": {
+      "put": {
+        "tags": [
+          "Storage"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStorageLocationCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStorageLocationCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStorageLocationCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageLocationDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageLocationDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageLocationDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Storage"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/storage/{id}/move": {
+      "put": {
+        "tags": [
+          "Storage"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveStorageLocationCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveStorageLocationCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveStorageLocationCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageLocationDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageLocationDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageLocationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storage/assign": {
+      "put": {
+        "tags": [
+          "Storage"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignStorageCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignStorageCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignStorageCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/storage/arrange": {
+      "put": {
+        "tags": [
+          "Storage"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArrangeStorageCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArrangeStorageCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArrangeStorageCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/storage/orientation": {
+      "put": {
+        "tags": [
+          "Storage"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBoxOrientationCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBoxOrientationCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBoxOrientationCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/update/check": {
       "post": {
         "tags": [
@@ -6032,6 +6348,28 @@
         },
         "additionalProperties": false
       },
+      "ArrangeStorageCommand": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "storageLocationId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "items": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorageItemReference"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "AskRagCommand": {
         "required": [
           "question"
@@ -6044,6 +6382,36 @@
             "type": "string"
           },
           "manualId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AssignStorageCommand": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorageItemReference"
+            }
+          },
+          "locationId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "storageLocationId": {
             "maximum": 2147483647,
             "minimum": 1,
             "type": "integer",
@@ -6206,6 +6574,14 @@
           }
         },
         "additionalProperties": false
+      },
+      "BoxOrientation": {
+        "enum": [
+          "front",
+          "side",
+          "flat"
+        ],
+        "type": "string"
       },
       "ChangeDetectionConfigStatusDto": {
         "type": "object",
@@ -6942,6 +7318,50 @@
         },
         "additionalProperties": false
       },
+      "CreateStorageLocationCommand": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          },
+          "locationId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "parentId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "layout": {
+            "$ref": "#/components/schemas/StorageLayout"
+          },
+          "rows": {
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "columns": {
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateWatchCommand": {
         "type": "object",
         "properties": {
@@ -7300,6 +7720,23 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "storedAtLocationId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "storageLocationId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "storagePosition": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "boxOrientation": {
+            "$ref": "#/components/schemas/BoxOrientation"
           }
         },
         "additionalProperties": false
@@ -7516,6 +7953,23 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "storedAtLocationId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "storageLocationId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "storagePosition": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "boxOrientation": {
+            "$ref": "#/components/schemas/BoxOrientation"
           },
           "playCount": {
             "type": "integer",
@@ -8530,6 +8984,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "storedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
           "lastPlayed": {
             "type": "string",
             "format": "date-time",
@@ -8702,6 +9160,25 @@
           "totalWins": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MoveStorageLocationCommand": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "parentId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -9943,6 +10420,83 @@
         },
         "additionalProperties": false
       },
+      "StorageItemReference": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/StorageItemType"
+          },
+          "id": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorageItemType": {
+        "enum": [
+          "game",
+          "expansion"
+        ],
+        "type": "string"
+      },
+      "StorageLayout": {
+        "enum": [
+          "free",
+          "shelves",
+          "grid",
+          "slot"
+        ],
+        "type": "string"
+      },
+      "StorageLocationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "locationId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "parentId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "layout": {
+            "$ref": "#/components/schemas/StorageLayout"
+          },
+          "rows": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "columns": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "row": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "column": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "TestOidcDiscoveryRequest": {
         "type": "object",
         "properties": {
@@ -10089,6 +10643,21 @@
               "type": "integer",
               "format": "int32"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateBoxOrientationCommand": {
+        "required": [
+          "item"
+        ],
+        "type": "object",
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/StorageItemReference"
+          },
+          "orientation": {
+            "$ref": "#/components/schemas/BoxOrientation"
           }
         },
         "additionalProperties": false
@@ -10646,6 +11215,32 @@
         },
         "additionalProperties": false
       },
+      "UpdateStorageLocationCommand": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "rows": {
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "columns": {
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateUserRoleRequest": {
         "type": "object",
         "properties": {
@@ -10854,6 +11449,9 @@
     },
     {
       "name": "Settings"
+    },
+    {
+      "name": "Storage"
     },
     {
       "name": "Update"

@@ -4,15 +4,31 @@ import {
 	type Game,
 	type GameNightDetail,
 	GameNightRsvpState,
+	GameState,
 	type Player,
 	type Session,
 	type Settings,
+	StorageLayout,
 } from "@/models";
 import { act, renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
 
 const navigate = vi.hoisted(() => vi.fn());
 
 vi.mock("../-hooks/useInviteLink", () => ({ useInviteLink: () => ({ link: "", copied: false, copy: vi.fn() }) }));
+
+vi.mock("@/hooks/useStorage", () => ({
+	useStorageData: () => ({
+		nodes: [
+			{ id: 20, name: "Kallax", locationId: 5, parentId: null, layout: StorageLayout.Grid, rows: 2, columns: 2 },
+			{ id: 21, name: null, locationId: 5, parentId: 20, layout: StorageLayout.Slot, row: 1, column: 2 },
+		],
+		locations: [
+			{ id: 5, name: "Thuis" },
+			{ id: 6, name: "Trailer" },
+		],
+		isLoading: false,
+	}),
+}));
 
 vi.mock("@tanstack/react-router", () => ({
 	useNavigate: () => navigate,
@@ -96,13 +112,13 @@ const handlers = () => ({
 	onReopen: vi.fn(),
 });
 
-const renderView = (detail: GameNightDetail, canWrite = true) => {
+const renderView = (detail: GameNightDetail, canWrite = true, allGames = games) => {
 	const props = handlers();
 	renderWithProviders(
 		<GameNightDetailView
 			detail={detail}
 			settings={settings}
-			games={games}
+			games={allGames}
 			players={players}
 			canWrite={canWrite}
 			{...props}
@@ -444,5 +460,46 @@ describe("GameNightDetailView", () => {
 		expect(screen.getByRole("button", { name: "play.start.button" })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "end.button" })).toBeInTheDocument();
 		expect(screen.getByText("card.when")).toBeInTheDocument();
+	});
+
+	it("tells which planned games to bring along and where they are stored", () => {
+		const stored = (id: number, title: string, place: [number, number | null] | null, extra: Partial<Game> = {}) =>
+			({
+				id,
+				title,
+				image: null,
+				state: GameState.Owned,
+				isLoaned: false,
+				expansions: [],
+				storedAtLocationId: place?.[0] ?? null,
+				storageLocationId: place?.[1] ?? null,
+				...extra,
+			}) as unknown as Game;
+		const allGames = [
+			stored(1, "Azul", [5, 21]),
+			stored(2, "Brass", [6, null]),
+			stored(3, "Cascadia", [6, null], { isLoaned: true }),
+			stored(4, "Dune", null),
+			stored(5, "Everdell", null, { state: GameState.Wanted }),
+			stored(6, "Fog of Love", [6, null]),
+		];
+		const detail = buildDetail(addHours(new Date(), 24 * 7), [], false);
+		detail.gameNight.suggestedGames = allGames.map((game) => ({ id: game.id, title: game.title }) as Game);
+		renderView(detail, true, allGames);
+
+		const planned = screen.getByRole("region", { name: "planned.title" });
+		expect(within(planned).getByText("planned.to-bring")).toHaveClass("text-warn");
+		const rows = within(planned).getAllByRole("listitem");
+		expect(within(rows[0]).getByText("Thuis › Kallax › storage:slot.cell")).toBeInTheDocument();
+		expect(within(rows[0]).getByText("planned.at-location")).toHaveClass("text-ok");
+		expect(within(rows[1]).getByText("Trailer")).toBeInTheDocument();
+		expect(within(rows[1]).getByText("planned.bring-along")).toHaveClass("text-warn");
+		expect(within(rows[2]).getByText("planned.loaned")).toBeInTheDocument();
+		expect(within(rows[2]).queryByText("planned.bring-along")).not.toBeInTheDocument();
+		expect(within(rows[3]).getByText("storage:place.none")).toBeInTheDocument();
+		expect(rows[3].querySelectorAll(".rounded-full")).toHaveLength(0);
+		expect(within(rows[4]).queryByText("storage:place.none")).not.toBeInTheDocument();
+		expect(rows[4].querySelectorAll(".rounded-full")).toHaveLength(0);
+		expect(within(rows[5]).getByText("planned.bring-along")).toBeInTheDocument();
 	});
 });

@@ -53,15 +53,15 @@ export const LocationSessionsCard = (props: Props) => {
 										<BgtAvatar image={game?.image} title={game?.title} size="medium" />
 									</span>
 									<span className="truncate font-semibold">{game?.title}</span>
-									{session.isCoop ? (
-										<CoopResultPill won={session.teamWon === true} className="ml-auto" />
-									) : winner ? (
+									{session.isCoop && <CoopResultPill won={session.teamWon === true} className="ml-auto" />}
+									{!session.isCoop && winner && (
 										<span className="ml-auto flex min-w-0 shrink items-center gap-1">
 											<Crown aria-hidden="true" className="size-4 shrink-0 text-yellow-400" />
 											<span className="sr-only">{t("detail.winner")}</span>
 											<span className="truncate">{winner.name}</span>
 										</span>
-									) : (
+									)}
+									{!session.isCoop && !winner && (
 										<span className="ml-auto shrink-0 text-white/60">{t("detail.no-winner")}</span>
 									)}
 								</span>

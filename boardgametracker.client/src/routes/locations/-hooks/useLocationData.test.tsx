@@ -91,6 +91,7 @@ describe("useLocationData", () => {
 		expect(remove).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.locations, 3] });
 		expect(invalidate).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.locations] });
 		expect(invalidate).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.counts] });
+		expect(invalidate).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.storage] });
 	});
 
 	it("stays on the page and shows an error when the delete fails", async () => {

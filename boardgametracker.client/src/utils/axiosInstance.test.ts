@@ -211,4 +211,16 @@ describe("axiosInstance error details", () => {
 		});
 		expect(error).not.toHaveProperty("params");
 	});
+
+	it.each([
+		[{ reason: "error.game.not-found", title: "Not Found" }, "error.game.not-found"],
+		["plain text from a proxy", "plain text from a proxy"],
+		["", "An unexpected error occurred"],
+		[{ detail: "something" }, "An unexpected error occurred"],
+		[null, "An unexpected error occurred"],
+	])("reads the message from %j", async (data, message) => {
+		rejectWith(data);
+
+		await expect(axiosInstance.get("games")).rejects.toMatchObject({ message });
+	});
 });

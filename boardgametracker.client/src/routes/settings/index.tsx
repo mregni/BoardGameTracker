@@ -1,6 +1,6 @@
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CogIcon from "@/assets/icons/cog.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
@@ -62,7 +62,7 @@ interface SettingsPageContentProps {
 	saveSettings: (settings: Settings) => Promise<Settings>;
 }
 
-function SettingsPageContent({ settings, languages, isSaving, saveSettings }: SettingsPageContentProps) {
+function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Readonly<SettingsPageContentProps>) {
 	const { canManageSettings } = usePermissions();
 	const { tab } = Route.useSearch();
 	const navigate = useNavigate();
@@ -111,7 +111,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 	const ssoEnabled = useSingleSignOnEnabled();
 	const [confirmSsoStop, setConfirmSsoStop] = useState(false);
 
-	const submit = (event: FormEvent) => {
+	const submit = (event: SubmitEvent<HTMLFormElement>) => {
 		if (ssoEnabled && stopsSingleSignOn(form.state.values.publicUrl, settings.publicUrl, globalThis.location.origin)) {
 			event.preventDefault();
 			event.stopPropagation();

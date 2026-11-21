@@ -50,7 +50,9 @@ export const FormStrip = ({ sessions, streak, playerOne, playerTwo }: Props) => 
 			other: t("form.other"),
 			sameTeam: session.teamWon ? t("form.same-team-won") : t("form.same-team-lost"),
 		})[session.outcome];
-	const streakPlayer = streak?.side === "playerOne" ? playerOne : streak?.side === "playerTwo" ? playerTwo : null;
+	let streakPlayer: typeof playerOne | null = null;
+	if (streak?.side === "playerOne") streakPlayer = playerOne;
+	else if (streak?.side === "playerTwo") streakPlayer = playerTwo;
 
 	return (
 		<div className="flex flex-col gap-1">

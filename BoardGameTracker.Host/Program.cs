@@ -1,47 +1,14 @@
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.RateLimiting;
-using Ardalis.GuardClauses;
-using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
-using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Api.Infrastructure;
-using BoardGameTracker.Common.Configuration;
-using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Extensions;
-using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Auth;
-using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration;
-using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore;
-using BoardGameTracker.Core.Disk.Interfaces;
-using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Extensions;
-using BoardGameTracker.Core.Games;
-using BoardGameTracker.Core.Images;
-using BoardGameTracker.Core.Players.Interfaces;
-using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Updates;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using BoardGameTracker.Host.Startup;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Net.Http.Headers;
-using Microsoft.OpenApi;
-using Npgsql;
-using Refit;
 using Serilog;
-using Swashbuckle.AspNetCore.Swagger;
 
 var logLevel = LogLevelExtensions.GetEnvironmentLogLevel();
 
@@ -92,289 +59,42 @@ builder.Services.AddDataProtection()
 
 var trustedProxies = TrustedProxyList.Parse(environmentProvider.TrustedProxies);
 
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.KnownIPNetworks.Clear();
-    options.KnownProxies.Clear();
-
-    foreach (var proxy in trustedProxies.Proxies)
-    {
-        options.KnownProxies.Add(proxy);
-    }
-
-    foreach (var network in trustedProxies.Networks)
-    {
-        options.KnownIPNetworks.Add(network);
-    }
-});
+builder.Services.AddTrustedProxies(trustedProxies);
 
 builder.Services.ConfigureHttpClientDefaults(httpClientBuilder =>
     httpClientBuilder.ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(30)));
 
-builder.Services.AddIdentityCore<ApplicationUser>(options =>
-    {
-        options.Password.RequireDigit = false;
-        options.Password.RequireLowercase = false;
-        options.Password.RequireUppercase = false;
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequiredLength = 8;
-        options.User.RequireUniqueEmail = false;
-    })
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<MainDbContext>()
-    .AddDefaultTokenProviders()
-    .AddSignInManager();
-builder.Services.AddHttpContextAccessor();
+builder.Services.AddAppIdentity();
 
 var authEnabled = environmentProvider.AuthEnabled;
 var jwtSecret = StartupSecrets.ResolveJwtSecret(environmentProvider.JwtSecret ?? builder.Configuration["Jwt:Secret"], authEnabled);
 
-builder.Services.AddOptions<JwtOptions>()
-    .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
-    .PostConfigure(options => options.Secret = jwtSecret)
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
-
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer();
-builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-    .Configure<IOptions<JwtOptions>>((options, jwt) =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwt.Value.Issuer,
-            ValidAudience = jwt.Value.Audience,
-            ClockSkew = TimeSpan.FromSeconds(30),
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Value.Secret))
-        };
-        options.Events = new JwtBearerEvents
-        {
-            OnTokenValidated = async context =>
-            {
-                var accessCheck = context.HttpContext.RequestServices.GetRequiredService<IUserAccessCheck>();
-                if (!await ActiveUserTokenCheck.IsActiveAsync(context.Principal, accessCheck, context.HttpContext.RequestAborted))
-                {
-                    context.Fail(ActiveUserTokenCheck.FailureMessage);
-                }
-            }
-        };
-    });
-
-builder.Services.AddAuthorization();
-
-builder.Services.AddRateLimiter(options =>
-{
-    options.AddPolicy(RateLimitPolicies.Auth, RateLimitPolicies.AuthPartition);
-    options.AddPolicy(RateLimitPolicies.Oidc, RateLimitPolicies.OidcPartition);
-    options.AddPolicy("refresh", context => RateLimitPartition.GetFixedWindowLimiter(
-        ClientAddressKey.From(context.Connection.RemoteIpAddress),
-        _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 60,
-            Window = TimeSpan.FromMinutes(1),
-            QueueLimit = 0
-        }));
-    options.AddPolicy("changedetection", context => RateLimitPartition.GetFixedWindowLimiter(
-        ClientAddressKey.From(context.Connection.RemoteIpAddress),
-        _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 30,
-            Window = TimeSpan.FromMinutes(1),
-            QueueLimit = 0
-        }));
-    options.AddPolicy("integrations", context => RateLimitPartition.GetFixedWindowLimiter(
-        ClientAddressKey.From(context.Connection.RemoteIpAddress),
-        _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 20,
-            Window = TimeSpan.FromMinutes(1),
-            QueueLimit = 0
-        }));
-    options.AddPolicy("gamenight-link", context => RateLimitPartition.GetFixedWindowLimiter(
-        ClientAddressKey.From(context.Connection.RemoteIpAddress),
-        _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 30,
-            Window = TimeSpan.FromMinutes(1),
-            QueueLimit = 0
-        }));
-    options.AddPolicy("rag", context => RateLimitPartition.GetFixedWindowLimiter(
-        UserRateLimitKey.From(context),
-        _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 10,
-            Window = TimeSpan.FromMinutes(1),
-            QueueLimit = 0
-        }));
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.OnRejected = (context, _) =>
-    {
-        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
-        {
-            context.HttpContext.Response.Headers.RetryAfter = Math.Ceiling(retryAfter.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture);
-        }
-
-        var request = context.HttpContext.Request;
-        if (HttpMethods.IsGet(request.Method) && request.Path.StartsWithSegments("/api/auth/oidc"))
-        {
-            context.HttpContext.Response.StatusCode = StatusCodes.Status302Found;
-            context.HttpContext.Response.Headers.Location =
-                $"{OidcController.CallbackPage}?error={Uri.EscapeDataString(BoardGameTracker.Common.Constants.Errors.TooManyRequests)}";
-        }
-
-        return ValueTask.CompletedTask;
-    };
-});
-
-builder.Services.AddHttpClient();
-builder.Services.AddHttpClient(BoardGameTracker.Core.Rag.AiClientFactory.HttpClientName)
-    .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromMinutes(5));
-builder.Services.AddHttpClient(BoardGameTracker.Core.ChangeDetection.ChangeDetectionClient.HttpClientName)
-    .ConfigureHttpClient(client =>
-    {
-        client.Timeout = TimeSpan.FromSeconds(10);
-        client.MaxResponseContentBufferSize = 1024 * 1024;
-    })
-    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
-builder.Services.AddHttpClient(BoardGameTracker.Core.Integrations.BggConnectionTester.HttpClientName)
-    .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(10));
-builder.Services.AddHttpClient(OidcService.HttpClientName)
-    .ConfigureHttpClient(client => client.MaxResponseContentBufferSize = 1024 * 1024)
-    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
-builder.Services.AddHttpClient(BoardGameTracker.Core.Auth.Pictures.IdentityProviderPictureDownloader.HttpClientName)
-    .ConfigureHttpClient(client =>
-    {
-        client.Timeout = BoardGameTracker.Core.Auth.Pictures.IdentityProviderPictureDownloader.Timeout;
-        client.MaxResponseContentBufferSize = BoardGameTracker.Core.Auth.Pictures.IdentityProviderPictureDownloader.MaxBytes;
-    })
-    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
-    {
-        AllowAutoRedirect = false,
-        UseProxy = false,
-        ConnectCallback = BoardGameTracker.Core.Auth.Pictures.PinnedAddressConnector.ConnectAsync,
-    });
-builder.Services.AddHttpClient(ImageService.HttpClientName)
-    .AddStandardResilienceHandler();
+builder.Services.AddAppJwtAuthentication(builder.Configuration, jwtSecret);
+builder.Services.AddAppRateLimiting();
+builder.Services.AddAppHttpClients();
 builder.Services.AddMemoryCache();
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddResponseCompression();
-var corsOrigins = environmentProvider.CorsOrigins;
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("Allow", policyBuilder =>
-    {
-        if (corsOrigins.Count > 0)
-        {
-            policyBuilder
-                .WithOrigins([.. corsOrigins])
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-        }
-        else if (environmentProvider.IsDevelopment)
-        {
-            policyBuilder
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-        }
-    });
-});
-
-var mvcBuilder = builder.Services
-    .AddControllers(options =>
-    {
-        options.ReturnHttpNotAcceptable = true;
-        options.Filters.Add<ValidateIdFilter>();
-    })
-    .AddJsonOptions(options =>
-    {
-        ApplySerializerSettings(options.JsonSerializerOptions);
-    });
-
-var apiAssembly = typeof(GlobalExceptionHandler).Assembly;
-if (mvcBuilder.PartManager.ApplicationParts.OfType<AssemblyPart>().All(part => part.Assembly != apiAssembly))
-{
-    mvcBuilder.AddApplicationPart(apiAssembly);
-}
-
-mvcBuilder.AddControllersAsServices();
+builder.Services.AddAppCors(environmentProvider);
+builder.Services.AddAppControllers();
 
 var version = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "BoardGameTracker API",
-        Version = version,
-        Description = "BoardGameTracker API for managing board game collections and play sessions"
-    });
-
-    options.SupportNonNullableReferenceTypes();
-
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Description = "Call POST /api/auth/login and the token is captured automatically, or paste a JWT here.",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT"
-    });
-
-    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-    {
-        { new OpenApiSecuritySchemeReference("Bearer", document), new List<string>() }
-    });
-});
-
-builder.Services.AddHttpClient(nameof(IBoardGameGeekXmlApi2Client));
-builder.Services.AddScoped<IBoardGameGeekXmlApi2Client>(sp =>
-{
-    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-    var settingsService = sp.GetRequiredService<ISettingsService>();
-    return new LazyBoardGameGeekClient(
-        () => httpClientFactory.CreateClient(nameof(IBoardGameGeekXmlApi2Client)),
-        settingsService);
-});
-
-builder.Services.AddRefitClient<IDockerHubApi>()
-    .ConfigureHttpClient(options =>
-    {
-        options.BaseAddress = new Uri("https://hub.docker.com");
-    })
-    .AddStandardResilienceHandler();
+builder.Services.AddAppSwagger(version);
+builder.Services.AddExternalApiClients();
 
 var app = builder.Build();
 if (args is ["--openapi", var openApiPath])
 {
-    await WriteOpenApiDocument(app.Services, openApiPath);
+    await StartupTasks.WriteOpenApiDocument(app.Services, openApiPath);
     await Log.CloseAndFlushAsync();
     return;
 }
 
-CreateFolders(app.Services);
+StartupTasks.CreateFolders(app.Services);
 
-app.UseSerilogRequestLogging(options =>
-{
-    options.GetLevel = (context, _, exception) =>
-        exception != null || context.Response.StatusCode >= StatusCodes.Status500InternalServerError
-            ? Serilog.Events.LogEventLevel.Error
-            : context.Request.Path.StartsWithSegments("/api/health")
-                ? Serilog.Events.LogEventLevel.Verbose
-                : Serilog.Events.LogEventLevel.Information;
-});
+app.UseAppRequestLogging();
 
 foreach (var entry in trustedProxies.Invalid)
 {
@@ -392,35 +112,7 @@ else
 
 app.UseResponseCompression();
 
-var hstsEnabled = !app.Environment.IsDevelopment();
-var swaggerEnabled = environmentProvider.SwaggerEnabled;
-app.Use(async (context, next) =>
-{
-    context.Response.OnStarting(() =>
-    {
-        var headers = context.Response.Headers;
-        headers["X-Content-Type-Options"] = "nosniff";
-        headers["X-Frame-Options"] = "DENY";
-        headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
-        headers["Cross-Origin-Resource-Policy"] = "same-origin";
-        headers["Cross-Origin-Opener-Policy"] = "same-origin";
-        headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
-
-        var isSwagger = swaggerEnabled && context.Request.Path.StartsWithSegments("/swagger");
-        headers["Content-Security-Policy"] = isSwagger
-            ? "default-src 'self'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';"
-            : "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.ingest.sentry.io https://*.ingest.us.sentry.io; worker-src 'self' blob:; frame-ancestors 'none'; form-action 'self';";
-
-        if (hstsEnabled && context.Request.IsHttps)
-        {
-            headers["Strict-Transport-Security"] = "max-age=2592000";
-        }
-
-        return Task.CompletedTask;
-    });
-
-    await next();
-});
+app.UseSecurityHeaders(!app.Environment.IsDevelopment(), environmentProvider.SwaggerEnabled);
 
 app.UseExceptionHandler();
 
@@ -439,12 +131,7 @@ app.MapControllers();
 
 if (environmentProvider.SwaggerEnabled)
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.UseResponseInterceptor(
-            "(res) => { try { if (res.status >= 200 && res.status < 300) { var body = res.obj || (res.text ? JSON.parse(res.text) : null); if (body && body.accessToken && window.ui) { window.ui.preauthorizeApiKey('Bearer', body.accessToken); console.log('[Swagger] Bearer token captured from auth response.'); } } } catch (e) { console.warn('[Swagger] auth interceptor failed', e); } return res; }");
-    });
+    app.UseAppSwaggerUi();
 }
 
 if (bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS_ENABLED"), out var sentryEnabled) && sentryEnabled)
@@ -452,242 +139,17 @@ if (bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS_ENABLED"), out 
     app.UseSentryTracing();
 }
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(PathHelper.FullCoverImagePath),
-    RequestPath = "/images/cover"
-});
+app.UseImageFiles();
 
-app.UseWhen(
-    context => context.Request.Path.StartsWithSegments(ProfileImageCookie.Path),
-    branch => branch.UseMiddleware<ProfileImageAccessMiddleware>());
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(PathHelper.FullProfileImagePath),
-    RequestPath = ProfileImageCookie.Path,
-    OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "private, no-cache"
-});
-
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-
-logger.LogInformation("BoardGameTracker started");
-logger.LogInformation("  Environment:  {Environment}", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
-logger.LogInformation("  Log level:    {LogLevel}", LogLevelExtensions.GetEnvironmentLogLevel());
-logger.LogInformation("  Sentry:       {SentryEnabled}", Environment.GetEnvironmentVariable("STATISTICS_ENABLED")?.ToLower() == "true" ? "Enabled" : "Disabled");
-logger.LogInformation("  HTTP ports:   {HttpPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS") ?? "default");
-logger.LogInformation("  Timezone:     {Timezone}", Environment.GetEnvironmentVariable("TZ") ?? "system default");
-logger.LogInformation("  DB port:      {DbPort}", Environment.GetEnvironmentVariable("DB_PORT") ?? "5432");
-logger.LogInformation("  Auth:         {AuthState}", authEnabled ? "Enabled" : "Disabled");
-if (!authEnabled)
-{
-    logger.LogWarning(
-        "AUTH_ENABLED=false: every request is treated as an administrator. Anyone who can reach this port can change settings, store API keys, upload files, import games and use the AI assistant. Only use this on a trusted network or behind a proxy that authenticates for you");
-}
-
-logger.WarnWhenKeysAreUnencrypted(app.Services);
-
-if (environmentProvider.EfSensitiveDataLogging)
-{
-    logger.LogWarning(
-        "EF_SENSITIVE_LOGGING=true: database parameter values are written to the logs, including API keys, passwords, password hashes and tokens. Only use this for local debugging and remove it afterwards");
-}
+StartupTasks.LogStartupSummary(app.Services, environmentProvider, authEnabled);
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseStaticFiles(new StaticFileOptions { OnPrepareResponse = SetStaticAssetCacheHeaders });
-    app.MapFallback("/api/{**path}", () => Results.NotFound());
-    app.MapFallbackToFile("index.html", new StaticFileOptions { OnPrepareResponse = SetIndexCacheHeaders })
-        .WithMetadata(new HttpMethodMetadata([HttpMethods.Get, HttpMethods.Head]));
+    app.UseSpaFiles();
 }
 
-RunDbMigrations(app.Services);
-await EncryptDataProtectionKeys(app.Services);
-await SeedConfig(app.Services);
-await ProtectIntegrationKeys(app.Services);
-await BackfillPlayerAccountImages(app.Services);
-if (authEnabled)
-{
-    await SeedAuthData(app.Services, environmentProvider.AdminPassword);
-}
+await StartupTasks.PrepareDataAsync(app.Services, authEnabled, environmentProvider.AdminPassword);
 
 await app.RunAsync();
 
 await Log.CloseAndFlushAsync();
-
-static async Task WriteOpenApiDocument(IServiceProvider services, string path)
-{
-    var document = services.GetRequiredService<ISwaggerProvider>().GetSwagger("v1");
-    var fullPath = Path.GetFullPath(path);
-    Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-    await using var writer = new StreamWriter(fullPath) { NewLine = "\n" };
-    document.SerializeAsV3(new OpenApiJsonWriter(writer));
-}
-
-static void SetIndexCacheHeaders(StaticFileResponseContext context)
-{
-    context.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
-    {
-        NoCache = true,
-        NoStore = true,
-        MustRevalidate = true
-    };
-}
-
-static void SetStaticAssetCacheHeaders(StaticFileResponseContext context)
-{
-    var path = context.Context.Request.Path;
-    var headers = context.Context.Response.GetTypedHeaders();
-
-    if (path.StartsWithSegments("/assets", StringComparison.OrdinalIgnoreCase))
-    {
-        headers.CacheControl = new CacheControlHeaderValue
-        {
-            Public = true,
-            MaxAge = TimeSpan.FromDays(365),
-            Extensions = { new NameValueHeaderValue("immutable") }
-        };
-        return;
-    }
-
-    if (path.StartsWithSegments("/locales", StringComparison.OrdinalIgnoreCase))
-    {
-        headers.CacheControl = new CacheControlHeaderValue
-        {
-            NoCache = true,
-            MustRevalidate = true
-        };
-    }
-}
-
-static void RunDbMigrations(IServiceProvider serviceProvider)
-{
-    using var scope = serviceProvider.CreateScope();
-    var context = Guard.Against.Null(scope.ServiceProvider.GetRequiredService<MainDbContext>());
-    WaitForDatabase(context);
-    EnsureVectorExtensionAvailable(context);
-    context.Database.Migrate();
-}
-
-static void WaitForDatabase(MainDbContext context)
-{
-    var creator = context.Database.GetService<IRelationalDatabaseCreator>();
-    const int attempts = 10;
-    for (var attempt = 1; ; attempt++)
-    {
-        try
-        {
-            if (!creator.Exists())
-            {
-                Log.Information("Database {Database} does not exist yet; creating it", context.Database.GetDbConnection().Database);
-                creator.Create();
-            }
-
-            return;
-        }
-        catch (Exception ex) when (ex.GetBaseException() is NpgsqlException or System.Net.Sockets.SocketException or TimeoutException)
-        {
-            var reason = ex.GetBaseException().Message;
-            if (attempt >= attempts)
-            {
-                throw new InvalidOperationException(
-                    $"Could not open the PostgreSQL database after {attempts} attempts ({reason}). Check DB_HOST, DB_PORT, DB_USER and DB_PASSWORD and make sure the database container is running.",
-                    ex);
-            }
-
-            Log.Warning(ex, "Database not reachable yet (attempt {Attempt}/{Attempts}): {Message}", attempt, attempts, reason);
-        }
-
-        Thread.Sleep(TimeSpan.FromSeconds(3));
-    }
-}
-
-static void EnsureVectorExtensionAvailable(MainDbContext context)
-{
-    var available = context.Database
-        .SqlQueryRaw<int>("SELECT 1 AS \"Value\" FROM pg_available_extensions WHERE name = 'vector'")
-        .AsEnumerable()
-        .Any();
-
-    if (available)
-    {
-        return;
-    }
-
-    const string message =
-        "The PostgreSQL server does not provide the 'vector' extension, which BoardGameTracker requires. " +
-        "Use the pgvector/pgvector:pg16 image instead of postgres:16 (your existing data folder keeps working), " +
-        "or install pgvector on your own server. See the Upgrading page in the documentation.";
-    Log.Fatal(message);
-    throw new InvalidOperationException(message);
-}
-
-static void CreateFolders(IServiceProvider serviceProvider)
-{
-    var diskProvider = Guard.Against.Null(serviceProvider.GetService<IDiskProvider>());
-
-    diskProvider.EnsureFolder(PathHelper.FullRootImagePath);
-    diskProvider.EnsureFolder(PathHelper.FullCoverImagePath);
-    diskProvider.EnsureFolder(PathHelper.FullProfileImagePath);
-    diskProvider.EnsureFolder(PathHelper.FullManualsPath);
-}
-
-static async Task SeedConfig(IServiceProvider serviceProvider)
-{
-    using var scope = serviceProvider.CreateScope();
-    var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
-    await configRepository.SeedConfigAsync(ConfigDefaults.All);
-}
-
-static async Task EncryptDataProtectionKeys(IServiceProvider serviceProvider)
-{
-    using var scope = serviceProvider.CreateScope();
-    var reEncryptor = scope.ServiceProvider.GetRequiredService<IDataProtectionKeyReEncryptor>();
-    await reEncryptor.EncryptPlaintextKeysAsync();
-}
-
-static async Task ProtectIntegrationKeys(IServiceProvider serviceProvider)
-{
-    using var scope = serviceProvider.CreateScope();
-    var migrator = scope.ServiceProvider.GetRequiredService<IIntegrationKeyMigrator>();
-    await migrator.ProtectLegacyKeysAsync();
-}
-
-static async Task BackfillPlayerAccountImages(IServiceProvider serviceProvider)
-{
-    using var scope = serviceProvider.CreateScope();
-    var accountImages = scope.ServiceProvider.GetRequiredService<IPlayerAccountImageService>();
-    try
-    {
-        await accountImages.BackfillAsync();
-    }
-    catch (Exception ex)
-    {
-        Log.Warning(ex, "Could not give linked players the profile picture of their account");
-    }
-}
-
-static async Task SeedAuthData(IServiceProvider serviceProvider, string? adminPassword)
-{
-    using var scope = serviceProvider.CreateScope();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var seedLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    await DbSeeder.SeedAuthData(roleManager, userManager, seedLogger, adminPassword);
-}
-
-static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)
-{
-    serializerSettings.AllowTrailingCommas = true;
-    serializerSettings.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
-    serializerSettings.PropertyNameCaseInsensitive = true;
-    serializerSettings.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-    serializerSettings.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    serializerSettings.WriteIndented = EnvironmentExtensions.IsDevelopment();
-
-    // Ensure all DateTime values are handled as UTC
-    serializerSettings.Converters.Add(new UtcDateTimeConverter());
-    serializerSettings.Converters.Add(new UtcNullableDateTimeConverter());
-    serializerSettings.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-}
-
-public partial class Program;

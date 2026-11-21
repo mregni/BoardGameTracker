@@ -7,7 +7,6 @@ using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Email;
 using BoardGameTracker.Core.Email.Interfaces;
 using FluentAssertions;
-using Microsoft.Extensions.Logging.Abstractions;
 using MimeKit;
 using Moq;
 using Xunit;
@@ -24,7 +23,7 @@ public class EmailServiceTests
     {
         _environmentProviderMock = new Mock<IEnvironmentProvider>();
         _smtpSenderMock = new Mock<ISmtpSender>();
-        _emailService = new EmailService(_environmentProviderMock.Object, _smtpSenderMock.Object, NullLogger<EmailService>.Instance);
+        _emailService = new EmailService(_environmentProviderMock.Object, _smtpSenderMock.Object);
     }
 
     private void VerifyNoOtherCalls()

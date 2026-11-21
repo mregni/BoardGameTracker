@@ -1,7 +1,29 @@
 import { describe, expect, it, vi } from "vitest";
-import { type Expansion, GameState } from "@/models";
+import { BoxOrientation, type Expansion, GameState, StorageLayout } from "@/models";
 import { renderWithTheme, screen, userEvent, waitFor, within } from "@/test/test-utils";
 import { ExpansionsDialog } from "./ExpansionsDialog";
+
+vi.mock("@/hooks/useStorage", () => ({
+	useStorageData: () => ({
+		nodes: [
+			{
+				id: 5,
+				name: "Kallax",
+				locationId: 1,
+				parentId: null,
+				layout: StorageLayout.Free,
+				rows: null,
+				columns: null,
+				row: null,
+				column: null,
+			},
+		],
+		locations: [{ id: 1, name: "Home", playCount: 0, gameNightCount: 0, storedCount: 0, lastPlayed: null }],
+	}),
+	useStorageActions: () => ({ assignStorage: vi.fn(), isPending: false }),
+}));
+
+vi.mock("@/components/BgtStorage/StoragePicker", () => ({ StoragePicker: () => null }));
 
 const expansion = (id: number, title: string, overrides: Partial<Expansion> = {}): Expansion => ({
 	id,
@@ -13,11 +35,17 @@ const expansion = (id: number, title: string, overrides: Partial<Expansion> = {}
 	buyingPrice: null,
 	soldPrice: null,
 	additionDate: null,
+	storedAtLocationId: null,
+	storageLocationId: null,
+	storagePosition: 0,
+	boxOrientation: BoxOrientation.Front,
 	...overrides,
 });
 
 const renderDialog = (overrides: Partial<Parameters<typeof ExpansionsDialog>[0]> = {}) => {
 	const props = {
+		gameTitle: "Everdell",
+		gamePlace: null,
 		gamePrice: 45,
 		currency: "EUR",
 		onUpdateExpansion: vi.fn(),
@@ -140,6 +168,26 @@ describe("ExpansionsDialog", () => {
 		expect(screen.getByRole("textbox", { name: "update.sold-price.label: Pearlbrook" })).toHaveValue("12");
 	});
 
+	it("says where the base game is stored", () => {
+		renderDialog({ gamePlace: { locationId: 1, storageLocationId: 5 } });
+
+		expect(screen.getByText("expansions.description expansions.base-stored")).toBeInTheDocument();
+	});
+
+	it("does not mention the base game's place when it has none", () => {
+		renderDialog();
+
+		expect(screen.queryByText(/expansions\.base-stored/)).not.toBeInTheDocument();
+	});
+
+	it("gives every expansion that can be stored its own storage switch", () => {
+		renderDialog();
+
+		const pearlbrook = screen.getByRole("group", { name: "storage:picker.label: Pearlbrook" });
+		expect(within(pearlbrook).getByRole("switch", { name: "storage.in-base-box" })).toBeChecked();
+		expect(screen.getByText("storage.only-owned")).toBeInTheDocument();
+	});
+
 	it("shows a reader the state and price as text, without fields or delete buttons", () => {
 		renderDialog({
 			canWrite: false,
@@ -152,5 +200,19 @@ describe("ExpansionsDialog", () => {
 		expect(screen.getByText("game:state.sold")).toBeInTheDocument();
 		expect(screen.getByText("€28")).toBeInTheDocument();
 		expect(screen.getByText("€12")).toBeInTheDocument();
+	});
+
+	it("shows a reader where each expansion is stored", () => {
+		renderDialog({
+			canWrite: false,
+			expansions: [
+				expansion(1, "Pearlbrook"),
+				expansion(2, "Spirecrest", { storedAtLocationId: 1, storageLocationId: 5 }),
+			],
+		});
+
+		expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+		expect(screen.getByText("storage:place.with-base")).toBeInTheDocument();
+		expect(screen.getByText("Home › Kallax")).toBeInTheDocument();
 	});
 });

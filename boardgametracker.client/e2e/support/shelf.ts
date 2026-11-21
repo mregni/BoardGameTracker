@@ -13,9 +13,10 @@ const lastPlayOf = (game: SeedGame) =>
 
 export const shelfOf = (months: number) => {
 	const cutoff = subMonths(new Date(), months);
-	return games.filter(
-		(game) => game.state === "owned" && new Date(game.additionDate) <= cutoff && !(lastPlayOf(game) >= cutoff),
-	);
+	return games.filter((game) => {
+		const last = lastPlayOf(game);
+		return game.state === "owned" && new Date(game.additionDate) <= cutoff && (!last || last < cutoff);
+	});
 };
 
 export const shelf = shelfOf(6);
@@ -68,7 +69,9 @@ export const rowText = (game: SeedGame, nextNight: boolean) => {
 	const last = lastPlayOf(game);
 	const pill = last ? formatDistanceToNow(last, { addSuffix: true }) : "Never played";
 	const night = nightOf(game);
-	const plan = night ? `Planned · ${displayDate(night.startDate)}` : nextNight ? "Plan" : "";
+	let plan = "";
+	if (night) plan = `Planned · ${displayDate(night.startDate)}`;
+	else if (nextNight) plan = "Plan";
 	return `${game.title}${details(game)}Last played: ${pill}Paid${money(game.buyingPrice ?? 0)}${plan}`;
 };
 

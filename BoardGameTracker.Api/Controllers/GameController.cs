@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
-using BoardGameTracker.Common.DTOs.Commands;
-using BoardGameTracker.Common.DTOs;
-using BoardGameTracker.Common.Extensions;
-using BoardGameTracker.Common.Models.Bgg;
-using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +18,8 @@ namespace BoardGameTracker.Api.Controllers;
 [Authorize]
 public class GameController : ControllerBase
 {
+    private const long MaxCsvBytes = 1024 * 1024;
+    private const long MultipartOverheadBytes = 64 * 1024;
     private readonly IGameService _gameService;
     private readonly IGameStatisticsService  _gameStatisticsService;
     private readonly IBggImportService _bggImportService;
@@ -117,6 +119,28 @@ public class GameController : ControllerBase
 
         var games = await _bggImportService.ImportBggCollection(username.Trim(), cancellationToken);
         return Ok(games);
+    }
+
+    [HttpPost("import/csv")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [RequestSizeLimit(MaxCsvBytes + MultipartOverheadBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxCsvBytes + MultipartOverheadBytes)]
+    [ProducesResponseType<CsvImportResult>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ImportCsv([FromForm] ImportCsvCommand command)
+    {
+        if (command.File.Length is 0 or > MaxCsvBytes
+            || !string.Equals(Path.GetExtension(command.File.FileName), ".csv", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest();
+        }
+
+        string csv;
+        using (var reader = new StreamReader(command.File.OpenReadStream()))
+        {
+            csv = await reader.ReadToEndAsync();
+        }
+
+        return Ok(await _bggImportService.ImportCsv(csv));
     }
 
     [HttpPost("bgg/import")]

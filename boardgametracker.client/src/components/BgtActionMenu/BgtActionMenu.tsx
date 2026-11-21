@@ -110,6 +110,7 @@ export const BgtActionMenu = ({ label, items }: Props) => {
 					ref={menuRef}
 					id={menuId}
 					role="menu"
+					tabIndex={-1}
 					aria-label={label}
 					onKeyDown={handleMenuKey}
 					className={cx(

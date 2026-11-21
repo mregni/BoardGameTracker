@@ -163,37 +163,34 @@ describe("LoginPage", () => {
 			vi.unstubAllGlobals();
 		});
 
-		it("moves to the https public URL before starting single sign-on, keeping only a local redirect", async () => {
+		it.each([
+			[
+				"moves to the https public URL before starting single sign-on, keeping only a local redirect",
+				"https://games.example.com/",
+				"/games/3",
+				"https://games.example.com/login?redirect=%2Fgames%2F3&sso=true",
+			],
+			[
+				"drops an external redirect when moving to the public URL",
+				"https://games.example.com",
+				"https://evil.example",
+				"https://games.example.com/login?redirect=%2F&sso=true",
+			],
+			[
+				"starts single sign-on here when this already is the public URL, or the public URL is not https",
+				"http://192.168.1.20:5444",
+				"/games",
+				"/api/auth/oidc/login?redirect=%2Fgames",
+			],
+		])("%s", async (_, publicUrl, redirect, expectedHref) => {
 			const user = userEvent.setup();
-			mocks.publicUrl = "https://games.example.com/";
-			mocks.search = { redirect: "/games/3" };
+			mocks.publicUrl = publicUrl;
+			mocks.search = { redirect };
 			renderWithProviders(<mocks.captured.Page />);
 
 			await user.click(await screen.findByRole("button", { name: "Company login" }));
 
-			expect(page.href).toBe("https://games.example.com/login?redirect=%2Fgames%2F3&sso=true");
-		});
-
-		it("drops an external redirect when moving to the public URL", async () => {
-			const user = userEvent.setup();
-			mocks.publicUrl = "https://games.example.com";
-			mocks.search = { redirect: "https://evil.example" };
-			renderWithProviders(<mocks.captured.Page />);
-
-			await user.click(await screen.findByRole("button", { name: "Company login" }));
-
-			expect(page.href).toBe("https://games.example.com/login?redirect=%2F&sso=true");
-		});
-
-		it("starts single sign-on here when this already is the public URL, or the public URL is not https", async () => {
-			const user = userEvent.setup();
-			mocks.publicUrl = "http://192.168.1.20:5444";
-			mocks.search = { redirect: "/games" };
-			renderWithProviders(<mocks.captured.Page />);
-
-			await user.click(await screen.findByRole("button", { name: "Company login" }));
-
-			expect(page.href).toBe("/api/auth/oidc/login?redirect=%2Fgames");
+			expect(page.href).toBe(expectedHref);
 		});
 
 		it("continues the sign-on it was sent here for on the public URL", async () => {

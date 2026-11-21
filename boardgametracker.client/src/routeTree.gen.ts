@@ -36,8 +36,10 @@ import { Route as PlayersNewRouteImport } from './routes/players/new'
 import { Route as SessionsNewRouteImport } from './routes/sessions/new'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as ShamesIndexRouteImport } from './routes/shames/index'
+import { Route as StorageIndexRouteImport } from './routes/storage/index'
 import { Route as GamesGameIdSessionsRouteImport } from './routes/games/$gameId_.sessions'
 import { Route as GamesGameIdUpdateRouteImport } from './routes/games/$gameId_.update'
+import { Route as GamesImportCsvRouteImport } from './routes/games/import/csv'
 import { Route as GamesImportStartRouteImport } from './routes/games/import/start'
 import { Route as PlayersPlayerIdSessionsRouteImport } from './routes/players/$playerId_.sessions'
 import { Route as SessionsNewGameIdRouteImport } from './routes/sessions/new_.$gameId'
@@ -178,6 +180,11 @@ const ShamesIndexRoute = ShamesIndexRouteImport.update({
   path: '/shames/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StorageIndexRoute = StorageIndexRouteImport.update({
+  id: '/storage/',
+  path: '/storage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GamesGameIdSessionsRoute = GamesGameIdSessionsRouteImport.update({
   id: '/games/$gameId_/sessions',
   path: '/games/$gameId/sessions',
@@ -186,6 +193,11 @@ const GamesGameIdSessionsRoute = GamesGameIdSessionsRouteImport.update({
 const GamesGameIdUpdateRoute = GamesGameIdUpdateRouteImport.update({
   id: '/games/$gameId_/update',
   path: '/games/$gameId/update',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesImportCsvRoute = GamesImportCsvRouteImport.update({
+  id: '/games/import/csv',
+  path: '/games/import/csv',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesImportStartRoute = GamesImportStartRouteImport.update({
@@ -241,8 +253,10 @@ export interface FileRoutesByFullPath {
   '/players/': typeof PlayersIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/shames/': typeof ShamesIndexRoute
+  '/storage/': typeof StorageIndexRoute
   '/games/$gameId/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId/update': typeof GamesGameIdUpdateRoute
+  '/games/import/csv': typeof GamesImportCsvRoute
   '/games/import/start': typeof GamesImportStartRoute
   '/players/$playerId/sessions': typeof PlayersPlayerIdSessionsRoute
   '/sessions/new/$gameId': typeof SessionsNewGameIdRoute
@@ -276,8 +290,10 @@ export interface FileRoutesByTo {
   '/players': typeof PlayersIndexRoute
   '/settings': typeof SettingsIndexRoute
   '/shames': typeof ShamesIndexRoute
+  '/storage': typeof StorageIndexRoute
   '/games/$gameId/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId/update': typeof GamesGameIdUpdateRoute
+  '/games/import/csv': typeof GamesImportCsvRoute
   '/games/import/start': typeof GamesImportStartRoute
   '/players/$playerId/sessions': typeof PlayersPlayerIdSessionsRoute
   '/sessions/new/$gameId': typeof SessionsNewGameIdRoute
@@ -313,8 +329,10 @@ export interface FileRoutesById {
   '/players/': typeof PlayersIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/shames/': typeof ShamesIndexRoute
+  '/storage/': typeof StorageIndexRoute
   '/games/$gameId_/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId_/update': typeof GamesGameIdUpdateRoute
+  '/games/import/csv': typeof GamesImportCsvRoute
   '/games/import/start': typeof GamesImportStartRoute
   '/players/$playerId_/sessions': typeof PlayersPlayerIdSessionsRoute
   '/sessions/new_/$gameId': typeof SessionsNewGameIdRoute
@@ -350,8 +368,10 @@ export interface FileRouteTypes {
     | '/players/'
     | '/settings/'
     | '/shames/'
+    | '/storage/'
     | '/games/$gameId/sessions'
     | '/games/$gameId/update'
+    | '/games/import/csv'
     | '/games/import/start'
     | '/players/$playerId/sessions'
     | '/sessions/new/$gameId'
@@ -385,8 +405,10 @@ export interface FileRouteTypes {
     | '/players'
     | '/settings'
     | '/shames'
+    | '/storage'
     | '/games/$gameId/sessions'
     | '/games/$gameId/update'
+    | '/games/import/csv'
     | '/games/import/start'
     | '/players/$playerId/sessions'
     | '/sessions/new/$gameId'
@@ -421,8 +443,10 @@ export interface FileRouteTypes {
     | '/players/'
     | '/settings/'
     | '/shames/'
+    | '/storage/'
     | '/games/$gameId_/sessions'
     | '/games/$gameId_/update'
+    | '/games/import/csv'
     | '/games/import/start'
     | '/players/$playerId_/sessions'
     | '/sessions/new_/$gameId'
@@ -453,8 +477,10 @@ export interface RootRouteChildren {
   PlayersIndexRoute: typeof PlayersIndexRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
   ShamesIndexRoute: typeof ShamesIndexRoute
+  StorageIndexRoute: typeof StorageIndexRoute
   GamesGameIdSessionsRoute: typeof GamesGameIdSessionsRoute
   GamesGameIdUpdateRoute: typeof GamesGameIdUpdateRoute
+  GamesImportCsvRoute: typeof GamesImportCsvRoute
   GamesImportStartRoute: typeof GamesImportStartRoute
   PlayersPlayerIdSessionsRoute: typeof PlayersPlayerIdSessionsRoute
   SessionsNewGameIdRoute: typeof SessionsNewGameIdRoute
@@ -653,6 +679,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShamesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/storage/': {
+      id: '/storage/'
+      path: '/storage'
+      fullPath: '/storage/'
+      preLoaderRoute: typeof StorageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/games/$gameId_/sessions': {
       id: '/games/$gameId_/sessions'
       path: '/games/$gameId/sessions'
@@ -665,6 +698,13 @@ declare module '@tanstack/react-router' {
       path: '/games/$gameId/update'
       fullPath: '/games/$gameId/update'
       preLoaderRoute: typeof GamesGameIdUpdateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/import/csv': {
+      id: '/games/import/csv'
+      path: '/games/import/csv'
+      fullPath: '/games/import/csv'
+      preLoaderRoute: typeof GamesImportCsvRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/import/start': {
@@ -746,8 +786,10 @@ const rootRouteChildren: RootRouteChildren = {
   PlayersIndexRoute: PlayersIndexRoute,
   SettingsIndexRoute: SettingsIndexRoute,
   ShamesIndexRoute: ShamesIndexRoute,
+  StorageIndexRoute: StorageIndexRoute,
   GamesGameIdSessionsRoute: GamesGameIdSessionsRoute,
   GamesGameIdUpdateRoute: GamesGameIdUpdateRoute,
+  GamesImportCsvRoute: GamesImportCsvRoute,
   GamesImportStartRoute: GamesImportStartRoute,
   PlayersPlayerIdSessionsRoute: PlayersPlayerIdSessionsRoute,
   SessionsNewGameIdRoute: SessionsNewGameIdRoute,

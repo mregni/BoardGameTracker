@@ -13,4 +13,8 @@ public class ExpansionDto
     public decimal? BuyingPrice { get; set; }
     public decimal? SoldPrice { get; set; }
     public DateTime? AdditionDate { get; set; }
+    public int? StoredAtLocationId { get; set; }
+    public int? StorageLocationId { get; set; }
+    public int StoragePosition { get; set; }
+    public BoxOrientation BoxOrientation { get; set; }
 }

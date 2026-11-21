@@ -21,6 +21,6 @@ public class Person : HasId
     {
         Name = name;
         Type = type;
-        Games = new List<Game>();
+        Games = [];
     }
 }

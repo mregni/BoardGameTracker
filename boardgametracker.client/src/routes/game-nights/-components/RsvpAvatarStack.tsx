@@ -31,7 +31,8 @@ export const RsvpAvatarStack = ({ rsvps, hostId, linkPlayers = true }: Props) =>
 	const navigate = useNavigate();
 	const isDesktop = useMediaQuery("(min-width: 768px)");
 	const [showAll, setShowAll] = useState(false);
-	const max = showAll ? rsvps.length : isDesktop ? DESKTOP_MAX : MOBILE_MAX;
+	const collapsedMax = isDesktop ? DESKTOP_MAX : MOBILE_MAX;
+	const max = showAll ? rsvps.length : collapsedMax;
 
 	const visible = rsvps.slice(0, max);
 	const hidden = rsvps.slice(max);

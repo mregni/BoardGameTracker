@@ -103,7 +103,7 @@ export const BgtDateTimePicker = (props: BgtDateTimePickerProps) => {
 			<BgtFieldLabel>{label}</BgtFieldLabel>
 			<div className="flex gap-2">
 				<div className="flex-1">
-					<BgtDatePicker field={dateField as AnyFieldApi} label="" placeholder="" disabled={disabled} />
+					<BgtDatePicker field={dateField as AnyFieldApi} label="" disabled={disabled} />
 				</div>
 				<I18nProvider locale={locale}>{timeField}</I18nProvider>
 			</div>

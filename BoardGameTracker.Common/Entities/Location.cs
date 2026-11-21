@@ -15,12 +15,15 @@ public class Location: HasId
 
     public ICollection<Session> Sessions { get; private set; }
     public ICollection<GameNight> GameNights { get; private set; }
+    public ICollection<StorageLocation> StorageLocations { get; private set; } = [];
+    public ICollection<Game> StoredGames { get; private set; } = [];
+    public ICollection<Expansion> StoredExpansions { get; private set; } = [];
 
     public Location(string name)
     {
         Name = name;
-        Sessions = new List<Session>();
-        GameNights = new List<GameNight>();
+        Sessions = [];
+        GameNights = [];
     }
 
     public void UpdateName(string name)

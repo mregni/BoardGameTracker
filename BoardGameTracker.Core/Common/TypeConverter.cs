@@ -26,7 +26,7 @@ public static class TypeConverter
 
         if (type.IsEnum && Enum.TryParse(type, value, true, out var enumResult))
         {
-            result = (T)enumResult!;
+            result = (T)enumResult;
             return true;
         }
 

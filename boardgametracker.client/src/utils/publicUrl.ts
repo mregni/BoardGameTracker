@@ -1,6 +1,7 @@
 import { safeRedirectPath } from "./redirectUtils";
+import { trimTrailingSlashes } from "./stringUtils";
 
-const normalize = (configured: string | null | undefined) => (configured ?? "").trim().replace(/\/+$/, "");
+const normalize = (configured: string | null | undefined) => trimTrailingSlashes((configured ?? "").trim());
 
 export const isPublicUrlConfigured = (configured: string | null | undefined): boolean => normalize(configured) !== "";
 

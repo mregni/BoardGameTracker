@@ -16,3 +16,15 @@ export interface ImportGame {
 	addedForExpansion?: boolean;
 	lockedByExpansion?: boolean;
 }
+
+export interface CsvRejectedRow {
+	line: number;
+	title: string;
+	bggId: number | null;
+	reason: string;
+}
+
+export interface CsvImportResult {
+	games: ImportGame[];
+	rejected: CsvRejectedRow[];
+}

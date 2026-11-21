@@ -1,4 +1,5 @@
 import { cx } from "class-variance-authority";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import Clock from "@/assets/icons/clock.svg?react";
 import Users from "@/assets/icons/users.svg?react";
@@ -10,11 +11,12 @@ import { formatRange } from "@/utils/rangeUtils";
 interface Props {
 	games: Game[];
 	onOpenGame?: (gameId: number) => void;
+	details?: (game: Game) => ReactNode;
 }
 
 const row = "flex min-h-14 w-full items-center gap-3 rounded-lg bg-white/5 p-2 pr-3 text-left";
 
-export const PlannedGameList = ({ games, onOpenGame }: Props) => {
+export const PlannedGameList = ({ games, onOpenGame, details }: Props) => {
 	const { t } = useTranslation("common");
 	const durationRange = useDurationRange();
 
@@ -46,6 +48,7 @@ export const PlannedGameList = ({ games, onOpenGame }: Props) => {
 									)}
 								</span>
 							)}
+							{details?.(game)}
 						</span>
 					</>
 				);

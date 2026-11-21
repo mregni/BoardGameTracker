@@ -18,6 +18,8 @@ public class DataMigrationTests : IAsyncLifetime
     private const string BeforeSoldState = "20261028123720_DropUnusedImages";
     private const string AddLaterGameColumns = "ALTER TABLE \"Games\" ADD COLUMN \"HasCoopMode\" boolean NOT NULL DEFAULT false, ADD COLUMN \"CoopByDefault\" boolean NOT NULL DEFAULT false";
     private const string DropLaterGameColumns = "ALTER TABLE \"Games\" DROP COLUMN \"HasCoopMode\", DROP COLUMN \"CoopByDefault\"";
+    private const string AddStorageColumns = "ALTER TABLE \"Games\" ADD COLUMN \"BoxOrientation\" integer NOT NULL DEFAULT 0, ADD COLUMN \"StorageLocationId\" integer, ADD COLUMN \"StoragePosition\" integer NOT NULL DEFAULT 0, ADD COLUMN \"StoredAtLocationId\" integer";
+    private const string DropStorageColumns = "ALTER TABLE \"Games\" DROP COLUMN \"BoxOrientation\", DROP COLUMN \"StorageLocationId\", DROP COLUMN \"StoragePosition\", DROP COLUMN \"StoredAtLocationId\"";
 
     private readonly string _database = "migrations_" + Guid.NewGuid().ToString("N");
     private NpgsqlDataSource _dataSource = null!;
@@ -55,6 +57,7 @@ public class DataMigrationTests : IAsyncLifetime
         {
             await context.GetService<IMigrator>().MigrateAsync(BeforeDataRepairs, TestContext.Current.CancellationToken);
             await context.Database.ExecuteSqlRawAsync(AddLaterGameColumns, TestContext.Current.CancellationToken);
+            await context.Database.ExecuteSqlRawAsync(AddStorageColumns, TestContext.Current.CancellationToken);
 
             var a = new Game("Brass", true, GameState.Owned);
             var b = new Game("Ark Nova", true, GameState.Owned);
@@ -74,6 +77,7 @@ public class DataMigrationTests : IAsyncLifetime
             gameA = a.Id;
             gameB = b.Id;
             await context.Database.ExecuteSqlRawAsync(DropLaterGameColumns, TestContext.Current.CancellationToken);
+            await context.Database.ExecuteSqlRawAsync(DropStorageColumns, TestContext.Current.CancellationToken);
         }
 
         await using (var context = CreateContext())
@@ -145,6 +149,7 @@ public class DataMigrationTests : IAsyncLifetime
         await using (var context = CreateContext())
         {
             await context.GetService<IMigrator>().MigrateAsync(BeforeSoldState, TestContext.Current.CancellationToken);
+            await context.Database.ExecuteSqlRawAsync(AddStorageColumns, TestContext.Current.CancellationToken);
 
             var sold = new Game("Brass", true, GameState.PreviouslyOwned);
             sold.UpdateSoldPrice(30m);
@@ -156,6 +161,7 @@ public class DataMigrationTests : IAsyncLifetime
             soldGame = sold.Id;
             keptGame = kept.Id;
             tradedGame = traded.Id;
+            await context.Database.ExecuteSqlRawAsync(DropStorageColumns, TestContext.Current.CancellationToken);
         }
 
         await using (var context = CreateContext())

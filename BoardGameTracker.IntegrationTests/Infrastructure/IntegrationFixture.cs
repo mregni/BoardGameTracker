@@ -39,8 +39,8 @@ public sealed class IntegrationFixture : IAsyncLifetime
 
     private WebApplicationFactory<Program> _factory = null!;
     private readonly List<WebApplicationFactory<Program>> _variants = [];
-    private readonly Dictionary<string, string> _tokens = new();
-    private readonly Dictionary<string, string?> _originalEnvironmentVariables = new();
+    private readonly Dictionary<string, string> _tokens = [];
+    private readonly Dictionary<string, string?> _originalEnvironmentVariables = [];
 
     private int _clients;
 

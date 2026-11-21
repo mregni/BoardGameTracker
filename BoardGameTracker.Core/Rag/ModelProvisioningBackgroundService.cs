@@ -27,8 +27,10 @@ public class ModelProvisioningBackgroundService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var delay = RetryDelay;
-        for (var attempt = 1; !stoppingToken.IsCancellationRequested; attempt++)
+        var attempt = 0;
+        while (!stoppingToken.IsCancellationRequested)
         {
+            attempt++;
             try
             {
                 using var scope = _scopeFactory.CreateScope();

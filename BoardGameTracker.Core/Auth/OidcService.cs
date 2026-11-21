@@ -738,7 +738,7 @@ public class OidcService : IOidcService
                 RequiredEndpoint(doc, "token_endpoint"),
                 OptionalEndpoint(doc, "userinfo_endpoint"),
                 OptionalEndpoint(doc, "end_session_endpoint"),
-                SigningAlgorithms(doc),
+                ReadSigningAlgorithms(doc),
                 OptionalEndpoint(doc, "jwks_uri")));
         }
     }
@@ -799,7 +799,7 @@ public class OidcService : IOidcService
         }
     }
 
-    private static List<string> SigningAlgorithms(JsonElement doc)
+    private static List<string> ReadSigningAlgorithms(JsonElement doc)
     {
         return doc.TryGetProperty("id_token_signing_alg_values_supported", out var value) && value.ValueKind == JsonValueKind.Array
             ? value.EnumerateArray()
@@ -815,16 +815,16 @@ public class OidcService : IOidcService
         return OptionalEndpoint(doc, name) ?? throw new DomainException(Constants.Errors.OidcDiscoveryFailed);
     }
 
+    private static string RequiredEndpoint(string? endpoint)
+    {
+        return string.IsNullOrWhiteSpace(endpoint) ? throw new DomainException(Constants.Errors.OidcDiscoveryFailed) : endpoint;
+    }
+
     private static string? OptionalEndpoint(JsonElement doc, string name)
     {
         return doc.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String && value.GetString() is { Length: > 0 } endpoint
             ? endpoint
             : null;
-    }
-
-    private static string RequiredEndpoint(string? endpoint)
-    {
-        return string.IsNullOrWhiteSpace(endpoint) ? throw new DomainException(Constants.Errors.OidcDiscoveryFailed) : endpoint;
     }
 
     private static string SecureEndpoint(string endpoint)

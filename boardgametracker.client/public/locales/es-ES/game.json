@@ -66,7 +66,8 @@
       "base": "Base game",
       "expansions": "Expansions owned",
       "together": "Together"
-    }
+    },
+    "base-stored": "Base game stored in {{path}}"
   },
   "manuals": {
     "title": "Manuales",
@@ -258,5 +259,11 @@
     "count_other": "Jugado {{count}} veces",
     "total": "{{duration}} en total",
     "last": "última partida {{relative}}"
+  },
+  "storage": {
+    "only-owned": "Only owned and for trade get a place",
+    "in-base-box": "Stored in the {{title}} box",
+    "expansions-elsewhere_one": "{{count}} expansion stored elsewhere",
+    "expansions-elsewhere_other": "{{count}} expansions stored elsewhere"
   }
 }

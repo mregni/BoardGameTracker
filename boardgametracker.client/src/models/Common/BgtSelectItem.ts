@@ -4,6 +4,7 @@ export interface BgtSelectItem {
 	group?: string;
 	disabled?: boolean;
 	hint?: string;
+	triggerLabel?: string;
 }
 
 export interface BgtSelectImageItem extends BgtSelectItem {

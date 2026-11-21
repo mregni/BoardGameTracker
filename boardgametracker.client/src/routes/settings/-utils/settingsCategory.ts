@@ -22,7 +22,7 @@ export const settingsSearchSchema = z.object({
 		.catch(undefined),
 });
 
-const userCategories: SettingsCategory[] = ["account"];
+const userCategories = new Set<SettingsCategory>(["account"]);
 
 export const resolveSettingsCategory = (
 	tab: SettingsCategory | undefined,
@@ -30,6 +30,6 @@ export const resolveSettingsCategory = (
 ): SettingsCategory => {
 	const fallback: SettingsCategory = canManageSettings ? "general" : "account";
 	if (!tab) return fallback;
-	if (!canManageSettings && !userCategories.includes(tab)) return fallback;
+	if (!canManageSettings && !userCategories.has(tab)) return fallback;
 	return tab;
 };

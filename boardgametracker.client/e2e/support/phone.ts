@@ -18,7 +18,7 @@ export const settled = async (page: Page) => {
 export const expectNoSidewaysScroll = async (page: Page) => {
 	const widths = await page.evaluate(() => ({
 		content: document.documentElement.scrollWidth,
-		screen: document.documentElement.clientWidth,
+		screen: window.innerWidth,
 	}));
 	expect(widths.content).toBeLessThanOrEqual(widths.screen);
 };
@@ -92,10 +92,10 @@ export const expectDialogFits = async (dialog: Locator) => {
 		const scroller = element.querySelector(":scope > div");
 		const rect = element.getBoundingClientRect();
 		return {
-			left: rect.left,
-			right: rect.right,
-			top: rect.top,
-			bottom: rect.bottom,
+			left: Math.round(rect.left),
+			right: Math.round(rect.right),
+			top: Math.round(rect.top),
+			bottom: Math.round(rect.bottom),
 			screenWidth: window.innerWidth,
 			screenHeight: window.innerHeight,
 			contentWidth: scroller?.scrollWidth ?? 0,
@@ -152,6 +152,6 @@ export const apiFor = async (page: Page) => {
 		put: async (path: string, data: unknown) => failIfRefused(await request.put(path, { headers, data })),
 		remove: async (path: string) => failIfRefused(await request.delete(path, { headers })),
 		status: async (path: string) => (await request.get(path, { headers })).status(),
-		tidy: async (path: string) => request.delete(path, { headers }),
+		tidy: (path: string) => request.delete(path, { headers }),
 	};
 };

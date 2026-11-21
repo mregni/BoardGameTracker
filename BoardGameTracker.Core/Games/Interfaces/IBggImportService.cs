@@ -8,5 +8,6 @@ public interface IBggImportService
 {
     Task<Game?> ImportGameFromBgg(BggSearch search);
     Task<IList<BggImportGame>> ImportBggCollection(string userName, CancellationToken cancellationToken = default);
+    Task<CsvImportResult> ImportCsv(string csv);
     Task ImportList(IList<ImportGame> games);
 }

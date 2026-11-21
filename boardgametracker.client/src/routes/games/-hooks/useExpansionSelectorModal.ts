@@ -22,7 +22,7 @@ export const useExpansionSelectorModal = ({ gameId }: Props) => {
 
 	const mutateExpasions = useMutation({
 		mutationFn: saveGameExpansionCall,
-		onSuccess: async () => {
+		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, gameId] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
 		},

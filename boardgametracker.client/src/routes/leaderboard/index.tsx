@@ -53,15 +53,15 @@ function RouteComponent() {
 	);
 
 	const mostSessions = Math.max(0, ...(leaderboard?.players.map((entry) => entry.playCount) ?? []));
-	const lowerMinimum = MIN_SESSION_OPTIONS.filter(
+	const lowerMinimum = MIN_SESSION_OPTIONS.findLast(
 		(count) => count <= mostSessions && count < (leaderboard?.minimumSessions ?? 0),
-	).at(-1);
+	);
 
 	const gameTitle = search.game ? games.find((game) => game.id === search.game)?.title : undefined;
 	const podium = podiumPlayers(leaderboard?.players ?? []);
 	const rest = leaderboard?.players.filter((entry) => !podium.includes(entry)) ?? [];
 
-	if (!isLoading && leaderboard && leaderboard.players.length === 0 && !hasActiveFilters(search)) {
+	if (!isLoading && leaderboard?.players.length === 0 && !hasActiveFilters(search)) {
 		return (
 			<BgtEmptyPage
 				header={t("title")}
@@ -96,10 +96,7 @@ function RouteComponent() {
 							<>
 								<LeaderboardRules leaderboard={leaderboard} />
 								{leaderboard.rankedCount === 0 && (
-									<div
-										role="status"
-										className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-card-border bg-card px-4 py-3"
-									>
+									<output className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-card-border bg-card px-4 py-3">
 										<p className="text-sm text-white/80">
 											{t("ranking.nobody-ranked", { count: leaderboard.minimumSessions })}
 										</p>
@@ -112,7 +109,7 @@ function RouteComponent() {
 												{t("ranking.lower-minimum", { count: lowerMinimum })}
 											</BgtButton>
 										)}
-									</div>
+									</output>
 								)}
 								<LeaderboardPodium players={leaderboard.players} rankBy={leaderboard.rankBy} />
 								<LeaderboardTiles leaderboard={leaderboard} podium={podium} />

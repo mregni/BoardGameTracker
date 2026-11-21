@@ -1,10 +1,10 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.ChangeDetection.Interfaces;
-using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Maintenance;

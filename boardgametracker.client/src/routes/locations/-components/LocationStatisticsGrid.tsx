@@ -5,19 +5,21 @@ import type { LocationStatistics } from "@/models";
 
 interface Props {
 	playCount: number;
+	storedCount: number;
 	statistics: LocationStatistics;
 }
 
 export const LocationStatisticsGrid = (props: Props) => {
-	const { playCount, statistics } = props;
+	const { playCount, storedCount, statistics } = props;
 	const { t } = useTranslation("location");
 	const shortDuration = useShortDuration();
 
 	const playTime = shortDuration(statistics.totalPlayedTime);
 
 	return (
-		<div className="grid grid-cols-2 md:grid-cols-4 gap-3 xl:gap-6">
+		<div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 xl:gap-6">
 			<BgtTextStatistic content={playCount} title={t("detail.sessions")} textSize="4" />
+			<BgtTextStatistic content={storedCount} title={t("detail.stored")} textSize="4" />
 			<BgtTextStatistic content={statistics.distinctGameCount} title={t("detail.games")} textSize="4" />
 			<BgtTextStatistic content={statistics.distinctPlayerCount} title={t("detail.players")} textSize="4" />
 			<BgtTextStatistic content={playTime} title={t("detail.play-time")} textSize="4" />

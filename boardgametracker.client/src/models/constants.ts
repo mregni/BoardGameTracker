@@ -17,6 +17,7 @@ export const QUERY_KEYS = {
 	expansions: "expansions",
 	manuals: "manuals",
 	locations: "locations",
+	storage: "storage",
 	dashboard: "dashboard",
 	charts: "charts",
 	languages: "languages",

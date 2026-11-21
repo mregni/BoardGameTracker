@@ -1,7 +1,7 @@
-using BoardGameTracker.Common.DTOs.Commands;
-using BoardGameTracker.Common.DTOs;
-using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Loans.Interfaces;
 using Microsoft.AspNetCore.Authorization;

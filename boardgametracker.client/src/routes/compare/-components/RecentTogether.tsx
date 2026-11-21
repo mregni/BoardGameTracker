@@ -86,12 +86,10 @@ export const RecentTogether = ({ sessions, playerOne, playerTwo, dateFormat, uiL
 			<ul className="flex flex-col gap-1.5">
 				{sessions.slice(0, RECENT_ROWS).map((session) => {
 					const game = gameById(session.gameId);
-					const scores =
-						session.outcome === "sameTeam"
-							? ` · ${t("recent.same-team")}`
-							: session.playerOneScore !== null && session.playerTwoScore !== null
-								? ` · ${number(session.playerOneScore)} – ${number(session.playerTwoScore)}`
-								: "";
+					let scores = "";
+					if (session.outcome === "sameTeam") scores = ` · ${t("recent.same-team")}`;
+					else if (session.playerOneScore !== null && session.playerTwoScore !== null)
+						scores = ` · ${number(session.playerOneScore)} – ${number(session.playerTwoScore)}`;
 					const content = (
 						<>
 							<span className="col-start-2 row-start-2 whitespace-nowrap text-xs tabular-nums text-white/60 sm:col-start-1 sm:row-start-1">

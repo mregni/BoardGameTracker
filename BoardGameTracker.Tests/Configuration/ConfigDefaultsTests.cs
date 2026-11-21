@@ -8,40 +8,40 @@ namespace BoardGameTracker.Tests.Configuration;
 
 public class ConfigDefaultsTests
 {
-    public static IEnumerable<object[]> ExpectedDefaults()
+    public static TheoryData<string, string> ExpectedDefaults => new()
     {
-        yield return new object[] { AppConfig.Currency, "€" };
-        yield return new object[] { AppConfig.DateFormat, "dd-MM-yyyy" };
-        yield return new object[] { AppConfig.TimeFormat, "HH:mm" };
-        yield return new object[] { AppConfig.UiLanguage, "en-us" };
-        yield return new object[] { AppConfig.ShelfOfShameEnabled, "true" };
-        yield return new object[] { AppConfig.ShelfOfShameMonths, "6" };
-        yield return new object[] { AppConfig.GameNightsEnabled, "true" };
-        yield return new object[] { AppConfig.PublicUrl, "" };
-        yield return new object[] { AppConfig.RsvpAuthenticationEnabled, "false" };
-        yield return new object[] { BggConfig.ApiKey, "" };
-        yield return new object[] { ChangeDetectionConfig.BaseUrl, "" };
-        yield return new object[] { ChangeDetectionConfig.ApiKey, "" };
-        yield return new object[] { AiConfig.Provider, "ollama" };
-        yield return new object[] { AiConfig.BaseUrl, "http://ollama:11434" };
-        yield return new object[] { AiConfig.ChatModel, "qwen3:4b" };
-        yield return new object[] { AiConfig.ApiKey, "" };
-        yield return new object[] { AiConfig.EmbeddingBaseUrl, "http://ollama:11434" };
-        yield return new object[] { AiConfig.EmbeddingNumGpu, "-1" };
-        yield return new object[] { AiConfig.TopK, "5" };
-        yield return new object[] { UpdateConfig.Track, "stable" };
-        yield return new object[] { UpdateConfig.CheckEnabled, "true" };
-        yield return new object[] { UpdateConfig.CheckIntervalHours, "24" };
-        yield return new object[] { UpdateConfig.CheckError, "" };
-        yield return new object[] { UpdateConfig.CheckLastRun, "" };
-        yield return new object[] { UpdateConfig.AvailableVersion, "" };
-        yield return new object[] { UpdateConfig.Available, "false" };
-    }
+        { AppConfig.Currency, "€" },
+        { AppConfig.DateFormat, "dd-MM-yyyy" },
+        { AppConfig.TimeFormat, "HH:mm" },
+        { AppConfig.UiLanguage, "en-us" },
+        { AppConfig.ShelfOfShameEnabled, "true" },
+        { AppConfig.ShelfOfShameMonths, "6" },
+        { AppConfig.GameNightsEnabled, "true" },
+        { AppConfig.PublicUrl, "" },
+        { AppConfig.RsvpAuthenticationEnabled, "false" },
+        { BggConfig.ApiKey, "" },
+        { ChangeDetectionConfig.BaseUrl, "" },
+        { ChangeDetectionConfig.ApiKey, "" },
+        { AiConfig.Provider, "ollama" },
+        { AiConfig.BaseUrl, "http://ollama:11434" },
+        { AiConfig.ChatModel, "qwen3:4b" },
+        { AiConfig.ApiKey, "" },
+        { AiConfig.EmbeddingBaseUrl, "http://ollama:11434" },
+        { AiConfig.EmbeddingNumGpu, "-1" },
+        { AiConfig.TopK, "5" },
+        { UpdateConfig.Track, "stable" },
+        { UpdateConfig.CheckEnabled, "true" },
+        { UpdateConfig.CheckIntervalHours, "24" },
+        { UpdateConfig.CheckError, "" },
+        { UpdateConfig.CheckLastRun, "" },
+        { UpdateConfig.AvailableVersion, "" },
+        { UpdateConfig.Available, "false" },
+    };
 
     [Fact]
     public void All_ShouldContainExactlyTheExpectedKeys()
     {
-        var expectedKeys = ExpectedDefaults().Select(x => (string)x[0]);
+        var expectedKeys = ExpectedDefaults.Select(x => x.Data.Item1);
 
         ConfigDefaults.All.Select(x => x.Key).Should().BeEquivalentTo(expectedKeys);
     }

@@ -1,28 +1,71 @@
 import { useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
+import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { PlannedGameList } from "@/components/GameNight/PlannedGameList";
 import { RsvpGroups } from "@/components/GameNight/RsvpGroups";
 import { RsvpProgress } from "@/components/GameNight/RsvpProgress";
-import { type GameNight, GameNightRsvpState } from "@/models";
+import { useStorageData } from "@/hooks/useStorage";
+import { type Game, type GameNight, GameNightRsvpState } from "@/models";
+import { canStore, placeLabel, placeOf } from "@/utils/storage";
 import { useInviteLink } from "../-hooks/useInviteLink";
 import { NightSectionTitle } from "./NightSectionTitle";
 
 interface Props {
 	gameNight: GameNight;
+	games: Game[];
 	canWrite: boolean;
 	showGames: boolean;
 	onManageRsvps: () => void;
 }
 
-export const NightPlanPanel = ({ gameNight, canWrite, showGames, onManageRsvps }: Props) => {
-	const { t } = useTranslation("game-nights");
+const bringAlong = (game: Game, locationId: number) => {
+	if (!canStore(game.state)) return null;
+	if (game.isLoaned) return "loaned";
+	const place = placeOf(game);
+	if (!place) return "unplaced";
+	return place.locationId === locationId ? "here" : "bring";
+};
+
+export const NightPlanPanel = ({ gameNight, games, canWrite, showGames, onManageRsvps }: Props) => {
+	const { t } = useTranslation(["game-nights", "storage"]);
 	const navigate = useNavigate();
 	const { copied, copy } = useInviteLink(gameNight);
+	const { nodes, locations } = useStorageData();
 	const waiting = gameNight.invitedPlayers.filter((rsvp) => rsvp.state === GameNightRsvpState.Pending).length;
+	const plannedGames = gameNight.suggestedGames.map((game) => games.find((x) => x.id === game.id) ?? game);
+	const toBring = plannedGames.filter((game) => bringAlong(game, gameNight.locationId) === "bring").length;
+
+	const storageLine = (game: Game) => {
+		const status = bringAlong(game, gameNight.locationId);
+		if (!status) return null;
+		const place = placeOf(game);
+		return (
+			<span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/50">
+				<span className="wrap-anywhere">
+					{place ? placeLabel(place, nodes, locations, t) : t("storage:place.none")}
+				</span>
+				{status === "loaned" && (
+					<BgtBadge color="neutral" size="sm">
+						{t("planned.loaned")}
+					</BgtBadge>
+				)}
+				{status === "bring" && (
+					<BgtBadge color="warn" size="sm">
+						{t("planned.bring-along")}
+					</BgtBadge>
+				)}
+				{status === "here" && (
+					<BgtBadge color="ok" size="sm">
+						{t("planned.at-location", { location: gameNight.location.name })}
+					</BgtBadge>
+				)}
+			</span>
+		);
+	};
 
 	return (
 		<div
@@ -56,13 +99,26 @@ export const NightPlanPanel = ({ gameNight, canWrite, showGames, onManageRsvps }
 
 			{showGames && (
 				<section className="flex flex-col gap-2" aria-labelledby="planned-games">
-					<NightSectionTitle id="planned-games">{t("planned.title")}</NightSectionTitle>
-					{gameNight.suggestedGames.length === 0 ? (
+					<div className="flex items-center gap-3">
+						<div className="min-w-0 flex-1">
+							<NightSectionTitle id="planned-games">{t("planned.title")}</NightSectionTitle>
+						</div>
+						{toBring > 0 && (
+							<BgtBadge color="warn" size="sm" className="shrink-0">
+								{t("planned.to-bring", { count: toBring })}
+							</BgtBadge>
+						)}
+					</div>
+					{plannedGames.length === 0 ? (
 						<BgtText size="2" color="gray">
 							{t("plan.no-games")}
 						</BgtText>
 					) : (
-						<PlannedGameList games={gameNight.suggestedGames} onOpenGame={(id) => navigate({ to: `/games/${id}` })} />
+						<PlannedGameList
+							games={plannedGames}
+							onOpenGame={(id) => navigate({ to: `/games/${id}` })}
+							details={storageLine}
+						/>
 					)}
 				</section>
 			)}

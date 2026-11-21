@@ -98,6 +98,9 @@ public static class Constants
         public const string TooManyRequests = "error.auth.too-many-requests";
         public const string GameAlreadyExists = "error.game.already-exists";
         public const string ExpansionAlreadyExists = "error.game.expansion-already-exists";
+        public const string CsvImportEmpty = "error.import.csv-empty";
+        public const string CsvImportMissingObjectId = "error.import.csv-missing-objectid";
+        public const string CsvImportTooManyRows = "error.import.csv-too-many-rows";
         public const string PlayerRangeIncomplete = "error.game.player-range-incomplete";
         public const string PlayTimeRangeIncomplete = "error.game.play-time-range-incomplete";
         public const string RangeMinAboveMax = "error.game.range-min-above-max";
@@ -131,6 +134,12 @@ public static class Constants
         public const string PlayerNameAlreadyExists = "error.player.name-already-exists";
         public const string LocationNameRequired = "error.location.name-required";
         public const string LocationNameAlreadyExists = "error.location.name-already-exists";
+        public const string StorageNameRequired = "error.storage.name-required";
+        public const string StorageInvalidLayout = "error.storage.invalid-layout";
+        public const string StorageInvalidSize = "error.storage.invalid-size";
+        public const string StorageNotACabinet = "error.storage.not-a-cabinet";
+        public const string StorageInvalidParent = "error.storage.invalid-parent";
+        public const string StorageNotAllowedForState = "error.storage.not-allowed-for-state";
         public const string SessionStartInFuture = "error.session.start-in-future";
         public const string HostRsvpLocked = "error.game-night.host-rsvp-locked";
         public const string RsvpClosed = "error.game-night.rsvp-closed";

@@ -26,15 +26,15 @@ public class UpdateControllerTests
         _updateServiceMock.VerifyNoOtherCalls();
     }
 
-    public static TheoryData<UpdateStatus> UpdateStatuses => new()
-    {
+    public static TheoryData<UpdateStatus> UpdateStatuses =>
+    [
         new UpdateStatus { CurrentVersion = "1.0.0", LatestVersion = "1.2.0", UpdateAvailable = true, LastChecked = DateTime.UtcNow, ErrorMessage = null },
         new UpdateStatus { CurrentVersion = "3.0.0", LatestVersion = "3.0.0", UpdateAvailable = false, LastChecked = DateTime.UtcNow, ErrorMessage = null },
         new UpdateStatus { CurrentVersion = "2.0.0", LatestVersion = null, UpdateAvailable = false, LastChecked = DateTime.UtcNow, ErrorMessage = "Network timeout" }
-    };
+    ];
 
     [Theory]
-    [MemberData(nameof(UpdateStatuses))]
+    [MemberData(nameof(UpdateStatuses), DisableDiscoveryEnumeration = true)]
     public async Task CheckNow_ShouldCheckForUpdatesAndReturnStatus(UpdateStatus updateStatus)
     {
         _updateServiceMock

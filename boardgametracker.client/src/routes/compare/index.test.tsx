@@ -85,18 +85,18 @@ describe("Compare page", () => {
 		mocks.i18n = await createCompareI18n("en-US");
 	});
 
-	it("keeps valid player ids in the search and drops invalid ones", () => {
-		const { parse } = mocks.captured.config.validateSearch;
-		expect(parse({ left: 1, right: 2 })).toEqual({ left: 1, right: 2 });
-		expect(parse({ left: "abc", right: 2 })).toEqual({ right: 2 });
-	});
-
 	beforeEach(() => {
 		mocks.search = {};
 		mocks.players = [playerOne, playerTwo, reggi];
 		mocks.navigate.mockReset();
 		mocks.getCompareCall.mockReset().mockResolvedValue(compareResult());
 		mocks.getDefaultPairCall.mockReset().mockResolvedValue({ playerOneId: 2, playerTwoId: 3, sessionCount: 8 });
+	});
+
+	it("keeps valid player ids in the search and drops invalid ones", () => {
+		const { parse } = mocks.captured.config.validateSearch;
+		expect(parse({ left: 1, right: 2 })).toEqual({ left: 1, right: 2 });
+		expect(parse({ left: "abc", right: 2 })).toEqual({ right: 2 });
 	});
 
 	it("reads Player vs player and uses the sidebar's compare icon in the page header", async () => {

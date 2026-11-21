@@ -23,7 +23,7 @@ export interface Player {
 
 export const CreatePlayerSchema = z.object({
 	name: z.string().trim().min(1, { message: "player:name.required" }),
-	email: z.string().email({ message: "player:email.invalid" }).or(z.literal("")).optional(),
+	email: z.email({ message: "player:email.invalid" }).or(z.literal("")).optional(),
 });
 
 export const UpdatePlayerSchema = CreatePlayerSchema.extend({

@@ -28,11 +28,11 @@ public class Player : HasId
         Name = name;
         UpdateImage(image);
         Email = email;
-        PlayerSessions = new List<PlayerSession>();
-        Badges = new List<Badge>();
-        PlayerBadges = new List<PlayerBadge>();
-        Loans = new List<Loan>();
-        GameNightRsvps = new List<GameNightRsvp>();
+        PlayerSessions = [];
+        Badges = [];
+        PlayerBadges = [];
+        Loans = [];
+        GameNightRsvps = [];
     }
 
     public void UpdateName(string name)

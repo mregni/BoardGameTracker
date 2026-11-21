@@ -34,6 +34,12 @@
       "game-nights_one": "{{count}} spelavond is eraan gekoppeld.",
       "game-nights_other": "{{count}} spelavonden zijn eraan gekoppeld.",
       "hint": "Verplaats ze eerst naar een andere locatie voor je deze verwijdert."
+    },
+    "storage": {
+      "inside_one": "{{count}} storage location inside it is deleted too.",
+      "inside_other": "{{count}} storage locations inside it are deleted too.",
+      "unplaced_one": "{{count}} game loses its storage location and shows up in Needs a place on the Storage page.",
+      "unplaced_other": "{{count}} games lose their storage location and show up in Needs a place on the Storage page."
     }
   },
   "detail": {
@@ -68,7 +74,16 @@
     "more-players_one": "+{{count}} andere speler",
     "more-players_other": "+{{count}} andere spelers",
     "all-sessions": "Alle sessies ({{count}})",
-    "no-sessions-hint": "Kies deze locatie wanneer je een sessie registreert, dan verschijnt die hier."
+    "no-sessions-hint": "Kies deze locatie wanneer je een sessie registreert, dan verschijnt die hier.",
+    "stored": "Games stored",
+    "no-sessions": "No sessions played here yet.",
+    "storage": {
+      "title": "Storage",
+      "open": "Open in Storage",
+      "empty": "Nothing is stored here yet.",
+      "count_one": "game",
+      "count_other": "games"
+    }
   },
   "error": {
     "title": "Locaties konden niet geladen worden",
@@ -79,7 +94,9 @@
     "clear": "Filter wissen"
   },
   "tile": {
-    "last-played": "laatst gespeeld {{when}}"
+    "last-played": "laatst gespeeld {{when}}",
+    "stored_one": "game stored",
+    "stored_other": "games stored"
   },
   "sort": {
     "label": "Locaties sorteren",

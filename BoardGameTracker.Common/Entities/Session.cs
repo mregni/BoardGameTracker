@@ -51,8 +51,8 @@ public class Session : HasId
         _start = start;
         End = end; // Use property setter for validation
         Comment = comment;
-        Expansions = new List<Expansion>();
-        PlayerSessions = new List<PlayerSession>();
+        Expansions = [];
+        PlayerSessions = [];
     }
 
     public void UpdateComment(string comment)

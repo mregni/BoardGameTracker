@@ -1857,7 +1857,7 @@ public class OidcFlowTests : IDisposable
     private sealed class FakeIdentityProviderHandler : HttpMessageHandler
     {
         private readonly string _authority;
-        private readonly Dictionary<string, (string Challenge, string Nonce)> _codes = new();
+        private readonly Dictionary<string, (string Challenge, string Nonce)> _codes = [];
 
         public FakeIdentityProviderHandler(string authority)
         {
@@ -1881,7 +1881,7 @@ public class OidcFlowTests : IDisposable
         public bool OmitAccessToken { get; set; }
         public List<string> Paths { get; } = [];
         public string? NonceOverride { get; set; }
-        public Dictionary<string, object> User { get; set; } = new();
+        public Dictionary<string, object> User { get; set; } = [];
         public Dictionary<string, object>? UserInfo { get; set; }
         public Dictionary<string, string>? TokenRequest { get; private set; }
         public string? LastIdToken { get; private set; }

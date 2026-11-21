@@ -34,12 +34,11 @@ export const GameNightNudge = ({ statistics, shames, dateFormat, canPlan }: Prop
 	const nights = new Set(
 		shames.filter((shame) => shame.plannedGameNightId !== null).map((shame) => shame.plannedGameNightId),
 	);
-	const progress =
-		planned === 0
-			? canPlan && t("nudge.pick")
-			: nights.size > 1
-				? t("nudge.planned-across", { count: planned, nights: nights.size })
-				: t("nudge.planned", { count: planned });
+	const plannedText =
+		nights.size > 1
+			? t("nudge.planned-across", { count: planned, nights: nights.size })
+			: t("nudge.planned", { count: planned });
+	const progress = planned === 0 ? canPlan && t("nudge.pick") : plannedText;
 
 	return (
 		<p

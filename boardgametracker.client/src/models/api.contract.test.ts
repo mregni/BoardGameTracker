@@ -1,4 +1,4 @@
-import { describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import type {
 	Badge,
 	CompareGame,
@@ -47,6 +47,7 @@ import type {
 	ShameGameNight,
 	ShameStatistics,
 	StartRunningGame,
+	StorageLocation,
 	UpdateAttendance,
 	UpdateExpansion,
 } from "@/models";
@@ -65,6 +66,18 @@ import type { ExternalLogin, OidcDiscoveryResult, OidcProviderConfig, OidcSetup 
 import type { Loan } from "@/models/Loan/Loan";
 import type { IntegrationStatus } from "@/models/Settings/IntegrationStatus";
 import type { VersionInfo } from "@/models/Settings/VersionInfo";
+import type {
+	ArrangeStorage,
+	AssignStorage,
+	BoxOrientation,
+	CreateStorageLocation,
+	MoveStorageLocation,
+	StorageItemReference,
+	StorageItemType,
+	StorageLayout,
+	UpdateBoxOrientation,
+	UpdateStorageLocation,
+} from "@/models/Storage/StorageLocation";
 import type { components } from "./api.generated";
 
 type Schemas = components["schemas"];
@@ -81,13 +94,13 @@ type SameUnion<A, B> = [A] extends [B]
 		: { onlyInApi: Exclude<A, B> }
 	: { onlyInFrontend: Exclude<B, A> };
 
-const sameKeys = <Model, Schema>(_aligned: KeyDrift<Model, Schema>) => undefined;
+const sameKeys = <Model, Schema>(aligned: KeyDrift<Model, Schema>) => expect(aligned).toBe(true);
 const coversApiKeys = <Model, Schema>(
-	_aligned: [Exclude<keyof Schema, keyof Model>] extends [never]
+	aligned: [Exclude<keyof Schema, keyof Model>] extends [never]
 		? true
 		: { onlyInApi: Exclude<keyof Schema, keyof Model> },
-) => undefined;
-const sameValues = <A, B>(_aligned: SameUnion<A, B>) => undefined;
+) => expect(aligned).toBe(true);
+const sameValues = <A, B>(aligned: SameUnion<A, B>) => expect(aligned).toBe(true);
 
 describe("API contract", () => {
 	it("keeps the response models aligned with the generated schemas", () => {
@@ -99,6 +112,7 @@ describe("API contract", () => {
 		sameKeys<Expansion, Schemas["ExpansionDto"]>(true);
 		sameKeys<Location, Schemas["LocationDto"]>(true);
 		sameKeys<LocationStatistics, Schemas["LocationStatisticsDto"]>(true);
+		sameKeys<StorageLocation, Schemas["StorageLocationDto"]>(true);
 		sameKeys<PlayerOverview, Schemas["PlayerOverviewDto"]>(true);
 		sameKeys<Loan, Schemas["LoanDto"]>(true);
 		sameKeys<GameNight, Schemas["GameNightDto"]>(true);
@@ -158,6 +172,13 @@ describe("API contract", () => {
 		coversApiKeys<CreatePlayer, Omit<Schemas["CreatePlayerCommand"], "image">>(true);
 		sameKeys<CreateLocation, Schemas["CreateLocationCommand"]>(true);
 		sameKeys<UpdateExpansion, Schemas["UpdateExpansionCommand"]>(true);
+		sameKeys<CreateStorageLocation, Schemas["CreateStorageLocationCommand"]>(true);
+		sameKeys<UpdateStorageLocation, Schemas["UpdateStorageLocationCommand"]>(true);
+		sameKeys<MoveStorageLocation, Schemas["MoveStorageLocationCommand"]>(true);
+		sameKeys<StorageItemReference, Schemas["StorageItemReference"]>(true);
+		sameKeys<AssignStorage, Schemas["AssignStorageCommand"]>(true);
+		sameKeys<ArrangeStorage, Schemas["ArrangeStorageCommand"]>(true);
+		sameKeys<UpdateBoxOrientation, Schemas["UpdateBoxOrientationCommand"]>(true);
 		sameKeys<CreateSession, Schemas["CreateSessionCommand"]>(true);
 		sameKeys<StartRunningGame, Schemas["StartRunningGameCommand"]>(true);
 		sameKeys<UpdateAttendance, Schemas["UpdateAttendanceCommand"]>(true);
@@ -168,6 +189,9 @@ describe("API contract", () => {
 	it("keeps the string enums aligned", () => {
 		sameValues<Schemas["GameState"], `${Game["state"]}`>(true);
 		sameValues<Schemas["BadgeType"], `${Badge["type"]}`>(true);
+		sameValues<Schemas["StorageLayout"], `${StorageLayout}`>(true);
+		sameValues<Schemas["BoxOrientation"], `${BoxOrientation}`>(true);
+		sameValues<Schemas["StorageItemType"], `${StorageItemType}`>(true);
 		sameValues<Schemas["CompareOutcome"], CompareGame["lastOutcome"]>(true);
 		sameValues<Schemas["GameNightStatisticsPeriod"], `${GameNightStatisticsPeriod}`>(true);
 		sameValues<Schemas["IntegrationKind"], IntegrationStatus["integration"]>(true);

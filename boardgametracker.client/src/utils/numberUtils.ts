@@ -164,7 +164,7 @@ export const parseDecimal = (input: string | null | undefined, locale?: string |
 			? compact.replace(/[.,]/g, "")
 			: `${compact.slice(0, decimalIndex).replace(/[.,]/g, "")}.${compact.slice(decimalIndex + 1)}`;
 
-	if (!/^[+-]?(\d+\.?\d*|\.\d+)$/.test(normalized)) {
+	if (!/^[+-]?(\d+(\.\d*)?|\.\d+)$/.test(normalized)) {
 		return null;
 	}
 

@@ -142,8 +142,9 @@ public class PlayerLinkPromptService : IPlayerLinkPromptService
     {
         var options = new[] { user.DisplayName, user.UserName }
             .Select(n => n?.Trim())
-            .Where(n => !string.IsNullOrEmpty(n))
-            .Select(n => n!.Length > MaxPlayerNameLength ? n[..MaxPlayerNameLength].TrimEnd() : n!)
+            .OfType<string>()
+            .Where(n => n.Length > 0)
+            .Select(n => n.Length > MaxPlayerNameLength ? n[..MaxPlayerNameLength].TrimEnd() : n)
             .ToList();
 
         return options.FirstOrDefault(o => !existing.Exists(p => string.Equals(p.Name.Trim(), o, StringComparison.OrdinalIgnoreCase)))

@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Package from "@/assets/icons/package.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
@@ -13,13 +13,18 @@ import {
 } from "@/components/BgtDialog";
 import { BgtSimpleInputField, BgtSimpleSelect } from "@/components/BgtForm";
 import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
+import { ExpansionStorageField } from "@/components/BgtStorage/ExpansionStorageField";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { useDecimalInput } from "@/hooks/useDecimalInput";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
+import { useStorageData } from "@/hooks/useStorage";
 import { type Expansion, GameState } from "@/models";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
+import { placeLabel, type StoragePlace } from "@/utils/storage";
+import { PriceInput } from "./PriceInput";
 
 interface Props {
+	gameTitle: string;
+	gamePlace: StoragePlace | null;
 	gamePrice: number | null;
 	expansions: Expansion[];
 	open: boolean;
@@ -33,43 +38,10 @@ interface Props {
 	onUpdateExpansion: (expansion: Expansion) => void;
 }
 
-interface PriceInputProps {
-	value: number | null;
-	onCommit: (value: number | null) => void;
-	ariaLabel: string;
-	placeholder: string;
-	currency?: string;
-	prefix?: string;
-}
-
-const PriceInput = ({ value, onCommit, ariaLabel, placeholder, currency, prefix }: PriceInputProps) => {
-	const [current, setCurrent] = useState<number | null>(value);
-	useEffect(() => setCurrent(value), [value]);
-	const decimal = useDecimalInput(current, setCurrent);
-
-	return (
-		<BgtSimpleInputField
-			type="text"
-			inputMode="decimal"
-			value={decimal.value}
-			onChange={(event) => decimal.onChange(event.target.value)}
-			onBlur={() => {
-				decimal.onBlur();
-				if (current !== value && (current === null || current >= 0)) {
-					onCommit(current);
-				}
-			}}
-			placeholder={placeholder}
-			prefixLabel={prefix}
-			suffixLabel={currency}
-			ariaLabel={ariaLabel}
-			className="w-full"
-		/>
-	);
-};
-
 export const ExpansionsDialog = (props: Props) => {
 	const {
+		gameTitle,
+		gamePlace,
 		gamePrice,
 		expansions,
 		open,
@@ -84,6 +56,7 @@ export const ExpansionsDialog = (props: Props) => {
 	} = props;
 	const { t } = useTranslation(["game", "common"]);
 	const { price } = useNumberFormat();
+	const { nodes, locations } = useStorageData();
 	const [title, setTitle] = useState("");
 	const [saving, setSaving] = useState(false);
 
@@ -96,7 +69,7 @@ export const ExpansionsDialog = (props: Props) => {
 		.reduce((sum, expansion) => sum + (expansion.buyingPrice ?? 0), 0);
 	const formatPrice = (value: number) => price(value, currency ?? "");
 
-	const submitManual = async (event: FormEvent<HTMLFormElement>) => {
+	const submitManual = async (event: SubmitEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		const trimmed = title.trim();
 		if (!trimmed) return;
@@ -117,7 +90,10 @@ export const ExpansionsDialog = (props: Props) => {
 					<Package className="size-5 text-primary" />
 					{`${t("expansions.title")} (${expansions.length})`}
 				</BgtDialogTitle>
-				<BgtDialogDescription>{t("expansions.description")}</BgtDialogDescription>
+				<BgtDialogDescription>
+					{t("expansions.description")}
+					{gamePlace && ` ${t("expansions.base-stored", { path: placeLabel(gamePlace, nodes, locations, t) })}`}
+				</BgtDialogDescription>
 				<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
 					{expansions.length === 0 ? (
 						<div className="py-8 text-center text-sm text-white/50">{t("expansions.none")}</div>
@@ -187,6 +163,15 @@ export const ExpansionsDialog = (props: Props) => {
 											)}
 										</dl>
 									)}
+									<div
+										className={
+											canWrite
+												? "col-span-3 col-start-1 min-w-0 sm:col-span-4 sm:col-start-2"
+												: "col-span-2 col-start-2 min-w-0 sm:col-span-4"
+										}
+									>
+										<ExpansionStorageField expansion={expansion} baseTitle={gameTitle} canWrite={canWrite} />
+									</div>
 									{canWrite && (
 										<div className="col-start-3 row-start-1 sm:col-start-5">
 											<BgtIconButton

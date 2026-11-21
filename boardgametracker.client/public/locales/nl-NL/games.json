@@ -11,11 +11,16 @@
       },
       "title": "Spellen importeren van BoardGameGeek",
       "description": "Importeer je spelcollectie van BoardGameGeek. In de volgende stap kies je welke spellen je wilt importeren.",
-      "button": "Spellen importeren"
+      "button": "Spellen importeren",
+      "csv": {
+        "description": "Of upload een CSV-bestand: een collectie-export van BoardGameGeek, of je eigen bestand met minstens een kolom objectid. Uitbreidingen worden automatisch aan hun basisspel gekoppeld.",
+        "button": "CSV-bestand uploaden",
+        "uploading": "CSV-bestand lezen..."
+      }
     },
     "start-import": "Import starten ({{count}}/{{totalCount}})",
-    "intro_one": "We vonden {{count}} spel in je BGG-collectie, waarvan er {{collectionCount}} al in je lokale collectie staan. Kies welke spellen je wilt importeren. Kies maximaal {{maxImport}} spellen tegelijk, zo wordt de BGG-website niet overbelast.",
-    "intro_other": "We vonden {{count}} spellen in je BGG-collectie, waarvan er {{collectionCount}} al in je lokale collectie staan. Kies welke spellen je wilt importeren. Kies maximaal {{maxImport}} spellen tegelijk, zo wordt de BGG-website niet overbelast.",
+    "intro_one": "We vonden {{count}} spel in je BGG-collectie, waarvan er {{collectionCount}} al in je lokale collectie staan. Kies welke spellen je wilt importeren.",
+    "intro_other": "We vonden {{count}} spellen in je BGG-collectie, waarvan er {{collectionCount}} al in je lokale collectie staan. Kies welke spellen je wilt importeren.",
     "error-title": "BGG-collectie laden mislukt",
     "hide-collected": "Verberg spellen die al in je collectie staan",
     "error-rate-limited": "BoardGameGeek beperkt het aantal aanvragen voor je API-sleutel. Wacht een minuut en probeer het opnieuw.",
@@ -27,7 +32,25 @@
     "failed-preparing": "BoardGameGeek is de gegevens nog aan het voorbereiden. Probeer de import zo opnieuw.",
     "failed-timeout": "De import duurde te lang. Selecteer minder spellen of probeer het zo opnieuw.",
     "failed-unauthorized": "BoardGameGeek weigerde de aanvraag. Controleer de API-sleutel in de instellingen.",
-    "failed-unknown": "Importeren van spellen van BoardGameGeek mislukt, bekijk de logs voor meer details."
+    "failed-unknown": "Importeren van spellen van BoardGameGeek mislukt, bekijk de logs voor meer details.",
+    "csv": {
+      "title": "Spellen importeren uit een CSV-bestand",
+      "intro_one": "We vonden {{count}} spel in je bestand, waarvan er {{collectionCount}} al in je collectie staan. Kies welke spellen je wilt importeren.",
+      "intro_other": "We vonden {{count}} spellen in je bestand, waarvan er {{collectionCount}} al in je collectie staan. Kies welke spellen je wilt importeren.",
+      "rejected-title_one": "{{count}} rij werd niet geïmporteerd",
+      "rejected-title_other": "{{count}} rijen werden niet geïmporteerd",
+      "rejected-row": "Regel {{line}}: {{title}} ({{reason}})",
+      "upload-failed": "Het CSV-bestand kon niet gelezen worden.",
+      "reason": {
+        "invalid-id": "objectid is geen geldig BGG-id",
+        "duplicate": "dit BGG-id staat al hoger in het bestand",
+        "invalid-base-game": "basegame is geen geldig BGG-id",
+        "no-state": "niet in bezit, gewenst of vroeger in bezit",
+        "invalid-price": "pricepaid is geen getal",
+        "invalid-date": "acquisitiondate is geen datum in de vorm jjjj-mm-dd",
+        "no-base-game": "geen basisspel gevonden op BoardGameGeek, voeg een kolom basegame toe"
+      }
+    }
   },
   "title": "Spellen",
   "load-error": "Je spellen konden niet worden geladen. Controleer of de server bereikbaar is en probeer het opnieuw.",
@@ -61,7 +84,20 @@
     "clear": "Filters wissen",
     "remove": "Filter {{name}} verwijderen",
     "group-game": "Spel",
-    "group-copy": "Jouw exemplaar"
+    "group-copy": "Jouw exemplaar",
+    "storage": {
+      "label": "Storage",
+      "none": "No storage location",
+      "chip": "Storage: {{name}}",
+      "hint": "Counts include expansions with a place of their own."
+    },
+    "type": {
+      "label": "Type",
+      "base": "Base games",
+      "expansions": "Expansions",
+      "any": "Base games + expansions",
+      "switched": "Type switched to Base games + expansions because a storage location is selected."
+    }
   },
   "columns": {
     "title": "Titel",
@@ -75,7 +111,8 @@
     "rating": "Beoordeling",
     "added": "Toegevoegd",
     "bgg": "BGG",
-    "current-price": "Huidige prijs"
+    "current-price": "Huidige prijs",
+    "storage": "Storage"
   },
   "table": {
     "empty": "Geen spellen die aan de gekozen filters voldoen.",
@@ -89,7 +126,18 @@
     "base-tag": "BASE",
     "expansion-tag": "EXP",
     "toggle-expansions_one": "{{count}} expansion of {{title}}",
-    "toggle-expansions_other": "{{count}} expansions of {{title}}"
+    "toggle-expansions_other": "{{count}} expansions of {{title}}",
+    "select-all": "Select every game",
+    "select": "Select {{title}}",
+    "selection_one": "{{count}} game selected",
+    "selection_other": "{{count}} games selected",
+    "selected_one": "selected",
+    "selected_other": "selected",
+    "clear-selection": "Clear",
+    "move-to-storage": "Move to storage…",
+    "stored-elsewhere": "Stored elsewhere · not counted",
+    "expansions-elsewhere_one": "{{count}} expansion stored elsewhere",
+    "expansions-elsewhere_other": "{{count}} expansions stored elsewhere"
   },
   "in-stock": {
     "yes": "Op voorraad",
@@ -145,5 +193,12 @@
     "none-owned": "Er is nu geen spel in bezit beschikbaar. Uitgeleende spellen komen niet op het wiel.",
     "to-games": "Naar je spellen",
     "vetoed": "{{title}} is van het wiel. Opnieuw draaien…"
-  }
+  },
+  "expansion-card": "Expansion · {{title}}",
+  "quick-view": {
+    "expansion-of": "Expansion of",
+    "open": "Open {{title}}"
+  },
+  "count-expansions_one": "{{count}} expansion",
+  "count-expansions_other": "{{count}} expansions"
 }

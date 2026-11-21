@@ -28,8 +28,9 @@ export const TogetherTiles = ({ compare, playerOne, playerTwo, dateFormat, uiLan
 	const mostPlayed = compare.preferredGame?.gameId ? gameById(compare.preferredGame.gameId) : null;
 	const closest = compare.closestGame;
 	const closestGame = closest?.gameId ? gameById(closest.gameId) : null;
-	const closestWinner =
-		closest?.playerId === playerOne.id ? playerOne : closest?.playerId === playerTwo.id ? playerTwo : null;
+	let closestWinner: typeof playerOne | null = null;
+	if (closest?.playerId === playerOne.id) closestWinner = playerOne;
+	else if (closest?.playerId === playerTwo.id) closestWinner = playerTwo;
 	const closestCaption = (game: string) => {
 		if (closestWinner) {
 			return t("tiles.closest-winner", { game, player: closestWinner.name });

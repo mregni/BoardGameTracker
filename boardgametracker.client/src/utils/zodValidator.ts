@@ -3,7 +3,7 @@ import i18next from "i18next";
 import type { z } from "zod";
 
 export function zodValidator<TSchema extends z.ZodObject>(schema: TSchema, name: keyof z.infer<TSchema> & string) {
-	const fieldSchema = schema.shape[name] as z.ZodSchema;
+	const fieldSchema = schema.shape[name] as z.ZodType;
 	return {
 		onChange: ({ value }: { value: unknown }) => {
 			const result = fieldSchema.safeParse(value);
@@ -31,7 +31,7 @@ export function notBeforeValidator<TSchema extends z.ZodObject>(
 	otherName: keyof z.infer<TSchema> & string,
 	message: string,
 ) {
-	const fieldSchema = schema.shape[name] as z.ZodSchema;
+	const fieldSchema = schema.shape[name] as z.ZodType;
 	return {
 		onChangeListenTo: [otherName],
 		onChange: ({ value, fieldApi }: { value: unknown; fieldApi: AnyFieldApi }) => {
@@ -56,7 +56,7 @@ export function rangeValidator<TSchema extends z.ZodObject>(
 	otherName: keyof z.infer<TSchema> & string,
 	role: "min" | "max",
 ) {
-	const fieldSchema = schema.shape[name] as z.ZodSchema;
+	const fieldSchema = schema.shape[name] as z.ZodType;
 	return {
 		onChangeListenTo: [otherName],
 		onChange: ({ value, fieldApi }: { value: unknown; fieldApi: AnyFieldApi }) => {

@@ -2,6 +2,7 @@
 using Ardalis.GuardClauses;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.ValueObjects;
 
 namespace BoardGameTracker.Common.Entities;
@@ -29,6 +30,10 @@ public class Expansion : HasId
     public Price? BuyingPrice { get; private set; }
     public Price? SoldPrice { get; private set; }
     public DateTime? AdditionDate { get; private set; }
+    public int? StoredAtLocationId { get; private set; }
+    public int? StorageLocationId { get; private set; }
+    public int StoragePosition { get; private set; }
+    public BoxOrientation BoxOrientation { get; private set; }
 
     [JsonIgnore]
     public Game Game { get; private set; } = null!;
@@ -41,7 +46,7 @@ public class Expansion : HasId
         BggId = bggId == null ? null : Guard.Against.NegativeOrZero(bggId.Value);
         GameId = Guard.Against.NegativeOrZero(gameId);
         AdditionDate = DateTime.UtcNow;
-        Sessions = new List<Session>();
+        Sessions = [];
     }
 
     public Expansion(string title, int? bggId, Game game)
@@ -51,7 +56,7 @@ public class Expansion : HasId
         Game = Guard.Against.Null(game);
         GameId = game.Id;
         AdditionDate = DateTime.UtcNow;
-        Sessions = new List<Session>();
+        Sessions = [];
     }
 
     public bool Matches(Expansion other)
@@ -69,6 +74,34 @@ public class Expansion : HasId
     public void UpdateState(GameState state)
     {
         State = state;
+        if (!StorageLocation.CanStore(state))
+        {
+            ClearStorage();
+        }
+    }
+
+    public void Store(int locationId, int? storageLocationId, int position)
+    {
+        if (!StorageLocation.CanStore(State))
+        {
+            throw new DomainException(Constants.Errors.StorageNotAllowedForState);
+        }
+
+        StoredAtLocationId = Guard.Against.NegativeOrZero(locationId);
+        StorageLocationId = storageLocationId;
+        StoragePosition = position;
+    }
+
+    public void ClearStorage()
+    {
+        StoredAtLocationId = null;
+        StorageLocationId = null;
+        StoragePosition = 0;
+    }
+
+    public void UpdateBoxOrientation(BoxOrientation orientation)
+    {
+        BoxOrientation = Guard.Against.EnumOutOfRange(orientation);
     }
 
     public void UpdateBuyingPrice(decimal? price)

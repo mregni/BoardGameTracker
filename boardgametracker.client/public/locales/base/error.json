@@ -143,5 +143,18 @@
   "feature": {
     "disabled": "This feature is turned off in the settings"
   },
-  "load-failed": "Couldn't load this page"
+  "load-failed": "Couldn't load this page",
+  "storage": {
+    "name-required": "Give the storage location a name",
+    "invalid-layout": "That layout cannot be created",
+    "invalid-size": "Use 1 to 20 shelves, rows or columns",
+    "not-a-cabinet": "Only shelves and grids can change their size",
+    "invalid-parent": "A storage location can only go inside a free storage location of the same location, not inside itself",
+    "not-allowed-for-state": "Only owned games and games for trade get a storage location"
+  },
+  "import": {
+    "csv-empty": "The CSV file is empty.",
+    "csv-missing-objectid": "The CSV file has no objectid column.",
+    "csv-too-many-rows": "The CSV file has more than 2000 rows."
+  }
 }

@@ -743,7 +743,7 @@ public class PlayerServiceTests
     {
         _playerRepositoryMock
             .Setup(x => x.ListAsync(It.Is<PlayerIdsSpec>(s => s.IsSatisfiedBy(new Player("Found") { Id = 1 }) && s.IsSatisfiedBy(new Player("Found") { Id = 3 }) && s.IsSatisfiedBy(new Player("Missing") { Id = 9 }) && !s.IsSatisfiedBy(new Player("Other") { Id = 2 })), CancellationToken.None))
-            .ReturnsAsync(new List<int> { 1, 3 });
+            .ReturnsAsync([1, 3]);
 
         var result = await _playerService.GetExistingIdsAsync(new[] { 1, 3, 9 });
 

@@ -1,5 +1,5 @@
-using System.Globalization;
 using System.Diagnostics;
+using System.Globalization;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Rag.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -126,7 +126,7 @@ public class PdfPageRenderer : IPdfPageRenderer
 
                 return true;
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
                 KillQuietly(process);
                 if (cancellationToken.IsCancellationRequested)
@@ -134,7 +134,7 @@ public class PdfPageRenderer : IPdfPageRenderer
                     throw;
                 }
 
-                _logger.LogWarning("pdftoppm exceeded {Timeout} for {Pdf} page {Page} and was killed", RenderTimeout, pdfPath, page);
+                _logger.LogWarning(ex, "pdftoppm exceeded {Timeout} for {Pdf} page {Page} and was killed", RenderTimeout, pdfPath, page);
                 return false;
             }
         }

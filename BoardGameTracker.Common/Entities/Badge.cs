@@ -34,7 +34,7 @@ public class Badge : HasId
         Type = type;
         Image = image;
         Level = level;
-        Players = new List<Player>();
+        Players = [];
     }
 
     public static Badge CreateWithId(int id, string titleKey, string descriptionKey, BadgeType type, string image, BadgeLevel? level = null)

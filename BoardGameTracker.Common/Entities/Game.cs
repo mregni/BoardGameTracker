@@ -20,12 +20,12 @@ public class Game : BaseGame
     public Game(string title, bool hasScoring = false, GameState state = GameState.Owned) : base(title, state)
     {
         HasScoring = hasScoring;
-        Expansions = new List<Expansion>();
-        Accessories = new List<GameAccessory>();
-        Categories = new List<GameCategory>();
-        Mechanics = new List<GameMechanic>();
-        People = new List<Person>();
-        Manuals = new List<Manual>();
+        Expansions = [];
+        Accessories = [];
+        Categories = [];
+        Mechanics = [];
+        People = [];
+        Manuals = [];
     }
 
     public void UpdateHasScoring(bool hasScoring)

@@ -76,23 +76,13 @@ describe("BgtAvatar", () => {
 	});
 
 	describe("Size Variants", () => {
-		it("should render with small size", () => {
-			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" size="small" />);
-			expect(screen.getByRole("img")).toBeInTheDocument();
-		});
-
-		it("should render with medium size by default", () => {
-			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" />);
-			expect(screen.getByRole("img")).toBeInTheDocument();
-		});
-
-		it("should render with large size", () => {
-			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" size="large" />);
-			expect(screen.getByRole("img")).toBeInTheDocument();
-		});
-
-		it("should render with big size", () => {
-			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" size="big" />);
+		it.each([
+			["small", "small"],
+			["medium (default)", undefined],
+			["large", "large"],
+			["big", "big"],
+		] as const)("should render with %s size", (_, size) => {
+			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" size={size} />);
 			expect(screen.getByRole("img")).toBeInTheDocument();
 		});
 	});
